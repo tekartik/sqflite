@@ -4,8 +4,14 @@ import 'package:flutter/services.dart';
 
 final String _paramPath = "path";
 final String _paramId = "id";
+final String _paramSql = "sql";
+final String _paramTable = "table";
+final String _paramValues = "values";
+final String _paramSqlArguments = "arguments";
 
 final String _methodCloseDatabase = "closeDatabase";
+final String _methodExecute = "execute";
+final String _methodInsert = "insert";
 
 class Sqflite {
   static const MethodChannel _channel =
@@ -31,6 +37,24 @@ class Database {
     await Sqflite._channel.invokeMethod(
     _methodCloseDatabase, <String, dynamic>{
     _paramId: _id
+    });
+  }
+
+  Future execute(String sql, [List arguments]) async {
+    await Sqflite._channel.invokeMethod(
+    _methodExecute, <String, dynamic>{
+    _paramId: _id,
+    _paramSql: sql,
+      _paramSqlArguments: arguments
+    });
+  }
+
+  Future<int> insert(String table, Map<String, dynamic> values) async {
+    return await Sqflite._channel.invokeMethod(
+        _methodInsert, <String, dynamic>{
+      _paramId: _id,
+      _paramTable: table,
+      _paramValues: values
     });
   }
 }

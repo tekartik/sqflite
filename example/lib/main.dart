@@ -74,8 +74,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
     String path = join(documentsDirectory.path, "test.db");
     Database database = await openDatabase(path);
-    print(database);
-    
+    print("opened $database");
+
+    await database.execute("DROP TABLE IF EXISTS Test");
+
+    print("dropped");
+    await database.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER)");
+    print("table created");
+    int id = await database.insert("Test", {"name": "some name", "value": 1234});
+    print("inserted: $id");
+    await database.close();
     
 
     // If the widget was removed from the tree while the asynchronous platform

@@ -1,9 +1,9 @@
 name: sqflite
-description: A new flutter plugin project.
+description: SQLite flutter plugin
 
 flutter:
   plugin:
-    androidPackage: com.yourcompany.sqflite
+    androidPackage: com.tekartik.sqflite
     pluginClass: SqflitePlugin
 
 dependencies:
