@@ -1,0 +1,11 @@
+name: sqflite
+description: A new flutter plugin project.
+
+flutter:
+  plugin:
+    androidPackage: com.yourcompany.sqflite
+    pluginClass: SqflitePlugin
+
+dependencies:
+  flutter:
+    sdk: flutter

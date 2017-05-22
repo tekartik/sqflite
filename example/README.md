@@ -1,6 +1,6 @@
-# sqflite
+# sqflite_example
 
-A new flutter plugin project.
+Demonstrates how to use the sqflite plugin.
 
 ## Getting Started
 
