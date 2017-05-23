@@ -2,17 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-final String _paramPath = "path";
-final String _paramId = "id";
-final String _paramSql = "sql";
-final String _paramTable = "table";
-final String _paramValues = "values";
-final String _paramSqlArguments = "arguments";
+const String _paramPath = "path";
+const String _paramVersion = "version";
+const String _paramId = "id";
+const String _paramSql = "sql";
+const String _paramTable = "table";
+const String _paramValues = "values";
+const String _paramSqlArguments = "arguments";
 
-final String _methodCloseDatabase = "closeDatabase";
-final String _methodExecute = "execute";
-final String _methodInsert = "insert";
-final String _methodUpdate = "update";
+const String _methodSetDebugModeOn = "debugMode";
+const String _methodCloseDatabase = "closeDatabase";
+const String _methodOpenDatabase = "openDatabase";
+const String _methodExecute = "execute";
+const String _methodInsert = "insert";
+const String _methodUpdate = "update";
+const String _methodQuery = "query";
 
 class Sqflite {
   static const MethodChannel _channel =
@@ -37,7 +41,7 @@ class Database {
         .invokeMethod(_methodCloseDatabase, <String, dynamic>{_paramId: _id});
   }
 
-  /// for query without return values
+  /// for sql without return values
   Future execute(String sql, [List arguments]) async {
     await Sqflite._channel.invokeMethod(_methodExecute, <String, dynamic>{
       _paramId: _id,
@@ -66,6 +70,14 @@ class Database {
     });
   }
 
+  /// for SELECT sql query
+  Future<List<Map>> query(String sql, [List arguments]) async {
+    return await Sqflite._channel.invokeMethod(_methodQuery, <String, dynamic>{
+      _paramId: _id,
+      _paramSql: sql,
+      _paramSqlArguments: arguments
+    });
+  }
   /*
   Future<int> insertSmart(String table, Map<String, dynamic> values) async {
     return await Sqflite._channel.invokeMethod(_methodInsert, <String, dynamic>{
@@ -84,7 +96,11 @@ class DatabaseException implements Exception {
 
 Future<Database> openDatabase(String path, {int version}) async {
   int databaseId = await Sqflite._channel.invokeMethod(
-      "openDatabase", <String, dynamic>{"path": path, "version": version ?? 1});
+      _methodOpenDatabase, <String, dynamic>{_paramPath: path, _paramVersion: version ?? 1});
 
   return new Database._(path, databaseId);
+}
+
+Future setDebugModeOn() async {
+  await Sqflite._channel.invokeMethod(_methodSetDebugModeOn);
 }

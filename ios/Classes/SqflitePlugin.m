@@ -2,6 +2,7 @@
 #import "FMDB.h"
 #import <sqlite3.h>
 
+NSString *const _methodDebugMode = @"debugMode";
 NSString *const _methodOpenDatabase = @"openDatabase";
 NSString *const _methodCloseDatabase = @"closeDatabase";
 NSString *const _methodExecute = @"execute";
@@ -31,7 +32,7 @@ NSString *const _paramValues = @"values";
 
 @implementation SqflitePlugin
 
-BOOL _log = true;
+BOOL _log = false;
 NSInteger _lastDatabaseId = 0;
 NSMutableDictionary<NSNumber*, Database*>* _databaseMap; // = [NSMutableDictionary new];
 NSObject* _mapLock;
@@ -114,6 +115,9 @@ NSObject* _mapLock;
     }
     NSString* sql = call.arguments[_paramSql];
     NSArray* arguments = call.arguments[_paramSqlArguments];
+    if (_log) {
+        NSLog(@"Sqflite: %@ %@", sql, arguments);
+    }
     FMResultSet *rs = [database.fmDatabase executeQuery:sql withArgumentsInArray:arguments];
     NSMutableArray* results = [NSMutableArray new];
     while ([rs next]) {
@@ -148,9 +152,9 @@ NSObject* _mapLock;
     }
     sqlite_int64 insertedId = [database.fmDatabase lastInsertRowId];
     if (_log) {
-        NSLog(@"Sqflite: inserted %@", [NSNumber numberWithLongLong:insertedId]);
+        NSLog(@"Sqflite: inserted %@", @(insertedId));
     }
-    result([NSNumber numberWithLongLong:insertedId]);
+    result(@(insertedId));
 }
 
 - (void)handleUpdateCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -246,6 +250,9 @@ NSObject* _mapLock;
         @synchronized (_mapLock) {
             [_databaseMap removeObjectForKey:databaseId];
         }
+        result(nil);
+    } else if ([_methodDebugMode isEqualToString:call.method]) {
+        _log = true;
         result(nil);
     } else {
         result(FlutterMethodNotImplemented);

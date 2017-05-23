@@ -23,9 +23,13 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
+import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
+import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
 import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
 import static com.tekartik.sqflite.Constant.METHOD_INSERT;
+import static com.tekartik.sqflite.Constant.METHOD_OPEN_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_QUERY;
+import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
 import static com.tekartik.sqflite.Constant.PARAM_TABLE;
 import static com.tekartik.sqflite.Constant.PARAM_VALUES;
 
@@ -34,7 +38,7 @@ import static com.tekartik.sqflite.Constant.PARAM_VALUES;
  */
 public class SqflitePlugin implements MethodCallHandler {
 
-    static protected boolean LOGV = true;
+    static protected boolean LOGV = false;
     static final String PARAM_ID = "id";
     static final String PARAM_PATH = "path";
     static final String PARAM_VERSION = "version";
@@ -134,6 +138,89 @@ public class SqflitePlugin implements MethodCallHandler {
             cursor.close();
         }
     }
+
+
+    @Deprecated
+    void handleInsertSmartCall(MethodCall call, Result result) {
+        int databaseId = call.argument(PARAM_ID);
+        String table = call.argument(PARAM_TABLE);
+        Map<String, Object> values = call.argument(PARAM_VALUES);
+        ContentValues contentValues = contentValuesFromMap(values);
+        Database database = getDatabase(databaseId);
+        if (LOGV) {
+            Log.d(TAG, "" + databaseId + " inserting into " + table + " " + contentValues);
+        }
+        try {
+            if (database != null) {
+                long id = database.getWritableDatabase().insertOrThrow(table, null, contentValues);
+                result.success(id);
+            } else {
+                result.error(METHOD_INSERT, "database " + databaseId + " not found", null);
+            }
+
+        } catch (SQLException exception) {
+            result.error(METHOD_INSERT, table, exception);
+        }
+    }
+
+    void onInsertCall(MethodCall call, Result result) {
+        Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
+        }
+        String sql = call.argument(PARAM_SQL);
+        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+        List<Map<String, Object>> results = new ArrayList<>();
+        if (LOGV) {
+            Log.d(TAG, "Sqflite: " + sql + " " + arguments);
+        }
+        Cursor cursor = database.getWritableDatabase().rawQuery(sql, getSqlArguments(arguments));
+        try {
+            if (cursor.moveToNext()) {
+                long id = cursor.getLong(0);
+                if (LOGV) {
+                    Log.d(TAG, "Sqflite: inserted " + id);
+                }
+                result.success(id);
+                return;
+            }
+            result.success(null);
+        } catch (Exception e) {
+            errorException(call, result, e);
+        } finally {
+            cursor.close();
+        }
+    }
+
+    void onUpdateCall(MethodCall call, Result result) {
+        Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
+        }
+        String sql = call.argument(PARAM_SQL);
+        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+        List<Map<String, Object>> results = new ArrayList<>();
+        if (LOGV) {
+            Log.d(TAG, "Sqflite: " + sql + " " + arguments);
+        }
+        Cursor cursor = database.getWritableDatabase().rawQuery(sql, getSqlArguments(arguments));
+        try {
+            if (cursor.moveToNext()) {
+                int changed = cursor.getInt(0);
+                if (LOGV) {
+                    Log.d(TAG, "Sqflite: changed " + changed);
+                }
+                result.success(changed);
+                return;
+            }
+            result.success(null);
+        } catch (Exception e) {
+            errorException(call, result, e);
+        } finally {
+            cursor.close();
+        }
+    }
+
     @Override
     public void onMethodCall(MethodCall call, Result result) {
         switch (call.method) {
@@ -141,7 +228,11 @@ public class SqflitePlugin implements MethodCallHandler {
                 result.success("Android " + android.os.Build.VERSION.RELEASE);
                 break;
 
-            case "closeDatabase": {
+            case METHOD_DEBUG_MODE: {
+                LOGV = true;
+                result.success(null);
+            }
+            case METHOD_CLOSE_DATABASE: {
                 int databaseId = call.argument(PARAM_ID);
                 Database database = getDatabase(databaseId);
                 if (database != null) {
@@ -157,25 +248,11 @@ public class SqflitePlugin implements MethodCallHandler {
                 break;
             }
             case METHOD_INSERT: {
-                int databaseId = call.argument(PARAM_ID);
-                String table = call.argument(PARAM_TABLE);
-                Map<String, Object> values = call.argument(PARAM_VALUES);
-                ContentValues contentValues = contentValuesFromMap(values);
-                Database database = getDatabase(databaseId);
-                if (LOGV) {
-                    Log.d(TAG, "" + databaseId + " inserting into " + table + " " + contentValues);
-                }
-                try {
-                    if (database != null) {
-                        long id = database.getWritableDatabase().insertOrThrow(table, null, contentValues);
-                        result.success(id);
-                    } else {
-                        result.error(METHOD_INSERT, "database " + databaseId + " not found", null);
-                    }
-
-                } catch (SQLException exception) {
-                    result.error(METHOD_INSERT, table, exception);
-                }
+                onInsertCall(call, result);
+                break;
+            }
+            case METHOD_UPDATE: {
+                onUpdateCall(call, result);
                 break;
             }
             case METHOD_EXECUTE: {
@@ -183,16 +260,13 @@ public class SqflitePlugin implements MethodCallHandler {
                 int databaseId = call.argument(PARAM_ID);
                 String sql = call.argument(PARAM_SQL);
                 List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
-                if (arguments == null) {
-                    arguments = new ArrayList<>();
-                }
                 if (LOGV) {
-                    Log.d(TAG, "" + databaseId + " executing " + sql + " " + arguments);
+                    Log.d(TAG, "Sqflite: " + databaseId + " executing " + sql + " " + arguments);
                 }
                 Database database = getDatabase(databaseId);
                 try {
                     if (database != null) {
-                        database.getWritableDatabase().execSQL(sql, arguments.toArray());
+                        database.getWritableDatabase().execSQL(sql, getSqlArguments(arguments));
                         result.success(null);
                     } else {
                         result.error(METHOD_EXECUTE, "database " + databaseId + " not found", null);
@@ -205,7 +279,7 @@ public class SqflitePlugin implements MethodCallHandler {
                 }
                 break;
             }
-            case "openDatabase": {
+            case METHOD_OPEN_DATABASE: {
                 String path = call.argument(PARAM_PATH);
                 int version = call.argument(PARAM_VERSION);
                 File file = new File(path);

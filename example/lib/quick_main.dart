@@ -57,7 +57,6 @@ class _MyHomePageState extends State<MyHomePage> {
   initState() {
     super.initState();
     initPlatformState();
-
     quickTest();
   }
 
@@ -70,6 +69,10 @@ class _MyHomePageState extends State<MyHomePage> {
     Database database = await openDatabase(path);
     print("opened $database");
 
+    await setDebugModeOn();
+
+    int version = await database.update("PRAGMA user_version");
+    print("version: $version");
     await database.execute("DROP TABLE IF EXISTS Test");
 
     print("dropped");
@@ -79,9 +82,10 @@ class _MyHomePageState extends State<MyHomePage> {
     print("inserted1: $id");
     id = await database.insert('INSERT INTO Test(name, value) VALUES(?, ?)', ["another name", 12345678]);
     print("inserted2: $id");
-    int count = await database.update('UPDATE Test SET name = ?, VALUE = ? WHERE value = ?', ["updated name", "9876", "some name"]);
+    int count = await database.update('UPDATE Test SET name = ?, VALUE = ? WHERE name = ?', ["updated name", "9876", "some name"]);
     print("updated: $count");
-
+    print("query: " + (await database.query('SELECT * FROM Test')).toString();
+    print("done");
     await database.close();
 
   }
