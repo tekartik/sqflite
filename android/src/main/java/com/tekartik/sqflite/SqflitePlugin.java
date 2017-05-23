@@ -164,25 +164,29 @@ public class SqflitePlugin implements MethodCallHandler {
     }
 
     void onInsertCall(MethodCall call, Result result) {
-        Database database = getDatabaseOrError(call, result);
+        Database database = executeOrError(call, result);
         if (database == null) {
             return;
         }
-        String sql = call.argument(PARAM_SQL);
-        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
-        List<Map<String, Object>> results = new ArrayList<>();
+        String sql = "SELECT last_insert_rowid()";
         if (LOGV) {
-            Log.d(TAG, "Sqflite: " + sql + " " + arguments);
+            Log.d(TAG, "Sqflite: " + sql);
         }
-        Cursor cursor = database.getWritableDatabase().rawQuery(sql, getSqlArguments(arguments));
+
+
+        Cursor cursor = database.getWritableDatabase().rawQuery(sql, null);
         try {
-            if (cursor.moveToNext()) {
+            if (cursor.moveToFirst()) {
                 long id = cursor.getLong(0);
                 if (LOGV) {
                     Log.d(TAG, "Sqflite: inserted " + id);
                 }
                 result.success(id);
                 return;
+            } else {
+                if (LOGV) {
+                    Log.d(TAG, "Sqfilte: has no next");
+                }
             }
             result.success(null);
         } catch (Exception e) {
@@ -192,6 +196,65 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
+    void onInsertCallOld(MethodCall call, Result result) {
+        Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
+        }
+        String sql = call.argument(PARAM_SQL);
+        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        if (!sql.endsWith(";")) {
+            sql += ";";
+        }
+        sql += " SELECT last_insert_rowid()";
+
+        if (LOGV) {
+            Log.d(TAG, "Sqflite: " + sql + " " + arguments);
+        }
+
+
+        Cursor cursor = database.getWritableDatabase().rawQuery(sql, getSqlArguments(arguments));
+        try {
+            if (cursor.moveToFirst()) {
+                long id = cursor.getLong(0);
+                if (LOGV) {
+                    Log.d(TAG, "Sqflite: inserted " + id);
+                }
+                result.success(id);
+                return;
+            } else {
+                if (LOGV) {
+                    Log.d(TAG, "Sqfilte: has no next");
+                }
+            }
+            result.success(null);
+        } catch (Exception e) {
+            errorException(call, result, e);
+        } finally {
+            cursor.close();
+        }
+    }
+
+    Database executeOrError(MethodCall call, Result result) {
+        Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return null;
+        }
+        String sql = call.argument(PARAM_SQL);
+        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+        if (LOGV) {
+            Log.d(TAG, "Sqflite: " + sql + " " + arguments);
+        }
+        try {
+            database.getWritableDatabase().execSQL(sql, getSqlArguments(arguments));
+        } catch (SQLException exception) {
+            result.error(call.method, sql, exception);
+        }
+        return database;
+
+    }
     void onUpdateCall(MethodCall call, Result result) {
         Database database = getDatabaseOrError(call, result);
         if (database == null) {
@@ -231,6 +294,7 @@ public class SqflitePlugin implements MethodCallHandler {
             case METHOD_DEBUG_MODE: {
                 LOGV = true;
                 result.success(null);
+                break;
             }
             case METHOD_CLOSE_DATABASE: {
                 int databaseId = call.argument(PARAM_ID);
