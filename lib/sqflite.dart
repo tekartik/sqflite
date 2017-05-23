@@ -94,7 +94,9 @@ class DatabaseException implements Exception {
   DatabaseException(this.msg);
 }
 
-Future<Database> openDatabase(String path, {int version}) async {
+typedef Future VersionChangeFn(Database db, int oldVersion, int newVersion);
+
+Future<Database> openDatabase(String path, {int version, VersionChangeFn onUpgrade, VersionChangeFn onDowngrade}) async {
   int databaseId = await Sqflite._channel.invokeMethod(
       _methodOpenDatabase, <String, dynamic>{_paramPath: path, _paramVersion: version ?? 1});
 

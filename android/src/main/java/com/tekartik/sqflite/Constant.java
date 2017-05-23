@@ -14,6 +14,8 @@ public class Constant {
     static final public String METHOD_QUERY = "query";
     static final public String METHOD_UPDATE = "update";
 
-    static final public String PARAM_TABLE = "table";
-    static final public String PARAM_VALUES = "values";
+    static final String PARAM_ID = "id";
+    static final String PARAM_PATH = "path";
+    static final String PARAM_SQL = "sql";
+    static final String PARAM_SQL_ARGUMENTS = "arguments";
 }

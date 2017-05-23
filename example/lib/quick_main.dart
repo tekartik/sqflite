@@ -72,11 +72,11 @@ class _MyHomePageState extends State<MyHomePage> {
     await setDebugModeOn();
 
     //int version = await database.update("PRAGMA user_version");
-    print("version: ${await database.update("PRAGMA user_version")}");
+    //print("version: ${await database.update("PRAGMA user_version")}");
     print("version: ${await database.query("PRAGMA user_version")}");
 
-    print("drop: ${await database.update("DROP TABLE IF EXISTS Test")}");
-    print("drop: ${await database.execute("DROP TABLE IF EXISTS Test")}");
+    //print("drop: ${await database.update("DROP TABLE IF EXISTS Test")}");
+    await database.execute("DROP TABLE IF EXISTS Test");
 
     print("dropped");
     await database.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER)");
