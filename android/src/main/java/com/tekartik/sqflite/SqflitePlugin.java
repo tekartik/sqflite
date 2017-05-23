@@ -4,6 +4,8 @@ package com.tekartik.sqflite;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -23,6 +25,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
 import static com.tekartik.sqflite.Constant.METHOD_INSERT;
+import static com.tekartik.sqflite.Constant.METHOD_QUERY;
 import static com.tekartik.sqflite.Constant.PARAM_TABLE;
 import static com.tekartik.sqflite.Constant.PARAM_VALUES;
 
@@ -77,6 +80,60 @@ public class SqflitePlugin implements MethodCallHandler {
         return databaseMap.get(databaseId);
     }
 
+    private Database getDatabaseOrError(MethodCall call, Result result) {
+        int databaseId = call.argument(PARAM_ID);
+        Database database = getDatabase(databaseId);
+
+            if (database != null) {
+                return database;
+            } else {
+                result.error(call.method, "database " + databaseId + " not found", null);
+                return null;
+            }
+    }
+
+    private void errorException(MethodCall call, Result result, Exception exception) {
+        result.error(call.method, "Native exception", exception);
+    }
+
+    String[] getSqlArguments(List<Object> rawArguments) {
+        List<String> stringArguments = new ArrayList<>();
+        if (rawArguments != null) {
+            for (Object rawArgument : rawArguments) {
+                if (rawArgument == null) {
+                    stringArguments.add(null);
+                } else {
+                    stringArguments.add(rawArgument.toString());
+                }
+            }
+        }
+        return stringArguments.toArray(new String[0]);
+    }
+    private void onQueryCall(MethodCall call, Result result) {
+        Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
+        }
+        String sql = call.argument(PARAM_SQL);
+        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        Cursor cursor = database.getReadableDatabase().rawQuery(sql, getSqlArguments(arguments));
+        try {
+            while (cursor.moveToNext()) {
+                ContentValues cv = new ContentValues();
+                DatabaseUtils.cursorRowToContentValues(cursor, cv);
+                Map<String, Object> map = contentValuesToMap(cv);
+                results.add(map);
+            }
+            result.success(results);
+        } catch (Exception e) {
+            errorException(call, result, e);
+        } finally {
+            cursor.close();
+        }
+    }
     @Override
     public void onMethodCall(MethodCall call, Result result) {
         switch (call.method) {
@@ -93,6 +150,10 @@ public class SqflitePlugin implements MethodCallHandler {
                         databaseMap.remove(databaseId);
                     }
                 }
+                break;
+            }
+            case METHOD_QUERY: {
+                onQueryCall(call, result);
                 break;
             }
             case METHOD_INSERT: {
@@ -169,6 +230,14 @@ public class SqflitePlugin implements MethodCallHandler {
                 result.notImplemented();
                 break;
         }
+    }
+
+    private Map<String, Object> contentValuesToMap(ContentValues cv) {
+        Map<String, Object> map = new HashMap();
+        for (Map.Entry<String, Object> entry : cv.valueSet()) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+        return map;
     }
 
     private ContentValues contentValuesFromMap(Map<String, Object> values) {

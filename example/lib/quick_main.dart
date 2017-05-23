@@ -75,8 +75,13 @@ class _MyHomePageState extends State<MyHomePage> {
     print("dropped");
     await database.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER)");
     print("table created");
-    //int id = await database.insert("Test", {"name": "some name", "value": 1234});
-    //print("inserted: $id");
+    int id = await database.insert('INSERT INTO Test(name, value) VALUES("some name",1234)');
+    print("inserted1: $id");
+    id = await database.insert('INSERT INTO Test(name, value) VALUES(?, ?)', ["another name", 12345678]);
+    print("inserted2: $id");
+    int count = await database.update('UPDATE Test SET name = ?, VALUE = ? WHERE value = ?', ["updated name", "9876", "some name"]);
+    print("updated: $count");
+
     await database.close();
 
   }

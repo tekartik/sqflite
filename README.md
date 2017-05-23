@@ -1,8 +1,19 @@
 # sqflite
 
-A new flutter plugin project.
+An experimental SQLite flutter plugin
 
 ## Getting Started
 
-For help getting started with Flutter, view our online
+In your flutter project add the dependency:
+
+    dependencies:
+      ...
+      sqflite:
+       git: git://github.com/tekartik/sqflite.dart
+    
+
+For help getting started with Flutter, view the online
 [documentation](http://flutter.io/).
+
+## Usage example
+

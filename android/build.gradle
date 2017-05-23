@@ -1,4 +1,4 @@
-group 'com.yourcompany.sqflite'
+group 'com.tekartik.sqflite'
 version '1.0-SNAPSHOT'
 
 buildscript {
