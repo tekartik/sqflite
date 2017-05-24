@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'src/utils.dart';
+import 'package:synchronized/synchronized.dart';
 
 const String _paramPath = "path";
 const String _paramVersion = "version";
@@ -27,9 +28,15 @@ class Sqflite {
   static Future<String> get platformVersion =>
       _channel.invokeMethod('getPlatformVersion');
 
-
   static Future setDebugModeOn() async {
     await Sqflite._channel.invokeMethod(_methodSetDebugModeOn);
+  }
+
+  static firstIntValue(List<Map> list) {
+    if (list != null && list.length > 0) {
+      return parseInt(list.first.values?.first);
+    }
+    return null;
   }
 }
 
@@ -42,6 +49,7 @@ class Database {
   String _path;
   int _id;
   Database._(this._path, this._id);
+  var lock = new SynchronizedLock();
 
   @override
   String toString() {
@@ -55,30 +63,38 @@ class Database {
 
   /// for sql without return values
   Future execute(String sql, [List arguments]) async {
-    await Sqflite._channel.invokeMethod(_methodExecute, <String, dynamic>{
-      _paramId: _id,
-      _paramSql: sql,
-      _paramSqlArguments: arguments
+    return synchronized(lock, () async {
+      await Sqflite._channel.invokeMethod(_methodExecute, <String, dynamic>{
+        _paramId: _id,
+        _paramSql: sql,
+        _paramSqlArguments: arguments
+      });
     });
   }
 
   /// for INSERT sql query
   /// returns the last inserted record id
   Future<int> insert(String sql, [List arguments]) async {
-    return await Sqflite._channel.invokeMethod(_methodInsert, <String, dynamic>{
-      _paramId: _id,
-      _paramSql: sql,
-      _paramSqlArguments: arguments
+    return synchronized(lock, () async {
+      return await Sqflite._channel.invokeMethod(
+          _methodInsert, <String, dynamic>{
+        _paramId: _id,
+        _paramSql: sql,
+        _paramSqlArguments: arguments
+      });
     });
   }
 
   /// for UPDATE sql query
   /// return the number of changes made
   Future<int> update(String sql, [List arguments]) async {
-    return await Sqflite._channel.invokeMethod(_methodUpdate, <String, dynamic>{
-      _paramId: _id,
-      _paramSql: sql,
-      _paramSqlArguments: arguments
+    return synchronized(lock, () async {
+      return await Sqflite._channel.invokeMethod(
+          _methodUpdate, <String, dynamic>{
+        _paramId: _id,
+        _paramSql: sql,
+        _paramSqlArguments: arguments
+      });
     });
   }
 
@@ -88,10 +104,13 @@ class Database {
 
   /// for SELECT sql query
   Future<List<Map<String, dynamic>>> query(String sql, [List arguments]) async {
-    return await Sqflite._channel.invokeMethod(_methodQuery, <String, dynamic>{
-      _paramId: _id,
-      _paramSql: sql,
-      _paramSqlArguments: arguments
+    return synchronized(lock, () async {
+      return await Sqflite._channel.invokeMethod(
+          _methodQuery, <String, dynamic>{
+        _paramId: _id,
+        _paramSql: sql,
+        _paramSqlArguments: arguments
+      });
     });
   }
 
@@ -123,13 +142,15 @@ class Database {
   ///
   /// Simple transaction mechanism
   Future inTransaction(action(), {bool exclusive}) async {
-    Transaction transaction = await beginTransaction(exclusive: exclusive);
-    try {
-      await action();
-      transaction.successfull = true;
-    } finally {
-      await endTransaction(transaction);
-    }
+    return synchronized(lock, () async {
+      Transaction transaction = await beginTransaction(exclusive: exclusive);
+      try {
+        await action();
+        transaction.successfull = true;
+      } finally {
+        await endTransaction(transaction);
+      }
+    });
   }
 
   Future<int> getVersion() async {
@@ -146,12 +167,15 @@ class DatabaseException implements Exception {
   DatabaseException(this.msg);
 }
 
-typedef Future OnDatabaseVersionChangeFn(Database db, int oldVersion, int newVersion);
+typedef Future OnDatabaseVersionChangeFn(
+    Database db, int oldVersion, int newVersion);
 typedef Future OnDatabaseCreateFn(Database db, int newVersion);
 typedef Future OnDatabaseOpenFn(Database db);
 
-Future onDatabaseVersionChangeError(Database db, int oldVersion, int newVersion) async {
-  throw new ArgumentError("can't change version from $oldVersion to $newVersion");
+Future onDatabaseVersionChangeError(
+    Database db, int oldVersion, int newVersion) async {
+  throw new ArgumentError(
+      "can't change version from $oldVersion to $newVersion");
 }
 
 ///
@@ -159,9 +183,14 @@ Future onDatabaseVersionChangeError(Database db, int oldVersion, int newVersion)
 /// setting a version is optional
 /// onCreate, onUpgrade, onDowngrade are called in a transaction
 ///
-Future<Database> openDatabase(String path, {int version, OnDatabaseCreateFn onCreate, OnDatabaseVersionChangeFn onUpgrade, OnDatabaseVersionChangeFn onDowngrade, OnDatabaseOpenFn onOpen}) async {
-  int databaseId = await Sqflite._channel.invokeMethod(
-      _methodOpenDatabase, <String, dynamic>{_paramPath: path });
+Future<Database> openDatabase(String path,
+    {int version,
+    OnDatabaseCreateFn onCreate,
+    OnDatabaseVersionChangeFn onUpgrade,
+    OnDatabaseVersionChangeFn onDowngrade,
+    OnDatabaseOpenFn onOpen}) async {
+  int databaseId = await Sqflite._channel
+      .invokeMethod(_methodOpenDatabase, <String, dynamic>{_paramPath: path});
 
   Database database = new Database._(path, databaseId);
   if (version != null) {
@@ -194,16 +223,18 @@ Future<Database> openDatabase(String path, {int version, OnDatabaseCreateFn onCr
     if (onOpen != null) {
       await onOpen(database);
     }
-
   } else {
     if (onCreate != null) {
-      throw new ArgumentError("onCreate must be null if no version is specified");
+      throw new ArgumentError(
+          "onCreate must be null if no version is specified");
     }
     if (onUpgrade != null) {
-      throw new ArgumentError("onUpgrade must be null if no version is specified");
+      throw new ArgumentError(
+          "onUpgrade must be null if no version is specified");
     }
     if (onDowngrade != null) {
-      throw new ArgumentError("onDowngrade must be null if no version is specified");
+      throw new ArgumentError(
+          "onDowngrade must be null if no version is specified");
     }
   }
   return database;
@@ -216,4 +247,3 @@ Future deleteDatabase(String path) async {
     print(e);
   }
 }
-

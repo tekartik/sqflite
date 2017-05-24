@@ -2,6 +2,8 @@ name: sqflite_example
 description: Demonstrates how to use the sqflite plugin.
 
 dependencies:
+  func: any
+  collection: any
   flutter:
     sdk: flutter
   path_provider: any

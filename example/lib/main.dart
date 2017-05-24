@@ -1,39 +1,63 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_example/model/main_item.dart';
+import 'package:sqflite_example/open_test_page.dart';
+import 'package:sqflite_example/simple_test_page.dart';
+import 'package:sqflite_example/src/main_item_widget.dart';
+
 
 void main() {
   runApp(new MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   // This widget is the root of your application.
+
+  @override
+  _MyAppState createState() => new _MyAppState();
+}
+
+const String testSimpleRoute = "/test/simple";
+const String testOpenRoute = "/test/open";
+
+class _MyAppState extends State<MyApp> {
+
+  var routes = <String, WidgetBuilder>{
+    '/test': (BuildContext context) => new MyHomePage(),
+    testSimpleRoute: (BuildContext context) => new SimpleTestPage(),
+    testOpenRoute: (BuildContext context) => new OpenTestPage()
+  };
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Flutter Demo',
-      theme: new ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting
-        // the app, try changing the primarySwatch below to Colors.green
-        // and then invoke "hot reload" (press "r" in the console where
-        // you ran "flutter run", or press Run > Hot Reload App in IntelliJ).
-        // Notice that the counter didn't reset back to zero -- the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
+        title: 'Sqflite Demo',
+        theme: new ThemeData(
+          // This is the theme of your application.
+          //
+          // Try running your application with "flutter run". You'll see
+          // the application has a blue toolbar. Then, without quitting
+          // the app, try changing the primarySwatch below to Colors.green
+          // and then invoke "hot reload" (press "r" in the console where
+          // you ran "flutter run", or press Run > Hot Reload App in IntelliJ).
+          // Notice that the counter didn't reset back to zero -- the application
+          // is not restarted.
+          primarySwatch: Colors.blue,
+        ),
+        home: new MyHomePage(title: 'Sqflite Demo Home Page'),
+        routes: routes
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+
+  List<MainItem> items = [];
+
+  MyHomePage({Key key, this.title}) : super(key: key) {
+    items.add(new MainItem("Simple tests", "Basic SQLite operations", route: testSimpleRoute));
+    items.add(new MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade", route: testOpenRoute));
+  }
 
   // This widget is the home page of your application. It is stateful,
   // meaning that it has a State object (defined below) that contains
@@ -53,33 +77,15 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _platformVersion = 'Unknown';
 
+  get _itemCount => widget.items.length;
+
   @override
   initState() {
     super.initState();
     initPlatformState();
 
-    quickTest();
   }
 
-  quickTest() async {
-
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    print(documentsDirectory);
-
-    String path = join(documentsDirectory.path, "test.db");
-    Database database = await openDatabase(path);
-    print("opened $database");
-
-    await database.execute("DROP TABLE IF EXISTS Test");
-
-    print("dropped");
-    await database.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER)");
-    print("table created");
-    //int id = await database.insert("Test", {"name": "some name", "value": 1234});
-    //print("inserted: $id");
-    await database.close();
-
-  }
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
     String platformVersion;
@@ -105,9 +111,18 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('Plugin example app'),
+        title: new Text('Sqflite demo'),
       ),
-      body: new Center(child: new Text('Running on: $_platformVersion\n')),
+      body: new ListView.builder(itemBuilder: _itemBuilder, itemCount: _itemCount)
+
     );
+  }
+
+  //new Center(child: new Text('Running on: $_platformVersion\n')),
+
+  Widget _itemBuilder(BuildContext context, int index) {
+    return new MainItemWidget(widget.items[index], (MainItem item) {
+      Navigator.of(context).pushNamed(item.route);
+    });
   }
 }

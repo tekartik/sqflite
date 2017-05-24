@@ -9,3 +9,4 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
+  synchronized: any
