@@ -11,7 +11,9 @@ import android.util.Log;
 /**
  * A helper class to manage database creation and version management.
  *
- * <p>You create a subclass implementing {@link #onCreate}, {@link #onUpgrade} and
+ * Copy from the system removing onCreate/onUpgrade/onDowngrade
+ *
+ * <p>You create a subclass implementing
  * optionally {@link #onOpen}, and this class takes care of opening the database
  * if it exists, creating it if it does not, and upgrading it as necessary.
  * Transactions are used to make sure the database is always in a sensible state.
@@ -55,8 +57,6 @@ public abstract class SQLiteOpenHelper {
      * @param context to use to open or create the database
      * @param name of the database file, or null for an in-memory database
      * @param factory to use for creating cursor objects, or null for the default
-     *     {@link #onUpgrade} will be used to upgrade the database; if the database is
-     *     newer, {@link #onDowngrade} will be used to downgrade the database
      */
     public SQLiteOpenHelper(Context context, String name, CursorFactory factory) {
         this(context, name, factory, null);
@@ -73,8 +73,6 @@ public abstract class SQLiteOpenHelper {
      * @param context to use to open or create the database
      * @param name of the database file, or null for an in-memory database
      * @param factory to use for creating cursor objects, or null for the default
-     *     {@link #onUpgrade} will be used to upgrade the database; if the database is
-     *     newer, {@link #onDowngrade} will be used to downgrade the database
      * @param errorHandler the {@link DatabaseErrorHandler} to be used when sqlite reports database
      * corruption, or null to use the default error handler.
      */
@@ -123,7 +121,7 @@ public abstract class SQLiteOpenHelper {
     /**
      * Create and/or open a database that will be used for reading and writing.
      * The first time this is called, the database will be opened and
-     * {@link #onCreate}, {@link #onUpgrade} and/or {@link #onOpen} will be
+     * {@link #onOpen} will be
      * called.
      *
      * <p>Once opened successfully, the database is cached, so you can

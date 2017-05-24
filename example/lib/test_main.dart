@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Sqflite Demo',
       theme: new ThemeData(
         // This is the theme of your application.
         //
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
+      home: new MyHomePage(title: 'Sqflite Demo Home Page'),
     );
   }
 }
@@ -88,10 +88,29 @@ class _MyHomePageState extends State<MyHomePage> {
     int count = await database.update('UPDATE Test SET name = ?, VALUE = ? WHERE name = ?', ["updated name", "9876", "some name"]);
     print("updated: $count");
     print("query: " + (await database.query('SELECT * FROM Test')).toString());
-    print("done");
+    print("done*");
     await database.close();
+    print("closed");
     await deleteDatabase(database.path);
-    database = await openDatabase(path);
+    print("deleted");
+    print('opening again');
+    database = await openDatabase(path, version: 1, onCreate: (Database db, int version) async {
+      print("onCreate($version)");
+      await db.execute("CREATE TABLE Test(id INTEGER PRIMARY KEY)");
+    });
+    await database.close();
+    database = await openDatabase(path, version: 2, onUpgrade: (Database db, int oldVersion, int newVersion) async {
+      print("onUpgrade($oldVersion, $newVersion)");
+      await db.execute("ALTER TABLE Test ADD name TEXT");
+    });
+    await database.close();
+    try {
+      database = await openDatabase(
+          path, version: 1, onDowngrade: onDatabaseVersionChangeError);
+    } on ArgumentError catch (e) {
+      print(e);
+    }
+
 
   }
   // Platform messages are asynchronous, so we initialize in an async method.

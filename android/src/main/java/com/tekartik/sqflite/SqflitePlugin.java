@@ -1,7 +1,5 @@
 package com.tekartik.sqflite;
 
-//import android.database.sqlite.SQLiteDatabase;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -35,7 +33,7 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL;
 import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
 
 /**
- * SqflitePlugin
+ * SqflitePlugin Android implementation
  */
 public class SqflitePlugin implements MethodCallHandler {
 
@@ -44,8 +42,10 @@ public class SqflitePlugin implements MethodCallHandler {
     static protected boolean LOGV = false;
 
     static class Database extends SQLiteOpenHelper {
+        String path;
         public Database(Context context, String path) {
             super(context, path, null);
+            this.path = path;
         }
     }
 
@@ -113,13 +113,18 @@ public class SqflitePlugin implements MethodCallHandler {
         List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
 
         List<Map<String, Object>> results = new ArrayList<>();
-
+        if (LOGV) {
+            Log.d(TAG, sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+        }
         Cursor cursor = database.getReadableDatabase().rawQuery(sql, getSqlArguments(arguments));
         try {
             while (cursor.moveToNext()) {
                 ContentValues cv = new ContentValues();
                 DatabaseUtils.cursorRowToContentValues(cursor, cv);
                 Map<String, Object> map = contentValuesToMap(cv);
+                if (LOGV) {
+                    Log.d(TAG, map.toString());
+                }
                 results.add(map);
             }
             result.success(results);
@@ -130,28 +135,26 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    void onInsertCall(MethodCall call, Result result) {
+    private void onInsertCall(MethodCall call, Result result) {
         Database database = executeOrError(call, result);
         if (database == null) {
             return;
         }
         String sql = "SELECT last_insert_rowid()";
-        if (LOGV) {
-            Log.d(TAG, "Sqflite: " + sql);
-        }
+        //if (LOGV) {
+        //    Log.d(TAG, sql);
+        //}
         Cursor cursor = database.getWritableDatabase().rawQuery(sql, null);
         try {
             if (cursor.moveToFirst()) {
                 long id = cursor.getLong(0);
                 if (LOGV) {
-                    Log.d(TAG, "Sqflite: inserted " + id);
+                    Log.d(TAG, "inserted " + id);
                 }
                 result.success(id);
                 return;
             } else {
-                if (LOGV) {
-                    Log.d(TAG, "Sqfilte: has no next");
-                }
+                Log.e(TAG, "Fail to read inserted it");
             }
             result.success(null);
         } catch (Exception e) {
@@ -161,7 +164,7 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    Database executeOrError(MethodCall call, Result result) {
+    private Database executeOrError(MethodCall call, Result result) {
         Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return null;
@@ -169,7 +172,7 @@ public class SqflitePlugin implements MethodCallHandler {
         String sql = call.argument(PARAM_SQL);
         List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
         if (LOGV) {
-            Log.d(TAG, "Sqflite: " + sql + " " + arguments);
+            Log.d(TAG, sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
         }
         try {
             database.getWritableDatabase().execSQL(sql, getSqlArguments(arguments));
@@ -188,29 +191,24 @@ public class SqflitePlugin implements MethodCallHandler {
         result.success(null);
     }
 
-    void onUpdateCall(MethodCall call, Result result) {
-        Database database = getDatabaseOrError(call, result);
+    private void onUpdateCall(MethodCall call, Result result) {
+        Database database = executeOrError(call, result);
         if (database == null) {
             return;
         }
-        String sql = call.argument(PARAM_SQL);
-        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
-        List<Map<String, Object>> results = new ArrayList<>();
-        if (LOGV) {
-            Log.d(TAG, "Sqflite: " + sql + " " + arguments);
-        }
         SQLiteDatabase db = database.getWritableDatabase();
-        db.execSQL(sql, getSqlArguments(arguments));
 
         Cursor cursor = db.rawQuery("SELECT changes()", null);
         try {
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 final int changed = cursor.getInt(0);
                 if (LOGV) {
-                    Log.d(TAG, "Sqflite: changed " + changed);
+                    Log.d(TAG, "changed " + changed);
                 }
                 result.success(changed);
                 return;
+            } else {
+                Log.e(TAG, "fail to read changes for Update/Delete");
             }
             result.success(null);
         } catch (Exception e) {
@@ -222,7 +220,7 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    void onOpenDatabaseCall(MethodCall call, Result result) {
+    private void onOpenDatabaseCall(MethodCall call, Result result) {
         String path = call.argument(PARAM_PATH);
         //int version = call.argument(PARAM_VERSION);
         File file = new File(path);
@@ -230,7 +228,9 @@ public class SqflitePlugin implements MethodCallHandler {
         if (!directory.exists()) {
             directory.mkdirs();
         }
-        Log.d(TAG, path);
+        if (LOGV) {
+            Log.d(TAG, "opening " + path);
+        }
         Database database = new Database(context, path);
         // force opening
         database.getReadableDatabase();
@@ -243,20 +243,25 @@ public class SqflitePlugin implements MethodCallHandler {
         result.success(databaseId);
     }
 
-    void onCloseDatabaseCall(MethodCall call, Result result) {
-        int databaseId = call.argument(PARAM_ID);
-        Database database = getDatabase(databaseId);
-        if (database != null) {
-            database.close();
-            synchronized (mapLocker) {
-                databaseMap.remove(databaseId);
-            }
+    private void onCloseDatabaseCall(MethodCall call, Result result) {
+        Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
         }
+        if (LOGV) {
+            Log.d(TAG, "closing " + database.path);
+        }
+        database.close();
+        synchronized (mapLocker) {
+            databaseMap.remove(databaseId);
+        }
+        result.success(null);
     }
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
         switch (call.method) {
+            // quick testing
             case "getPlatformVersion":
                 result.success("Android " + android.os.Build.VERSION.RELEASE);
                 break;
@@ -267,7 +272,7 @@ public class SqflitePlugin implements MethodCallHandler {
                 break;
             }
             case METHOD_CLOSE_DATABASE: {
-                onCloseDatabaseCall(call,result);
+                onCloseDatabaseCall(call, result);
                 break;
             }
             case METHOD_QUERY: {
