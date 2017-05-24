@@ -3,7 +3,6 @@ package com.tekartik.sqflite;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -37,25 +36,25 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
  */
 public class SqflitePlugin implements MethodCallHandler {
 
-    MethodChannel channel;
+    private MethodChannel channel;
 
-    static protected boolean LOGV = false;
+    static private boolean LOGV = false;
 
-    static class Database extends SQLiteOpenHelper {
+    private static class Database extends SQLiteOpenHelper {
         String path;
-        public Database(Context context, String path) {
+        private Database(Context context, String path) {
             super(context, path, null);
             this.path = path;
         }
     }
 
-    static public String TAG = "Sqflite";
+    static private String TAG = "Sqflite";
 
-    Context context;
+    private Context context;
 
-    final Object mapLocker = new Object();
-    int databaseId = 0; // incremental database id
-    Map<Integer, Database> databaseMap = new HashMap<>();
+    private final Object mapLocker = new Object();
+    private int databaseId = 0; // incremental database id
+    private Map<Integer, Database> databaseMap = new HashMap<>();
 
     private SqflitePlugin(Context context, MethodChannel channel) {
         this.context = context;
@@ -119,8 +118,9 @@ public class SqflitePlugin implements MethodCallHandler {
         Cursor cursor = database.getReadableDatabase().rawQuery(sql, getSqlArguments(arguments));
         try {
             while (cursor.moveToNext()) {
-                ContentValues cv = new ContentValues();
-                DatabaseUtils.cursorRowToContentValues(cursor, cv);
+                //ContentValues cv = new ContentValues();
+                //DatabaseUtils.cursorRowToContentValues(cursor, cv);
+                ContentValues cv = cursorRowToContentValues(cursor);
                 Map<String, Object> map = contentValuesToMap(cv);
                 if (LOGV) {
                     Log.d(TAG, map.toString());
@@ -302,14 +302,41 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
+    private static ContentValues cursorRowToContentValues(Cursor cursor) {
+        ContentValues values = new ContentValues();
+        String[] columns = cursor.getColumnNames();
+        int length = columns.length;
+        for (int i = 0; i < length; i++) {
+            switch (cursor.getType(i)) {
+                case Cursor.FIELD_TYPE_NULL:
+                    values.putNull(columns[i]);
+                    break;
+                case Cursor.FIELD_TYPE_INTEGER:
+                    values.put(columns[i], cursor.getLong(i));
+                    break;
+                case Cursor.FIELD_TYPE_FLOAT:
+                    values.put(columns[i], cursor.getDouble(i));
+                    break;
+                case Cursor.FIELD_TYPE_STRING:
+                    values.put(columns[i], cursor.getString(i));
+                    break;
+                case Cursor.FIELD_TYPE_BLOB:
+                    values.put(columns[i], cursor.getBlob(i));
+                    break;
+            }
+        }
+        return values;
+    }
+
     private Map<String, Object> contentValuesToMap(ContentValues cv) {
-        Map<String, Object> map = new HashMap();
+        Map<String, Object> map = new HashMap<>();
         for (Map.Entry<String, Object> entry : cv.valueSet()) {
             map.put(entry.getKey(), entry.getValue());
         }
         return map;
     }
 
+    /*
     private ContentValues contentValuesFromMap(Map<String, Object> values) {
         ContentValues contentValues = new ContentValues();
         for (Map.Entry<String, Object> entry : values.entrySet()) {
@@ -329,4 +356,5 @@ public class SqflitePlugin implements MethodCallHandler {
         }
         return contentValues;
     }
+    */
 }

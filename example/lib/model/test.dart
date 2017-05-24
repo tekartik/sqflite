@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:func/func.dart';
-import 'package:matcher/matcher.dart';
 
 /*
 void expect(dynamic actual, Matcher matcher, {
@@ -15,5 +14,4 @@ class Test {
   Test(this.name, this.fn);
   String name;
   Func0<FutureOr> fn;
-
 }

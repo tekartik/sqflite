@@ -14,7 +14,10 @@ class MainItemWidget extends StatefulWidget {
 class _MainItemWidgetState extends State<MainItemWidget> {
   @override
   Widget build(BuildContext context) {
-    return new ListTile(title: new Text(widget.item.title), subtitle: new Text(widget.item.description), onTap: _onTap);
+    return new ListTile(
+        title: new Text(widget.item.title),
+        subtitle: new Text(widget.item.description),
+        onTap: _onTap);
   }
 
   void _onTap() {
@@ -24,4 +27,3 @@ class _MainItemWidgetState extends State<MainItemWidget> {
     //Navigator.pushNamed(context, widget.item.route);
   }
 }
-

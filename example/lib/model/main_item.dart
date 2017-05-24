@@ -1,5 +1,3 @@
-
-
 class MainItem {
   MainItem(this.title, this.description, {this.route});
   String title;

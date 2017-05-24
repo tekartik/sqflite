@@ -6,7 +6,6 @@ import 'package:sqflite_example/open_test_page.dart';
 import 'package:sqflite_example/simple_test_page.dart';
 import 'package:sqflite_example/src/main_item_widget.dart';
 
-
 void main() {
   runApp(new MyApp());
 }
@@ -22,7 +21,6 @@ const String testSimpleRoute = "/test/simple";
 const String testOpenRoute = "/test/open";
 
 class _MyAppState extends State<MyApp> {
-
   var routes = <String, WidgetBuilder>{
     '/test': (BuildContext context) => new MyHomePage(),
     testSimpleRoute: (BuildContext context) => new SimpleTestPage(),
@@ -45,18 +43,18 @@ class _MyAppState extends State<MyApp> {
           primarySwatch: Colors.blue,
         ),
         home: new MyHomePage(title: 'Sqflite Demo Home Page'),
-        routes: routes
-    );
+        routes: routes);
   }
 }
 
 class MyHomePage extends StatefulWidget {
-
   List<MainItem> items = [];
 
   MyHomePage({Key key, this.title}) : super(key: key) {
-    items.add(new MainItem("Simple tests", "Basic SQLite operations", route: testSimpleRoute));
-    items.add(new MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade", route: testOpenRoute));
+    items.add(new MainItem("Simple tests", "Basic SQLite operations",
+        route: testSimpleRoute));
+    items.add(new MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
+        route: testOpenRoute));
   }
 
   // This widget is the home page of your application. It is stateful,
@@ -83,7 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
   initState() {
     super.initState();
     initPlatformState();
-
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -99,8 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
-    if (!mounted)
-      return;
+    if (!mounted) return;
 
     setState(() {
       _platformVersion = platformVersion;
@@ -110,12 +106,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('Sqflite demo'),
-      ),
-      body: new ListView.builder(itemBuilder: _itemBuilder, itemCount: _itemCount)
-
-    );
+        appBar: new AppBar(
+          title: new Text('Sqflite demo'),
+        ),
+        body: new ListView.builder(
+            itemBuilder: _itemBuilder, itemCount: _itemCount));
   }
 
   //new Center(child: new Text('Running on: $_platformVersion\n')),

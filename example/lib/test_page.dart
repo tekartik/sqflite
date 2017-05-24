@@ -12,7 +12,6 @@ import 'package:sqflite_example/src/item_widget.dart';
 import 'dart:async';
 
 class TestPage extends StatefulWidget {
-
   // return the path
   Future<String> initDeleteDb(String dbName) async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
@@ -22,15 +21,14 @@ class TestPage extends StatefulWidget {
     await deleteDatabase(path);
     return path;
   }
+
   String title;
   List<Test> tests = [];
   test(String name, Func0<FutureOr> fn) {
     tests.add(new Test(name, fn));
   }
 
-  TestPage(this.title) {
-
-  }
+  TestPage(this.title) {}
 
   @override
   _TestPageState createState() => new _TestPageState();
@@ -42,43 +40,40 @@ class _TestPageState extends State<TestPage> {
   List<Item> items = [];
 
   _run() async {
+    if (!mounted) {
+      return null;
+    }
 
+    setState(() {
+      items.clear();
+    });
+
+    for (Test test in widget.tests) {
+      Item item = new Item("${test.name}");
+      int position;
+      setState(() {
+        position = items.length;
+        items.add(item);
+      });
+      try {
+        await test.fn();
+
+        item = new Item("${test.name}")..state = ItemState.success;
+      } catch (e) {
+        print(e);
+        item = new Item("${test.name}")..state = ItemState.failure;
+      }
 
       if (!mounted) {
         return null;
       }
 
       setState(() {
-        items.clear();
+        items[position] = item;
       });
-
-      for (Test test in widget.tests) {
-        Item item = new Item("${test.name}");
-        int position;
-        setState(() {
-          position = items.length;
-          items.add(item);
-        });
-        try {
-          await test.fn();
-
-          item = new Item("${test.name}")..state = ItemState.success;
-        } catch (e) {
-          print(e);
-          item= new Item("${test.name}")..state = ItemState.failure;
-        }
-
-        if (!mounted) {
-          return null;
-        }
-
-        setState(() {
-          items[position] = item;
-        });
-      }
-
-
+    }
   }
+
   @override
   initState() {
     super.initState();

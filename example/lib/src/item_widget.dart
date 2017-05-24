@@ -28,11 +28,12 @@ class _ItemWidgetState extends State<ItemWidget> {
         color = Colors.red;
         break;
     }
-    return new ListTile(leading: new IconButton(
-      icon: new Icon(icon, color: color),
-      
-      onPressed: null, // null disables the button
-    ), title: new Text(widget.item.name));
+    return new ListTile(
+        leading: new IconButton(
+          icon: new Icon(icon, color: color),
+
+          onPressed: null, // null disables the button
+        ),
+        title: new Text(widget.item.name));
   }
 }
-
