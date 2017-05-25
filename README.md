@@ -1,6 +1,7 @@
 # sqflite
 
-An experimental SQLite plugin for [Flutter](https://flutter.io)
+An experimental SQLite plugin for [Flutter](https://flutter.io).
+Supports both iOS and Android.
 
 ## Getting Started
 
