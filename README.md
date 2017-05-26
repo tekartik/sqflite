@@ -10,7 +10,7 @@ In your flutter project add the dependency:
     dependencies:
       ...
       sqflite:
-       git: git://github.com/tekartik/sqflite.dart
+       git: git://github.com/tekartik/sqflite
     
 
 For help getting started with Flutter, view the online
