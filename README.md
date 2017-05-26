@@ -78,6 +78,6 @@ Demo code
 * Due to the way transaction works in SQLite (threads), concurrent read and write transaction are not supported yet in 
 this sample demo. All calls are currently synchronized and transactions block are exclusive. This will be fixed by creating 
 a native thread for each transaction and zoning inTransaction calls
-* Recursive transaction are not supported yet
+* Recursive transactions are not supported yet
 * Only TEXT and INTEGER types are tested for now
 
