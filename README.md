@@ -66,11 +66,18 @@ Demo code
     count = Sqflite.firstIntValue(await database.query("SELECT COUNT(*) FROM Test"));
     assert(count == 2);
 
+    // Delete a record
+    count = await database.delete('DELETE FROM Test WHERE name = ?', ['another name']);
+    assert(count == 1);
+      
     // Close the database
     await database.close();
 
 ## Current issues
 
-* Due to the way transaction works in SQLite (threads), All calls are synchronized and transactions block are exclusive. This must be fixed by creating a native thread to transaction calls
+* Due to the way transaction works in SQLite (threads), concurrent read and write transaction are not supported yet in 
+this sample demo. All calls are currently synchronized and transactions block are exclusive. This will be fixed by creating 
+a native thread for each transaction and zoning inTransaction calls
+* Recursive transaction are not supported yet
 * Only TEXT and INTEGER types are tested for now
 

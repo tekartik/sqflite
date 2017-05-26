@@ -5,22 +5,10 @@ import 'package:collection/collection.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/src/utils.dart';
 import 'package:sqflite_example/test_page.dart';
 
 class SimpleTestPage extends TestPage {
   SimpleTestPage() : super("Simple tests") {
-    test("Perf", () async {
-      String path = await initDeleteDb("simple_test1.db");
-      Database db = await openDatabase(path);
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-      await db.inTransaction(() async {
-        for (int i = 0; i < 100; i++) {
-          await db.insert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
-        }
-      });
-      await db.close();
-    });
     test("Transaction", () async {
       String path = await initDeleteDb("simple_test2.db");
       Database db = await openDatabase(path);
@@ -28,18 +16,13 @@ class SimpleTestPage extends TestPage {
 
       _test(int i) async {
         await db.inTransaction(() async {
-          int count = parseInt((await db.query("SELECT COUNT(*) FROM Test"))
-              ?.first
-              .values
-              .first);
+          int count = Sqflite
+              .firstIntValue(await db.query("SELECT COUNT(*) FROM Test"));
           await new Future.delayed(new Duration(milliseconds: 40));
           await db.insert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
           //print(await db.query("SELECT COUNT(*) FROM Test"));
-          int afterCount = parseInt(
-              (await db.query("SELECT COUNT(*) FROM Test"))
-                  ?.first
-                  .values
-                  .first);
+          int afterCount = Sqflite
+              .firstIntValue(await db.query("SELECT COUNT(*) FROM Test"));
           assert(count + 1 == afterCount);
         });
       }
@@ -76,10 +59,24 @@ class SimpleTestPage extends TestPage {
           'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
           ["updated name", "9876", "some name"]);
       print("updated: $count");
+      assert(count == 1);
       List<Map> list = await database.query('SELECT * FROM Test');
       List<Map> expectedList = [
         {"name": "updated name", "id": 1, "value": 9876},
         {"name": "another name", "id": 2, "value": 12345678}
+      ];
+
+      print("list: ${JSON.encode(list)}");
+      print("expected $expectedList");
+      assert(const DeepCollectionEquality().equals(list, expectedList));
+
+      count = await database
+          .delete('DELETE FROM Test WHERE name = ?', ['another name']);
+      print('deleted: $count');
+      assert(count == 1);
+      list = await database.query('SELECT * FROM Test');
+      expectedList = [
+        {"name": "updated name", "id": 1, "value": 9876},
       ];
 
       print("list: ${JSON.encode(list)}");
@@ -109,7 +106,8 @@ class SimpleTestPage extends TestPage {
       int id1 = await database
           .insert('INSERT INTO Test(name, value) VALUES("some name",1234)');
       print("inserted1: $id1");
-      int id2 = await database.insert('INSERT INTO Test(name, value) VALUES(?, ?)',
+      int id2 = await database.insert(
+          'INSERT INTO Test(name, value) VALUES(?, ?)',
           ["another name", 12345678]);
       print("inserted2: $id2");
 
@@ -128,8 +126,14 @@ class SimpleTestPage extends TestPage {
       assert(const DeepCollectionEquality().equals(list, expectedList));
 
       // Count the records
-      count = Sqflite.firstIntValue(await database.query("SELECT COUNT(*) FROM Test"));
+      count = Sqflite
+          .firstIntValue(await database.query("SELECT COUNT(*) FROM Test"));
       assert(count == 2);
+
+      // Delete a record
+      count = await database
+          .delete('DELETE FROM Test WHERE name = ?', ['another name']);
+      assert(count == 1);
 
       // Close the database
       await database.close();

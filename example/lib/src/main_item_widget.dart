@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sqflite_example/model/item.dart';
 import 'package:sqflite_example/model/main_item.dart';
 
 class MainItemWidget extends StatefulWidget {
-  MainItem item;
-  Function onTap; // = Function(MainItem item);
+  final MainItem item;
+  final Function onTap; // = Function(MainItem item);
   MainItemWidget(this.item, this.onTap);
+
   @override
   _MainItemWidgetState createState() => new _MainItemWidgetState();
 }

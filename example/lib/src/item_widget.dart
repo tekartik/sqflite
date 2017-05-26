@@ -3,8 +3,9 @@ import 'package:flutter/widgets.dart';
 import 'package:sqflite_example/model/item.dart';
 
 class ItemWidget extends StatefulWidget {
-  Item item;
-  ItemWidget(this.item);
+  final Item item;
+  final Function onTap; // = Function(MainItem item);
+  ItemWidget(this.item, this.onTap);
   @override
   _ItemWidgetState createState() => new _ItemWidgetState();
 }
@@ -34,6 +35,14 @@ class _ItemWidgetState extends State<ItemWidget> {
 
           onPressed: null, // null disables the button
         ),
-        title: new Text(widget.item.name));
+        title: new Text(widget.item.name),
+        onTap: _onTap);
+  }
+
+  void _onTap() {
+    widget.onTap(widget.item);
+
+    //print(widget.item.route);
+    //Navigator.pushNamed(context, widget.item.route);
   }
 }

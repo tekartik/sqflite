@@ -4,6 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/model/main_item.dart';
 import 'package:sqflite_example/open_test_page.dart';
 import 'package:sqflite_example/simple_test_page.dart';
+import 'package:sqflite_example/slow_test_page.dart';
 import 'package:sqflite_example/src/main_item_widget.dart';
 
 void main() {
@@ -19,12 +20,14 @@ class MyApp extends StatefulWidget {
 
 const String testSimpleRoute = "/test/simple";
 const String testOpenRoute = "/test/open";
+const String testSlowRoute = "/test/slow";
 
 class _MyAppState extends State<MyApp> {
   var routes = <String, WidgetBuilder>{
     '/test': (BuildContext context) => new MyHomePage(),
     testSimpleRoute: (BuildContext context) => new SimpleTestPage(),
-    testOpenRoute: (BuildContext context) => new OpenTestPage()
+    testOpenRoute: (BuildContext context) => new OpenTestPage(),
+    testSlowRoute: (BuildContext context) => new SlowTestPage(),
   };
   @override
   Widget build(BuildContext context) {
@@ -48,13 +51,15 @@ class _MyAppState extends State<MyApp> {
 }
 
 class MyHomePage extends StatefulWidget {
-  List<MainItem> items = [];
+  final List<MainItem> items = [];
 
   MyHomePage({Key key, this.title}) : super(key: key) {
     items.add(new MainItem("Simple tests", "Basic SQLite operations",
         route: testSimpleRoute));
     items.add(new MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
         route: testOpenRoute));
+    items.add(
+        new MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
   }
 
   // This widget is the home page of your application. It is stateful,
@@ -101,6 +106,8 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _platformVersion = platformVersion;
     });
+
+    print("running on: " + _platformVersion);
   }
 
   @override

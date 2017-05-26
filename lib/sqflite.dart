@@ -121,6 +121,9 @@ class Database {
     return null;
   }
 
+  /// Warning as it does not introduce any context
+  /// We'll need a transaction context in the other calls
+  @deprecated
   Future<Transaction> beginTransaction({bool exclusive}) async {
     Transaction transaction = new Transaction();
     if (exclusive == true) {
@@ -131,7 +134,26 @@ class Database {
     return transaction;
   }
 
+  @deprecated
   Future endTransaction(Transaction transaction) async {
+    if (transaction.successfull == true) {
+      await execute("COMMIT;");
+    } else {
+      await execute("ROLLBACK;");
+    }
+  }
+
+  Future<Transaction> _beginTransaction({bool exclusive}) async {
+    Transaction transaction = new Transaction();
+    if (exclusive == true) {
+      await execute("BEGIN EXCLUSIVE;");
+    } else {
+      await execute("BEGIN IMMEDIATE;");
+    }
+    return transaction;
+  }
+
+  Future _endTransaction(Transaction transaction) async {
     if (transaction.successfull == true) {
       await execute("COMMIT;");
     } else {
@@ -143,12 +165,12 @@ class Database {
   /// Simple transaction mechanism
   Future inTransaction(action(), {bool exclusive}) async {
     return synchronized(lock, () async {
-      Transaction transaction = await beginTransaction(exclusive: exclusive);
+      Transaction transaction = await _beginTransaction(exclusive: exclusive);
       try {
         await action();
         transaction.successfull = true;
       } finally {
-        await endTransaction(transaction);
+        await _endTransaction(transaction);
       }
     });
   }

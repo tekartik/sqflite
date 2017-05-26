@@ -1,9 +1,5 @@
-import 'dart:async';
 import 'dart:io';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/src/utils.dart';
 import 'package:sqflite_example/test_page.dart';
 
 class OpenTestPage extends TestPage {

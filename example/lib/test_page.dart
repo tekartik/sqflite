@@ -1,15 +1,15 @@
+import 'dart:async';
 import 'dart:io';
-import 'package:flutter/widgets.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/src/utils.dart';
 import 'package:sqflite_example/model/item.dart';
 import 'package:sqflite_example/model/test.dart';
 import 'package:sqflite_example/src/item_widget.dart';
-import 'dart:async';
 
 class TestPage extends StatefulWidget {
   // return the path
@@ -22,8 +22,9 @@ class TestPage extends StatefulWidget {
     return path;
   }
 
-  String title;
-  List<Test> tests = [];
+  final String title;
+  final List<Test> tests = [];
+
   test(String name, Func0<FutureOr> fn) {
     tests.add(new Test(name, fn));
   }
@@ -74,6 +75,35 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
+  _runTest(int index) async {
+    if (!mounted) {
+      return null;
+    }
+
+    Test test = widget.tests[index];
+
+    Item item = items[index];
+    setState(() {
+      item.state = ItemState.running;
+    });
+    try {
+      await test.fn();
+
+      item = new Item("${test.name}")..state = ItemState.success;
+    } catch (e) {
+      print(e);
+      item = new Item("${test.name}")..state = ItemState.failure;
+    }
+
+    if (!mounted) {
+      return null;
+    }
+
+    setState(() {
+      items[index] = item;
+    });
+  }
+
   @override
   initState() {
     super.initState();
@@ -101,7 +131,10 @@ class _TestPageState extends State<TestPage> {
 
   Widget _itemBuilder(BuildContext context, int index) {
     Item item = getItem(index);
-    return new ItemWidget(item);
+    return new ItemWidget(item, (Item item) {
+      //Navigator.of(context).pushNamed(item.route);
+      _runTest(index);
+    });
   }
 
   Item getItem(int index) {
