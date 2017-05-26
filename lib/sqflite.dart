@@ -194,11 +194,23 @@ typedef Future OnDatabaseVersionChangeFn(
 typedef Future OnDatabaseCreateFn(Database db, int newVersion);
 typedef Future OnDatabaseOpenFn(Database db);
 
+// Downgrading will always fail
 Future onDatabaseVersionChangeError(
     Database db, int oldVersion, int newVersion) async {
+  try {
+    await db.close();
+  } catch (_) {};
   throw new ArgumentError(
       "can't change version from $oldVersion to $newVersion");
 }
+
+Future __onDatabaseDowngradeDelete(
+    Database db, int oldVersion, int newVersion) async {
+  // Implementation is hidden implemented in openDatabase._onDatabaseDowngradeDelete
+}
+// Downgrading will delete the database and open it again
+final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
+    __onDatabaseDowngradeDelete;
 
 ///
 /// Open the database at a given path
@@ -214,6 +226,31 @@ Future<Database> openDatabase(String path,
   int databaseId = await Sqflite._channel
       .invokeMethod(_methodOpenDatabase, <String, dynamic>{_paramPath: path});
 
+  // Special on downgrade elete database
+  if (onDowngrade == onDatabaseDowngradeDelete) {
+    // Downgrading will delete the database and open it again
+    Future _onDatabaseDowngradeDelete(
+        Database db, int oldVersion, int newVersion) async {
+      // This is tricky as we are in a middel of opening a database
+      // need to close what is being done and retart
+      await db.execute("ROLLBACK;");
+      await db.close();
+      await deleteDatabase(db.path);
+
+      // get a new database id after open
+      db._id = await Sqflite._channel.invokeMethod(
+          _methodOpenDatabase, <String, dynamic>{_paramPath: path});
+
+      // no end transaction it will be done
+      await db._beginTransaction(exclusive: true);
+      if (onCreate != null) {
+        await onCreate(db, version);
+      }
+    }
+
+    onDowngrade = _onDatabaseDowngradeDelete;
+  }
+
   Database database = new Database._(path, databaseId);
   if (version != null) {
     if (version == 0) {
@@ -221,9 +258,9 @@ Future<Database> openDatabase(String path,
     }
     // init
     await database.inTransaction(() async {
-      print("opening...");
+      //print("opening...");
       int oldVersion = await database.getVersion();
-      print("got version");
+      //print("got version");
       if (oldVersion == null || oldVersion == 0) {
         if (onCreate != null) {
           await onCreate(database, version);

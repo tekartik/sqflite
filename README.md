@@ -80,4 +80,5 @@ this sample demo. All calls are currently synchronized and transactions block ar
 a native thread for each transaction and zoning inTransaction calls
 * Recursive transactions are not supported yet
 * Only TEXT and INTEGER types are tested for now
+* Need to check threading on iOS, there are bugs where sometimes the result is not available right away
 

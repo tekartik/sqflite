@@ -123,6 +123,8 @@ class SimpleTestPage extends TestPage {
         {"name": "updated name", "id": 1, "value": 9876},
         {"name": "another name", "id": 2, "value": 12345678}
       ];
+      print(list);
+      print(expectedList);
       assert(const DeepCollectionEquality().equals(list, expectedList));
 
       // Count the records
