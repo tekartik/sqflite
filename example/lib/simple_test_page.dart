@@ -102,14 +102,16 @@ class SimpleTestPage extends TestPage {
             "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER)");
       });
 
-      // Insert some record
-      int id1 = await database
-          .insert('INSERT INTO Test(name, value) VALUES("some name",1234)');
-      print("inserted1: $id1");
-      int id2 = await database.insert(
-          'INSERT INTO Test(name, value) VALUES(?, ?)',
-          ["another name", 12345678]);
-      print("inserted2: $id2");
+      // Insert some records in a transaction
+      await database.inTransaction(() async {
+        int id1 = await database
+            .insert('INSERT INTO Test(name, value) VALUES("some name",1234)');
+        print("inserted1: $id1");
+        int id2 = await database.insert(
+            'INSERT INTO Test(name, value) VALUES(?, ?)',
+            ["another name", 12345678]);
+        print("inserted2: $id2");
+      });
 
       // Update some record
       int count = await database.update(
