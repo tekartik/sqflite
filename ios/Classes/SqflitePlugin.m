@@ -60,7 +60,7 @@ NSObject* _mapLock;
     Database* database = _databaseMap[databaseId];
     if (database == nil) {
         NSLog(@"db not found.");
-        result([FlutterError errorWithCode:@"Error"
+        result([FlutterError errorWithCode:@"impl_error"
                                    message:@"db not found"
                                    details:nil]);
         
@@ -106,10 +106,19 @@ NSObject* _mapLock;
     if (_log) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : arguments);
     }
+
     if (!argumentsEmpty) {
         [database.fmDatabase executeUpdate: sql withArgumentsInArray: arguments];
     } else {
         [database.fmDatabase executeUpdate: sql];
+    }
+    
+    // handle error
+    if ([database.fmDatabase hadError]) {
+        result([FlutterError errorWithCode:@"sqlite_error"
+                                   message:[NSString stringWithFormat:@"%@", [database.fmDatabase lastError]]
+                                   details:nil]);
+        return nil;
     }
     return database;
 }

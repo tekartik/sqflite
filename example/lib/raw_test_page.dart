@@ -42,6 +42,7 @@ class SimpleTestPage extends TestPage {
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
       // insert then fails to make sure the transaction is cancelled
+      bool hasFailed = false;
       try {
         await db.inTransaction(() async {
           await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
@@ -49,12 +50,16 @@ class SimpleTestPage extends TestPage {
               .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
           assert(afterCount == 1);
 
+          hasFailed = true;
           // this failure should cancel the insertion before
           await db.execute("DUMMY CALL");
+          hasFailed = false;
         });
       } catch (e) {
-        print(e);
+        // iOS: native_error: PlatformException(sqlite_error, Error Domain=FMDatabase Code=1 "near "DUMMY": syntax error" UserInfo={NSLocalizedDescription=near "DUMMY": syntax error}, null)
+        print("native_error: $e");
       }
+      assert(hasFailed);
 
       int afterCount =
           Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
@@ -91,6 +96,7 @@ class SimpleTestPage extends TestPage {
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
       // insert then fails to make sure the transaction is cancelled
+      bool hasFailed = false;
       try {
         await db.inTransaction(() async {
           await db.inTransaction(() async {
@@ -99,13 +105,17 @@ class SimpleTestPage extends TestPage {
                 .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
             assert(afterCount == 1);
 
+            hasFailed = true;
             // this failure should cancel the insertion before
             await db.execute("DUMMY CALL");
+            hasFailed = false;
           });
         });
       } catch (e) {
-        print(e);
+        print("native error: $e");
       }
+
+      assert(hasFailed);
 
       int afterCount =
           Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
@@ -115,7 +125,6 @@ class SimpleTestPage extends TestPage {
     });
 
     test("Debug mode (log)", () async {
-
       await Sqflite.setDebugModeOn(false);
       String path = await initDeleteDb("debug_mode.db");
       Database db = await openDatabase(path);
