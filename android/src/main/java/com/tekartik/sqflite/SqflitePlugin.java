@@ -22,6 +22,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
 import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
+import static com.tekartik.sqflite.Constant.METHOD_GET_PLATFORM_VERSION;
 import static com.tekartik.sqflite.Constant.METHOD_INSERT;
 import static com.tekartik.sqflite.Constant.METHOD_OPEN_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_QUERY;
@@ -262,12 +263,13 @@ public class SqflitePlugin implements MethodCallHandler {
     public void onMethodCall(MethodCall call, Result result) {
         switch (call.method) {
             // quick testing
-            case "getPlatformVersion":
+            case METHOD_GET_PLATFORM_VERSION:
                 result.success("Android " + android.os.Build.VERSION.RELEASE);
                 break;
 
             case METHOD_DEBUG_MODE: {
-                LOGV = true;
+                Object on = call.arguments();
+                LOGV = Boolean.TRUE.equals(on);
                 result.success(null);
                 break;
             }

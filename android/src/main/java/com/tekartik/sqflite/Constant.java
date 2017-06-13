@@ -6,6 +6,7 @@ package com.tekartik.sqflite;
 
 public class Constant {
 
+    static final public String METHOD_GET_PLATFORM_VERSION = "getPlatformVersion";
     static final public String METHOD_DEBUG_MODE = "debugMode";
     static final public String METHOD_OPEN_DATABASE = "openDatabase";
     static final public String METHOD_CLOSE_DATABASE = "closeDatabase";
