@@ -28,9 +28,16 @@ class DatabaseException implements Exception {
     return false;
   }
 
-  bool isOpenFailed() {
+  bool isOpenFailedError() {
     if (msg != null) {
       return msg.startsWith("open_failed");
+    }
+    return false;
+  }
+
+  bool isDatabaseClosedError() {
+    if (msg != null) {
+      return msg.startsWith("database_closed");
     }
     return false;
   }

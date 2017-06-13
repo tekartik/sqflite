@@ -18,6 +18,10 @@ NSString *const _paramSqlArguments = @"arguments";
 NSString *const _paramTable = @"table";
 NSString *const _paramValues = @"values";
 
+NSString *const _sqliteErrorCode = @"sqlite_error";
+NSString *const _errorOpenFailed = @"open_failed";
+NSString *const _errorDatabaseClosed = @"database_closed";
+
 @interface Database : NSObject
 
 @property (atomic, retain) FMDatabase *fmDatabase;
@@ -60,8 +64,8 @@ NSObject* _mapLock;
     Database* database = _databaseMap[databaseId];
     if (database == nil) {
         NSLog(@"db not found.");
-        result([FlutterError errorWithCode:@"impl_error"
-                                   message:@"db not found"
+        result([FlutterError errorWithCode:_sqliteErrorCode
+                                   message: _errorDatabaseClosed
                                    details:nil]);
         
     }
@@ -91,7 +95,7 @@ NSObject* _mapLock;
     if ([self handleError:database result:result]) {
         return;
     }
-
+    
     NSMutableArray* results = [NSMutableArray new];
     while ([rs next]) {
         [results addObject:[rs resultDictionary]];
@@ -102,7 +106,7 @@ NSObject* _mapLock;
 - (BOOL)handleError:(Database *)database result:(FlutterResult)result {
     // handle error
     if ([database.fmDatabase hadError]) {
-        result([FlutterError errorWithCode:@"sqlite_error"
+        result([FlutterError errorWithCode:_sqliteErrorCode
                                    message:[NSString stringWithFormat:@"%@", [database.fmDatabase lastError]]
                                    details:nil]);
         return YES;
@@ -122,7 +126,7 @@ NSObject* _mapLock;
     if (_log) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : arguments);
     }
-
+    
     if (!argumentsEmpty) {
         [database.fmDatabase executeUpdate: sql withArgumentsInArray: arguments];
     } else {
@@ -177,8 +181,8 @@ NSObject* _mapLock;
     FMDatabase *db = [FMDatabase databaseWithPath:path];
     if (![db open]) {
         NSLog(@"Could not open db.");
-        result([FlutterError errorWithCode:@"sqlite_error"
-                                   message:[NSString stringWithFormat:@"open_failed %@", path]
+        result([FlutterError errorWithCode:_sqliteErrorCode
+                                   message:[NSString stringWithFormat:@"%@ %@", _errorOpenFailed, path]
                                    details:nil]);
         return;
     }
@@ -217,7 +221,7 @@ NSObject* _mapLock;
     if ([_methodGetPlatformVersion isEqualToString:call.method]) {
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
     } else if ([_methodOpenDatabase isEqualToString:call.method]) {
-         [self handleOpenDatabaseCall:call result:result];
+        [self handleOpenDatabaseCall:call result:result];
     } else if ([_methodInsert isEqualToString:call.method]) {
         [self handleInsertCall:call result:result];
     } else if ([_methodQuery isEqualToString:call.method]) {

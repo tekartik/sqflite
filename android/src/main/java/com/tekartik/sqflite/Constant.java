@@ -22,5 +22,6 @@ public class Constant {
 
     static final String SQLITE_ERROR = "sqlite_error"; // code
     static final String ERROR_OPEN_FAILED = "open_failed"; // msg
+    static final String ERROR_DATABASE_CLOSED = "database_closed"; // msg
 
 }

@@ -42,21 +42,9 @@ public class SqflitePlugin implements MethodCallHandler {
     //private MethodChannel channel;
 
     static private boolean LOGV = false;
-
-    private static class Database extends SQLiteOpenHelper {
-        String path;
-        private Database(Context context, String path) {
-            super(context, path, null);
-            this.path = path;
-        }
-
-    }
-
     static private String TAG = "Sqflite";
-
-    private Context context;
-
     private final Object mapLocker = new Object();
+    private Context context;
     private int databaseId = 0; // incremental database id
     private SparseArray<Database> databaseMap = new SparseArray<>();
 
@@ -73,6 +61,32 @@ public class SqflitePlugin implements MethodCallHandler {
         channel.setMethodCallHandler(new SqflitePlugin(registrar.activity().getApplicationContext(), channel));
     }
 
+    private static ContentValues cursorRowToContentValues(Cursor cursor) {
+        ContentValues values = new ContentValues();
+        String[] columns = cursor.getColumnNames();
+        int length = columns.length;
+        for (int i = 0; i < length; i++) {
+            switch (cursor.getType(i)) {
+                case Cursor.FIELD_TYPE_NULL:
+                    values.putNull(columns[i]);
+                    break;
+                case Cursor.FIELD_TYPE_INTEGER:
+                    values.put(columns[i], cursor.getLong(i));
+                    break;
+                case Cursor.FIELD_TYPE_FLOAT:
+                    values.put(columns[i], cursor.getDouble(i));
+                    break;
+                case Cursor.FIELD_TYPE_STRING:
+                    values.put(columns[i], cursor.getString(i));
+                    break;
+                case Cursor.FIELD_TYPE_BLOB:
+                    values.put(columns[i], cursor.getBlob(i));
+                    break;
+            }
+        }
+        return values;
+    }
+
     private Database getDatabase(int databaseId) {
         return databaseMap.get(databaseId);
     }
@@ -84,7 +98,7 @@ public class SqflitePlugin implements MethodCallHandler {
         if (database != null) {
             return database;
         } else {
-            result.error(call.method, "database " + databaseId + " not found", null);
+            result.error(Constant.SQLITE_ERROR, Constant.ERROR_DATABASE_CLOSED, null);
             return null;
         }
     }
@@ -331,38 +345,22 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    private static ContentValues cursorRowToContentValues(Cursor cursor) {
-        ContentValues values = new ContentValues();
-        String[] columns = cursor.getColumnNames();
-        int length = columns.length;
-        for (int i = 0; i < length; i++) {
-            switch (cursor.getType(i)) {
-                case Cursor.FIELD_TYPE_NULL:
-                    values.putNull(columns[i]);
-                    break;
-                case Cursor.FIELD_TYPE_INTEGER:
-                    values.put(columns[i], cursor.getLong(i));
-                    break;
-                case Cursor.FIELD_TYPE_FLOAT:
-                    values.put(columns[i], cursor.getDouble(i));
-                    break;
-                case Cursor.FIELD_TYPE_STRING:
-                    values.put(columns[i], cursor.getString(i));
-                    break;
-                case Cursor.FIELD_TYPE_BLOB:
-                    values.put(columns[i], cursor.getBlob(i));
-                    break;
-            }
-        }
-        return values;
-    }
-
     private Map<String, Object> contentValuesToMap(ContentValues cv) {
         Map<String, Object> map = new HashMap<>();
         for (Map.Entry<String, Object> entry : cv.valueSet()) {
             map.put(entry.getKey(), entry.getValue());
         }
         return map;
+    }
+
+    private static class Database extends SQLiteOpenHelper {
+        String path;
+
+        private Database(Context context, String path) {
+            super(context, path, null);
+            this.path = path;
+        }
+
     }
 
     /*

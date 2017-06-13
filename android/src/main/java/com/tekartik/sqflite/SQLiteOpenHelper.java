@@ -6,25 +6,24 @@ import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteException;
-import android.util.Log;
 
 /**
  * A helper class to manage database creation and version management.
- *
+ * <p>
  * Copy from the system removing onCreate/onUpgrade/onDowngrade
- *
+ * <p>
  * <p>You create a subclass implementing
  * optionally {@link #onOpen}, and this class takes care of opening the database
  * if it exists, creating it if it does not, and upgrading it as necessary.
  * Transactions are used to make sure the database is always in a sensible state.
- *
+ * <p>
  * <p>This class makes it easy for {@link android.content.ContentProvider}
  * implementations to defer opening and upgrading the database until first use,
  * to avoid blocking application startup with long-running database upgrades.
- *
+ * <p>
  * <p>For an example, see the NotePadProvider class in the NotePad sample application,
  * in the <em>samples/</em> directory of the SDK.</p>
- *
+ * <p>
  * <p class="note"><strong>Note:</strong> this class assumes
  * monotonically increasing version numbers for upgrades.</p>
  */
@@ -55,7 +54,7 @@ public abstract class SQLiteOpenHelper {
      * {@link #getReadableDatabase} is called.
      *
      * @param context to use to open or create the database
-     * @param name of the database file, or null for an in-memory database
+     * @param name    of the database file, or null for an in-memory database
      * @param factory to use for creating cursor objects, or null for the default
      */
     public SQLiteOpenHelper(Context context, String name, CursorFactory factory) {
@@ -66,15 +65,15 @@ public abstract class SQLiteOpenHelper {
      * Create a helper object to create, open, and/or manage a database.
      * The database is not actually created or opened until one of
      * {@link #getWritableDatabase} or {@link #getReadableDatabase} is called.
-     *
+     * <p>
      * <p>Accepts input param: a concrete instance of {@link DatabaseErrorHandler} to be
      * used to handle corruption when sqlite reports database corruption.</p>
      *
-     * @param context to use to open or create the database
-     * @param name of the database file, or null for an in-memory database
-     * @param factory to use for creating cursor objects, or null for the default
+     * @param context      to use to open or create the database
+     * @param name         of the database file, or null for an in-memory database
+     * @param factory      to use for creating cursor objects, or null for the default
      * @param errorHandler the {@link DatabaseErrorHandler} to be used when sqlite reports database
-     * corruption, or null to use the default error handler.
+     *                     corruption, or null to use the default error handler.
      */
     public SQLiteOpenHelper(Context context, String name, CursorFactory factory,
                             DatabaseErrorHandler errorHandler) {
@@ -94,13 +93,12 @@ public abstract class SQLiteOpenHelper {
 
     /**
      * Enables or disables the use of write-ahead logging for the database.
-     *
+     * <p>
      * Write-ahead logging cannot be used with read-only databases so the value of
      * this flag is ignored if the database is opened read-only.
      *
      * @param enabled True if write-ahead logging should be enabled, false if it
-     * should be disabled.
-     *
+     *                should be disabled.
      * @see SQLiteDatabase#enableWriteAheadLogging()
      */
     public void setWriteAheadLoggingEnabled(boolean enabled) {
@@ -123,19 +121,19 @@ public abstract class SQLiteOpenHelper {
      * The first time this is called, the database will be opened and
      * {@link #onOpen} will be
      * called.
-     *
+     * <p>
      * <p>Once opened successfully, the database is cached, so you can
      * call this method every time you need to write to the database.
      * (Make sure to call {@link #close} when you no longer need the database.)
      * Errors such as bad permissions or a full disk may cause this method
      * to fail, but future attempts may succeed if the problem is fixed.</p>
-     *
+     * <p>
      * <p class="caution">Database upgrade may take a long time, you
      * should not call this method from the application main thread, including
      * from {@link android.content.ContentProvider#onCreate ContentProvider.onCreate()}.
      *
-     * @throws SQLiteException if the database cannot be opened for writing
      * @return a read/write database object valid until {@link #close} is called
+     * @throws SQLiteException if the database cannot be opened for writing
      */
     protected SQLiteDatabase getWritableDatabase() {
         synchronized (this) {
@@ -151,15 +149,15 @@ public abstract class SQLiteOpenHelper {
      * to {@link #getWritableDatabase} may succeed, in which case the read-only
      * database object will be closed and the read/write object will be returned
      * in the future.
-     *
+     * <p>
      * <p class="caution">Like {@link #getWritableDatabase}, this method may
      * take a long time to return, so you should not call it from the
      * application main thread, including from
      * {@link android.content.ContentProvider#onCreate ContentProvider.onCreate()}.
      *
-     * @throws SQLiteException if the database cannot be opened
      * @return a database object valid until {@link #getWritableDatabase}
-     *     or {@link #close} is called.
+     * or {@link #close} is called.
+     * @throws SQLiteException if the database cannot be opened
      */
     public SQLiteDatabase getReadableDatabase() {
         synchronized (this) {
@@ -191,9 +189,9 @@ public abstract class SQLiteOpenHelper {
             } else if (mName == null) {
                 db = SQLiteDatabase.create(null);
             } else {
-                    db = mContext.openOrCreateDatabase(mName, mEnableWriteAheadLogging ?
-                                        Context.MODE_ENABLE_WRITE_AHEAD_LOGGING : 0,
-                                mFactory, mErrorHandler);
+                db = mContext.openOrCreateDatabase(mName, mEnableWriteAheadLogging ?
+                                Context.MODE_ENABLE_WRITE_AHEAD_LOGGING : 0,
+                        mFactory, mErrorHandler);
 
             }
 
@@ -239,9 +237,10 @@ public abstract class SQLiteOpenHelper {
      *
      * @param db The database.
      */
-    public void onConfigure(SQLiteDatabase db) {}
+    public void onConfigure(SQLiteDatabase db) {
+    }
 
-       /**
+    /**
      * Called when the database has been opened.  The implementation
      * should check {@link SQLiteDatabase#isReadOnly} before updating the
      * database.
@@ -254,5 +253,6 @@ public abstract class SQLiteOpenHelper {
      *
      * @param db The database.
      */
-    public void onOpen(SQLiteDatabase db) {}
+    public void onOpen(SQLiteDatabase db) {
+    }
 }

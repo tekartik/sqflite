@@ -126,7 +126,6 @@ class OpenTestPage extends TestPage {
       onCreated = false;
       onOpened = false;
 
-      print("1");
       database = await openDatabase(path, version: 2,
           onCreate: (Database db, int version) {
         assert(false, "should not be called");
@@ -137,13 +136,35 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open bad path", () async {
-      //await Sqflite.setDebugModeOn();
-
       try {
         await openDatabase("/invalid_path");
         assert(false);
       } on DatabaseException catch (e) {
-        assert(e.isOpenFailed());
+        assert(e.isOpenFailedError());
+      }
+    });
+
+    test("Access after close", () async {
+      String path = await initDeleteDb("access_after_close.db");
+      Database database = await openDatabase(path, version: 3,
+          onCreate: (Database db, int version) async {
+            await db.execute("CREATE TABLE Test(id INTEGER PRIMARY KEY)");
+          });
+      await database.close();
+      try {
+        await database.getVersion();
+        assert(false);
+      } on DatabaseException catch (e) {
+        print(e);
+        assert(e.isDatabaseClosedError());
+      }
+
+      try {
+        await database.setVersion(1);
+        assert(false);
+      } on DatabaseException catch (e) {
+        print(e);
+        assert(e.isDatabaseClosedError());
       }
     });
   }
