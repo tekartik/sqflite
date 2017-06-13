@@ -124,6 +124,42 @@ class SimpleTestPage extends TestPage {
       await db.close();
     });
 
+    test("Transaction open twice", () async {
+      Sqflite.setDebugModeOn(true);
+      String path = await initDeleteDb("transaction_open_twice.db");
+      Database db = await openDatabase(path);
+
+      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+
+      Database db2 = await openDatabase(path);
+
+      await db.inTransaction(() async {
+        await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+        int afterCount = Sqflite
+            .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+        assert(afterCount == 1);
+
+        /*
+        // this is not working on Android
+        int db2AfterCount =
+        Sqflite.firstIntValue(await db2.rawQuery("SELECT COUNT(*) FROM Test"));
+        assert(db2AfterCount == 0);
+        */
+
+
+      });
+      int db2AfterCount =
+          Sqflite.firstIntValue(await db2.rawQuery("SELECT COUNT(*) FROM Test"));
+      assert(db2AfterCount == 1);
+
+      int afterCount =
+          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+      assert(afterCount == 1);
+
+      await db.close();
+      await db2.close();
+    });
+
     test("Debug mode (log)", () async {
       await Sqflite.setDebugModeOn(false);
       String path = await initDeleteDb("debug_mode.db");

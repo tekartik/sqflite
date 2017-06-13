@@ -46,7 +46,7 @@ public class SqflitePlugin implements MethodCallHandler {
     private final Object mapLocker = new Object();
     private Context context;
     private int databaseId = 0; // incremental database id
-    private SparseArray<Database> databaseMap = new SparseArray<>();
+    private Map<Integer, Database> databaseMap = new HashMap<>();
 
     private SqflitePlugin(Context context, MethodChannel ignored) {
         this.context = context;
@@ -98,7 +98,7 @@ public class SqflitePlugin implements MethodCallHandler {
         if (database != null) {
             return database;
         } else {
-            result.error(Constant.SQLITE_ERROR, Constant.ERROR_DATABASE_CLOSED, null);
+            result.error(Constant.SQLITE_ERROR, Constant.ERROR_DATABASE_CLOSED + " " + databaseId, null);
             return null;
         }
     }
@@ -127,7 +127,7 @@ public class SqflitePlugin implements MethodCallHandler {
 
         List<Map<String, Object>> results = new ArrayList<>();
         if (LOGV) {
-            Log.d(TAG, sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+            Log.d(TAG, database + " " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
         }
         Cursor cursor = null;
         try {
@@ -192,12 +192,13 @@ public class SqflitePlugin implements MethodCallHandler {
         String sql = call.argument(PARAM_SQL);
         List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
         if (LOGV) {
-            Log.d(TAG, sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+            Log.d(TAG, database + " " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
         }
         try {
             database.getWritableDatabase().execSQL(sql, getSqlArguments(arguments));
         } catch (SQLException exception) {
             handleException(exception, result, database);
+            return null;
         }
         return database;
     }
@@ -263,9 +264,6 @@ public class SqflitePlugin implements MethodCallHandler {
         if (!directory.exists()) {
             directory.mkdirs();
         }
-        if (LOGV) {
-            Log.d(TAG, "opening " + path);
-        }
         Database database = new Database(context, path);
         // force opening
         try {
@@ -281,11 +279,16 @@ public class SqflitePlugin implements MethodCallHandler {
         synchronized (mapLocker) {
             databaseId = ++this.databaseId;
             databaseMap.put(databaseId, database);
+            if (LOGV) {
+                Log.d(TAG, "opened " + databaseId + " " + path);
+            }
+
         }
         result.success(databaseId);
     }
 
     private void onCloseDatabaseCall(MethodCall call, Result result) {
+        int databaseId = call.argument(PARAM_ID);
         Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return;
