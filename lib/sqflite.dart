@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'dart:io';
+import 'package:sqflite/src/sql_builder.dart';
 import 'src/utils.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -20,16 +21,19 @@ const String _methodExecute = "execute";
 const String _methodInsert = "insert";
 const String _methodUpdate = "update";
 const String _methodQuery = "query";
+const String _methodGetPlatformVersion = "getPlatformVersion";
+
+const String _channelName = 'com.tekartik.sqflite';
 
 class Sqflite {
   static const MethodChannel _channel =
-      const MethodChannel('com.tekartik.sqflite');
+      const MethodChannel(_channelName);
 
   static Future<String> get platformVersion =>
-      _channel.invokeMethod('getPlatformVersion');
+      _channel.invokeMethod(_methodGetPlatformVersion);
 
-  static Future setDebugModeOn() async {
-    await Sqflite._channel.invokeMethod(_methodSetDebugModeOn);
+  static Future setDebugModeOn([bool on = true]) async {
+    await Sqflite._channel.invokeMethod(_methodSetDebugModeOn, on);
   }
 
   static firstIntValue(List<Map> list) {
@@ -40,16 +44,27 @@ class Sqflite {
   }
 }
 
-class Transaction {
+class _Transaction {
   bool successfull;
 }
 
+///
+/// Basic Database support
+/// to send raw sql commands
+///
 class Database {
   String get path => _path;
   String _path;
   int _id;
   Database._(this._path, this._id);
-  var lock = new SynchronizedLock();
+
+  // only set during inTransaction
+  _Transaction _currentTransaction;
+
+  var _lock = new SynchronizedLock();
+
+
+  SynchronizedLock get transactionLock => _lock;
 
   @override
   String toString() {
@@ -63,7 +78,7 @@ class Database {
 
   /// for sql without return values
   Future execute(String sql, [List arguments]) async {
-    return synchronized(lock, () async {
+    return synchronized(_lock, () async {
       await Sqflite._channel.invokeMethod(_methodExecute, <String, dynamic>{
         _paramId: _id,
         _paramSql: sql,
@@ -74,8 +89,8 @@ class Database {
 
   /// for INSERT sql query
   /// returns the last inserted record id
-  Future<int> insert(String sql, [List arguments]) async {
-    return synchronized(lock, () async {
+  Future<int> rawInsert(String sql, [List arguments]) async {
+    return synchronized(_lock, () async {
       return await Sqflite._channel.invokeMethod(
           _methodInsert, <String, dynamic>{
         _paramId: _id,
@@ -85,10 +100,31 @@ class Database {
     });
   }
 
+  Future<int> insert(String table, { String nullColumnHack,
+    Map values, ConflictAlgorithm conflictAlgorithm}) {
+    SqlBuilder builder = new SqlBuilder.insert(table, values: values, nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
+    return rawInsert(builder.sql, builder.arguments);
+  }
+
+  Future<int> bulkInsert(String table, {String nullColumnHack,
+    List<Map<String, dynamic>> items, ConflictAlgorithm conflictAlgorithm}) async {
+    int count = 0;
+    await inTransaction(() {
+      items.forEach((values) async {
+        count += await insert(table,
+            nullColumnHack: nullColumnHack,
+            values: values,
+            conflictAlgorithm: conflictAlgorithm);
+      });
+    });
+
+    return count;
+  }
+
   /// for UPDATE sql query
   /// return the number of changes made
   Future<int> update(String sql, [List arguments]) async {
-    return synchronized(lock, () async {
+    return synchronized(_lock, () async {
       return await Sqflite._channel.invokeMethod(
           _methodUpdate, <String, dynamic>{
         _paramId: _id,
@@ -100,11 +136,11 @@ class Database {
 
   /// for DELETE sql query
   /// return the number of changes made
-  Future<int> delete(String sql, [List arguments]) => update(sql, arguments);
+  Future<int> rawDelete(String sql, [List arguments]) => update(sql, arguments);
 
   /// for SELECT sql query
-  Future<List<Map<String, dynamic>>> query(String sql, [List arguments]) async {
-    return synchronized(lock, () async {
+  Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]) async {
+    return synchronized(_lock, () async {
       return await Sqflite._channel.invokeMethod(
           _methodQuery, <String, dynamic>{
         _paramId: _id,
@@ -121,11 +157,8 @@ class Database {
     return null;
   }
 
-  /// Warning as it does not introduce any context
-  /// We'll need a transaction context in the other calls
-  @deprecated
-  Future<Transaction> beginTransaction({bool exclusive}) async {
-    Transaction transaction = new Transaction();
+  Future<_Transaction> _beginTransaction({bool exclusive}) async {
+    _Transaction transaction = new _Transaction();
     if (exclusive == true) {
       await execute("BEGIN EXCLUSIVE;");
     } else {
@@ -134,26 +167,7 @@ class Database {
     return transaction;
   }
 
-  @deprecated
-  Future endTransaction(Transaction transaction) async {
-    if (transaction.successfull == true) {
-      await execute("COMMIT;");
-    } else {
-      await execute("ROLLBACK;");
-    }
-  }
-
-  Future<Transaction> _beginTransaction({bool exclusive}) async {
-    Transaction transaction = new Transaction();
-    if (exclusive == true) {
-      await execute("BEGIN EXCLUSIVE;");
-    } else {
-      await execute("BEGIN IMMEDIATE;");
-    }
-    return transaction;
-  }
-
-  Future _endTransaction(Transaction transaction) async {
+  Future _endTransaction(_Transaction transaction) async {
     if (transaction.successfull == true) {
       await execute("COMMIT;");
     } else {
@@ -164,19 +178,21 @@ class Database {
   ///
   /// Simple transaction mechanism
   Future inTransaction(action(), {bool exclusive}) async {
-    return synchronized(lock, () async {
-      Transaction transaction = await _beginTransaction(exclusive: exclusive);
+    return synchronized(_lock, () async {
+      _Transaction transaction = await _beginTransaction(exclusive: exclusive);
+      _currentTransaction = transaction;
       try {
         await action();
         transaction.successfull = true;
       } finally {
         await _endTransaction(transaction);
+        _currentTransaction = null;
       }
     });
   }
 
   Future<int> getVersion() async {
-    return parseInt(_first(await query("PRAGMA user_version;"))?.values?.first);
+    return parseInt(_first(await rawQuery("PRAGMA user_version;"))?.values?.first);
   }
 
   Future setVersion(int version) async {
