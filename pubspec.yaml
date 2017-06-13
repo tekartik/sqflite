@@ -1,5 +1,6 @@
 name: sqflite
 description: SQLite flutter plugin
+version: 0.0.2
 
 flutter:
   plugin:

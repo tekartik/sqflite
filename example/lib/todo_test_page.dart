@@ -7,15 +7,14 @@ final String columnId = "_id";
 final String columnTitle = "title";
 final String columnDone = "done";
 
-
 class Todo {
   int id;
   String title;
   bool done;
-  
+
   Map toMap() {
     Map map = {columnTitle: title, columnDone: done == true ? 1 : 0};
-    if (id !=null) {
+    if (id != null) {
       map[columnId] = id;
     }
     return map;
@@ -31,14 +30,12 @@ class Todo {
 }
 
 class TodoProvider {
-
   Database db;
 
   Future open(String path) async {
     db = await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
-      await db.execute(
-'''
+      await db.execute('''
 create table $tableTodo ( 
   $columnId integer primary key autoincrement, 
   $columnTitle text not null,
@@ -53,7 +50,10 @@ create table $tableTodo (
   }
 
   Future<Todo> getTodo(int id) async {
-    List<Map> maps = await db.query(tableTodo, columns: [columnId, columnDone, columnTitle], where: "$columnId = ?", whereArgs: [id]);
+    List<Map> maps = await db.query(tableTodo,
+        columns: [columnId, columnDone, columnTitle],
+        where: "$columnId = ?",
+        whereArgs: [id]);
     if (maps.length > 0) {
       return new Todo.fromMap(maps.first);
     }
@@ -65,7 +65,8 @@ create table $tableTodo (
   }
 
   Future<int> update(Todo todo) async {
-    return await db.update(tableTodo, todo.toMap(), where: "$columnId = ?", whereArgs: [todo.id]);
+    return await db.update(tableTodo, todo.toMap(),
+        where: "$columnId = ?", whereArgs: [todo.id]);
   }
 
   Future close() async => db.close();
@@ -109,7 +110,6 @@ class TodoTestPage extends TestPage {
       assert(await todoProvider.delete(0) == 0);
       assert(await todoProvider.delete(1) == 1);
       assert(await todoProvider.getTodo(1) == null);
-
 
       await todoProvider.close();
       await Sqflite.setDebugModeOn(false);

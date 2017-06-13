@@ -3,6 +3,10 @@
 An experimental SQLite plugin for [Flutter](https://flutter.io).
 Supports both iOS and Android.
 
+* Support recursive inTransaction calls
+* Automatic version managment
+* Helpers for insert/query/update/delete queries
+
 ## Getting Started
 
 In your flutter project add the dependency:
@@ -22,7 +26,7 @@ Import `sqflite.dart`
 
     import 'package:sqflite/sqflite.dart';
     
-Demo code
+Demo code to perform Raw SQL queries
 
 
     // Get a location using path_provider
@@ -75,12 +79,83 @@ Demo code
     // Close the database
     await database.close();
 
+Example using the helpers
+
+    final String tableTodo = "todo";
+    final String columnId = "_id";
+    final String columnTitle = "title";
+    final String columnDone = "done";
+    
+    class Todo {
+      int id;
+      String title;
+      bool done;
+    
+      Map toMap() {
+        Map map = {columnTitle: title, columnDone: done == true ? 1 : 0};
+        if (id != null) {
+          map[columnId] = id;
+        }
+        return map;
+      }
+    
+      Todo();
+    
+      Todo.fromMap(Map map) {
+        id = map[columnId];
+        title = map[columnTitle];
+        done = map[columnDone] == 1;
+      }
+    }
+    
+    class TodoProvider {
+      Database db;
+    
+      Future open(String path) async {
+        db = await openDatabase(path, version: 1,
+            onCreate: (Database db, int version) async {
+          await db.execute('''
+    create table $tableTodo ( 
+      $columnId integer primary key autoincrement, 
+      $columnTitle text not null,
+      $columnDone integer not null)
+    ''');
+        });
+      }
+    
+      Future<Todo> insert(Todo todo) async {
+        todo.id = await db.insert(tableTodo, todo.toMap());
+        return todo;
+      }
+    
+      Future<Todo> getTodo(int id) async {
+        List<Map> maps = await db.query(tableTodo,
+            columns: [columnId, columnDone, columnTitle],
+            where: "$columnId = ?",
+            whereArgs: [id]);
+        if (maps.length > 0) {
+          return new Todo.fromMap(maps.first);
+        }
+        return null;
+      }
+    
+      Future<int> delete(int id) async {
+        return await db.delete(tableTodo, where: "$columnId = ?", whereArgs: [id]);
+      }
+    
+      Future<int> update(Todo todo) async {
+        return await db.update(tableTodo, todo.toMap(),
+            where: "$columnId = ?", whereArgs: [todo.id]);
+      }
+    
+      Future close() async => db.close();
+    }
+
 ## Current issues
 
 * Due to the way transaction works in SQLite (threads), concurrent read and write transaction are not supported yet in 
-this sample demo. All calls are currently synchronized and transactions block are exclusive. This will be fixed by creating 
+this sample demo. All calls are currently synchronized and transactions block are exclusive. A basic way to support 
+concurrent access is to open a database multiple times 
 a native thread for each transaction and zoning inTransaction calls
-* Recursive transactions are not supported yet
 * Only TEXT and INTEGER types are tested for now
-* Need to check threading on iOS, there are bugs where sometimes the result is not available right away
 

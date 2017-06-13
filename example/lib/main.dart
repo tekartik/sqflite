@@ -63,8 +63,9 @@ class MyHomePage extends StatefulWidget {
         route: testOpenRoute));
     items.add(
         new MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
-    items.add(
-        new MainItem("Todo database example", "Simple Todo-like database usage example", route: testTodoRoute));
+    items.add(new MainItem(
+        "Todo database example", "Simple Todo-like database usage example",
+        route: testTodoRoute));
   }
 
   // This widget is the home page of your application. It is stateful,
