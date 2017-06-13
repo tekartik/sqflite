@@ -3,9 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/model/main_item.dart';
 import 'package:sqflite_example/open_test_page.dart';
-import 'package:sqflite_example/simple_test_page.dart';
+import 'package:sqflite_example/raw_test_page.dart';
 import 'package:sqflite_example/slow_test_page.dart';
 import 'package:sqflite_example/src/main_item_widget.dart';
+import 'package:sqflite_example/todo_test_page.dart';
 
 void main() {
   runApp(new MyApp());
@@ -18,16 +19,18 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => new _MyAppState();
 }
 
-const String testSimpleRoute = "/test/simple";
+const String testRawRoute = "/test/simple";
 const String testOpenRoute = "/test/open";
 const String testSlowRoute = "/test/slow";
+const String testTodoRoute = "/test/todo";
 
 class _MyAppState extends State<MyApp> {
   var routes = <String, WidgetBuilder>{
     '/test': (BuildContext context) => new MyHomePage(),
-    testSimpleRoute: (BuildContext context) => new SimpleTestPage(),
+    testRawRoute: (BuildContext context) => new SimpleTestPage(),
     testOpenRoute: (BuildContext context) => new OpenTestPage(),
     testSlowRoute: (BuildContext context) => new SlowTestPage(),
+    testTodoRoute: (BuildContext context) => new TodoTestPage(),
   };
   @override
   Widget build(BuildContext context) {
@@ -54,12 +57,14 @@ class MyHomePage extends StatefulWidget {
   final List<MainItem> items = [];
 
   MyHomePage({Key key, this.title}) : super(key: key) {
-    items.add(new MainItem("Simple tests", "Basic SQLite operations",
-        route: testSimpleRoute));
+    items.add(new MainItem("Raw tests", "Raw SQLite operations",
+        route: testRawRoute));
     items.add(new MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
         route: testOpenRoute));
     items.add(
         new MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
+    items.add(
+        new MainItem("Todo database example", "Simple Todo-like database usage example", route: testTodoRoute));
   }
 
   // This widget is the home page of your application. It is stateful,

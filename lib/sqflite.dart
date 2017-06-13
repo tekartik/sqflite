@@ -26,8 +26,7 @@ const String _methodGetPlatformVersion = "getPlatformVersion";
 const String _channelName = 'com.tekartik.sqflite';
 
 class Sqflite {
-  static const MethodChannel _channel =
-      const MethodChannel(_channelName);
+  static const MethodChannel _channel = const MethodChannel(_channelName);
 
   static Future<String> get platformVersion =>
       _channel.invokeMethod(_methodGetPlatformVersion);
@@ -58,11 +57,10 @@ class Database {
   int _id;
   Database._(this._path, this._id);
 
-  // only set during inTransaction
-  _Transaction _currentTransaction;
+  // only set during inTransaction to allow recursivity
+  int _transactionRefCount = 0;
 
   var _lock = new SynchronizedLock();
-
 
   SynchronizedLock get transactionLock => _lock;
 
@@ -100,20 +98,47 @@ class Database {
     });
   }
 
-  Future<int> insert(String table, { String nullColumnHack,
-    Map values, ConflictAlgorithm conflictAlgorithm}) {
-    SqlBuilder builder = new SqlBuilder.insert(table, values: values, nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
+  Future<int> insert(String table,
+      Map values,
+      {String nullColumnHack,
+      ConflictAlgorithm conflictAlgorithm}) {
+    SqlBuilder builder = new SqlBuilder.insert(table,
+        values,
+        nullColumnHack: nullColumnHack,
+        conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
   }
 
-  Future<int> bulkInsert(String table, {String nullColumnHack,
-    List<Map<String, dynamic>> items, ConflictAlgorithm conflictAlgorithm}) async {
+  Future<List<Map<String, dynamic>>> query(String table,
+      {bool distinct,
+      List<String> columns,
+      String selection,
+      List selectionArgs,
+      String groupBy,
+      String having,
+      String orderBy,
+      int limit, int offset}) {
+    SqlBuilder builder = new SqlBuilder.query(
+        table,
+            distinct: distinct,
+            columns: columns,
+            where: selection,
+            groupBy: groupBy,
+            having: having,
+            orderBy: orderBy,
+            limit: limit, offset: offset, whereArgs: selectionArgs);
+    return rawQuery(builder.sql, builder.arguments);
+  }
+
+  Future<int> bulkInsert(String table,
+      {String nullColumnHack,
+      List<Map<String, dynamic>> items,
+      ConflictAlgorithm conflictAlgorithm}) async {
     int count = 0;
     await inTransaction(() {
       items.forEach((values) async {
-        count += await insert(table,
+        count += await insert(table, values,
             nullColumnHack: nullColumnHack,
-            values: values,
             conflictAlgorithm: conflictAlgorithm);
       });
     });
@@ -139,7 +164,8 @@ class Database {
   Future<int> rawDelete(String sql, [List arguments]) => update(sql, arguments);
 
   /// for SELECT sql query
-  Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]) async {
+  Future<List<Map<String, dynamic>>> rawQuery(String sql,
+      [List arguments]) async {
     return synchronized(_lock, () async {
       return await Sqflite._channel.invokeMethod(
           _methodQuery, <String, dynamic>{
@@ -179,20 +205,27 @@ class Database {
   /// Simple transaction mechanism
   Future inTransaction(action(), {bool exclusive}) async {
     return synchronized(_lock, () async {
-      _Transaction transaction = await _beginTransaction(exclusive: exclusive);
-      _currentTransaction = transaction;
+      _Transaction transaction;
+      bool successfull;
+      if (_transactionRefCount++ == 0) {
+        transaction = await _beginTransaction(
+            exclusive: exclusive);
+      }
       try {
         await action();
-        transaction.successfull = true;
+        successfull = true;
       } finally {
-        await _endTransaction(transaction);
-        _currentTransaction = null;
+        if (--_transactionRefCount == 0) {
+          transaction.successfull = successfull;
+          await _endTransaction(transaction);
+        }
       }
     });
   }
 
   Future<int> getVersion() async {
-    return parseInt(_first(await rawQuery("PRAGMA user_version;"))?.values?.first);
+    return parseInt(
+        _first(await rawQuery("PRAGMA user_version;"))?.values?.first);
   }
 
   Future setVersion(int version) async {
@@ -215,7 +248,8 @@ Future onDatabaseVersionChangeError(
     Database db, int oldVersion, int newVersion) async {
   try {
     await db.close();
-  } catch (_) {};
+  } catch (_) {}
+  ;
   throw new ArgumentError(
       "can't change version from $oldVersion to $newVersion");
 }

@@ -152,8 +152,8 @@ class SqlBuilder {
   /// @values this map contains the initial column values for the row. The keys should be the column names and the values the column values
 
   SqlBuilder.insert(String table,
-      {String nullColumnHack,
       Map<String, dynamic> values,
+      {String nullColumnHack,
       ConflictAlgorithm conflictAlgorithm}) {
     StringBuffer insert = new StringBuffer();
     insert.write("INSERT");

@@ -37,19 +37,19 @@ main() {
 
     test("insert", () {
       try {
-        new SqlBuilder.insert("test");
+        new SqlBuilder.insert("test", null);
         fail('should fail, no nullColumnHack');
       } on ArgumentError catch (_) {}
 
-      SqlBuilder builder = new SqlBuilder.insert("test", nullColumnHack: "value");
+      SqlBuilder builder = new SqlBuilder.insert("test", null, nullColumnHack: "value");
       expect(builder.sql, "INSERT INTO test (value) VALUES (NULL)");
       expect(builder.arguments, isNull);
 
-      builder = new SqlBuilder.insert("test", values: {"value": 1});
+      builder = new SqlBuilder.insert("test", {"value": 1});
       expect(builder.sql, "INSERT INTO test (value) VALUES (?)");
       expect(builder.arguments, [1]);
 
-      builder = new SqlBuilder.insert("test", values: {"value": 1, "other_value": null});
+      builder = new SqlBuilder.insert("test", {"value": 1, "other_value": null});
       expect(builder.sql, "INSERT INTO test (value, other_value) VALUES (?, NULL)");
       expect(builder.arguments, [1]);
 
