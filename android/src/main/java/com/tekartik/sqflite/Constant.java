@@ -19,4 +19,8 @@ public class Constant {
     static final String PARAM_PATH = "path";
     static final String PARAM_SQL = "sql";
     static final String PARAM_SQL_ARGUMENTS = "arguments";
+
+    static final String SQLITE_ERROR = "sqlite_error"; // code
+    static final String ERROR_OPEN_FAILED = "open_failed"; // msg
+
 }

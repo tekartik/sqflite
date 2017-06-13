@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'dart:io';
+import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/sql_builder.dart';
 import 'src/utils.dart';
 import 'package:synchronized/synchronized.dart';
-import 'src/constant.dart';
+export 'src/exception.dart' show DatabaseException;
 
 const String _paramPath = "path";
 const String _paramVersion = "version";
@@ -78,7 +79,7 @@ class Database {
   /// for sql without return values
   Future execute(String sql, [List arguments]) async {
     return synchronized(_lock, () {
-      return _wrapException(() {
+      return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(_methodExecute, <String, dynamic>{
           _paramId: _id,
           _paramSql: sql,
@@ -92,7 +93,7 @@ class Database {
   /// returns the last inserted record id
   Future<int> rawInsert(String sql, [List arguments]) async {
     return synchronized(_lock, () {
-      return _wrapException(() {
+      return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(_methodInsert, <String, dynamic>{
           _paramId: _id,
           _paramSql: sql,
@@ -166,7 +167,7 @@ class Database {
   /// return the number of changes made
   Future<int> rawUpdate(String sql, [List arguments]) async {
     return synchronized(_lock, () {
-      return _wrapException(() {
+      return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(_methodUpdate, <String, dynamic>{
           _paramId: _id,
           _paramSql: sql,
@@ -217,26 +218,11 @@ class Database {
     return rawDelete(builder.sql, builder.arguments);
   }
 
-  Future _wrapException(action()) async {
-    try {
-      var result = await action();
-      return result;
-    } on PlatformException catch (e) {
-      //devPrint("C3 ${e.code} $e");
-      if (e.code == sqliteErrorCode) {
-        //devPrint("D4");
-        throw new DatabaseException(e.message);
-      } else {
-        rethrow;
-      }
-    }
-  }
-
   /// for SELECT sql query
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
       [List arguments]) async {
     return await synchronized(_lock, () async {
-      return await _wrapException(() async {
+      return await wrapDatabaseException(() async {
         return await Sqflite._channel.invokeMethod(
             _methodQuery, <String, dynamic>{
           _paramId: _id,
@@ -303,33 +289,6 @@ class Database {
   }
 }
 
-// Wrap sqlite native exception
-class DatabaseException implements Exception {
-  String msg;
-  DatabaseException(this.msg);
-
-  @override
-  String toString() => "DatabaseException($msg)";
-
-  bool isNoSuchTableError([String table]) {
-    if (msg != null) {
-      String expected = "no such table: ";
-      if (table != null) {
-        expected += table;
-      }
-      return msg.contains(expected);
-    }
-    return false;
-  }
-
-  bool isSyntaxError([String table]) {
-    if (msg != null) {
-      return msg.contains("syntax error");
-    }
-    return false;
-  }
-}
-
 typedef Future OnDatabaseVersionChangeFn(
     Database db, int oldVersion, int newVersion);
 typedef Future OnDatabaseCreateFn(Database db, int newVersion);
@@ -365,8 +324,8 @@ Future<Database> openDatabase(String path,
     OnDatabaseVersionChangeFn onUpgrade,
     OnDatabaseVersionChangeFn onDowngrade,
     OnDatabaseOpenFn onOpen}) async {
-  int databaseId = await Sqflite._channel
-      .invokeMethod(_methodOpenDatabase, <String, dynamic>{_paramPath: path});
+  int databaseId = await wrapDatabaseException(() { return Sqflite._channel
+      .invokeMethod(_methodOpenDatabase, <String, dynamic>{_paramPath: path}); });
 
   // Special on downgrade elete database
   if (onDowngrade == onDatabaseDowngradeDelete) {

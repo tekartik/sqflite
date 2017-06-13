@@ -177,8 +177,8 @@ NSObject* _mapLock;
     FMDatabase *db = [FMDatabase databaseWithPath:path];
     if (![db open]) {
         NSLog(@"Could not open db.");
-        result([FlutterError errorWithCode:@"Error"
-                                   message:[NSString stringWithFormat:@"Cannot open db %@", path]
+        result([FlutterError errorWithCode:@"sqlite_error"
+                                   message:[NSString stringWithFormat:@"open_failed %@", path]
                                    details:nil]);
         return;
     }

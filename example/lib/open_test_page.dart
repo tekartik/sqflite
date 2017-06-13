@@ -102,7 +102,7 @@ class OpenTestPage extends TestPage {
     test("Open onDowngrade delete", () async {
       //await Sqflite.setDebugModeOn();
 
-      String path = await initDeleteDb("open_test6.db");
+      String path = await initDeleteDb("open_on_downgrade.db");
       Database database = await openDatabase(path, version: 3,
           onCreate: (Database db, int version) async {
         await db.execute("CREATE TABLE Test(id INTEGER PRIMARY KEY)");
@@ -134,6 +134,17 @@ class OpenTestPage extends TestPage {
         onOpened = true;
       }, onDowngrade: onDatabaseDowngradeDelete);
       assert(onOpened);
+    });
+
+    test("Open bad path", () async {
+      //await Sqflite.setDebugModeOn();
+
+      try {
+        await openDatabase("/invalid_path");
+        assert(false);
+      } on DatabaseException catch (e) {
+        assert(e.isOpenFailed());
+      }
     });
   }
 }

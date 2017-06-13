@@ -4,8 +4,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,7 +39,7 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
  */
 public class SqflitePlugin implements MethodCallHandler {
 
-    private MethodChannel channel;
+    //private MethodChannel channel;
 
     static private boolean LOGV = false;
 
@@ -47,6 +49,7 @@ public class SqflitePlugin implements MethodCallHandler {
             super(context, path, null);
             this.path = path;
         }
+
     }
 
     static private String TAG = "Sqflite";
@@ -55,11 +58,11 @@ public class SqflitePlugin implements MethodCallHandler {
 
     private final Object mapLocker = new Object();
     private int databaseId = 0; // incremental database id
-    private Map<Integer, Database> databaseMap = new HashMap<>();
+    private SparseArray<Database> databaseMap = new SparseArray<>();
 
-    private SqflitePlugin(Context context, MethodChannel channel) {
+    private SqflitePlugin(Context context, MethodChannel ignored) {
         this.context = context;
-        this.channel = channel;
+        //this.channel = channel;
     }
 
     /**
@@ -86,11 +89,7 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    private void errorException(MethodCall call, Result result, Exception exception) {
-        result.error(call.method, "Native exception", exception);
-    }
-
-    String[] getSqlArguments(List<Object> rawArguments) {
+    private String[] getSqlArguments(List<Object> rawArguments) {
         List<String> stringArguments = new ArrayList<>();
         if (rawArguments != null) {
             for (Object rawArgument : rawArguments) {
@@ -116,8 +115,9 @@ public class SqflitePlugin implements MethodCallHandler {
         if (LOGV) {
             Log.d(TAG, sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
         }
-        Cursor cursor = database.getReadableDatabase().rawQuery(sql, getSqlArguments(arguments));
+        Cursor cursor = null;
         try {
+            cursor = database.getReadableDatabase().rawQuery(sql, getSqlArguments(arguments));
             while (cursor.moveToNext()) {
                 //ContentValues cv = new ContentValues();
                 //DatabaseUtils.cursorRowToContentValues(cursor, cv);
@@ -129,10 +129,12 @@ public class SqflitePlugin implements MethodCallHandler {
                 results.add(map);
             }
             result.success(results);
-        } catch (Exception e) {
-            errorException(call, result, e);
+        } catch (SQLException exception) {
+            handleException(exception, result, database);
         } finally {
-            cursor.close();
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
 
@@ -145,8 +147,9 @@ public class SqflitePlugin implements MethodCallHandler {
         //if (LOGV) {
         //    Log.d(TAG, sql);
         //}
-        Cursor cursor = database.getWritableDatabase().rawQuery(sql, null);
+        Cursor cursor = null;
         try {
+            cursor = database.getWritableDatabase().rawQuery(sql, null);
             if (cursor.moveToFirst()) {
                 long id = cursor.getLong(0);
                 if (LOGV) {
@@ -158,10 +161,12 @@ public class SqflitePlugin implements MethodCallHandler {
                 Log.e(TAG, "Fail to read inserted it");
             }
             result.success(null);
-        } catch (Exception e) {
-            errorException(call, result, e);
+        } catch (SQLException exception) {
+            handleException(exception, result, database);
         } finally {
-            cursor.close();
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
 
@@ -178,7 +183,7 @@ public class SqflitePlugin implements MethodCallHandler {
         try {
             database.getWritableDatabase().execSQL(sql, getSqlArguments(arguments));
         } catch (SQLException exception) {
-            result.error(call.method, sql, exception);
+            handleException(exception, result, database);
         }
         return database;
     }
@@ -197,10 +202,12 @@ public class SqflitePlugin implements MethodCallHandler {
         if (database == null) {
             return;
         }
-        SQLiteDatabase db = database.getWritableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT changes()", null);
+        Cursor cursor = null;
         try {
+            SQLiteDatabase db = database.getWritableDatabase();
+
+            cursor = db.rawQuery("SELECT changes()", null);
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 final int changed = cursor.getInt(0);
                 if (LOGV) {
@@ -212,13 +219,26 @@ public class SqflitePlugin implements MethodCallHandler {
                 Log.e(TAG, "fail to read changes for Update/Delete");
             }
             result.success(null);
-        } catch (Exception e) {
-            errorException(call, result, e);
+        } catch (SQLException e) {
+            handleException(e, result, database);
         } finally {
             if (cursor != null) {
                 cursor.close();
             }
         }
+    }
+
+    private boolean handleException(SQLException exception, Result result, String path) {
+        if (exception instanceof SQLiteCantOpenDatabaseException) {
+            result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
+            return true;
+        }
+        result.error(Constant.SQLITE_ERROR, exception.getMessage(), null);
+        return true;
+    }
+
+    private boolean handleException(SQLException exception, Result result, Database database) {
+        return handleException(exception, result, database.path);
     }
 
     private void onOpenDatabaseCall(MethodCall call, Result result) {
@@ -234,7 +254,14 @@ public class SqflitePlugin implements MethodCallHandler {
         }
         Database database = new Database(context, path);
         // force opening
-        database.getReadableDatabase();
+        try {
+            database.getReadableDatabase();
+        } catch (SQLException e) {
+            if (handleException(e, result, path)) {
+                return;
+            }
+            throw e;
+        }
         //SQLiteDatabase sqLiteDatabase = SQLiteDatabase.openDatabase(path, null, 0);
         int databaseId;
         synchronized (mapLocker) {
