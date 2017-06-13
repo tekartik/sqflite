@@ -145,11 +145,9 @@ class SimpleTestPage extends TestPage {
         Sqflite.firstIntValue(await db2.rawQuery("SELECT COUNT(*) FROM Test"));
         assert(db2AfterCount == 0);
         */
-
-
       });
-      int db2AfterCount =
-          Sqflite.firstIntValue(await db2.rawQuery("SELECT COUNT(*) FROM Test"));
+      int db2AfterCount = Sqflite
+          .firstIntValue(await db2.rawQuery("SELECT COUNT(*) FROM Test"));
       assert(db2AfterCount == 1);
 
       int afterCount =
@@ -226,10 +224,11 @@ class SimpleTestPage extends TestPage {
 
       print("dropped");
       await database.execute(
-          "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER)");
+          "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)");
       print("table created");
-      int id = await database
-          .rawInsert('INSERT INTO Test(name, value) VALUES("some name",1234)');
+      int id = await database.rawInsert(
+          'INSERT INTO Test(name, value, num) VALUES("some name",1234,?)',
+          [456.789]);
       print("inserted1: $id");
       id = await database.rawInsert(
           'INSERT INTO Test(name, value) VALUES(?, ?)',
@@ -242,8 +241,8 @@ class SimpleTestPage extends TestPage {
       assert(count == 1);
       List<Map> list = await database.rawQuery('SELECT * FROM Test');
       List<Map> expectedList = [
-        {"name": "updated name", "id": 1, "value": 9876},
-        {"name": "another name", "id": 2, "value": 12345678}
+        {"name": "updated name", "id": 1, "value": 9876, "num": 456.789},
+        {"name": "another name", "id": 2, "value": 12345678, "num": null}
       ];
 
       print("list: ${JSON.encode(list)}");
@@ -256,7 +255,7 @@ class SimpleTestPage extends TestPage {
       assert(count == 1);
       list = await database.rawQuery('SELECT * FROM Test');
       expectedList = [
-        {"name": "updated name", "id": 1, "value": 9876},
+        {"name": "updated name", "id": 1, "value": 9876, "num": 456.789},
       ];
 
       print("list: ${JSON.encode(list)}");

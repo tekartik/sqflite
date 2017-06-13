@@ -157,5 +157,5 @@ Example using the helpers
 this sample demo. All calls are currently synchronized and transactions block are exclusive. A basic way to support 
 concurrent access is to open a database multiple times but it only works on iOS as Android reuses the same database object.
 a native thread for each transaction and zoning inTransaction calls could be a potential future solution
-* Only TEXT and INTEGER types are tested for now
+* Only TEXT, INTEGER and REAL types are tested for now. No support for BLOB yet
 

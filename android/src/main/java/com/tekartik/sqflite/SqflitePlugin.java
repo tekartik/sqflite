@@ -127,7 +127,7 @@ public class SqflitePlugin implements MethodCallHandler {
 
         List<Map<String, Object>> results = new ArrayList<>();
         if (LOGV) {
-            Log.d(TAG, database + " " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+            Log.d(TAG, sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
         }
         Cursor cursor = null;
         try {
@@ -192,7 +192,7 @@ public class SqflitePlugin implements MethodCallHandler {
         String sql = call.argument(PARAM_SQL);
         List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
         if (LOGV) {
-            Log.d(TAG, database + " " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+            Log.d(TAG, sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
         }
         try {
             database.getWritableDatabase().execSQL(sql, getSqlArguments(arguments));
