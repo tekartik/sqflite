@@ -10,3 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   synchronized: any
+
+dev_dependencies:
+  test: any
+  flutter_test:
+    sdk: flutter
