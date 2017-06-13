@@ -114,6 +114,22 @@ class SimpleTestPage extends TestPage {
       await db.close();
     });
 
+    test("Debug mode (log)", () async {
+
+      await Sqflite.setDebugModeOn(false);
+      String path = await initDeleteDb("debug_mode.db");
+      Database db = await openDatabase(path);
+
+      await Sqflite.setDebugModeOn(true);
+      await db.setVersion(1);
+      await Sqflite.setDebugModeOn(false);
+      await db.setVersion(2);
+      await Sqflite.setDebugModeOn(true);
+      await db.setVersion(3);
+
+      await db.close();
+    });
+
     test("Demo", () async {
       String path = await initDeleteDb("simple_test3.db");
       Database database = await openDatabase(path);

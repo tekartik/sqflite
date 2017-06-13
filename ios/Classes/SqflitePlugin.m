@@ -2,6 +2,7 @@
 #import "FMDB.h"
 #import <sqlite3.h>
 
+NSString *const _methodGetPlatformVersion = @"getPlatformVersion";
 NSString *const _methodDebugMode = @"debugMode";
 NSString *const _methodOpenDatabase = @"openDatabase";
 NSString *const _methodCloseDatabase = @"closeDatabase";
@@ -189,7 +190,7 @@ NSObject* _mapLock;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if ([@"getPlatformVersion" isEqualToString:call.method]) {
+    if ([_methodGetPlatformVersion isEqualToString:call.method]) {
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
     } else if ([_methodOpenDatabase isEqualToString:call.method]) {
          [self handleOpenDatabaseCall:call result:result];
@@ -204,7 +205,9 @@ NSObject* _mapLock;
     } else if ([_methodCloseDatabase isEqualToString:call.method]) {
         [self handleCloseDatabaseCall:call result:result];
     } else if ([_methodDebugMode isEqualToString:call.method]) {
-        _log = true;
+        NSLog(@"Debug mode %@", call.arguments);
+        NSNumber* on = (NSNumber*)call.arguments;
+        _log = [on boolValue];
         result(nil);
     } else {
         result(FlutterMethodNotImplemented);
