@@ -41,12 +41,75 @@ class SimpleTestPage extends TestPage {
 
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
+      // insert then fails to make sure the transaction is cancelled
+      try {
+        await db.inTransaction(() async {
+          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+          int afterCount = Sqflite
+              .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+          assert(afterCount == 1);
+
+          // this failure should cancel the insertion before
+          await db.execute("DUMMY CALL");
+        });
+      } catch (e) {
+        print(e);
+      }
+
+      int afterCount =
+          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+      assert(afterCount == 0);
+
+      await db.close();
+    });
+
+    test("Transaction recursive", () async {
+      String path = await initDeleteDb("transaction_recursive.db");
+      Database db = await openDatabase(path);
+
+      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+
+      // insert then fails to make sure the transaction is cancelled
       await db.inTransaction(() async {
-        await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
-        int afterCount = Sqflite
-            .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-        assert(afterCount == 1);
+        await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
+
+        await db.inTransaction(() async {
+          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 2"]);
+        });
       });
+      int afterCount =
+          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+      assert(afterCount == 2);
+
+      await db.close();
+    });
+
+    test("Transaction recursive failed", () async {
+      String path = await initDeleteDb("transaction_failed.db");
+      Database db = await openDatabase(path);
+
+      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+
+      // insert then fails to make sure the transaction is cancelled
+      try {
+        await db.inTransaction(() async {
+          await db.inTransaction(() async {
+            await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+            int afterCount = Sqflite
+                .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+            assert(afterCount == 1);
+
+            // this failure should cancel the insertion before
+            await db.execute("DUMMY CALL");
+          });
+        });
+      } catch (e) {
+        print(e);
+      }
+
+      int afterCount =
+          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+      assert(afterCount == 0);
 
       await db.close();
     });
@@ -69,7 +132,8 @@ class SimpleTestPage extends TestPage {
       int id = await database
           .rawInsert('INSERT INTO Test(name, value) VALUES("some name",1234)');
       print("inserted1: $id");
-      id = await database.rawInsert('INSERT INTO Test(name, value) VALUES(?, ?)',
+      id = await database.rawInsert(
+          'INSERT INTO Test(name, value) VALUES(?, ?)',
           ["another name", 12345678]);
       print("inserted2: $id");
       int count = await database.rawUpdate(
@@ -121,8 +185,8 @@ class SimpleTestPage extends TestPage {
 
       // Insert some records in a transaction
       await database.inTransaction(() async {
-        int id1 = await database
-            .rawInsert('INSERT INTO Test(name, value) VALUES("some name",1234)');
+        int id1 = await database.rawInsert(
+            'INSERT INTO Test(name, value) VALUES("some name",1234)');
         print("inserted1: $id1");
         int id2 = await database.rawInsert(
             'INSERT INTO Test(name, value) VALUES(?, ?)',

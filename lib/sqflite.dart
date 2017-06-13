@@ -281,10 +281,12 @@ class Database {
   }
 }
 
+/*
 class DatabaseException implements Exception {
   String msg;
   DatabaseException(this.msg);
 }
+*/
 
 typedef Future OnDatabaseVersionChangeFn(
     Database db, int oldVersion, int newVersion);
