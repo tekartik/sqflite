@@ -53,11 +53,19 @@ create table $tableTodo (
   }
 
   Future<Todo> getTodo(int id) async {
-    List<Map> maps = await db.query(tableTodo, columns: [columnId, columnDone, columnTitle], selection: "$columnId = ?", selectionArgs: [id], limit: 1);
+    List<Map> maps = await db.query(tableTodo, columns: [columnId, columnDone, columnTitle], where: "$columnId = ?", whereArgs: [id]);
     if (maps.length > 0) {
       return new Todo.fromMap(maps.first);
     }
     return null;
+  }
+
+  Future<int> delete(int id) async {
+    return await db.delete(tableTodo, where: "$columnId = ?", whereArgs: [id]);
+  }
+
+  Future<int> update(Todo todo) async {
+    return await db.update(tableTodo, todo.toMap(), where: "$columnId = ?", whereArgs: [todo.id]);
   }
 
   Future close() async => db.close();
@@ -90,6 +98,18 @@ class TodoTestPage extends TestPage {
       assert(todo.id == 1);
       assert(todo.title == "test");
       assert(todo.done == false);
+
+      todo.done = true;
+      assert(await todoProvider.update(todo) == 1);
+      todo = await todoProvider.getTodo(1);
+      assert(todo.id == 1);
+      assert(todo.title == "test");
+      assert(todo.done == true);
+
+      assert(await todoProvider.delete(0) == 0);
+      assert(await todoProvider.delete(1) == 1);
+      assert(await todoProvider.getTodo(1) == null);
+
 
       await todoProvider.close();
       await Sqflite.setDebugModeOn(false);

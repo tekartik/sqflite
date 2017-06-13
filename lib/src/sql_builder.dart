@@ -60,14 +60,11 @@ class SqlBuilder {
   /// Convenience method for deleting rows in the database.
   ///
   /// @param table the table to delete from
-  /// @param whereClause the optional WHERE clause to apply when deleting.
+  /// @param where the optional WHERE clause to apply when deleting.
   ///            Passing null will delete all rows.
   /// @param whereArgs You may include ?s in the where clause, which
   ///            will be replaced by the values from whereArgs. The values
   ///            will be bound as Strings.
-  /// @return the number of rows affected if a whereClause is passed in, 0
-  ///         otherwise. To remove all rows and get a count pass "1" as the
-  ///         whereClause.
   SqlBuilder.delete(String table, {String where, List whereArgs}) {
     StringBuffer delete = new StringBuffer();
     delete.write("DELETE FROM ");
@@ -100,8 +97,6 @@ class SqlBuilder {
   ///            default sort order, which may be unordered.
   /// @param limit Limits the number of rows returned by the query,
   ///            formatted as LIMIT clause. Passing null denotes no LIMIT clause.
-  /// @return the SQL query string
-
   SqlBuilder.query(String table,
       {bool distinct,
       List<String> columns,
@@ -151,10 +146,8 @@ class SqlBuilder {
   /// @nullColumnHack optional; may be null. SQL doesn't allow inserting a completely empty row without naming at least one column name. If your provided values is empty, no column names are known and an empty row can't be inserted. If not set to null, the nullColumnHack parameter provides the name of nullable column name to explicitly insert a NULL into in the case where your values is empty.
   /// @values this map contains the initial column values for the row. The keys should be the column names and the values the column values
 
-  SqlBuilder.insert(String table,
-      Map<String, dynamic> values,
-      {String nullColumnHack,
-      ConflictAlgorithm conflictAlgorithm}) {
+  SqlBuilder.insert(String table, Map<String, dynamic> values,
+      {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
     StringBuffer insert = new StringBuffer();
     insert.write("INSERT");
     if (conflictAlgorithm != null) {
@@ -211,11 +204,9 @@ class SqlBuilder {
   ///            will be replaced by the values from whereArgs. The values
   ///            will be bound as Strings.
   /// @param conflictAlgorithm for update conflict resolver
-  /// @return the number of rows affected
 
-  SqlBuilder.update(String table,
-      {Map<String, dynamic> values,
-      String where,
+  SqlBuilder.update(String table, Map<String, dynamic> values,
+      {String where,
       List<String> whereArgs,
       ConflictAlgorithm conflictAlgorithm}) {
     if (values == null || values.isEmpty) {

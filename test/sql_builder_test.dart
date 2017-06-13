@@ -57,15 +57,15 @@ main() {
 
     test("update", () {
       try {
-        new SqlBuilder.update("test");
-        fail('should fail, no nullColumnHack');
+        new SqlBuilder.update("test", null);
+        fail('should fail, no values');
       } on ArgumentError catch (_) {}
 
-      SqlBuilder builder = new SqlBuilder.update("test", values: {"value": 1});
+      SqlBuilder builder = new SqlBuilder.update("test", {"value": 1});
       expect(builder.sql, "UPDATE test SET value = ?");
       expect(builder.arguments, [1]);
 
-      builder = new SqlBuilder.update("test", values: {"value": 1, "other_value": null});
+      builder = new SqlBuilder.update("test", {"value": 1, "other_value": null});
       expect(builder.sql, "UPDATE test SET value = ?, other_value = NULL");
       expect(builder.arguments, [1]);
 

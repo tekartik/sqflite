@@ -34,6 +34,23 @@ class SimpleTestPage extends TestPage {
       await Future.wait(futures);
       await db.close();
     });
+
+    test("Transaction failed", () async {
+      String path = await initDeleteDb("transaction_failed.db");
+      Database db = await openDatabase(path);
+
+      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+
+      await db.inTransaction(() async {
+        await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+        int afterCount = Sqflite
+            .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+        assert(afterCount == 1);
+      });
+
+      await db.close();
+    });
+
     test("Demo", () async {
       String path = await initDeleteDb("simple_test3.db");
       Database database = await openDatabase(path);
@@ -55,7 +72,7 @@ class SimpleTestPage extends TestPage {
       id = await database.rawInsert('INSERT INTO Test(name, value) VALUES(?, ?)',
           ["another name", 12345678]);
       print("inserted2: $id");
-      int count = await database.update(
+      int count = await database.rawUpdate(
           'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
           ["updated name", "9876", "some name"]);
       print("updated: $count");
@@ -114,7 +131,7 @@ class SimpleTestPage extends TestPage {
       });
 
       // Update some record
-      int count = await database.update(
+      int count = await database.rawUpdate(
           'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
           ["updated name", "9876", "some name"]);
       print("updated: $count");

@@ -98,57 +98,69 @@ class Database {
     });
   }
 
-  Future<int> insert(String table,
-      Map values,
-      {String nullColumnHack,
-      ConflictAlgorithm conflictAlgorithm}) {
-    SqlBuilder builder = new SqlBuilder.insert(table,
-        values,
-        nullColumnHack: nullColumnHack,
-        conflictAlgorithm: conflictAlgorithm);
+  /// Convenience method for inserting a row into the database.
+  /// Parameters:
+  /// @table the table to insert the row into
+  /// @nullColumnHack optional; may be null. SQL doesn't allow inserting a completely empty row without naming at least one column name. If your provided values is empty, no column names are known and an empty row can't be inserted. If not set to null, the nullColumnHack parameter provides the name of nullable column name to explicitly insert a NULL into in the case where your values is empty.
+  /// @values this map contains the initial column values for the row. The keys should be the column names and the values the column values
+  Future<int> insert(String table, Map<String, dynamic> values,
+      {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
+    SqlBuilder builder = new SqlBuilder.insert(table, values,
+        nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
   }
 
+  /// Helper to query a table
+  ///
+  /// @param distinct true if you want each row to be unique, false otherwise.
+  /// @param table The table names to compile the query against.
+  /// @param columns A list of which columns to return. Passing null will
+  ///            return all columns, which is discouraged to prevent reading
+  ///            data from storage that isn't going to be used.
+  /// @param where A filter declaring which rows to return, formatted as an SQL
+  ///            WHERE clause (excluding the WHERE itself). Passing null will
+  ///            return all rows for the given URL.
+  /// @param groupBy A filter declaring how to group rows, formatted as an SQL
+  ///            GROUP BY clause (excluding the GROUP BY itself). Passing null
+  ///            will cause the rows to not be grouped.
+  /// @param having A filter declare which row groups to include in the cursor,
+  ///            if row grouping is being used, formatted as an SQL HAVING
+  ///            clause (excluding the HAVING itself). Passing null will cause
+  ///            all row groups to be included, and is required when row
+  ///            grouping is not being used.
+  /// @param orderBy How to order the rows, formatted as an SQL ORDER BY clause
+  ///            (excluding the ORDER BY itself). Passing null will use the
+  ///            default sort order, which may be unordered.
+  /// @param limit Limits the number of rows returned by the query,
+  /// @param offset starting index,
+
+  /// @return the items found
   Future<List<Map<String, dynamic>>> query(String table,
       {bool distinct,
       List<String> columns,
-      String selection,
-      List selectionArgs,
+      String where,
+      List whereArgs,
       String groupBy,
       String having,
       String orderBy,
-      int limit, int offset}) {
-    SqlBuilder builder = new SqlBuilder.query(
-        table,
-            distinct: distinct,
-            columns: columns,
-            where: selection,
-            groupBy: groupBy,
-            having: having,
-            orderBy: orderBy,
-            limit: limit, offset: offset, whereArgs: selectionArgs);
+      int limit,
+      int offset}) {
+    SqlBuilder builder = new SqlBuilder.query(table,
+        distinct: distinct,
+        columns: columns,
+        where: where,
+        groupBy: groupBy,
+        having: having,
+        orderBy: orderBy,
+        limit: limit,
+        offset: offset,
+        whereArgs: whereArgs);
     return rawQuery(builder.sql, builder.arguments);
-  }
-
-  Future<int> bulkInsert(String table,
-      {String nullColumnHack,
-      List<Map<String, dynamic>> items,
-      ConflictAlgorithm conflictAlgorithm}) async {
-    int count = 0;
-    await inTransaction(() {
-      items.forEach((values) async {
-        count += await insert(table, values,
-            nullColumnHack: nullColumnHack,
-            conflictAlgorithm: conflictAlgorithm);
-      });
-    });
-
-    return count;
   }
 
   /// for UPDATE sql query
   /// return the number of changes made
-  Future<int> update(String sql, [List arguments]) async {
+  Future<int> rawUpdate(String sql, [List arguments]) async {
     return synchronized(_lock, () async {
       return await Sqflite._channel.invokeMethod(
           _methodUpdate, <String, dynamic>{
@@ -159,9 +171,46 @@ class Database {
     });
   }
 
+  /// Convenience method for updating rows in the database.
+  ///
+  /// update into table [table] with the [values], a map from column names
+  /// to new column values. null is a valid value that will be translated to NULL.
+  /// [where] is the optional WHERE clause to apply when updating.
+  ///            Passing null will update all rows.
+  /// You may include ?s in the where clause, which
+  ///            will be replaced by the values from [whereArgs]
+  /// optional [conflictAlgorithm] for update conflict resolver
+  /// return the number of rows affected
+  Future<int> update(String table, Map<String, dynamic> values,
+      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm}) {
+    SqlBuilder builder = new SqlBuilder.update(table, values,
+        where: where,
+        whereArgs: whereArgs,
+        conflictAlgorithm: conflictAlgorithm);
+    return rawUpdate(builder.sql, builder.arguments);
+  }
+
   /// for DELETE sql query
   /// return the number of changes made
-  Future<int> rawDelete(String sql, [List arguments]) => update(sql, arguments);
+  Future<int> rawDelete(String sql, [List arguments]) =>
+      rawUpdate(sql, arguments);
+
+  /// Convenience method for deleting rows in the database.
+  ///
+  /// delete from [table]
+  /// [where] is the optional WHERE clause to apply when updating.
+  ///            Passing null will update all rows.
+  /// You may include ?s in the where clause, which
+  ///            will be replaced by the values from [whereArgs]
+  /// optional [conflictAlgorithm] for update conflict resolver
+  /// return the number of rows affected if a whereClause is passed in, 0
+  ///         otherwise. To remove all rows and get a count pass "1" as the
+  ///         whereClause.
+  Future<int> delete(String table, {String where, List whereArgs}) {
+    SqlBuilder builder =
+        new SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
+    return rawDelete(builder.sql, builder.arguments);
+  }
 
   /// for SELECT sql query
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
@@ -208,8 +257,7 @@ class Database {
       _Transaction transaction;
       bool successfull;
       if (_transactionRefCount++ == 0) {
-        transaction = await _beginTransaction(
-            exclusive: exclusive);
+        transaction = await _beginTransaction(exclusive: exclusive);
       }
       try {
         await action();
