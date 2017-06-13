@@ -4,6 +4,17 @@ import 'package:sqflite_example/test_page.dart';
 
 class OpenTestPage extends TestPage {
   OpenTestPage() : super("Open tests") {
+    test("Delete database", () async {
+      await Sqflite.setDebugModeOn(false);
+      String path = await initDeleteDb("delete_database.db");
+      Database db = await openDatabase(path);
+      await db.close();
+      assert((await new File(path).exists()) == true);
+      print("Deleting database $path");
+      await deleteDatabase(path);
+      assert((await new File(path).exists()) == false);
+    });
+
     test("Open no version", () async {
       String path = await initDeleteDb("open_test1.db");
       assert((await new File(path).exists()) == false);

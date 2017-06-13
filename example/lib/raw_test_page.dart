@@ -132,9 +132,47 @@ class SimpleTestPage extends TestPage {
       await Sqflite.setDebugModeOn(true);
       await db.setVersion(1);
       await Sqflite.setDebugModeOn(false);
+      // this message should not appear
       await db.setVersion(2);
       await Sqflite.setDebugModeOn(true);
       await db.setVersion(3);
+
+      await db.close();
+    });
+
+    test("Exception", () async {
+      await Sqflite.setDebugModeOn(true);
+      String path = await initDeleteDb("exception.db");
+      Database db = await openDatabase(path);
+
+      // Query
+      try {
+        await db.rawQuery("SELECT COUNT(*) FROM Test");
+        assert(false); // should fail before
+      } on DatabaseException catch (e) {
+        assert(e.isNoSuchTableError("Test"));
+      }
+
+      try {
+        await db.execute("DUMMY");
+        assert(false); // should fail before
+      } on DatabaseException catch (e) {
+        assert(e.isSyntaxError());
+      }
+
+      try {
+        await db.rawInsert("DUMMY");
+        assert(false); // should fail before
+      } on DatabaseException catch (e) {
+        assert(e.isSyntaxError());
+      }
+
+      try {
+        await db.rawUpdate("DUMMY");
+        assert(false); // should fail before
+      } on DatabaseException catch (e) {
+        assert(e.isSyntaxError());
+      }
 
       await db.close();
     });

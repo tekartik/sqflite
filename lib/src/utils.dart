@@ -8,3 +8,8 @@ int parseInt(Object object) {
   }
   return null;
 }
+
+@deprecated
+void devPrint(Object object) {
+  print(object);
+}

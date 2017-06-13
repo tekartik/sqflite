@@ -86,12 +86,28 @@ NSObject* _mapLock;
     } else {
         rs = [database.fmDatabase executeQuery:sql];
     }
+    
+    // handle error
+    if ([self handleError:database result:result]) {
+        return;
+    }
 
     NSMutableArray* results = [NSMutableArray new];
     while ([rs next]) {
         [results addObject:[rs resultDictionary]];
     }
     result(results);
+}
+
+- (BOOL)handleError:(Database *)database result:(FlutterResult)result {
+    // handle error
+    if ([database.fmDatabase hadError]) {
+        result([FlutterError errorWithCode:@"sqlite_error"
+                                   message:[NSString stringWithFormat:@"%@", [database.fmDatabase lastError]]
+                                   details:nil]);
+        return YES;
+    }
+    return NO;
 }
 
 - (Database *)executeOrError:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -114,12 +130,10 @@ NSObject* _mapLock;
     }
     
     // handle error
-    if ([database.fmDatabase hadError]) {
-        result([FlutterError errorWithCode:@"sqlite_error"
-                                   message:[NSString stringWithFormat:@"%@", [database.fmDatabase lastError]]
-                                   details:nil]);
+    if ([self handleError:database result:result]) {
         return nil;
     }
+    
     return database;
 }
 
@@ -184,10 +198,11 @@ NSObject* _mapLock;
 }
 
 - (void)handleCloseDatabaseCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    Database* database = [self executeOrError:call result:result];
+    Database* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
         return;
     }
+    
     if (_log) {
         NSLog(@"closing %@", database.path);
     }

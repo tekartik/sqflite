@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:sqflite/src/sql_builder.dart';
 import 'src/utils.dart';
 import 'package:synchronized/synchronized.dart';
+import 'src/constant.dart';
 
 const String _paramPath = "path";
 const String _paramVersion = "version";
@@ -76,11 +77,13 @@ class Database {
 
   /// for sql without return values
   Future execute(String sql, [List arguments]) async {
-    return synchronized(_lock, () async {
-      await Sqflite._channel.invokeMethod(_methodExecute, <String, dynamic>{
-        _paramId: _id,
-        _paramSql: sql,
-        _paramSqlArguments: arguments
+    return synchronized(_lock, () {
+      return _wrapException(() {
+        return Sqflite._channel.invokeMethod(_methodExecute, <String, dynamic>{
+          _paramId: _id,
+          _paramSql: sql,
+          _paramSqlArguments: arguments
+        });
       });
     });
   }
@@ -88,12 +91,13 @@ class Database {
   /// for INSERT sql query
   /// returns the last inserted record id
   Future<int> rawInsert(String sql, [List arguments]) async {
-    return synchronized(_lock, () async {
-      return await Sqflite._channel.invokeMethod(
-          _methodInsert, <String, dynamic>{
-        _paramId: _id,
-        _paramSql: sql,
-        _paramSqlArguments: arguments
+    return synchronized(_lock, () {
+      return _wrapException(() {
+        return Sqflite._channel.invokeMethod(_methodInsert, <String, dynamic>{
+          _paramId: _id,
+          _paramSql: sql,
+          _paramSqlArguments: arguments
+        });
       });
     });
   }
@@ -161,12 +165,13 @@ class Database {
   /// for UPDATE sql query
   /// return the number of changes made
   Future<int> rawUpdate(String sql, [List arguments]) async {
-    return synchronized(_lock, () async {
-      return await Sqflite._channel.invokeMethod(
-          _methodUpdate, <String, dynamic>{
-        _paramId: _id,
-        _paramSql: sql,
-        _paramSqlArguments: arguments
+    return synchronized(_lock, () {
+      return _wrapException(() {
+        return Sqflite._channel.invokeMethod(_methodUpdate, <String, dynamic>{
+          _paramId: _id,
+          _paramSql: sql,
+          _paramSqlArguments: arguments
+        });
       });
     });
   }
@@ -212,15 +217,32 @@ class Database {
     return rawDelete(builder.sql, builder.arguments);
   }
 
+  Future _wrapException(action()) async {
+    try {
+      var result = await action();
+      return result;
+    } on PlatformException catch (e) {
+      //devPrint("C3 ${e.code} $e");
+      if (e.code == sqliteErrorCode) {
+        //devPrint("D4");
+        throw new DatabaseException(e.message);
+      } else {
+        rethrow;
+      }
+    }
+  }
+
   /// for SELECT sql query
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
       [List arguments]) async {
-    return synchronized(_lock, () async {
-      return await Sqflite._channel.invokeMethod(
-          _methodQuery, <String, dynamic>{
-        _paramId: _id,
-        _paramSql: sql,
-        _paramSqlArguments: arguments
+    return await synchronized(_lock, () async {
+      return await _wrapException(() async {
+        return await Sqflite._channel.invokeMethod(
+            _methodQuery, <String, dynamic>{
+          _paramId: _id,
+          _paramSql: sql,
+          _paramSqlArguments: arguments
+        });
       });
     });
   }
@@ -281,12 +303,32 @@ class Database {
   }
 }
 
-/*
+// Wrap sqlite native exception
 class DatabaseException implements Exception {
   String msg;
   DatabaseException(this.msg);
+
+  @override
+  String toString() => "DatabaseException($msg)";
+
+  bool isNoSuchTableError([String table]) {
+    if (msg != null) {
+      String expected = "no such table: ";
+      if (table != null) {
+        expected += table;
+      }
+      return msg.contains(expected);
+    }
+    return false;
+  }
+
+  bool isSyntaxError([String table]) {
+    if (msg != null) {
+      return msg.contains("syntax error");
+    }
+    return false;
+  }
 }
-*/
 
 typedef Future OnDatabaseVersionChangeFn(
     Database db, int oldVersion, int newVersion);

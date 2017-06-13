@@ -87,11 +87,13 @@ class _TestPageState extends State<TestPage> {
       item.state = ItemState.running;
     });
     try {
+      print("TEST Running ${test.name}");
       await test.fn();
+      print("TEST Done ${test.name}");
 
       item = new Item("${test.name}")..state = ItemState.success;
     } catch (e) {
-      print(e);
+      print("TEST Error $e running ${test.name}");
       item = new Item("${test.name}")..state = ItemState.failure;
     }
 
