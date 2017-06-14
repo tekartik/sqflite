@@ -278,17 +278,17 @@ class SimpleTestPage extends TestPage {
           onCreate: (Database db, int version) async {
         // When creating the db, create the table
         await db.execute(
-            "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER)");
+            "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)");
       });
 
       // Insert some records in a transaction
       await database.inTransaction(() async {
         int id1 = await database.rawInsert(
-            'INSERT INTO Test(name, value) VALUES("some name",1234)');
+            'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
         print("inserted1: $id1");
         int id2 = await database.rawInsert(
-            'INSERT INTO Test(name, value) VALUES(?, ?)',
-            ["another name", 12345678]);
+            'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
+            ["another name", 12345678, 3.1416]);
         print("inserted2: $id2");
       });
 
@@ -301,8 +301,8 @@ class SimpleTestPage extends TestPage {
       // Get the records
       List<Map> list = await database.rawQuery('SELECT * FROM Test');
       List<Map> expectedList = [
-        {"name": "updated name", "id": 1, "value": 9876},
-        {"name": "another name", "id": 2, "value": 12345678}
+        {"name": "updated name", "id": 1, "value": 9876, "num": 456.789},
+        {"name": "another name", "id": 2, "value": 12345678, "num": 3.1416}
       ];
       print(list);
       print(expectedList);
