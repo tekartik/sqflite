@@ -212,7 +212,7 @@ class SimpleTestPage extends TestPage {
     });
 
     test("Demo", () async {
-      String path = await initDeleteDb("simple_test3.db");
+      String path = await initDeleteDb("simple_demo.db");
       Database database = await openDatabase(path);
 
       //int version = await database.update("PRAGMA user_version");

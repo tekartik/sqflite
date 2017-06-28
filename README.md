@@ -157,9 +157,10 @@ Example using the helpers
 
 ## Current issues
 
-* Due to the way transaction works in SQLite (threads), concurrent read and write transaction are not supported yet in 
-this sample demo. All calls are currently synchronized and transactions block are exclusive. A basic way to support 
+* Due to the way transaction works in SQLite (threads), concurrent read and write transaction are not supported. 
+All calls are currently synchronized and transactions block are exclusive. I thought that a basic way to support 
 concurrent access is to open a database multiple times but it only works on iOS as Android reuses the same database object.
-a native thread for each transaction and zoning inTransaction calls could be a potential future solution
+I also thought a native thread could be a potential future solution however on android accessing the database in another
+thread is blocked while in a transaction...
 * Only TEXT, INTEGER and REAL types are tested for now. No support for BLOB yet
 

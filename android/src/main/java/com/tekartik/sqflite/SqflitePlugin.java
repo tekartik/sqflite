@@ -43,6 +43,8 @@ public class SqflitePlugin implements MethodCallHandler {
     //private MethodChannel channel;
 
     static private boolean LOGV = false;
+    static private boolean _EXTRA_LOGV = false; // to set to true for type debugging
+    static private boolean EXTRA_LOGV = false; // to set to true for type debugging
     static private String TAG = "Sqflite";
     private final Object databaseMapLocker = new Object();
     private Context context;
@@ -75,6 +77,9 @@ public class SqflitePlugin implements MethodCallHandler {
         String[] columns = cursor.getColumnNames();
         int length = columns.length;
         for (int i = 0; i < length; i++) {
+            if (EXTRA_LOGV) {
+                Log.d(TAG, "column " + i + " " + cursor.getType(i));
+            }
             switch (cursor.getType(i)) {
                 case Cursor.FIELD_TYPE_NULL:
                     map.put(columns[i], null);
@@ -123,26 +128,96 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    private String[] getSqlArguments(List<Object> rawArguments) {
+    static private Map<String, Object> fixMap(Map<Object, Object> map) {
+        Map<String, Object> newMap = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            Object value = entry.getValue();
+            if (value instanceof Map) {
+                value = fixMap((Map) value);
+            } else {
+                value = toString(value);
+            }
+            newMap.put(toString(entry.getKey()), value);
+        }
+        return newMap;
+    }
+
+    // Convert a value to a string
+    // especially byte[]
+    static private String toString(Object value) {
+        if (value == null) {
+            return null;
+        } else if (value instanceof byte[]) {
+            List<Integer> list = new ArrayList<>();
+            for (byte _byte : (byte[]) value) {
+                list.add((int) _byte);
+            }
+            return list.toString();
+        } else if (value instanceof Map) {
+            return fixMap((Map) value).toString();
+        } else {
+            return value.toString();
+        }
+    }
+
+    // Handle list of int as byte[]
+    static private Object toValue(Object value) {
+        if (value == null) {
+            return null;
+        } else {
+            if (EXTRA_LOGV) {
+                Log.d(TAG, "arg " + value.getClass().getCanonicalName() + " " + toString(value));
+            }
+            // Assume a list is a blog
+            if (value instanceof List) {
+                List<Integer> list = (List<Integer>) value;
+                byte[] blob = new byte[list.size()];
+                for (int i = 0; i < list.size(); i++) {
+                    blob[i] = (byte) (int) list.get(i);
+                }
+                value = blob;
+
+            }
+            if (EXTRA_LOGV) {
+                Log.d(TAG, "arg " + value.getClass().getCanonicalName() + " " + toString(value));
+            }
+            return value;
+        }
+    }
+
+    // Query only accept string arguments
+    private List<String> getStringQuerySqlArguments(List<Object> rawArguments) {
         List<String> stringArguments = new ArrayList<>();
         if (rawArguments != null) {
             for (Object rawArgument : rawArguments) {
-                if (rawArgument == null) {
-                    stringArguments.add(null);
-                } else {
-                    stringArguments.add(rawArgument.toString());
-                }
+                stringArguments.add(toString(rawArgument));
             }
         }
-        return stringArguments.toArray(new String[0]);
+        return stringArguments;
     }
 
+    // Query only accept string arguments
+    // so should not have byte[]
+    private String[] getQuerySqlArguments(List<Object> rawArguments) {
+        return getStringQuerySqlArguments(rawArguments).toArray(new String[0]);
+    }
+
+    private Object[] getSqlArguments(List<Object> rawArguments) {
+        List<Object> fixedArguments = new ArrayList<>();
+        if (rawArguments != null) {
+            for (Object rawArgument : rawArguments) {
+                fixedArguments.add(toValue(rawArgument));
+            }
+        }
+        return fixedArguments.toArray(new Object[0]);
+    }
 
     private Database executeOrError(Database database, MethodCall call, Result result) {
         String sql = call.argument(PARAM_SQL);
         List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+        Object[] sqlArguments = getSqlArguments(arguments);
         if (LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+            Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + getStringQuerySqlArguments(arguments))));
         }
         try {
             database.getWritableDatabase().execSQL(sql, getSqlArguments(arguments));
@@ -174,13 +249,13 @@ public class SqflitePlugin implements MethodCallHandler {
                 }
                 Cursor cursor = null;
                 try {
-                    cursor = database.getReadableDatabase().rawQuery(sql, getSqlArguments(arguments));
+                    cursor = database.getReadableDatabase().rawQuery(sql, getQuerySqlArguments(arguments));
                     while (cursor.moveToNext()) {
                         //ContentValues cv = new ContentValues();
                         //DatabaseUtils.cursorRowToContentValues(cursor, cv);
                         Map<String, Object> map = cursorRowToMap(cursor);
                         if (LOGV) {
-                            Log.d(TAG, map.toString());
+                            Log.d(TAG, SqflitePlugin.toString(map));
                         }
                         results.add(map);
                     }
@@ -235,13 +310,9 @@ public class SqflitePlugin implements MethodCallHandler {
                     }
                     result.success(null);
                 } catch (
-                        SQLException exception)
-
-                {
+                        SQLException exception) {
                     handleException(exception, result, database);
-                } finally
-
-                {
+                } finally {
                     if (cursor != null) {
                         cursor.close();
                     }
@@ -421,6 +492,7 @@ public class SqflitePlugin implements MethodCallHandler {
             case METHOD_DEBUG_MODE: {
                 Object on = call.arguments();
                 LOGV = Boolean.TRUE.equals(on);
+                EXTRA_LOGV = _EXTRA_LOGV && LOGV;
                 result.success(null);
                 break;
             }

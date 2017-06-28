@@ -64,8 +64,8 @@ class MyHomePage extends StatefulWidget {
         route: testRawRoute));
     items.add(new MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
         route: testOpenRoute));
-    //items.add(
-    //    new MainItem("Type tests", "Test value types", route: testThreadRoute));
+    items.add(
+        new MainItem("Type tests", "Test value types", route: testThreadRoute));
     items.add(
         new MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
     items.add(new MainItem(
