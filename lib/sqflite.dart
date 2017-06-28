@@ -27,12 +27,17 @@ const String _methodGetPlatformVersion = "getPlatformVersion";
 
 const String _channelName = 'com.tekartik.sqflite';
 
+///
+/// sqflite plugin
+///
 class Sqflite {
   static const MethodChannel _channel = const MethodChannel(_channelName);
 
   static Future<String> get platformVersion =>
       _channel.invokeMethod(_methodGetPlatformVersion);
 
+  /// turn on debug mode if you want to see the SQL query
+  /// executed natively
   static Future setDebugModeOn([bool on = true]) async {
     await Sqflite._channel.invokeMethod(_methodSetDebugModeOn, on);
   }
@@ -41,6 +46,8 @@ class Sqflite {
   @deprecated
   static Future devSetDebugModeOn([bool on = true]) => setDebugModeOn(on);
 
+  /// helper to get the first int value in a query
+  /// Useful for COUNT(*) queries
   static firstIntValue(List<Map> list) {
     if (list != null && list.length > 0) {
       return parseInt(list.first.values?.first);
@@ -54,7 +61,7 @@ class _Transaction {
 }
 
 ///
-/// Basic Database support
+/// Database support
 /// to send raw sql commands
 ///
 class Database {
@@ -75,11 +82,12 @@ class Database {
     return "$_id $_path";
   }
 
+  /// Close the database. Cannot be access anymore
   Future close() => _closeDatabase(_id);
 
   /// for sql without return values
   Future execute(String sql, [List arguments]) {
-    return _synchronized(() {
+    return synchronized(() {
       return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(
             _methodExecute,
@@ -92,7 +100,7 @@ class Database {
   /// for INSERT sql query
   /// returns the last inserted record id
   Future<int> rawInsert(String sql, [List arguments]) {
-    return _synchronized(() {
+    return synchronized(() {
       return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(
             _methodInsert,
@@ -165,7 +173,7 @@ class Database {
   /// for UPDATE sql query
   /// return the number of changes made
   Future<int> rawUpdate(String sql, [List arguments]) {
-    return _synchronized(() {
+    return synchronized(() {
       return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(
             _methodUpdate,
@@ -225,7 +233,7 @@ class Database {
 
   /// for SELECT sql query
   Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]) {
-    return _synchronized(() {
+    return synchronized(() {
       return wrapDatabaseException(() async {
         return await Sqflite._channel.invokeMethod(
             _methodQuery,
@@ -260,14 +268,20 @@ class Database {
     }
   }
 
-  Future _synchronized(action()) {
-    return synchronized(_lock, action);
+  ///
+  /// synchronized call to the database
+  /// ensure that no other calls outside the inner action will
+  /// access the database
+  ///
+  Future synchronized(action()) {
+    return _lock.synchronized(action);
   }
 
   ///
   /// Simple transaction mechanism
+  ///
   Future inTransaction(action(), {bool exclusive}) {
-    return _synchronized(() async {
+    return synchronized(() async {
       _Transaction transaction;
       bool successfull;
       if (_transactionRefCount++ == 0) {
@@ -285,11 +299,18 @@ class Database {
     });
   }
 
+  ///
+  /// Get the database inner version
+  ///
   Future<int> getVersion() async {
     return parseInt(
         _first(await rawQuery("PRAGMA user_version;"))?.values?.first);
   }
 
+  ///
+  /// Set the database inner version
+  /// Used internally for open helpers and automatic versioning
+  ///
   Future setVersion(int version) async {
     await execute("PRAGMA user_version = $version;");
   }
@@ -421,6 +442,9 @@ Future<Database> openDatabase(String path,
   }
 }
 
+///
+/// delete the database at the given path
+///
 Future deleteDatabase(String path) async {
   try {
     await new File(path).delete(recursive: true);

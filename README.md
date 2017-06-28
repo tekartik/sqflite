@@ -1,6 +1,6 @@
 # sqflite
 
-An experimental SQLite plugin for [Flutter](https://flutter.io).
+SQLite plugin for [Flutter](https://flutter.io).
 Supports both iOS and Android.
 
 * Support recursive inTransaction calls
@@ -155,6 +155,29 @@ Example using the helpers
       Future close() async => db.close();
     }
 
+## Supported SQLite types
+
+No validity check is done on values yet so please avoid non supported types
+
+### INTEGER
+
+* Dart type: `int`
+* Supported values: from -2^63 to 2^63 - 1
+* Android can accept any value
+
+### REAL
+
+* Dart type: `num`
+
+### TEXT
+
+* Dart type: `String`
+
+### BLOB
+
+* Dart type: `Uint8List`
+* Dart type `List<int>` is supported but not recommended (slow conversion)
+
 ## Current issues
 
 * Due to the way transaction works in SQLite (threads), concurrent read and write transaction are not supported. 
@@ -162,5 +185,6 @@ All calls are currently synchronized and transactions block are exclusive. I tho
 concurrent access is to open a database multiple times but it only works on iOS as Android reuses the same database object.
 I also thought a native thread could be a potential future solution however on android accessing the database in another
 thread is blocked while in a transaction...
-* Only TEXT, INTEGER and REAL types are tested for now. No support for BLOB yet
+* Currently INTEGER are limited to -2^63 to 2^63 - 1
+* Currently Android handle calls in a background thread. The same thing should be done on iOS (if someone would like to help on this)
 
