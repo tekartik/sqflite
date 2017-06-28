@@ -37,6 +37,10 @@ class Sqflite {
     await Sqflite._channel.invokeMethod(_methodSetDebugModeOn, on);
   }
 
+  // To use in code when you want to remove it later
+  @deprecated
+  static Future devSetDebugModeOn([bool on = true]) => setDebugModeOn(on);
+
   static firstIntValue(List<Map> list) {
     if (list != null && list.length > 0) {
       return parseInt(list.first.values?.first);
@@ -71,34 +75,29 @@ class Database {
     return "$_id $_path";
   }
 
-  Future close() async {
-    await Sqflite._channel
-        .invokeMethod(_methodCloseDatabase, <String, dynamic>{_paramId: _id});
-  }
+  Future close() => _closeDatabase(_id);
 
   /// for sql without return values
-  Future execute(String sql, [List arguments]) async {
-    return synchronized(_lock, () {
+  Future execute(String sql, [List arguments]) {
+    return _synchronized(() {
       return wrapDatabaseException(() {
-        return Sqflite._channel.invokeMethod(_methodExecute, <String, dynamic>{
-          _paramId: _id,
-          _paramSql: sql,
-          _paramSqlArguments: arguments
-        });
+        return Sqflite._channel.invokeMethod(
+            _methodExecute,
+            <String, dynamic>{_paramSql: sql, _paramSqlArguments: arguments}
+              ..addAll(baseDatabaseMethodArguments));
       });
     });
   }
 
   /// for INSERT sql query
   /// returns the last inserted record id
-  Future<int> rawInsert(String sql, [List arguments]) async {
-    return synchronized(_lock, () {
+  Future<int> rawInsert(String sql, [List arguments]) {
+    return _synchronized(() {
       return wrapDatabaseException(() {
-        return Sqflite._channel.invokeMethod(_methodInsert, <String, dynamic>{
-          _paramId: _id,
-          _paramSql: sql,
-          _paramSqlArguments: arguments
-        });
+        return Sqflite._channel.invokeMethod(
+            _methodInsert,
+            <String, dynamic>{_paramSql: sql, _paramSqlArguments: arguments}
+              ..addAll(baseDatabaseMethodArguments));
       });
     });
   }
@@ -165,14 +164,13 @@ class Database {
 
   /// for UPDATE sql query
   /// return the number of changes made
-  Future<int> rawUpdate(String sql, [List arguments]) async {
-    return synchronized(_lock, () {
+  Future<int> rawUpdate(String sql, [List arguments]) {
+    return _synchronized(() {
       return wrapDatabaseException(() {
-        return Sqflite._channel.invokeMethod(_methodUpdate, <String, dynamic>{
-          _paramId: _id,
-          _paramSql: sql,
-          _paramSqlArguments: arguments
-        });
+        return Sqflite._channel.invokeMethod(
+            _methodUpdate,
+            <String, dynamic>{_paramSql: sql, _paramSqlArguments: arguments}
+              ..addAll(baseDatabaseMethodArguments));
       });
     });
   }
@@ -218,17 +216,21 @@ class Database {
     return rawDelete(builder.sql, builder.arguments);
   }
 
+  Map<String, dynamic> get baseDatabaseMethodArguments {
+    var map = <String, dynamic>{
+      _paramId: _id,
+    };
+    return map;
+  }
+
   /// for SELECT sql query
-  Future<List<Map<String, dynamic>>> rawQuery(String sql,
-      [List arguments]) async {
-    return await synchronized(_lock, () async {
-      return await wrapDatabaseException(() async {
+  Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]) {
+    return _synchronized(() {
+      return wrapDatabaseException(() async {
         return await Sqflite._channel.invokeMethod(
-            _methodQuery, <String, dynamic>{
-          _paramId: _id,
-          _paramSql: sql,
-          _paramSqlArguments: arguments
-        });
+            _methodQuery,
+            <String, dynamic>{_paramSql: sql, _paramSqlArguments: arguments}
+              ..addAll(baseDatabaseMethodArguments));
       });
     });
   }
@@ -258,10 +260,14 @@ class Database {
     }
   }
 
+  Future _synchronized(action()) {
+    return synchronized(_lock, action);
+  }
+
   ///
   /// Simple transaction mechanism
-  Future inTransaction(action(), {bool exclusive}) async {
-    return synchronized(_lock, () async {
+  Future inTransaction(action(), {bool exclusive}) {
+    return _synchronized(() async {
       _Transaction transaction;
       bool successfull;
       if (_transactionRefCount++ == 0) {
@@ -297,10 +303,6 @@ typedef Future OnDatabaseOpenFn(Database db);
 // Downgrading will always fail
 Future onDatabaseVersionChangeError(
     Database db, int oldVersion, int newVersion) async {
-  try {
-    await db.close();
-  } catch (_) {}
-  ;
   throw new ArgumentError(
       "can't change version from $oldVersion to $newVersion");
 }
@@ -313,6 +315,20 @@ Future __onDatabaseDowngradeDelete(
 final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
     __onDatabaseDowngradeDelete;
 
+Future _closeDatabase(int databaseId) {
+  return wrapDatabaseException(() {
+    return Sqflite._channel.invokeMethod(
+        _methodCloseDatabase, <String, dynamic>{_paramId: databaseId});
+  });
+}
+
+Future<int> _openDatabase(String path) {
+  return wrapDatabaseException(() {
+    return Sqflite._channel
+        .invokeMethod(_methodOpenDatabase, <String, dynamic>{_paramPath: path});
+  });
+}
+
 ///
 /// Open the database at a given path
 /// setting a version is optional
@@ -324,64 +340,9 @@ Future<Database> openDatabase(String path,
     OnDatabaseVersionChangeFn onUpgrade,
     OnDatabaseVersionChangeFn onDowngrade,
     OnDatabaseOpenFn onOpen}) async {
-  int databaseId = await wrapDatabaseException(() { return Sqflite._channel
-      .invokeMethod(_methodOpenDatabase, <String, dynamic>{_paramPath: path}); });
-
-  // Special on downgrade elete database
-  if (onDowngrade == onDatabaseDowngradeDelete) {
-    // Downgrading will delete the database and open it again
-    Future _onDatabaseDowngradeDelete(
-        Database db, int oldVersion, int newVersion) async {
-      // This is tricky as we are in a middel of opening a database
-      // need to close what is being done and retart
-      await db.execute("ROLLBACK;");
-      await db.close();
-      await deleteDatabase(db.path);
-
-      // get a new database id after open
-      db._id = await Sqflite._channel.invokeMethod(
-          _methodOpenDatabase, <String, dynamic>{_paramPath: path});
-
-      // no end transaction it will be done
-      await db._beginTransaction(exclusive: true);
-      if (onCreate != null) {
-        await onCreate(db, version);
-      }
-    }
-
-    onDowngrade = _onDatabaseDowngradeDelete;
-  }
-
-  Database database = new Database._(path, databaseId);
   if (version != null) {
     if (version == 0) {
       throw new ArgumentError("version cannot be set to 0 in openDatabase");
-    }
-    // init
-    await database.inTransaction(() async {
-      //print("opening...");
-      int oldVersion = await database.getVersion();
-      //print("got version");
-      if (oldVersion == null || oldVersion == 0) {
-        if (onCreate != null) {
-          await onCreate(database, version);
-        } else if (onUpgrade != null) {
-          await onUpgrade(database, 0, version);
-        }
-      } else if (version > oldVersion) {
-        if (onUpgrade != null) {
-          await onUpgrade(database, oldVersion, version);
-        }
-      } else if (version < oldVersion) {
-        if (onDowngrade != null) {
-          await onDowngrade(database, oldVersion, version);
-        }
-      }
-      await database.setVersion(version);
-    }, exclusive: true);
-
-    if (onOpen != null) {
-      await onOpen(database);
     }
   } else {
     if (onCreate != null) {
@@ -397,7 +358,67 @@ Future<Database> openDatabase(String path,
           "onDowngrade must be null if no version is specified");
     }
   }
-  return database;
+  int databaseId = await _openDatabase(path);
+
+  try {
+    // Special on downgrade elete database
+    if (onDowngrade == onDatabaseDowngradeDelete) {
+      // Downgrading will delete the database and open it again
+      Future _onDatabaseDowngradeDelete(
+          Database db, int oldVersion, int newVersion) async {
+        // This is tricky as we are in a middel of opening a database
+        // need to close what is being done and retart
+        await db.execute("ROLLBACK;");
+        await db.close();
+        await deleteDatabase(db.path);
+
+        // get a new database id after open
+        db._id = databaseId = await _openDatabase(path);
+
+        // no end transaction it will be done
+        await db._beginTransaction(exclusive: true);
+        if (onCreate != null) {
+          await onCreate(db, version);
+        }
+      }
+
+      onDowngrade = _onDatabaseDowngradeDelete;
+    }
+
+    Database database = new Database._(path, databaseId);
+    if (version != null) {
+      // init
+      await database.inTransaction(() async {
+        //print("opening...");
+        int oldVersion = await database.getVersion();
+        //print("got version");
+        if (oldVersion == null || oldVersion == 0) {
+          if (onCreate != null) {
+            await onCreate(database, version);
+          } else if (onUpgrade != null) {
+            await onUpgrade(database, 0, version);
+          }
+        } else if (version > oldVersion) {
+          if (onUpgrade != null) {
+            await onUpgrade(database, oldVersion, version);
+          }
+        } else if (version < oldVersion) {
+          if (onDowngrade != null) {
+            await onDowngrade(database, oldVersion, version);
+          }
+        }
+        await database.setVersion(version);
+      }, exclusive: true);
+
+      if (onOpen != null) {
+        await onOpen(database);
+      }
+    }
+    return database;
+  } catch (e) {
+    await _closeDatabase(databaseId);
+    rethrow;
+  }
 }
 
 Future deleteDatabase(String path) async {

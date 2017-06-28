@@ -6,6 +6,7 @@ import 'package:sqflite_example/open_test_page.dart';
 import 'package:sqflite_example/raw_test_page.dart';
 import 'package:sqflite_example/slow_test_page.dart';
 import 'package:sqflite_example/src/main_item_widget.dart';
+import 'package:sqflite_example/type_test_page.dart';
 import 'package:sqflite_example/todo_test_page.dart';
 
 void main() {
@@ -22,6 +23,7 @@ class MyApp extends StatefulWidget {
 const String testRawRoute = "/test/simple";
 const String testOpenRoute = "/test/open";
 const String testSlowRoute = "/test/slow";
+const String testThreadRoute = "/test/thread";
 const String testTodoRoute = "/test/todo";
 
 class _MyAppState extends State<MyApp> {
@@ -31,6 +33,7 @@ class _MyAppState extends State<MyApp> {
     testOpenRoute: (BuildContext context) => new OpenTestPage(),
     testSlowRoute: (BuildContext context) => new SlowTestPage(),
     testTodoRoute: (BuildContext context) => new TodoTestPage(),
+    testThreadRoute: (BuildContext context) => new TypeTestPage(),
   };
   @override
   Widget build(BuildContext context) {
@@ -61,11 +64,15 @@ class MyHomePage extends StatefulWidget {
         route: testRawRoute));
     items.add(new MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
         route: testOpenRoute));
+    //items.add(
+    //    new MainItem("Type tests", "Test value types", route: testThreadRoute));
     items.add(
         new MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
     items.add(new MainItem(
         "Todo database example", "Simple Todo-like database usage example",
         route: testTodoRoute));
+
+    //Sqflite.devSetDebugModeOn(true);
   }
 
   // This widget is the home page of your application. It is stateful,

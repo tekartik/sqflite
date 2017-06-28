@@ -1,13 +1,14 @@
 package com.tekartik.sqflite;
 
-import android.content.ContentValues;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
-import android.util.SparseArray;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,49 +44,68 @@ public class SqflitePlugin implements MethodCallHandler {
 
     static private boolean LOGV = false;
     static private String TAG = "Sqflite";
-    private final Object mapLocker = new Object();
+    private final Object databaseMapLocker = new Object();
     private Context context;
+    private int databaseOpenCount = 0;
     private int databaseId = 0; // incremental database id
+
+    // Database thread execution
+    HandlerThread handlerThread;
+    Handler handler;
+
+    @SuppressLint("UseSparseArrays")
     private Map<Integer, Database> databaseMap = new HashMap<>();
+
+    private Map<Long, Thread> threadMap = new HashMap<>();
 
     private SqflitePlugin(Context context, MethodChannel ignored) {
         this.context = context;
-        //this.channel = channel;
     }
 
-    /**
-     * Plugin registration.
-     */
+    //
+    // Plugin registration.
+    //
     public static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "com.tekartik.sqflite");
         channel.setMethodCallHandler(new SqflitePlugin(registrar.activity().getApplicationContext(), channel));
     }
 
-    private static ContentValues cursorRowToContentValues(Cursor cursor) {
-        ContentValues values = new ContentValues();
+    private static Map<String, Object> cursorRowToMap(Cursor cursor) {
+        Map<String, Object> map = new HashMap<>();
         String[] columns = cursor.getColumnNames();
         int length = columns.length;
         for (int i = 0; i < length; i++) {
             switch (cursor.getType(i)) {
                 case Cursor.FIELD_TYPE_NULL:
-                    values.putNull(columns[i]);
+                    map.put(columns[i], null);
                     break;
                 case Cursor.FIELD_TYPE_INTEGER:
-                    values.put(columns[i], cursor.getLong(i));
+                    map.put(columns[i], cursor.getLong(i));
                     break;
                 case Cursor.FIELD_TYPE_FLOAT:
-                    values.put(columns[i], cursor.getDouble(i));
+                    map.put(columns[i], cursor.getDouble(i));
                     break;
                 case Cursor.FIELD_TYPE_STRING:
-                    values.put(columns[i], cursor.getString(i));
+                    map.put(columns[i], cursor.getString(i));
                     break;
                 case Cursor.FIELD_TYPE_BLOB:
-                    values.put(columns[i], cursor.getBlob(i));
+                    map.put(columns[i], cursor.getBlob(i));
                     break;
             }
         }
-        return values;
+        return map;
     }
+
+    /*
+    private Long getLong(Object value) {
+        if (value instanceof Long) {
+            return (Long) value;
+        } else if (value instanceof Integer) {
+            return ((Integer) value).longValue();
+        }
+        return null;
+    }
+    */
 
     private Database getDatabase(int databaseId) {
         return databaseMap.get(databaseId);
@@ -117,82 +137,12 @@ public class SqflitePlugin implements MethodCallHandler {
         return stringArguments.toArray(new String[0]);
     }
 
-    private void onQueryCall(MethodCall call, Result result) {
-        Database database = getDatabaseOrError(call, result);
-        if (database == null) {
-            return;
-        }
-        String sql = call.argument(PARAM_SQL);
-        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
 
-        List<Map<String, Object>> results = new ArrayList<>();
-        if (LOGV) {
-            Log.d(TAG, sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
-        }
-        Cursor cursor = null;
-        try {
-            cursor = database.getReadableDatabase().rawQuery(sql, getSqlArguments(arguments));
-            while (cursor.moveToNext()) {
-                //ContentValues cv = new ContentValues();
-                //DatabaseUtils.cursorRowToContentValues(cursor, cv);
-                ContentValues cv = cursorRowToContentValues(cursor);
-                Map<String, Object> map = contentValuesToMap(cv);
-                if (LOGV) {
-                    Log.d(TAG, map.toString());
-                }
-                results.add(map);
-            }
-            result.success(results);
-        } catch (SQLException exception) {
-            handleException(exception, result, database);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-    }
-
-    private void onInsertCall(MethodCall call, Result result) {
-        Database database = executeOrError(call, result);
-        if (database == null) {
-            return;
-        }
-        String sql = "SELECT last_insert_rowid()";
-        //if (LOGV) {
-        //    Log.d(TAG, sql);
-        //}
-        Cursor cursor = null;
-        try {
-            cursor = database.getWritableDatabase().rawQuery(sql, null);
-            if (cursor.moveToFirst()) {
-                long id = cursor.getLong(0);
-                if (LOGV) {
-                    Log.d(TAG, "inserted " + id);
-                }
-                result.success(id);
-                return;
-            } else {
-                Log.e(TAG, "Fail to read inserted it");
-            }
-            result.success(null);
-        } catch (SQLException exception) {
-            handleException(exception, result, database);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-    }
-
-    private Database executeOrError(MethodCall call, Result result) {
-        Database database = getDatabaseOrError(call, result);
-        if (database == null) {
-            return null;
-        }
+    private Database executeOrError(Database database, MethodCall call, Result result) {
         String sql = call.argument(PARAM_SQL);
         List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
         if (LOGV) {
-            Log.d(TAG, sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+            Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
         }
         try {
             database.getWritableDatabase().execSQL(sql, getSqlArguments(arguments));
@@ -203,44 +153,167 @@ public class SqflitePlugin implements MethodCallHandler {
         return database;
     }
 
+    //
+    // query
+    //
+    private void onQueryCall(final MethodCall call, final Result result) {
 
-    private void onExecuteCall(MethodCall call, Result result) {
-        Database database = executeOrError(call, result);
+        final Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return;
         }
-        result.success(null);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                String sql = call.argument(PARAM_SQL);
+                List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+
+                List<Map<String, Object>> results = new ArrayList<>();
+                if (LOGV) {
+                    Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+                }
+                Cursor cursor = null;
+                try {
+                    cursor = database.getReadableDatabase().rawQuery(sql, getSqlArguments(arguments));
+                    while (cursor.moveToNext()) {
+                        //ContentValues cv = new ContentValues();
+                        //DatabaseUtils.cursorRowToContentValues(cursor, cv);
+                        Map<String, Object> map = cursorRowToMap(cursor);
+                        if (LOGV) {
+                            Log.d(TAG, map.toString());
+                        }
+                        results.add(map);
+                    }
+                    result.success(results);
+                } catch (SQLException exception) {
+                    handleException(exception, result, database);
+                } finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+            }
+        });
+
     }
 
-    private void onUpdateCall(MethodCall call, Result result) {
-        Database database = executeOrError(call, result);
+    //
+    // Insert
+    //
+    private void onInsertCall(final MethodCall call, final Result result) {
+
+        final Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return;
         }
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
 
-        Cursor cursor = null;
-        try {
-            SQLiteDatabase db = database.getWritableDatabase();
-
-            cursor = db.rawQuery("SELECT changes()", null);
-            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                final int changed = cursor.getInt(0);
-                if (LOGV) {
-                    Log.d(TAG, "changed " + changed);
+                if (executeOrError(database, call, result) == null) {
+                    return;
                 }
-                result.success(changed);
-                return;
-            } else {
-                Log.e(TAG, "fail to read changes for Update/Delete");
+
+                String sql = "SELECT last_insert_rowid()";
+                //if (LOGV) {
+                //    Log.d(TAG, sql);
+                //}
+                Cursor cursor = null;
+                try
+
+                {
+                    cursor = database.getWritableDatabase().rawQuery(sql, null);
+                    if (cursor.moveToFirst()) {
+                        long id = cursor.getLong(0);
+                        if (LOGV) {
+                            Log.d(TAG, "inserted " + id);
+                        }
+                        result.success(id);
+                        return;
+                    } else {
+                        Log.e(TAG, "Fail to read inserted it");
+                    }
+                    result.success(null);
+                } catch (
+                        SQLException exception)
+
+                {
+                    handleException(exception, result, database);
+                } finally
+
+                {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
             }
-            result.success(null);
-        } catch (SQLException e) {
-            handleException(e, result, database);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
+
+        });
+    }
+
+
+    //
+    // Sqflite.execute
+    //
+    private void onExecuteCall(final MethodCall call, final Result result) {
+
+        final Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
         }
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+
+                if (executeOrError(database, call, result) == null) {
+                    return;
+                }
+                result.success(null);
+            }
+        });
+    }
+
+    //
+    // Sqflite.update
+    //
+    private void onUpdateCall(final MethodCall call, final Result result) {
+
+        final Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
+        }
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+
+                if (executeOrError(database, call, result) == null) {
+                    return;
+                }
+                Cursor cursor = null;
+                try {
+                    SQLiteDatabase db = database.getWritableDatabase();
+
+                    cursor = db.rawQuery("SELECT changes()", null);
+                    if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                        final int changed = cursor.getInt(0);
+                        if (LOGV) {
+                            Log.d(TAG, "changed " + changed);
+                        }
+                        result.success(changed);
+                        return;
+                    } else {
+                        Log.e(TAG, "fail to read changes for Update/Delete");
+                    }
+                    result.success(null);
+                } catch (SQLException e) {
+                    handleException(e, result, database);
+                } finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+            }
+        });
     }
 
     private boolean handleException(SQLException exception, Result result, String path) {
@@ -256,6 +329,9 @@ public class SqflitePlugin implements MethodCallHandler {
         return handleException(exception, result, database.path);
     }
 
+    //
+    // Sqflite.open
+    //
     private void onOpenDatabaseCall(MethodCall call, Result result) {
         String path = call.argument(PARAM_PATH);
         //int version = call.argument(PARAM_VERSION);
@@ -264,29 +340,49 @@ public class SqflitePlugin implements MethodCallHandler {
         if (!directory.exists()) {
             directory.mkdirs();
         }
+
+        int databaseId;
+        synchronized (databaseMapLocker) {
+            databaseId = ++this.databaseId;
+        }
         Database database = new Database(context, path);
         // force opening
         try {
-            database.getReadableDatabase();
+
+            database.open();
         } catch (SQLException e) {
             if (handleException(e, result, path)) {
                 return;
             }
             throw e;
         }
+
+        boolean createThread = false;
+
         //SQLiteDatabase sqLiteDatabase = SQLiteDatabase.openDatabase(path, null, 0);
-        int databaseId;
-        synchronized (mapLocker) {
-            databaseId = ++this.databaseId;
+        synchronized (databaseMapLocker) {
+            if (databaseOpenCount++ == 0) {
+                handlerThread = new HandlerThread("Sqflite");
+                handlerThread.start();
+                handler = new Handler(handlerThread.getLooper());
+                if (LOGV) {
+                    Log.d(TAG, "starting thread" + handlerThread);
+                }
+            } else {
+
+            }
             databaseMap.put(databaseId, database);
             if (LOGV) {
-                Log.d(TAG, "opened " + databaseId + " " + path);
+                Log.d(TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
             }
-
         }
+
         result.success(databaseId);
     }
 
+    //
+    // Sqflite.close
+    //
     private void onCloseDatabaseCall(MethodCall call, Result result) {
         int databaseId = call.argument(PARAM_ID);
         Database database = getDatabaseOrError(call, result);
@@ -294,12 +390,23 @@ public class SqflitePlugin implements MethodCallHandler {
             return;
         }
         if (LOGV) {
-            Log.d(TAG, "closing " + database.path);
+            Log.d(TAG, "[" + Thread.currentThread() + "] closing " + databaseId + " " + database.path + " total open count (" + databaseOpenCount + ")");
         }
         database.close();
-        synchronized (mapLocker) {
+
+        synchronized (databaseMapLocker) {
             databaseMap.remove(databaseId);
+            if (--databaseOpenCount == 0) {
+                if (LOGV) {
+                    Log.d(TAG, "stopping thread" + handlerThread);
+                }
+                handlerThread.quit();
+                handlerThread = null;
+                handler = null;
+            }
         }
+
+
         result.success(null);
     }
 
@@ -335,7 +442,6 @@ public class SqflitePlugin implements MethodCallHandler {
             }
             case METHOD_EXECUTE: {
                 onExecuteCall(call, result);
-
                 break;
             }
             case METHOD_OPEN_DATABASE: {
@@ -348,14 +454,6 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    private Map<String, Object> contentValuesToMap(ContentValues cv) {
-        Map<String, Object> map = new HashMap<>();
-        for (Map.Entry<String, Object> entry : cv.valueSet()) {
-            map.put(entry.getKey(), entry.getValue());
-        }
-        return map;
-    }
-
     private static class Database extends SQLiteOpenHelper {
         String path;
 
@@ -364,27 +462,8 @@ public class SqflitePlugin implements MethodCallHandler {
             this.path = path;
         }
 
-    }
-
-    /*
-    private ContentValues contentValuesFromMap(Map<String, Object> values) {
-        ContentValues contentValues = new ContentValues();
-        for (Map.Entry<String, Object> entry : values.entrySet()) {
-            Object value = entry.getValue();
-            String key = entry.getKey();
-            if (value instanceof String) {
-                contentValues.put(key, (String) value);
-            } else if (value instanceof Integer) {
-                contentValues.put(key, (Integer) value);
-            } else if (value instanceof Long) {
-                contentValues.put(key, (Long) value);
-            } else if (value == null) {
-                contentValues.putNull(key);
-            } else {
-                throw new IllegalArgumentException("object of type " + value.getClass() + " value " + value + " not supported");
-            }
+        private void open() {
+            getReadableDatabase();
         }
-        return contentValues;
     }
-    */
 }

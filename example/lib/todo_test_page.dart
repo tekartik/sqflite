@@ -85,7 +85,7 @@ class TodoTestPage extends TestPage {
     });
 
     test("insert/query/update/delete", () async {
-      await Sqflite.setDebugModeOn(true);
+      //await Sqflite.setDebugModeOn(true);
       String path = await initDeleteDb("simple_todo.db");
       TodoProvider todoProvider = new TodoProvider();
       await todoProvider.open(path);
@@ -112,7 +112,7 @@ class TodoTestPage extends TestPage {
       assert(await todoProvider.getTodo(1) == null);
 
       await todoProvider.close();
-      await Sqflite.setDebugModeOn(false);
+      //await Sqflite.setDebugModeOn(false);
     });
   }
 }

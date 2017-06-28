@@ -1,7 +1,7 @@
 package com.tekartik.sqflite;
 
 /**
- * Created by alex on 22/05/17.
+ * Constants between dart & Java world
  */
 
 public class Constant {

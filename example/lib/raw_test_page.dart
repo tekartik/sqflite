@@ -125,7 +125,7 @@ class SimpleTestPage extends TestPage {
     });
 
     test("Transaction open twice", () async {
-      Sqflite.setDebugModeOn(true);
+      //Sqflite.setDebugModeOn(true);
       String path = await initDeleteDb("transaction_open_twice.db");
       Database db = await openDatabase(path);
 
@@ -159,7 +159,7 @@ class SimpleTestPage extends TestPage {
     });
 
     test("Debug mode (log)", () async {
-      await Sqflite.setDebugModeOn(false);
+      //await Sqflite.devSetDebugModeOn(false);
       String path = await initDeleteDb("debug_mode.db");
       Database db = await openDatabase(path);
 
@@ -175,7 +175,7 @@ class SimpleTestPage extends TestPage {
     });
 
     test("Sqlite Exception", () async {
-      await Sqflite.setDebugModeOn(true);
+      //await Sqflite.setDebugModeOn(true);
       String path = await initDeleteDb("exception.db");
       Database db = await openDatabase(path);
 

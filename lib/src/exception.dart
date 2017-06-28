@@ -48,9 +48,7 @@ Future wrapDatabaseException(action()) async {
     var result = await action();
     return result;
   } on PlatformException catch (e) {
-    //devPrint("C3 ${e.code} $e");
     if (e.code == sqliteErrorCode) {
-      //devPrint("D4");
       throw new DatabaseException(e.message);
     } else {
       rethrow;
