@@ -8,8 +8,8 @@ import 'package:sqflite_example/test_page.dart';
 class _Data {
   Database db;
 }
-class TypeTestPage extends TestPage {
 
+class TypeTestPage extends TestPage {
   final _Data data = new _Data();
 
   // Get the value field from a given
@@ -33,11 +33,34 @@ class TypeTestPage extends TestPage {
       });
       int id = await insertValue(-1);
       assert(await getValue(id) == -1);
+
+      // less than 32 bits
+      id = await insertValue(pow(2, 31));
+      assert(await getValue(id) == pow(2, 31));
+
       // more than 32 bits
       id = await insertValue(pow(2, 33));
+      //devPrint("2^33: ${await getValue(id)}");
       assert(await getValue(id) == pow(2, 33));
+
+      id = await insertValue(pow(2, 62));
+      //devPrint("2^62: ${pow(2, 62)} ${await getValue(id)}");
+      assert(await getValue(id) == pow(2, 62),
+          "2^62: ${pow(2, 62)} ${await getValue(id)}");
+
+      int value = pow(2, 63) - 1;
+      id = await insertValue(value);
+      //devPrint("${value} ${await getValue(id)}");
+      assert(await getValue(id) == value, "${value} ${await getValue(id)}");
+
+      value = -(pow(2, 63));
+      id = await insertValue(value);
+      //devPrint("${value} ${await getValue(id)}");
+      assert(await getValue(id) == value, "${value} ${await getValue(id)}");
+      /*
       id = await insertValue(pow(2, 63));
-      assert(await getValue(id) == pow(2, 63));
+      devPrint("2^63: ${pow(2, 63)} ${await getValue(id)}");
+      assert(await getValue(id) == pow(2, 63), "2^63: ${pow(2, 63)} ${await getValue(id)}");
 
       // more then 64 bits
       id = await insertValue(pow(2, 65));
@@ -46,7 +69,7 @@ class TypeTestPage extends TestPage {
       // more then 128 bits
       id = await insertValue(pow(2, 129));
       assert(await getValue(id) == pow(2, 129));
-
+      */
       await data.db.close();
     });
 
@@ -67,8 +90,8 @@ class TypeTestPage extends TestPage {
       assert(await getValue(id) == pow(2, 63) + 0.1);
 
       // integer?
-      id = await insertValue(pow(2, 129));
-      assert(await getValue(id) == pow(2, 129));
+      id = await insertValue(pow(2, 62));
+      assert(await getValue(id) == pow(2, 62));
       await data.db.close();
     });
 
@@ -102,24 +125,28 @@ class TypeTestPage extends TestPage {
             .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value BLOB)");
       });
       try {
+        // insert text in blob
         int id = await insertValue("simple text");
         assert(await getValue(id) == "simple text");
 
         var eq = const DeepCollectionEquality();
 
+        // UInt8List - default
         ByteData byteData = new ByteData(1);
         byteData.setInt8(0, 1);
         id = await insertValue(byteData.buffer.asUint8List());
-        print(await getValue(id));
+        //print(await getValue(id));
         assert(eq.equals(await getValue(id), [1]));
 
-        id = await insertValue([]);
-        print(await getValue(id));
-        assert(eq.equals(await getValue(id), []));
+        // empty array not supported
+        //id = await insertValue([]);
+        //print(await getValue(id));
+        //assert(eq.equals(await getValue(id), []));
 
         id = await insertValue([1, 2, 3, 4]);
-        print(await getValue(id));
-        assert(eq.equals(await getValue(id), [1, 2, 3, 4]));
+        //print(await getValue(id));
+        assert(eq.equals(await getValue(id), [1, 2, 3, 4]),
+            "reason: ${await getValue(id)}");
       } finally {
         await data.db.close();
       }

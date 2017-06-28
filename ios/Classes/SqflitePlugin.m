@@ -39,9 +39,14 @@ NSString *const _errorDatabaseClosed = @"database_closed";
 @implementation SqflitePlugin
 
 BOOL _log = false;
+BOOL _extra_log = false;
+
+BOOL __extra_log = false; // to set to true for type debugging
+
 NSInteger _lastDatabaseId = 0;
 NSMutableDictionary<NSNumber*, Database*>* _databaseMap; // = [NSMutableDictionary new];
 NSObject* _mapLock;
+
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
                                      methodChannelWithName:@"com.tekartik.sqflite"
@@ -79,14 +84,14 @@ NSObject* _mapLock;
     }
     NSString* sql = call.arguments[_paramSql];
     NSArray* arguments = call.arguments[_paramSqlArguments];
-    
-    BOOL argumentsEmpty = (arguments == nil || arguments == (id)[NSNull null] || [arguments count] == 0);
+    NSArray* sqlArguments = [SqflitePlugin toSqlArguments:arguments];
+    BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:arguments];;
     if (_log) {
-        NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : arguments);
+        NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     FMResultSet *rs;
     if (!argumentsEmpty) {
-        rs = [database.fmDatabase executeQuery:sql withArgumentsInArray:arguments];
+        rs = [database.fmDatabase executeQuery:sql withArgumentsInArray:sqlArguments];
     } else {
         rs = [database.fmDatabase executeQuery:sql];
     }
@@ -98,7 +103,7 @@ NSObject* _mapLock;
     
     NSMutableArray* results = [NSMutableArray new];
     while ([rs next]) {
-        [results addObject:[rs resultDictionary]];
+        [results addObject:[SqflitePlugin fromSqlDictionary:[rs resultDictionary]]];
     }
     result(results);
 }
@@ -114,6 +119,66 @@ NSObject* _mapLock;
     return NO;
 }
 
++ (NSObject*)toSqlValue:(NSObject*)value {
+    if (_extra_log) {
+        NSLog(@"value type %@ %@", [value class], value);
+    }
+    if (value == nil) {
+        return nil;
+    } else if ([value isKindOfClass:[FlutterStandardTypedData class]]) {
+        FlutterStandardTypedData* typedData = (FlutterStandardTypedData*)value;
+        return [typedData data];
+    } else if ([value isKindOfClass:[NSArray class]]) {
+        // Assume array of number
+        // slow...to optimize
+        NSArray* array = (NSArray*)value;
+        NSMutableData* data = [NSMutableData new];
+        for (int i = 0; i < [array count]; i++) {
+            uint8_t byte = [((NSNumber *)[array objectAtIndex:i]) intValue];
+            [data appendBytes:&byte length:1];
+        }
+        return data;
+    } else {
+        return value;
+    }
+}
+
++ (NSObject*)fromSqlValue:(NSObject*)sqlValue {
+    if (_extra_log) {
+        NSLog(@"sql value type %@ %@", [sqlValue class], sqlValue);
+    }
+    if (sqlValue == nil) {
+        return nil;
+    } else if ([sqlValue isKindOfClass:[NSData class]]) {
+        return [FlutterStandardTypedData typedDataWithBytes:(NSData*)sqlValue];
+    } else {
+        return sqlValue;
+    }
+}
+
++ (bool)arrayIsEmpy:(NSArray*)array {
+    return (array == nil || array == (id)[NSNull null] || [array count] == 0);
+}
+
++ (NSArray*)toSqlArguments:(NSArray*)rawArguments {
+    NSMutableArray* array = [NSMutableArray new];
+    if (![SqflitePlugin arrayIsEmpy:rawArguments]) {
+        for (int i = 0; i < [rawArguments count]; i++) {
+            [array addObject:[SqflitePlugin toSqlValue:[rawArguments objectAtIndex:i]]];
+        }
+    }
+    return array;
+}
+
++ (NSDictionary*)fromSqlDictionary:(NSDictionary*)sqlDictionary {
+    NSMutableDictionary* dictionary = [NSMutableDictionary new];
+    for (NSString* key in sqlDictionary.keyEnumerator) {
+        NSObject* sqlValue = [sqlDictionary objectForKey:key];
+        [dictionary setObject:[SqflitePlugin fromSqlValue:sqlValue] forKey:key];
+    }
+    return dictionary;
+}
+
 - (Database *)executeOrError:(FlutterMethodCall*)call result:(FlutterResult)result {
     Database* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
@@ -122,13 +187,14 @@ NSObject* _mapLock;
     
     NSString* sql = call.arguments[_paramSql];
     NSArray* arguments = call.arguments[_paramSqlArguments];
-    BOOL argumentsEmpty = (arguments == nil || arguments == (id)[NSNull null] || [arguments count] == 0);
+    NSArray* sqlArguments = [SqflitePlugin toSqlArguments:arguments];
+    BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:arguments];
     if (_log) {
-        NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : arguments);
+        NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     
     if (!argumentsEmpty) {
-        [database.fmDatabase executeUpdate: sql withArgumentsInArray: arguments];
+        [database.fmDatabase executeUpdate: sql withArgumentsInArray: sqlArguments];
     } else {
         [database.fmDatabase executeUpdate: sql];
     }
@@ -233,9 +299,10 @@ NSObject* _mapLock;
     } else if ([_methodCloseDatabase isEqualToString:call.method]) {
         [self handleCloseDatabaseCall:call result:result];
     } else if ([_methodDebugMode isEqualToString:call.method]) {
-        NSLog(@"Debug mode %@", call.arguments);
         NSNumber* on = (NSNumber*)call.arguments;
         _log = [on boolValue];
+        NSLog(@"Debug mode %d", _log);
+        _extra_log = __extra_log && _log;
         result(nil);
     } else {
         result(FlutterMethodNotImplemented);
