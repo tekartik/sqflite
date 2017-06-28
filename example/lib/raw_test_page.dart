@@ -170,6 +170,7 @@ class SimpleTestPage extends TestPage {
       await db.setVersion(2);
       await Sqflite.setDebugModeOn(true);
       await db.setVersion(3);
+      await Sqflite.setDebugModeOn(false);
 
       await db.close();
     });
