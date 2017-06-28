@@ -7,9 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_example/model/item.dart';
-import 'package:sqflite_example/model/test.dart';
-import 'package:sqflite_example/src/item_widget.dart';
+import 'model/item.dart';
+import 'model/test.dart';
+import 'src/item_widget.dart';
 
 class TestPage extends StatefulWidget {
   // return the path

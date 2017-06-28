@@ -3,7 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_example/test_page.dart';
+import 'test_page.dart';
 
 class _Data {
   Database db;

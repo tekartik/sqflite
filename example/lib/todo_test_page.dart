@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_example/test_page.dart';
+import 'test_page.dart';
 
 final String tableTodo = "todo";
 final String columnId = "_id";

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_example/model/main_item.dart';
-import 'package:sqflite_example/open_test_page.dart';
-import 'package:sqflite_example/raw_test_page.dart';
-import 'package:sqflite_example/slow_test_page.dart';
-import 'package:sqflite_example/src/main_item_widget.dart';
-import 'package:sqflite_example/type_test_page.dart';
-import 'package:sqflite_example/todo_test_page.dart';
+import 'model/main_item.dart';
+import 'open_test_page.dart';
+import 'raw_test_page.dart';
+import 'slow_test_page.dart';
+import 'src/main_item_widget.dart';
+import 'type_test_page.dart';
+import 'todo_test_page.dart';
 
 void main() {
   runApp(new MyApp());

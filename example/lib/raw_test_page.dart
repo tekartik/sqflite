@@ -5,7 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_example/test_page.dart';
+import 'test_page.dart';
 
 class SimpleTestPage extends TestPage {
   SimpleTestPage() : super("Raw tests") {

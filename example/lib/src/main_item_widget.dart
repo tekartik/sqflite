@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sqflite_example/model/main_item.dart';
+import '../model/main_item.dart';
 
 class MainItemWidget extends StatefulWidget {
   final MainItem item;
