@@ -50,7 +50,7 @@ class Sqflite {
   @deprecated
   static Future devSetDebugModeOn([bool on = true]) {
     _debugModeOn = on;
-    setDebugModeOn(on);
+    return setDebugModeOn(on);
   }
 
   /// helper to get the first int value in a query

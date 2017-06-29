@@ -6,6 +6,7 @@ Supports both iOS and Android.
 * Support recursive inTransaction calls
 * Automatic version managment
 * Helpers for insert/query/update/delete queries
+* DB operation executed in a background thread on iOS and Android
 
 ## Getting Started
 
@@ -13,7 +14,7 @@ In your flutter project add the dependency:
 
     dependencies:
       ...
-      sqflite:
+      sqflite: any
 
 For help getting started with Flutter, view the online
 [documentation](https://flutter.io/).
@@ -183,6 +184,6 @@ All calls are currently synchronized and transactions block are exclusive. I tho
 concurrent access is to open a database multiple times but it only works on iOS as Android reuses the same database object.
 I also thought a native thread could be a potential future solution however on android accessing the database in another
 thread is blocked while in a transaction...
-* Currently INTEGER are limited to -2^63 to 2^63 - 1
-* Currently Android handle calls in a background thread. The same thing should be done on iOS (if someone would like to help on this)
+* Currently INTEGER are limited to -2^63 to 2^63 - 1 (although Android supports bigger ones)
+
 

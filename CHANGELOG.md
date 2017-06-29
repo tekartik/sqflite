@@ -1,3 +1,8 @@
+## 0.2.0
+
+* Use NSOperationQueue for all db operation on iOS
+* Use ThreadHandler for all db operation on Android
+
 ## 0.0.3
 
 * Add exception handling
