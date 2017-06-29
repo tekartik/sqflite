@@ -72,6 +72,7 @@ class MyHomePage extends StatefulWidget {
         "Todo database example", "Simple Todo-like database usage example",
         route: testTodoRoute));
 
+    // Uncomment to view all logs
     //Sqflite.devSetDebugModeOn(true);
   }
 

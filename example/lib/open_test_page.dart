@@ -16,6 +16,7 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open no version", () async {
+      //await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_no_version.db");
       assert((await new File(path).exists()) == false);
       Database db = await openDatabase(path);
@@ -40,6 +41,7 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open onCreate", () async {
+      //await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_test2.db");
       bool onCreate = false;
       Database db = await openDatabase(path, version: 1,
@@ -51,9 +53,19 @@ class OpenTestPage extends TestPage {
       await db.close();
     });
 
+    test("Open 2 databases", () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      String path1 = await initDeleteDb("open_db_1.db");
+      String path2 = await initDeleteDb("open_db_2.db");
+      Database db1 = await openDatabase(path1, version: 1);
+      Database db2 = await openDatabase(path2, version: 1);
+      await db1.close();
+      await db2.close();
+    });
+
     test("Open onUpgrade", () async {
       bool onUpgrade = false;
-      String path = await initDeleteDb("open_test3.db");
+      String path = await initDeleteDb("open_on_upgrade.db");
       Database database = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db.execute("CREATE TABLE Test(id INTEGER PRIMARY KEY)");

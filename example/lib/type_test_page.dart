@@ -25,7 +25,7 @@ class TypeTestPage extends TestPage {
   TypeTestPage() : super("Type tests") {
     test("int", () async {
       //await Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("int.db");
+      String path = await initDeleteDb("type_int.db");
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db.execute(
@@ -75,7 +75,7 @@ class TypeTestPage extends TestPage {
 
     test("real", () async {
       //await Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("int.db");
+      String path = await initDeleteDb("type_real.db");
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db
@@ -97,7 +97,7 @@ class TypeTestPage extends TestPage {
 
     test("text", () async {
       //await Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("int.db");
+      String path = await initDeleteDb("type_text.db");
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db
@@ -118,7 +118,7 @@ class TypeTestPage extends TestPage {
 
     test("blob", () async {
       //await Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("int.db");
+      String path = await initDeleteDb("type_blob.db");
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db

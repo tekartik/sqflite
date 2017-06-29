@@ -32,7 +32,7 @@ const String _channelName = 'com.tekartik.sqflite';
 ///
 class Sqflite {
   static const MethodChannel _channel = const MethodChannel(_channelName);
-
+  static bool _debugModeOn = false;
   static Future<String> get platformVersion =>
       _channel.invokeMethod(_methodGetPlatformVersion);
 
@@ -42,9 +42,16 @@ class Sqflite {
     await Sqflite._channel.invokeMethod(_methodSetDebugModeOn, on);
   }
 
+  static Future<bool> getDebugModeOn() async {
+    return _debugModeOn;
+  }
+
   // To use in code when you want to remove it later
   @deprecated
-  static Future devSetDebugModeOn([bool on = true]) => setDebugModeOn(on);
+  static Future devSetDebugModeOn([bool on = true]) {
+    _debugModeOn = on;
+    setDebugModeOn(on);
+  }
 
   /// helper to get the first int value in a query
   /// Useful for COUNT(*) queries

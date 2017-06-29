@@ -10,7 +10,7 @@ import 'test_page.dart';
 class SimpleTestPage extends TestPage {
   SimpleTestPage() : super("Raw tests") {
     test("Transaction", () async {
-      String path = await initDeleteDb("simple_test2.db");
+      String path = await initDeleteDb("simple_transaction.db");
       Database db = await openDatabase(path);
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
@@ -163,6 +163,7 @@ class SimpleTestPage extends TestPage {
       String path = await initDeleteDb("debug_mode.db");
       Database db = await openDatabase(path);
 
+      bool debugModeOn = await Sqflite.getDebugModeOn();
       await Sqflite.setDebugModeOn(true);
       await db.setVersion(1);
       await Sqflite.setDebugModeOn(false);
@@ -170,7 +171,8 @@ class SimpleTestPage extends TestPage {
       await db.setVersion(2);
       await Sqflite.setDebugModeOn(true);
       await db.setVersion(3);
-      await Sqflite.setDebugModeOn(false);
+      // restore
+      await Sqflite.setDebugModeOn(debugModeOn);
 
       await db.close();
     });
