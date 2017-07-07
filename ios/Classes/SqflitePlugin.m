@@ -318,8 +318,8 @@ NSInteger _databaseOpenCount = 0;
         if (_databaseOpenCount++ == 0) {
             if (_log) {
                 NSLog(@"Creating operation queue");
-                self.operationQueue = [NSOperationQueue new];
             }
+            self.operationQueue = [NSOperationQueue new];
         }
         
     }
@@ -346,8 +346,8 @@ NSInteger _databaseOpenCount = 0;
         if (--_databaseOpenCount == 0) {
             if (_log) {
                 NSLog(@"Deleting operation queue");
-                self.operationQueue = nil;
             }
+            self.operationQueue = nil;
         }
     }
     result(nil);
