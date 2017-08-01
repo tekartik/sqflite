@@ -4,42 +4,40 @@ import 'package:sqflite/src/constant.dart';
 
 // Wrap sqlite native exception
 class DatabaseException implements Exception {
-  String msg;
-  DatabaseException(this.msg);
-
-  String get message => msg;
+  String _message;
+  DatabaseException(this._message);
 
   @override
-  String toString() => "DatabaseException($msg)";
+  String toString() => "DatabaseException($_message)";
 
   bool isNoSuchTableError([String table]) {
-    if (msg != null) {
+    if (_message != null) {
       String expected = "no such table: ";
       if (table != null) {
         expected += table;
       }
-      return msg.contains(expected);
+      return _message.contains(expected);
     }
     return false;
   }
 
   bool isSyntaxError([String table]) {
-    if (msg != null) {
-      return msg.contains("syntax error");
+    if (_message != null) {
+      return _message.contains("syntax error");
     }
     return false;
   }
 
   bool isOpenFailedError() {
-    if (msg != null) {
-      return msg.startsWith("open_failed");
+    if (_message != null) {
+      return _message.startsWith("open_failed");
     }
     return false;
   }
 
   bool isDatabaseClosedError() {
-    if (msg != null) {
-      return msg.startsWith("database_closed");
+    if (_message != null) {
+      return _message.startsWith("database_closed");
     }
     return false;
   }
