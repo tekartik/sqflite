@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'model/main_item.dart';
 import 'open_test_page.dart';
+import 'package:sqflite_example/exception_test_page.dart';
 import 'raw_test_page.dart';
 import 'slow_test_page.dart';
 import 'src/main_item_widget.dart';
@@ -25,6 +26,7 @@ const String testOpenRoute = "/test/open";
 const String testSlowRoute = "/test/slow";
 const String testThreadRoute = "/test/thread";
 const String testTodoRoute = "/test/todo";
+const String testExceptionRoute = "/test/exception";
 
 class _MyAppState extends State<MyApp> {
   var routes = <String, WidgetBuilder>{
@@ -34,6 +36,7 @@ class _MyAppState extends State<MyApp> {
     testSlowRoute: (BuildContext context) => new SlowTestPage(),
     testTodoRoute: (BuildContext context) => new TodoTestPage(),
     testThreadRoute: (BuildContext context) => new TypeTestPage(),
+    testExceptionRoute: (BuildContext context) => new ExceptionTestPage(),
   };
   @override
   Widget build(BuildContext context) {
@@ -71,6 +74,8 @@ class MyHomePage extends StatefulWidget {
     items.add(new MainItem(
         "Todo database example", "Simple Todo-like database usage example",
         route: testTodoRoute));
+    items.add(new MainItem("Exception tests", "Tests that trigger exceptions",
+        route: testExceptionRoute));
 
     // Uncomment to view all logs
     //Sqflite.devSetDebugModeOn(true);

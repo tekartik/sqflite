@@ -35,39 +35,6 @@ class SimpleTestPage extends TestPage {
       await db.close();
     });
 
-    test("Transaction failed", () async {
-      String path = await initDeleteDb("transaction_failed.db");
-      Database db = await openDatabase(path);
-
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-
-      // insert then fails to make sure the transaction is cancelled
-      bool hasFailed = false;
-      try {
-        await db.inTransaction(() async {
-          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
-          int afterCount = Sqflite
-              .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-          assert(afterCount == 1);
-
-          hasFailed = true;
-          // this failure should cancel the insertion before
-          await db.execute("DUMMY CALL");
-          hasFailed = false;
-        });
-      } catch (e) {
-        // iOS: native_error: PlatformException(sqlite_error, Error Domain=FMDatabase Code=1 "near "DUMMY": syntax error" UserInfo={NSLocalizedDescription=near "DUMMY": syntax error}, null)
-        print("native_error: $e");
-      }
-      assert(hasFailed);
-
-      int afterCount =
-          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-      assert(afterCount == 0);
-
-      await db.close();
-    });
-
     test("Transaction recursive", () async {
       String path = await initDeleteDb("transaction_recursive.db");
       Database db = await openDatabase(path);
@@ -85,41 +52,6 @@ class SimpleTestPage extends TestPage {
       int afterCount =
           Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
       assert(afterCount == 2);
-
-      await db.close();
-    });
-
-    test("Transaction recursive failed", () async {
-      String path = await initDeleteDb("transaction_failed.db");
-      Database db = await openDatabase(path);
-
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-
-      // insert then fails to make sure the transaction is cancelled
-      bool hasFailed = false;
-      try {
-        await db.inTransaction(() async {
-          await db.inTransaction(() async {
-            await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
-            int afterCount = Sqflite
-                .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-            assert(afterCount == 1);
-
-            hasFailed = true;
-            // this failure should cancel the insertion before
-            await db.execute("DUMMY CALL");
-            hasFailed = false;
-          });
-        });
-      } catch (e) {
-        print("native error: $e");
-      }
-
-      assert(hasFailed);
-
-      int afterCount =
-          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-      assert(afterCount == 0);
 
       await db.close();
     });
@@ -173,43 +105,6 @@ class SimpleTestPage extends TestPage {
       await db.setVersion(3);
       // restore
       await Sqflite.setDebugModeOn(debugModeOn);
-
-      await db.close();
-    });
-
-    test("Sqlite Exception", () async {
-      //await Sqflite.setDebugModeOn(true);
-      String path = await initDeleteDb("exception.db");
-      Database db = await openDatabase(path);
-
-      // Query
-      try {
-        await db.rawQuery("SELECT COUNT(*) FROM Test");
-        assert(false); // should fail before
-      } on DatabaseException catch (e) {
-        assert(e.isNoSuchTableError("Test"));
-      }
-
-      try {
-        await db.execute("DUMMY");
-        assert(false); // should fail before
-      } on DatabaseException catch (e) {
-        assert(e.isSyntaxError());
-      }
-
-      try {
-        await db.rawInsert("DUMMY");
-        assert(false); // should fail before
-      } on DatabaseException catch (e) {
-        assert(e.isSyntaxError());
-      }
-
-      try {
-        await db.rawUpdate("DUMMY");
-        assert(false); // should fail before
-      } on DatabaseException catch (e) {
-        assert(e.isSyntaxError());
-      }
 
       await db.close();
     });

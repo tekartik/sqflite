@@ -7,6 +7,8 @@ class DatabaseException implements Exception {
   String msg;
   DatabaseException(this.msg);
 
+  String get message => msg;
+
   @override
   String toString() => "DatabaseException($msg)";
 
@@ -50,6 +52,7 @@ Future wrapDatabaseException(action()) async {
   } on PlatformException catch (e) {
     if (e.code == sqliteErrorCode) {
       throw new DatabaseException(e.message);
+      //rethrow;
     } else {
       rethrow;
     }

@@ -435,6 +435,8 @@ public class SqflitePlugin implements MethodCallHandler {
             if (databaseOpenCount++ == 0) {
                 handlerThread = new HandlerThread("Sqflite");
                 handlerThread.start();
+                //TEST UI  Handler
+                //handler = new Handler();
                 handler = new Handler(handlerThread.getLooper());
                 if (LOGV) {
                     Log.d(TAG, "starting thread" + handlerThread);
