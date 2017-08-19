@@ -1,3 +1,7 @@
+## 0.2.2
+
+* Fix unchecked warning on Android
+
 ## 0.2.0
 
 * Use NSOperationQueue for all db operation on iOS

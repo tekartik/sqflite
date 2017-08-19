@@ -133,7 +133,9 @@ public class SqflitePlugin implements MethodCallHandler {
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             Object value = entry.getValue();
             if (value instanceof Map) {
-                value = fixMap((Map) value);
+                @SuppressWarnings("unchecked")
+                Map<Object, Object> mapValue = (Map<Object, Object>)value;
+                value = fixMap(mapValue);
             } else {
                 value = toString(value);
             }
@@ -154,7 +156,9 @@ public class SqflitePlugin implements MethodCallHandler {
             }
             return list.toString();
         } else if (value instanceof Map) {
-            return fixMap((Map) value).toString();
+            @SuppressWarnings("unchecked")
+            Map<Object, Object> mapValue = (Map<Object, Object>)value;
+            return fixMap(mapValue).toString();
         } else {
             return value.toString();
         }
@@ -170,6 +174,7 @@ public class SqflitePlugin implements MethodCallHandler {
             }
             // Assume a list is a blog
             if (value instanceof List) {
+                @SuppressWarnings("unchecked")
                 List<Integer> list = (List<Integer>) value;
                 byte[] blob = new byte[list.size()];
                 for (int i = 0; i < list.size(); i++) {
