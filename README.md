@@ -186,4 +186,6 @@ I also thought a native thread could be a potential future solution however on a
 thread is blocked while in a transaction...
 * Currently INTEGER are limited to -2^63 to 2^63 - 1 (although Android supports bigger ones)
 
+## More
 
+* [How to](doc/how_to.md) guide
