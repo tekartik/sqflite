@@ -72,5 +72,17 @@ main() {
       expect(builder.sql, "UPDATE test SET value = ?, other_value = NULL");
       expect(builder.arguments, [1]);
     });
+
+    test("query", () {
+      SqlBuilder builder = new SqlBuilder.query("table", orderBy: "value");
+      expect(builder.sql, "SELECT * FROM table ORDER BY value");
+      expect(builder.arguments, isNull);
+
+      builder =
+          new SqlBuilder.query("table", orderBy: "column_1 ASC, column_2 DESC");
+      expect(builder.sql,
+          "SELECT * FROM table ORDER BY column_1 ASC, column_2 DESC");
+      expect(builder.arguments, isNull);
+    });
   });
 }
