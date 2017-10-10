@@ -138,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: new AppBar(
-          title: new Text('Sqflite demo'),
+          title: new Center(child: new Text('Sqflite demo', textAlign: TextAlign.center)),
         ),
         body: new ListView.builder(
             itemBuilder: _itemBuilder, itemCount: _itemCount));

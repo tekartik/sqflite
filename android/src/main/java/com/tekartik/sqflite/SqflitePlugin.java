@@ -52,15 +52,53 @@ public class SqflitePlugin implements MethodCallHandler {
     private int databaseId = 0; // incremental database id
 
     // Database thread execution
-    HandlerThread handlerThread;
-    Handler handler;
+    private HandlerThread handlerThread;
+    private Handler handler;
+
+    private class BgResult implements MethodChannel.Result {
+        // Caller handler
+        final Handler handler = new Handler();
+        private final Result result;
+
+        private BgResult(Result result) {
+            this.result = result;
+        }
+
+        // make sure to respond in the caller thread
+        public void success(final Object results) {
+
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(results);
+                }
+            });
+        }
+
+        public void error(final String errorCode, final String errorMessage, final Object data) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    result.error(errorCode, errorMessage, data);
+                }
+            });
+        }
+
+        @Override
+        public void notImplemented() {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    result.notImplemented();
+                }
+            });
+        }
+    }
 
     @SuppressLint("UseSparseArrays")
     private Map<Integer, Database> databaseMap = new HashMap<>();
 
-    private Map<Long, Thread> threadMap = new HashMap<>();
-
-    private SqflitePlugin(Context context, MethodChannel ignored) {
+    private SqflitePlugin(Context context) {
         this.context = context;
     }
 
@@ -69,7 +107,7 @@ public class SqflitePlugin implements MethodCallHandler {
     //
     public static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "com.tekartik.sqflite");
-        channel.setMethodCallHandler(new SqflitePlugin(registrar.activity().getApplicationContext(), channel));
+        channel.setMethodCallHandler(new SqflitePlugin(registrar.activity().getApplicationContext()));
     }
 
     private static Map<String, Object> cursorRowToMap(Cursor cursor) {
@@ -134,7 +172,7 @@ public class SqflitePlugin implements MethodCallHandler {
             Object value = entry.getValue();
             if (value instanceof Map) {
                 @SuppressWarnings("unchecked")
-                Map<Object, Object> mapValue = (Map<Object, Object>)value;
+                Map<Object, Object> mapValue = (Map<Object, Object>) value;
                 value = fixMap(mapValue);
             } else {
                 value = toString(value);
@@ -157,7 +195,7 @@ public class SqflitePlugin implements MethodCallHandler {
             return list.toString();
         } else if (value instanceof Map) {
             @SuppressWarnings("unchecked")
-            Map<Object, Object> mapValue = (Map<Object, Object>)value;
+            Map<Object, Object> mapValue = (Map<Object, Object>) value;
             return fixMap(mapValue).toString();
         } else {
             return value.toString();
@@ -225,7 +263,7 @@ public class SqflitePlugin implements MethodCallHandler {
             Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + getStringQuerySqlArguments(arguments))));
         }
         try {
-            database.getWritableDatabase().execSQL(sql, getSqlArguments(arguments));
+            database.getWritableDatabase().execSQL(sql, sqlArguments);
         } catch (SQLException exception) {
             handleException(exception, result, database);
             return null;
@@ -236,12 +274,13 @@ public class SqflitePlugin implements MethodCallHandler {
     //
     // query
     //
-    private void onQueryCall(final MethodCall call, final Result result) {
+    private void onQueryCall(final MethodCall call, Result result) {
 
         final Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return;
         }
+        final BgResult bgResult = new BgResult(result);
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -264,9 +303,9 @@ public class SqflitePlugin implements MethodCallHandler {
                         }
                         results.add(map);
                     }
-                    result.success(results);
+                    bgResult.success(results);
                 } catch (SQLException exception) {
-                    handleException(exception, result, database);
+                    handleException(exception, bgResult, database);
                 } finally {
                     if (cursor != null) {
                         cursor.close();
@@ -274,23 +313,23 @@ public class SqflitePlugin implements MethodCallHandler {
                 }
             }
         });
-
     }
 
     //
     // Insert
     //
-    private void onInsertCall(final MethodCall call, final Result result) {
+    private void onInsertCall(final MethodCall call, Result result) {
 
         final Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return;
         }
+        final BgResult bgResult = new BgResult(result);
         handler.post(new Runnable() {
             @Override
             public void run() {
 
-                if (executeOrError(database, call, result) == null) {
+                if (executeOrError(database, call, bgResult) == null) {
                     return;
                 }
 
@@ -308,15 +347,15 @@ public class SqflitePlugin implements MethodCallHandler {
                         if (LOGV) {
                             Log.d(TAG, "inserted " + id);
                         }
-                        result.success(id);
+                        bgResult.success(id);
                         return;
                     } else {
                         Log.e(TAG, "Fail to read inserted it");
                     }
-                    result.success(null);
+                    bgResult.success(null);
                 } catch (
                         SQLException exception) {
-                    handleException(exception, result, database);
+                    handleException(exception, bgResult, database);
                 } finally {
                     if (cursor != null) {
                         cursor.close();
@@ -331,20 +370,21 @@ public class SqflitePlugin implements MethodCallHandler {
     //
     // Sqflite.execute
     //
-    private void onExecuteCall(final MethodCall call, final Result result) {
+    private void onExecuteCall(final MethodCall call, Result result) {
 
         final Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return;
         }
+        final BgResult bgResult = new BgResult(result);
         handler.post(new Runnable() {
             @Override
             public void run() {
 
-                if (executeOrError(database, call, result) == null) {
+                if (executeOrError(database, call, bgResult) == null) {
                     return;
                 }
-                result.success(null);
+                bgResult.success(null);
             }
         });
     }
@@ -352,17 +392,18 @@ public class SqflitePlugin implements MethodCallHandler {
     //
     // Sqflite.update
     //
-    private void onUpdateCall(final MethodCall call, final Result result) {
+    private void onUpdateCall(final MethodCall call, Result result) {
 
         final Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return;
         }
+        final BgResult bgResult = new BgResult(result);
         handler.post(new Runnable() {
             @Override
             public void run() {
 
-                if (executeOrError(database, call, result) == null) {
+                if (executeOrError(database, call, bgResult) == null) {
                     return;
                 }
                 Cursor cursor = null;
@@ -375,14 +416,14 @@ public class SqflitePlugin implements MethodCallHandler {
                         if (LOGV) {
                             Log.d(TAG, "changed " + changed);
                         }
-                        result.success(changed);
+                        bgResult.success(changed);
                         return;
                     } else {
                         Log.e(TAG, "fail to read changes for Update/Delete");
                     }
-                    result.success(null);
+                    bgResult.success(null);
                 } catch (SQLException e) {
-                    handleException(e, result, database);
+                    handleException(e, bgResult, database);
                 } finally {
                     if (cursor != null) {
                         cursor.close();
@@ -414,7 +455,12 @@ public class SqflitePlugin implements MethodCallHandler {
         File file = new File(path);
         File directory = new File(file.getParent());
         if (!directory.exists()) {
-            directory.mkdirs();
+            if (!directory.mkdirs()) {
+                if (!directory.exists()) {
+                    result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
+                    return;
+                }
+            }
         }
 
         int databaseId;
@@ -433,8 +479,6 @@ public class SqflitePlugin implements MethodCallHandler {
             throw e;
         }
 
-        boolean createThread = false;
-
         //SQLiteDatabase sqLiteDatabase = SQLiteDatabase.openDatabase(path, null, 0);
         synchronized (databaseMapLocker) {
             if (databaseOpenCount++ == 0) {
@@ -446,8 +490,6 @@ public class SqflitePlugin implements MethodCallHandler {
                 if (LOGV) {
                     Log.d(TAG, "starting thread" + handlerThread);
                 }
-            } else {
-
             }
             databaseMap.put(databaseId, database);
             if (LOGV) {
