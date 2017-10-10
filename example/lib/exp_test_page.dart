@@ -25,7 +25,7 @@ class ExpTestPage extends TestPage {
       await db
           .execute("INSERT INTO $table (column_1, column_2) VALUES (10, 2000)");
 
-      var expectedResult =  [
+      var expectedResult = [
         {"column_1": 10, "column_2": 2000},
         {"column_1": 10, "column_2": 180},
         {"column_1": 11, "column_2": 180}
@@ -35,11 +35,8 @@ class ExpTestPage extends TestPage {
           "SELECT * FROM $table ORDER BY column_1 ASC, column_2 DESC");
       //print(JSON.encode(result));
       assert(const DeepCollectionEquality().equals(result, expectedResult));
-      result =
-          await db.query(table, orderBy: "column_1 ASC, column_2 DESC");
+      result = await db.query(table, orderBy: "column_1 ASC, column_2 DESC");
       assert(const DeepCollectionEquality().equals(result, expectedResult));
-
-
 
       await db.close();
     });
