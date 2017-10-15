@@ -4,6 +4,7 @@ import 'test_page.dart';
 class ExceptionTestPage extends TestPage {
   ExceptionTestPage() : super("Exception tests") {
     test("Transaction failed", () async {
+      //await Sqflite.setDebugModeOn(true);
       String path = await initDeleteDb("transaction_failed.db");
       Database db = await openDatabase(path);
 
