@@ -33,7 +33,7 @@ const String _channelName = 'com.tekartik.sqflite';
 class Sqflite {
   static const MethodChannel _channel = const MethodChannel(_channelName);
   static bool _debugModeOn = false;
-  static bool _supportsConcurrency = false; //true;
+  static bool _supportsConcurrency = true; //true;
   static Future<String> get platformVersion =>
       _channel.invokeMethod(_methodGetPlatformVersion);
 
