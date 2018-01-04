@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/sql_builder.dart';
+import 'package:sqflite/src/sqlite_impl.dart';
 import 'src/utils.dart';
 import 'package:synchronized/synchronized.dart';
 export 'src/exception.dart' show DatabaseException;
@@ -33,7 +34,7 @@ const String _channelName = 'com.tekartik.sqflite';
 class Sqflite {
   static const MethodChannel _channel = const MethodChannel(_channelName);
   static bool _debugModeOn = false;
-  static bool _supportsConcurrency = true; //true;
+  static bool _supportsConcurrency = supportsConcurrency;
   static Future<String> get platformVersion =>
       _channel.invokeMethod(_methodGetPlatformVersion);
 

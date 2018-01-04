@@ -1,3 +1,7 @@
+## 0.3.1
+
+* Remove temp concurrency experiment
+
 ## 0.3.0
  
 2018/01/04
