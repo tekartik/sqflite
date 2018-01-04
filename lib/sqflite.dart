@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/sql_builder.dart';
+import 'package:sqflite/src/sqlite_impl.dart';
 import 'src/utils.dart';
 import 'package:synchronized/synchronized.dart';
 export 'src/exception.dart' show DatabaseException;
@@ -33,6 +34,7 @@ const String _channelName = 'com.tekartik.sqflite';
 class Sqflite {
   static const MethodChannel _channel = const MethodChannel(_channelName);
   static bool _debugModeOn = false;
+  static bool _supportsConcurrency = supportsConcurrency;
   static Future<String> get platformVersion =>
       _channel.invokeMethod(_methodGetPlatformVersion);
 
@@ -75,12 +77,20 @@ class Database {
   String get path => _path;
   String _path;
   int _id;
-  Database._(this._path, this._id);
+  Database._(this._path, this._id) {
+    // For now keep a lock for write access
+    if (Sqflite._supportsConcurrency) {
+      _writeLock = new SynchronizedLock();
+    } else {
+      _writeLock = _lock;
+    }
+  }
 
   // only set during inTransaction to allow recursivity
   int _transactionRefCount = 0;
 
   var _lock = new SynchronizedLock();
+  var _writeLock;
 
   SynchronizedLock get transactionLock => _lock;
 
@@ -94,7 +104,7 @@ class Database {
 
   /// for sql without return values
   Future execute(String sql, [List arguments]) {
-    return synchronized(() {
+    return writeSynchronized(() {
       return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(
             _methodExecute,
@@ -107,7 +117,7 @@ class Database {
   /// for INSERT sql query
   /// returns the last inserted record id
   Future<int> rawInsert(String sql, [List arguments]) {
-    return synchronized(() {
+    return writeSynchronized(() {
       return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(
             _methodInsert,
@@ -180,7 +190,7 @@ class Database {
   /// for UPDATE sql query
   /// return the number of changes made
   Future<int> rawUpdate(String sql, [List arguments]) {
-    return synchronized(() {
+    return writeSynchronized(() {
       return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(
             _methodUpdate,
@@ -280,15 +290,28 @@ class Database {
   /// ensure that no other calls outside the inner action will
   /// access the database
   ///
-  Future synchronized(action()) {
-    return _lock.synchronized(action);
+  FutureOr synchronized(action()) {
+    if (Sqflite._supportsConcurrency) {
+      return action;
+    } else {
+      return _lock.synchronized(action);
+    }
+  }
+
+  ///
+  /// synchronized all write calls to the database
+  /// ensure that no other calls outside the inner action will
+  /// write the database
+  ///
+  Future writeSynchronized(action()) {
+    return _writeLock.synchronized(action);
   }
 
   ///
   /// Simple transaction mechanism
   ///
   Future inTransaction(action(), {bool exclusive}) {
-    return synchronized(() async {
+    return writeSynchronized(() async {
       _Transaction transaction;
       bool successfull;
       if (_transactionRefCount++ == 0) {

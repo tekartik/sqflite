@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/src/sqlite_impl.dart';
 
 main() {
   group("sqflite", () {
@@ -21,6 +22,10 @@ main() {
     test("setDebugModeOn", () async {
       await Sqflite.setDebugModeOn();
       //expect(log, equals(<MethodCall>[new MethodCall('debugMode', true)]));
+    });
+
+    test("supportsConcurrency", () async {
+      expect(supportsConcurrency, isFalse);
     });
   });
 }

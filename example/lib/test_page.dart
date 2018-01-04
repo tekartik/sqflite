@@ -18,7 +18,18 @@ class TestPage extends StatefulWidget {
     print(documentsDirectory);
 
     String path = join(documentsDirectory.path, dbName);
-    await deleteDatabase(path);
+
+
+    // make sure the folder exists
+    if (await new Directory(dirname(path)).exists()) {
+      await deleteDatabase(path);
+    } else {
+      try {
+        await new Directory(dirname(path)).create(recursive: true);
+      } catch (e) {
+        print(e);
+      }
+    }
     return path;
   }
 

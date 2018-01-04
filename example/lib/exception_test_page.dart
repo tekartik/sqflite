@@ -85,6 +85,14 @@ class ExceptionTestPage extends TestPage {
         assert(e.isNoSuchTableError("Test"));
       }
 
+      // Catch without using on DatabaseException
+      try {
+        await db.rawQuery("malformed query");
+        assert(false); // should fail before
+      } catch (e) {
+        assert(e.isSyntaxError());
+      }
+
       try {
         await db.execute("DUMMY");
         assert(false); // should fail before
