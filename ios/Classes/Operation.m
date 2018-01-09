@@ -21,14 +21,18 @@
 - (NSArray*)getSqlArguments {
     return nil;
 }
+- (bool)getNoResult {
+    return false;
+}
 - (void)success:(NSObject*)results {}
+
 - (void)error:(NSObject*)error {}
 
 @end
 
 @implementation BatchOperation
 
-@synthesize dictionary, results, error;
+@synthesize dictionary, results, error, noResult;
 
 - (NSString*)getMethod {
     return [dictionary objectForKey:_paramMethod];
@@ -43,6 +47,10 @@
     return [SqflitePlugin toSqlArguments:arguments];
 }
 
+- (bool)getNoResult {
+    return noResult;
+}
+
 - (void)success:(NSObject*)results {
     self.results = results;
 }
@@ -51,7 +59,9 @@
 }
 
 - (void)handleSuccess:(NSMutableArray*)results {
-    [results addObject:self.results];
+    if (![self getNoResult]) {
+        [results addObject:self.results];
+    }
 }
 - (void)handleError:(FlutterResult)result {
     result(error);
@@ -77,6 +87,11 @@
 
 - (NSString*)getSql {
     return flutterMethodCall.arguments[_paramSql];
+}
+
+- (bool)getNoResult {
+    NSNumber* noResult = flutterMethodCall.arguments[_paramNoResult];
+    return [noResult boolValue];
 }
 
 - (NSArray*)getSqlArguments {

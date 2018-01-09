@@ -9,3 +9,4 @@
 extern NSString *const _paramMethod;
 extern NSString *const _paramSql;
 extern NSString *const _paramSqlArguments;
+extern NSString *const _paramNoResult;

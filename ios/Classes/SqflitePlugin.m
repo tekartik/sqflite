@@ -17,6 +17,7 @@ NSString *const _methodBatch = @"batch";
 
 // For batch
 NSString *const _paramOperations = @"operations";
+NSString *const _paramNoResult = @"noResult";
 // For each batch operation
 NSString *const _paramMethod = @"method";
 NSString *const _paramPath = @"path";
@@ -271,6 +272,10 @@ NSInteger _databaseOpenCount = 0;
     if (![self executeOrError:db operation:operation]) {
         return false;
     }
+    if ([operation getNoResult]) {
+        [operation success:nil];
+        return true;
+    }
     sqlite_int64 insertedId = [db lastInsertRowId];
     if (_log) {
         NSLog(@"inserted %@", @(insertedId));
@@ -296,6 +301,22 @@ NSInteger _databaseOpenCount = 0;
 //
 // update
 //
+- (bool)update:(FMDatabase*)db operation:(Operation*)operation {
+    if (![self executeOrError:db operation:operation]) {
+        return false;
+    }
+    if ([operation getNoResult]) {
+        [operation success:nil];
+        return true;
+    }
+    int changes = [db changes];
+    if (_log) {
+        NSLog(@"changed %@", @(changes));
+    }
+    [operation success:(@(changes))];
+    return true;
+}
+
 - (void)handleUpdateCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     Database* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
@@ -303,15 +324,8 @@ NSInteger _databaseOpenCount = 0;
     }
     [self.operationQueue addOperationWithBlock:^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-            if (![self executeOrError:db call:call result:result]) {
-                return;
-            }
-            
-            int changes = [db changes];
-            if (_log) {
-                NSLog(@"changed %@", @(changes));
-            }
-            result(@(changes));
+            MethodCallOperation* operation = [MethodCallOperation newWithCall:call result:result];
+            [self update:db operation:operation];
         }];
     }];
 }
@@ -347,6 +361,9 @@ NSInteger _databaseOpenCount = 0;
     [self.operationQueue addOperationWithBlock:^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
             
+            MethodCallOperation* mainOperation = [MethodCallOperation newWithCall:call result:result];
+            bool noResult = [mainOperation getNoResult];
+            
             NSArray* operations = call.arguments[_paramOperations];
             NSMutableArray* results = [NSMutableArray new];
             for (NSDictionary* dictionary in operations) {
@@ -354,10 +371,18 @@ NSInteger _databaseOpenCount = 0;
                 
                 BatchOperation* operation = [BatchOperation new];
                 operation.dictionary = dictionary;
+                operation.noResult = noResult;
                 
                 NSString* method = [operation getMethod];
                 if ([_methodInsert isEqualToString:method]) {
                     if ([self insert:db operation:operation]) {
+                        [operation handleSuccess:results];
+                    } else {
+                        [operation handleError:result];
+                        return;
+                    }
+                } else if ([_methodUpdate isEqualToString:method]) {
+                    if ([self update:db operation:operation]) {
                         [operation handleSuccess:results];
                     } else {
                         [operation handleError:result];
@@ -371,7 +396,11 @@ NSInteger _databaseOpenCount = 0;
                 }
             }
             
-            result(results);
+            if (noResult) {
+                result(nil);
+            } else {
+                result(results);
+            }
             
         }];
     }];

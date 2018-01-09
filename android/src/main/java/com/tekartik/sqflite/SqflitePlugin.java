@@ -420,6 +420,7 @@ public class SqflitePlugin implements MethodCallHandler {
         }
         // don't get last id if not expected
         if (operation.getNoResult()) {
+            operation.success(null);
             return true;
         }
         String sql = "SELECT last_insert_rowid()";
@@ -502,6 +503,7 @@ public class SqflitePlugin implements MethodCallHandler {
         }
         // don't get last id if not expected
         if (operation.getNoResult()) {
+            operation.success(null);
             return true;
         }
         Cursor cursor = null;
