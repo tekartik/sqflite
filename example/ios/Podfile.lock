@@ -11,14 +11,14 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `/opt/external/git/github.com/flutter/flutter/bin/cache/artifacts/engine/ios`)
-  - path_provider (from `/Users/alex/.pub-cache/hosted/pub.dartlang.org/path_provider-0.2.1+1/ios`)
+  - path_provider (from `/Users/alex/.pub-cache/hosted/pub.dartlang.org/path_provider-0.3.0/ios`)
   - sqflite (from `/opt/devx/git/github.com/tekartik/sqflite.dart/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: /opt/external/git/github.com/flutter/flutter/bin/cache/artifacts/engine/ios
   path_provider:
-    :path: /Users/alex/.pub-cache/hosted/pub.dartlang.org/path_provider-0.2.1+1/ios
+    :path: /Users/alex/.pub-cache/hosted/pub.dartlang.org/path_provider-0.3.0/ios
   sqflite:
     :path: /opt/devx/git/github.com/tekartik/sqflite.dart/ios
 

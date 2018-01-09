@@ -1,0 +1,93 @@
+//
+//  Operation.m
+//  sqflite
+//
+//  Created by Alexandre Roux on 09/01/2018.
+//
+
+#import <Foundation/Foundation.h>
+#import "Operation.h"
+#import "SqflitePlugin.h"
+
+// Abstract
+@implementation Operation
+
+- (NSString*)getMethod {
+    return  nil;
+}
+- (NSString*)getSql {
+    return nil;
+}
+- (NSArray*)getSqlArguments {
+    return nil;
+}
+- (void)success:(NSObject*)results {}
+- (void)error:(NSObject*)error {}
+
+@end
+
+@implementation BatchOperation
+
+@synthesize dictionary, results, error;
+
+- (NSString*)getMethod {
+    return [dictionary objectForKey:_paramMethod];
+}
+
+- (NSString*)getSql {
+    return [dictionary objectForKey:_paramSql];
+}
+
+- (NSArray*)getSqlArguments {
+    NSArray* arguments = [dictionary objectForKey:_paramSqlArguments];
+    return [SqflitePlugin toSqlArguments:arguments];
+}
+
+- (void)success:(NSObject*)results {
+    self.results = results;
+}
+- (void)error:(NSObject*)error {
+    self.results = error;
+}
+
+- (void)handleSuccess:(NSMutableArray*)results {
+    [results addObject:self.results];
+}
+- (void)handleError:(FlutterResult)result {
+    result(error);
+}
+
+@end
+
+@implementation MethodCallOperation
+
+@synthesize flutterMethodCall;
+@synthesize flutterResult;
+
++ (MethodCallOperation*)newWithCall:(FlutterMethodCall*)flutterMethodCall result:(FlutterResult)flutterResult {
+    MethodCallOperation* operation = [MethodCallOperation new];
+    operation.flutterMethodCall = flutterMethodCall;
+    operation.flutterResult = flutterResult;
+    return operation;
+}
+
+- (NSString*)getMethod {
+    return flutterMethodCall.method;
+}
+
+- (NSString*)getSql {
+    return flutterMethodCall.arguments[_paramSql];
+}
+
+- (NSArray*)getSqlArguments {
+    NSArray* arguments = flutterMethodCall.arguments[_paramSqlArguments];
+    return [SqflitePlugin toSqlArguments:arguments];
+}
+
+- (void)success:(NSObject*)results {
+    flutterResult(results);
+}
+- (void)error:(NSObject*)error {
+    flutterResult(error);
+}
+@end
