@@ -14,6 +14,7 @@ import static com.tekartik.sqflite.Constant.PARAM_METHOD;
 public class BatchOperation extends BaseOperation {
     final Map<String, Object> map;
     final BatchOperationResult result = new BatchOperationResult();
+    final boolean noResult;
 
     class BatchOperationResult implements OperationResult {
         // success
@@ -37,8 +38,9 @@ public class BatchOperation extends BaseOperation {
         }
     }
 
-    public BatchOperation(Map<String, Object> map) {
+    public BatchOperation(Map<String, Object> map, boolean noResult) {
         this.map = map;
+        this.noResult = noResult;
     }
 
     @Override
@@ -46,6 +48,7 @@ public class BatchOperation extends BaseOperation {
         return (String) map.get(PARAM_METHOD);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getArgument(String key) {
         return (T) map.get(key);
@@ -64,8 +67,15 @@ public class BatchOperation extends BaseOperation {
         result.error(this.result.errorCode, this.result.errorMessage, this.result.data);
     }
 
+    @Override
+    public boolean getNoResult() {
+        return noResult;
+    }
+
     public void handleSuccess(List<Object> results) {
-        results.add(getBatchResults());
+        if (!getNoResult()) {
+            results.add(getBatchResults());
+        }
     }
 
 

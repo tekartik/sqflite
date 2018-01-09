@@ -42,7 +42,6 @@ import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
 import static com.tekartik.sqflite.Constant.PARAM_PATH;
 import static com.tekartik.sqflite.Constant.PARAM_SQL;
 import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
-import static com.tekartik.sqflite.dev.Debug.devLog;
 
 /**
  * SqflitePlugin Android implementation
@@ -272,6 +271,7 @@ public class SqflitePlugin implements MethodCallHandler {
 
     private Database executeOrError(Database database, Map<String, Object> operation, Result result) {
         String sql = (String) operation.get(PARAM_SQL);
+        @SuppressWarnings("unchecked")
         List<Object> arguments = (List<Object>) operation.get(PARAM_SQL_ARGUMENTS);
         return executeOrError(database, sql, arguments, result);
     }
@@ -365,17 +365,30 @@ public class SqflitePlugin implements MethodCallHandler {
             @Override
             public void run() {
 
+                MethodCallOperation mainOperation = new MethodCallOperation(call, bgResult);
+                boolean noResult = mainOperation.getNoResult();
+
                 List<Map<String, Object>> operations = call.argument(PARAM_OPERATIONS);
                 List<Object> results = new ArrayList<>();
 
                 //devLog(TAG, "operations " + operations);
                 for (Map<String, Object> map : operations) {
                     //devLog(TAG, "map " + map);
-                    BatchOperation operation = new BatchOperation(map);
+                    BatchOperation operation = new BatchOperation(map, noResult);
                     String method = operation.getMethod();
                     switch (method) {
                         case METHOD_INSERT:
                             if (insert(database, operation)) {
+                                //devLog(TAG, "results: " + operation.getBatchResults());
+                                operation.handleSuccess(results);
+                            } else {
+                                // we stop at the first error
+                                operation.handleError(bgResult);
+                                return;
+                            }
+                            break;
+                        case METHOD_UPDATE:
+                            if (update(database, operation)) {
                                 //devLog(TAG, "results: " + operation.getBatchResults());
                                 operation.handleSuccess(results);
                             } else {
@@ -391,7 +404,11 @@ public class SqflitePlugin implements MethodCallHandler {
                 }
                 // Set the results of all operations
                 // devLog(TAG, "results " + results);
-                bgResult.success(results);
+                if (noResult) {
+                    bgResult.success(null);
+                } else {
+                    bgResult.success(results);
+                }
             }
         });
     }
@@ -400,6 +417,10 @@ public class SqflitePlugin implements MethodCallHandler {
     private boolean insert(Database database, final Operation operation) {
         if (!executeOrError(database, operation)) {
             return false;
+        }
+        // don't get last id if not expected
+        if (operation.getNoResult()) {
+            return true;
         }
         String sql = "SELECT last_insert_rowid()";
         //if (LOGV) {
@@ -474,6 +495,41 @@ public class SqflitePlugin implements MethodCallHandler {
         });
     }
 
+    // Return true on success
+    private boolean update(Database database, final Operation operation) {
+        if (!executeOrError(database, operation)) {
+            return false;
+        }
+        // don't get last id if not expected
+        if (operation.getNoResult()) {
+            return true;
+        }
+        Cursor cursor = null;
+        try {
+            SQLiteDatabase db = database.getWritableDatabase();
+
+            cursor = db.rawQuery("SELECT changes()", null);
+            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                final int changed = cursor.getInt(0);
+                if (LOGV) {
+                    Log.d(TAG, "changed " + changed);
+                }
+                operation.success(changed);
+                return true;
+            } else {
+                Log.e(TAG, "fail to read changes for Update/Delete");
+            }
+            operation.success(null);
+            return true;
+        } catch (SQLException e) {
+            handleException(e, operation, database);
+            return false;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
 
     //
     // Sqflite.update
@@ -488,33 +544,8 @@ public class SqflitePlugin implements MethodCallHandler {
         handler.post(new Runnable() {
             @Override
             public void run() {
-
-                if (executeOrError(database, call, bgResult) == null) {
-                    return;
-                }
-                Cursor cursor = null;
-                try {
-                    SQLiteDatabase db = database.getWritableDatabase();
-
-                    cursor = db.rawQuery("SELECT changes()", null);
-                    if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                        final int changed = cursor.getInt(0);
-                        if (LOGV) {
-                            Log.d(TAG, "changed " + changed);
-                        }
-                        bgResult.success(changed);
-                        return;
-                    } else {
-                        Log.e(TAG, "fail to read changes for Update/Delete");
-                    }
-                    bgResult.success(null);
-                } catch (SQLException e) {
-                    handleException(e, bgResult, database);
-                } finally {
-                    if (cursor != null) {
-                        cursor.close();
-                    }
-                }
+                MethodCallOperation operation = new MethodCallOperation(call, bgResult);
+                update(database, operation);
             }
         });
     }

@@ -14,13 +14,15 @@ class SqfliteBatch implements Batch {
   SqfliteBatch(this.database);
 
   @override
-  Future<List<dynamic>> commit({bool exclusive}) {
+  Future<List<dynamic>> commit({bool exclusive, bool noResult}) {
     return database.inTransaction(() {
       return wrapDatabaseException(() {
-        return channel.invokeMethod(
-            methodBatch,
-            <String, dynamic>{paramOperations: operations}
-              ..addAll(database.baseDatabaseMethodArguments));
+        var arguments = <String, dynamic>{paramOperations: operations}
+          ..addAll(database.baseDatabaseMethodArguments);
+        if (noResult == true) {
+          arguments[paramNoResult] = noResult;
+        }
+        return channel.invokeMethod(methodBatch, arguments);
       });
     }, exclusive: exclusive);
   }
@@ -41,5 +43,32 @@ class SqfliteBatch implements Batch {
     SqlBuilder builder = new SqlBuilder.insert(table, values,
         nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
+  }
+
+  @override
+  void rawUpdate(String sql, [List arguments]) {
+    _add(methodUpdate, sql, arguments);
+  }
+
+  @override
+  void update(String table, Map<String, dynamic> values,
+      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm}) {
+    SqlBuilder builder = new SqlBuilder.update(table, values,
+        where: where,
+        whereArgs: whereArgs,
+        conflictAlgorithm: conflictAlgorithm);
+    return rawUpdate(builder.sql, builder.arguments);
+  }
+
+  @override
+  void delete(String table, {String where, List whereArgs}) {
+    SqlBuilder builder =
+        new SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
+    return rawDelete(builder.sql, builder.arguments);
+  }
+
+  @override
+  void rawDelete(String sql, [List arguments]) {
+    rawUpdate(sql, arguments);
   }
 }

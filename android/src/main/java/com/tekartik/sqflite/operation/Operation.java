@@ -16,4 +16,5 @@ public interface Operation extends OperationResult {
     <T> T getArgument(String key);
     String getSql();
     List<Object> getSqlArguments();
+    boolean getNoResult();
 }

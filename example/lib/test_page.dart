@@ -19,7 +19,6 @@ class TestPage extends StatefulWidget {
 
     String path = join(documentsDirectory.path, dbName);
 
-
     // make sure the folder exists
     if (await new Directory(dirname(path)).exists()) {
       await deleteDatabase(path);

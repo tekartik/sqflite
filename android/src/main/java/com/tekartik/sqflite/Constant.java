@@ -21,6 +21,7 @@ public class Constant {
 
     public static final String PARAM_SQL = "sql";
     public static final String PARAM_SQL_ARGUMENTS = "arguments";
+    public static final String PARAM_NO_RESULT = "noResult";
 
     // in batch
     static final String PARAM_OPERATIONS = "operations";

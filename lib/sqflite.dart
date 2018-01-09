@@ -479,7 +479,9 @@ Future deleteDatabase(String path) async {
 abstract class Batch {
   // Commits all of the operations in this batch as a single atomic unit
   // The result is a list of the result of each operation in the same order
-  Future<List<dynamic>> commit({bool exclusive});
+  // if [noResult] is true, the result list is empty (i.e. the id inserted
+  // the count of item changed is not returned
+  Future<List<dynamic>> commit({bool exclusive, bool noResult});
 
   /// See [Database.rawInsert]
   void rawInsert(String sql, [List arguments]);
@@ -487,4 +489,17 @@ abstract class Batch {
   /// See [Database.insert]
   void insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm});
+
+  /// See [Database.rawUpdate]
+  void rawUpdate(String sql, [List arguments]);
+
+  /// See [Database.update]
+  void update(String table, Map<String, dynamic> values,
+      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm});
+
+  /// See [Database.rawDelete]
+  void rawDelete(String sql, [List arguments]);
+
+  /// See [Database.delete]
+  void delete(String table, {String where, List whereArgs});
 }

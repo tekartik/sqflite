@@ -166,6 +166,12 @@ class SimpleTestPage extends TestPage {
     test("Demo clean", () async {
       // Get a location using path_provider
       Directory documentsDirectory = await getApplicationDocumentsDirectory();
+
+      // Make sure the directory exists
+      try {
+        documentsDirectory.create(recursive: true);
+      } catch (_) {}
+
       String path = join(documentsDirectory.path, "demo.db");
 
       // Delete the database
@@ -226,10 +232,48 @@ class SimpleTestPage extends TestPage {
       Database db = await openDatabase(path);
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
+      // empty batch
       Batch batch = db.batch();
-      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
       var results = await batch.commit();
+      assert(results.length == 0);
+
+      // one insert
+      batch = db.batch();
+      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
+      results = await batch.commit();
       assert(results[0] == 1);
+
+      // two insert
+      batch = db.batch();
+      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item2"]);
+      batch.insert("Test", {"name": "item3"});
+      results = await batch.commit();
+      assert(const DeepCollectionEquality().equals(results, [2, 3]));
+
+      // update
+      batch = db.batch();
+      batch.rawUpdate(
+          "UPDATE Test SET name = ? WHERE name = ?", ["new_item", "item1"]);
+      batch.update("Test", {"name": "new_other_item"},
+          where: "name != ?", whereArgs: ["new_item"]);
+      results = await batch.commit();
+      assert(const DeepCollectionEquality().equals(results, [1, 2]));
+
+      // delete
+      batch = db.batch();
+      batch.rawDelete("DELETE FROM Test WHERE name = ?", ["new_item"]);
+      batch.delete("Test", where: "name = ?", whereArgs: ["new_other_item"]);
+      results = await batch.commit();
+      assert(const DeepCollectionEquality().equals(results, [1, 2]));
+
+      // No result
+      batch = db.batch();
+      batch.insert("Test", {"name": "item"});
+      batch.update("Test", {"name": "new_item"},
+          where: "name = ?", whereArgs: ["item"]);
+      batch.delete("Test", where: "name = ?", whereArgs: ["item"]);
+      results = await batch.commit(noResult: true);
+      assert(results == null);
 
       await db.close();
     });

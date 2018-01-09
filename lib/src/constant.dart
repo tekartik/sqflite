@@ -11,6 +11,8 @@ const String methodGetPlatformVersion = "getPlatformVersion";
 
 // For batch
 const String paramOperations = "operations";
+// if true the result of each batch operation is not filled
+const String paramNoResult = "noResult";
 // For each operation
 const String paramMethod = "method";
 
