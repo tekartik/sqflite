@@ -1,47 +1,30 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:sqflite/src/constant.dart';
+import 'package:sqflite/src/database.dart';
 import 'dart:io';
 import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/sql_builder.dart';
-import 'package:sqflite/src/sqlite_impl.dart';
+import 'package:sqflite/src/sqflite_impl.dart';
 import 'src/utils.dart';
 import 'package:synchronized/synchronized.dart';
 export 'src/exception.dart' show DatabaseException;
-
-const String _paramPath = "path";
-const String _paramVersion = "version";
-const String _paramId = "id";
-const String _paramSql = "sql";
-const String _paramTable = "table";
-const String _paramValues = "values";
-const String _paramSqlArguments = "arguments";
-
-const String _methodSetDebugModeOn = "debugMode";
-const String _methodCloseDatabase = "closeDatabase";
-const String _methodOpenDatabase = "openDatabase";
-const String _methodExecute = "execute";
-const String _methodInsert = "insert";
-const String _methodUpdate = "update";
-const String _methodQuery = "query";
-const String _methodGetPlatformVersion = "getPlatformVersion";
-
-const String _channelName = 'com.tekartik.sqflite';
 
 ///
 /// sqflite plugin
 ///
 class Sqflite {
-  static const MethodChannel _channel = const MethodChannel(_channelName);
+  static MethodChannel get _channel => channel;
   static bool _debugModeOn = false;
   static bool _supportsConcurrency = supportsConcurrency;
   static Future<String> get platformVersion =>
-      _channel.invokeMethod(_methodGetPlatformVersion);
+      _channel.invokeMethod(methodGetPlatformVersion);
 
   /// turn on debug mode if you want to see the SQL query
   /// executed natively
   static Future setDebugModeOn([bool on = true]) async {
-    await Sqflite._channel.invokeMethod(_methodSetDebugModeOn, on);
+    await Sqflite._channel.invokeMethod(methodSetDebugModeOn, on);
   }
 
   static Future<bool> getDebugModeOn() async {
@@ -73,12 +56,14 @@ class _Transaction {
 /// Database support
 /// to send raw sql commands
 ///
-class Database {
-  String get path => _path;
-  String _path;
-  int _id;
-  Database._(this._path, this._id) {
-    // For now keep a lock for write access
+abstract class Database {
+  /// The path of the database
+  String get path;
+
+  int get _id => (this as SqfliteDatabase).id;
+
+  Database() {
+    // For now keep a lock for all access
     if (Sqflite._supportsConcurrency) {
       _writeLock = new SynchronizedLock();
     } else {
@@ -96,7 +81,7 @@ class Database {
 
   @override
   String toString() {
-    return "$_id $_path";
+    return "${_id} $path";
   }
 
   /// Close the database. Cannot be access anymore
@@ -107,9 +92,9 @@ class Database {
     return writeSynchronized(() {
       return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(
-            _methodExecute,
-            <String, dynamic>{_paramSql: sql, _paramSqlArguments: arguments}
-              ..addAll(baseDatabaseMethodArguments));
+            methodExecute,
+            <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
+              ..addAll(_baseDatabaseMethodArguments));
       });
     });
   }
@@ -120,9 +105,9 @@ class Database {
     return writeSynchronized(() {
       return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(
-            _methodInsert,
-            <String, dynamic>{_paramSql: sql, _paramSqlArguments: arguments}
-              ..addAll(baseDatabaseMethodArguments));
+            methodInsert,
+            <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
+              ..addAll(_baseDatabaseMethodArguments));
       });
     });
   }
@@ -193,9 +178,9 @@ class Database {
     return writeSynchronized(() {
       return wrapDatabaseException(() {
         return Sqflite._channel.invokeMethod(
-            _methodUpdate,
-            <String, dynamic>{_paramSql: sql, _paramSqlArguments: arguments}
-              ..addAll(baseDatabaseMethodArguments));
+            methodUpdate,
+            <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
+              ..addAll(_baseDatabaseMethodArguments));
       });
     });
   }
@@ -241,21 +226,17 @@ class Database {
     return rawDelete(builder.sql, builder.arguments);
   }
 
-  Map<String, dynamic> get baseDatabaseMethodArguments {
-    var map = <String, dynamic>{
-      _paramId: _id,
-    };
-    return map;
-  }
+  Map<String, dynamic> get _baseDatabaseMethodArguments =>
+      (this as SqfliteDatabase).baseDatabaseMethodArguments;
 
   /// for SELECT sql query
   Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]) {
     return synchronized(() {
       return wrapDatabaseException(() async {
         return await Sqflite._channel.invokeMethod(
-            _methodQuery,
-            <String, dynamic>{_paramSql: sql, _paramSqlArguments: arguments}
-              ..addAll(baseDatabaseMethodArguments));
+            methodQuery,
+            <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
+              ..addAll(_baseDatabaseMethodArguments));
       });
     });
   }
@@ -317,8 +298,9 @@ class Database {
       if (_transactionRefCount++ == 0) {
         transaction = await _beginTransaction(exclusive: exclusive);
       }
+      var result;
       try {
-        await action();
+        result = await action();
         successfull = true;
       } finally {
         if (--_transactionRefCount == 0) {
@@ -326,6 +308,7 @@ class Database {
           await _endTransaction(transaction);
         }
       }
+      return result;
     });
   }
 
@@ -344,6 +327,10 @@ class Database {
   Future setVersion(int version) async {
     await execute("PRAGMA user_version = $version;");
   }
+
+  /// Creates a batch, used for performing multiple operation
+  /// in a single atomic operation.
+  Batch batch();
 }
 
 typedef Future OnDatabaseVersionChangeFn(
@@ -369,14 +356,14 @@ final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
 Future _closeDatabase(int databaseId) {
   return wrapDatabaseException(() {
     return Sqflite._channel.invokeMethod(
-        _methodCloseDatabase, <String, dynamic>{_paramId: databaseId});
+        methodCloseDatabase, <String, dynamic>{paramId: databaseId});
   });
 }
 
 Future<int> _openDatabase(String path) {
   return wrapDatabaseException(() {
     return Sqflite._channel
-        .invokeMethod(_methodOpenDatabase, <String, dynamic>{_paramPath: path});
+        .invokeMethod(methodOpenDatabase, <String, dynamic>{paramPath: path});
   });
 }
 
@@ -424,7 +411,7 @@ Future<Database> openDatabase(String path,
         await deleteDatabase(db.path);
 
         // get a new database id after open
-        db._id = databaseId = await _openDatabase(path);
+        (db as SqfliteDatabase).id = databaseId = await _openDatabase(path);
 
         // no end transaction it will be done
         await db._beginTransaction(exclusive: true);
@@ -436,7 +423,7 @@ Future<Database> openDatabase(String path,
       onDowngrade = _onDatabaseDowngradeDelete;
     }
 
-    Database database = new Database._(path, databaseId);
+    Database database = new SqfliteDatabase(path, databaseId);
     if (version != null) {
       // init
       await database.inTransaction(() async {
@@ -481,4 +468,38 @@ Future deleteDatabase(String path) async {
   } catch (e) {
     print(e);
   }
+}
+
+///
+/// A batch is used to perform multiple operation as a single atomic unit.
+/// A Batch object can be acquired by calling [Database.batch]. It provides
+/// methods for adding operation. None of the operation will be
+/// executed (or visible locally) until commit() is called.
+///
+abstract class Batch {
+  // Commits all of the operations in this batch as a single atomic unit
+  // The result is a list of the result of each operation in the same order
+  // if [noResult] is true, the result list is empty (i.e. the id inserted
+  // the count of item changed is not returned
+  Future<List<dynamic>> commit({bool exclusive, bool noResult});
+
+  /// See [Database.rawInsert]
+  void rawInsert(String sql, [List arguments]);
+
+  /// See [Database.insert]
+  void insert(String table, Map<String, dynamic> values,
+      {String nullColumnHack, ConflictAlgorithm conflictAlgorithm});
+
+  /// See [Database.rawUpdate]
+  void rawUpdate(String sql, [List arguments]);
+
+  /// See [Database.update]
+  void update(String table, Map<String, dynamic> values,
+      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm});
+
+  /// See [Database.rawDelete]
+  void rawDelete(String sql, [List arguments]);
+
+  /// See [Database.delete]
+  void delete(String table, {String where, List whereArgs});
 }

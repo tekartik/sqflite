@@ -25,6 +25,8 @@ Import `sqflite.dart`
 
     import 'package:sqflite/sqflite.dart';
     
+### Raw SQL queries
+    
 Demo code to perform Raw SQL queries
 
     // Get a location using path_provider
@@ -81,6 +83,9 @@ Demo code to perform Raw SQL queries
     
     // Close the database
     await database.close();
+
+
+### SQL helpers
 
 Example using the helpers
 
@@ -153,6 +158,23 @@ Example using the helpers
     
       Future close() async => db.close();
     }
+    
+### Batch support
+
+To avoid ping-pong between dart and native code, you can use `Batch`:
+
+    batch = db.batch();
+    batch.insert("Test", {"name": "item"});
+    batch.update("Test", {"name": "new_item"}, where: "name = ?", whereArgs: ["item"]);
+    batch.delete("Test", where: "name = ?", whereArgs: ["item"]);
+    results = await batch.commit();
+    
+Getting the result for each operation has a cost (id for insertion and number of changes for
+update and delete), especially on Android where an extra SQL request is executed.
+If you don't care about the result and worry about performance in big batches, you can use
+
+    await batch.commit(noResult: true);
+    
 
 ## Supported SQLite types
 

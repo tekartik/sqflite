@@ -1,3 +1,7 @@
+## 0.4.0
+
+* Add support for Batch (insert/update/delete)
+
 ## 0.3.1
 
 * Remove temp concurrency experiment

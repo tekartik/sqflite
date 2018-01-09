@@ -1,6 +1,9 @@
 #import "SqflitePlugin.h"
 #import "FMDB.h"
 #import <sqlite3.h>
+#import "Operation.h"
+
+NSString *const _channelName = @"com.tekartik.sqflite";
 
 NSString *const _methodGetPlatformVersion = @"getPlatformVersion";
 NSString *const _methodDebugMode = @"debugMode";
@@ -10,7 +13,13 @@ NSString *const _methodExecute = @"execute";
 NSString *const _methodInsert = @"insert";
 NSString *const _methodUpdate = @"update";
 NSString *const _methodQuery = @"query";
+NSString *const _methodBatch = @"batch";
 
+// For batch
+NSString *const _paramOperations = @"operations";
+NSString *const _paramNoResult = @"noResult";
+// For each batch operation
+NSString *const _paramMethod = @"method";
 NSString *const _paramPath = @"path";
 NSString *const _paramId = @"id";
 NSString *const _paramSql = @"sql";
@@ -19,6 +28,7 @@ NSString *const _paramTable = @"table";
 NSString *const _paramValues = @"values";
 
 NSString *const _sqliteErrorCode = @"sqlite_error";
+NSString *const _errorBadParam = @"bad_param"; // internal only
 NSString *const _errorOpenFailed = @"open_failed";
 NSString *const _errorDatabaseClosed = @"database_closed";
 
@@ -62,7 +72,7 @@ NSInteger _databaseOpenCount = 0;
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
-                                     methodChannelWithName:@"com.tekartik.sqflite"
+                                     methodChannelWithName:_channelName
                                      binaryMessenger:[registrar messenger]];
     SqflitePlugin* instance = [[SqflitePlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
@@ -96,6 +106,17 @@ NSInteger _databaseOpenCount = 0;
         result([FlutterError errorWithCode:_sqliteErrorCode
                                    message:[NSString stringWithFormat:@"%@", [db lastError]]
                                    details:nil]);
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)handleError:(FMDatabase*)db operation:(Operation*)operation {
+    // handle error
+    if ([db hadError]) {
+        [operation error:([FlutterError errorWithCode:_sqliteErrorCode
+                                              message:[NSString stringWithFormat:@"%@", [db lastError]]
+                                              details:nil])];
         return YES;
     }
     return NO;
@@ -184,6 +205,28 @@ NSInteger _databaseOpenCount = 0;
     return true;
 }
 
+- (bool)executeOrError:(FMDatabase*)db operation:(Operation*)operation {
+    NSString* sql = [operation getSql];
+    NSArray* sqlArguments = [operation getSqlArguments];
+    BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
+    if (_log) {
+        NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
+    }
+    
+    if (!argumentsEmpty) {
+        [db executeUpdate: sql withArgumentsInArray: sqlArguments];
+    } else {
+        [db executeUpdate: sql];
+    }
+    
+    // handle error
+    if ([self handleError:db operation:operation]) {
+        return false;
+    }
+    
+    return true;
+}
+
 //
 // query
 //
@@ -225,6 +268,22 @@ NSInteger _databaseOpenCount = 0;
 //
 // insert
 //
+- (bool)insert:(FMDatabase*)db operation:(Operation*)operation {
+    if (![self executeOrError:db operation:operation]) {
+        return false;
+    }
+    if ([operation getNoResult]) {
+        [operation success:nil];
+        return true;
+    }
+    sqlite_int64 insertedId = [db lastInsertRowId];
+    if (_log) {
+        NSLog(@"inserted %@", @(insertedId));
+    }
+    [operation success:(@(insertedId))];
+    return true;
+}
+
 - (void)handleInsertCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     
     Database* database = [self getDatabaseOrError:call result:result];
@@ -233,14 +292,8 @@ NSInteger _databaseOpenCount = 0;
     }
     [self.operationQueue addOperationWithBlock:^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-            if (![self executeOrError:db call:call result:result]) {
-                return;
-            }
-            sqlite_int64 insertedId = [db lastInsertRowId];
-            if (_log) {
-                NSLog(@"inserted %@", @(insertedId));
-            }
-            result(@(insertedId));
+            MethodCallOperation* operation = [MethodCallOperation newWithCall:call result:result];
+            [self insert:db operation:operation];
         }];
     }];
 }
@@ -248,6 +301,22 @@ NSInteger _databaseOpenCount = 0;
 //
 // update
 //
+- (bool)update:(FMDatabase*)db operation:(Operation*)operation {
+    if (![self executeOrError:db operation:operation]) {
+        return false;
+    }
+    if ([operation getNoResult]) {
+        [operation success:nil];
+        return true;
+    }
+    int changes = [db changes];
+    if (_log) {
+        NSLog(@"changed %@", @(changes));
+    }
+    [operation success:(@(changes))];
+    return true;
+}
+
 - (void)handleUpdateCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     Database* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
@@ -255,15 +324,8 @@ NSInteger _databaseOpenCount = 0;
     }
     [self.operationQueue addOperationWithBlock:^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-            if (![self executeOrError:db call:call result:result]) {
-                return;
-            }
-            
-            int changes = [db changes];
-            if (_log) {
-                NSLog(@"changed %@", @(changes));
-            }
-            result(@(changes));
+            MethodCallOperation* operation = [MethodCallOperation newWithCall:call result:result];
+            [self update:db operation:operation];
         }];
     }];
 }
@@ -283,6 +345,63 @@ NSInteger _databaseOpenCount = 0;
             }
             
             result(nil);
+        }];
+    }];
+    
+}
+
+//
+// batch
+//
+- (void)handleBatchCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    Database* database = [self getDatabaseOrError:call result:result];
+    if (database == nil) {
+        return;
+    }
+    [self.operationQueue addOperationWithBlock:^{
+        [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
+            
+            MethodCallOperation* mainOperation = [MethodCallOperation newWithCall:call result:result];
+            bool noResult = [mainOperation getNoResult];
+            
+            NSArray* operations = call.arguments[_paramOperations];
+            NSMutableArray* results = [NSMutableArray new];
+            for (NSDictionary* dictionary in operations) {
+                // do something with object
+                
+                BatchOperation* operation = [BatchOperation new];
+                operation.dictionary = dictionary;
+                operation.noResult = noResult;
+                
+                NSString* method = [operation getMethod];
+                if ([_methodInsert isEqualToString:method]) {
+                    if ([self insert:db operation:operation]) {
+                        [operation handleSuccess:results];
+                    } else {
+                        [operation handleError:result];
+                        return;
+                    }
+                } else if ([_methodUpdate isEqualToString:method]) {
+                    if ([self update:db operation:operation]) {
+                        [operation handleSuccess:results];
+                    } else {
+                        [operation handleError:result];
+                        return;
+                    }
+                } else {
+                    result([FlutterError errorWithCode:_errorBadParam
+                                               message:[NSString stringWithFormat:@"Batch method '%@' not supported", method]
+                                               details:nil]);
+                    return;
+                }
+            }
+            
+            if (noResult) {
+                result(nil);
+            } else {
+                result(results);
+            }
+            
         }];
     }];
     
@@ -366,6 +485,8 @@ NSInteger _databaseOpenCount = 0;
         [self handleUpdateCall:call result:result];
     } else if ([_methodExecute isEqualToString:call.method]) {
         [self handleExecuteCall:call result:result];
+    } else if ([_methodBatch isEqualToString:call.method]) {
+        [self handleBatchCall:call result:result];
     } else if ([_methodCloseDatabase isEqualToString:call.method]) {
         [self handleCloseDatabaseCall:call result:result];
     } else if ([_methodDebugMode isEqualToString:call.method]) {
