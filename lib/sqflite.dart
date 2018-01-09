@@ -63,7 +63,7 @@ abstract class Database {
   int get _id => (this as SqfliteDatabase).id;
 
   Database() {
-    // For now keep a lock for write access
+    // For now keep a lock for all access
     if (Sqflite._supportsConcurrency) {
       _writeLock = new SynchronizedLock();
     } else {

@@ -169,13 +169,12 @@ To avoid ping-pong between dart and native code, you can use `Batch`:
     batch.delete("Test", where: "name = ?", whereArgs: ["item"]);
     results = await batch.commit();
     
-Getting the result for each operation has a cost id for insertion and number of changes for
-update and delete)
-If you don't care about the result, you can use
+Getting the result for each operation has a cost (id for insertion and number of changes for
+update and delete), especially on Android where an extra SQL request is executed.
+If you don't care about the result and worry about performance in big batches, you can use
 
     await batch.commit(noResult: true);
     
-In some tests, insertion of 1000 items has been a lot faster (x7 in the example)
 
 ## Supported SQLite types
 
