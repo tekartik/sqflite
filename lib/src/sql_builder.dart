@@ -57,6 +57,9 @@ class SqlBuilder {
   String sql;
   List arguments;
 
+  // during build
+  bool hasEscape = false;
+
   /// Convenience method for deleting rows in the database.
   ///
   /// @param table the table to delete from
@@ -68,7 +71,7 @@ class SqlBuilder {
   SqlBuilder.delete(String table, {String where, List whereArgs}) {
     StringBuffer delete = new StringBuffer();
     delete.write("DELETE FROM ");
-    delete.write(table);
+    delete.write(_escapeName(table));
     _writeClause(delete, " WHERE ", where);
     sql = delete.toString();
     arguments = whereArgs;
@@ -124,7 +127,7 @@ class SqlBuilder {
       query.write("* ");
     }
     query.write("FROM ");
-    query.write(table);
+    query.write(_escapeName(table));
     _writeClause(query, " WHERE ", where);
     _writeClause(query, " GROUP BY ", groupBy);
     _writeClause(query, " HAVING ", having);
@@ -154,7 +157,7 @@ class SqlBuilder {
       insert.write(_conflictValues[conflictAlgorithm.index]);
     }
     insert.write(" INTO ");
-    insert.write(table);
+    insert.write(_escapeName(table));
     insert.write(' (');
 
     List bindArgs;
@@ -171,7 +174,7 @@ class SqlBuilder {
           sbValues.write(", ");
         }
 
-        insert.write(colName);
+        insert.write(_escapeName(colName));
         if (value == null) {
           sbValues.write("NULL");
         } else {
@@ -218,7 +221,7 @@ class SqlBuilder {
     if (conflictAlgorithm != null) {
       update.write(_conflictValues[conflictAlgorithm.index]);
     }
-    update.write(table);
+    update.write(_escapeName(table));
     update.write(" SET ");
 
     List bindArgs = new List();
@@ -226,7 +229,7 @@ class SqlBuilder {
 
     values.keys.forEach((colName) {
       update.write((i++ > 0) ? ", " : "");
-      update.write(colName);
+      update.write(_escapeName(colName));
       var value = values[colName];
       if (value != null) {
         bindArgs.add(values[colName]);
@@ -245,29 +248,270 @@ class SqlBuilder {
     sql = update.toString();
     arguments = bindArgs;
   }
-}
 
-void _writeClause(StringBuffer s, String name, String clause) {
-  if (clause != null) {
-    s.write(name);
-    s.write(clause);
+  String _escapeName(String name) {
+    if (name == null) {
+      return name;
+    }
+    if (escapeNames.contains(name.toLowerCase())) {
+      hasEscape = true;
+      return _doEscape(name);
+    }
+    return name;
   }
-}
 
-/// Add the names that are non-null in columns to s, separating
-/// them with commas.
-void _writeColumns(StringBuffer s, List<String> columns) {
-  int n = columns.length;
-
-  for (int i = 0; i < n; i++) {
-    String column = columns[i];
-
-    if (column != null) {
-      if (i > 0) {
-        s.write(", ");
-      }
-      s.write(column);
+  void _writeClause(StringBuffer s, String name, String clause) {
+    if (clause != null) {
+      s.write(name);
+      s.write(clause);
     }
   }
-  s.write(' ');
+
+  /// Add the names that are non-null in columns to s, separating
+  /// them with commas.
+  void _writeColumns(StringBuffer s, List<String> columns) {
+    int n = columns.length;
+
+    for (int i = 0; i < n; i++) {
+      String column = columns[i];
+
+      if (column != null) {
+        if (i > 0) {
+          s.write(", ");
+        }
+        s.write(_escapeName(column));
+      }
+    }
+    s.write(' ');
+  }
 }
+
+bool isEscapedName(String name) {
+  if (name != null && name.length >= 2) {
+    String first = name[0];
+    String last = name[name.length - 1];
+    if (first == last) {
+      switch (first) {
+        case '"':
+        case "`":
+          return escapeNames
+              .contains("${name.substring(1, name.length - 1).toLowerCase()}");
+      }
+    }
+  }
+  return false;
+}
+
+// The actual escape implementation
+// We use double quote, although backtick could be used too
+String _doEscape(String name) => '"$name"';
+
+// Escape a table or column name if necessary
+// i.e. if it is an identified it will be surrounded by " (double-quote)
+// Only some name belonging to keywords can be escaped
+String escapeName(String name) {
+  if (name == null) {
+    return name;
+  }
+  if (escapeNames.contains(name.toLowerCase())) {
+    return _doEscape(name);
+  }
+  return name;
+}
+
+// Unescape a table or column name
+String unescapeName(String name) {
+  if (isEscapedName(name)) {
+    return name.substring(1, name.length - 1);
+  }
+  return name;
+}
+
+// This list was built from the whole set of keywords
+// ([allKeywords] kept here for reference
+Set<String> escapeNames = new Set.from([
+  "add",
+  "all",
+  "alter",
+  "and",
+  "as",
+  "autoincrement",
+  "between",
+  "case",
+  "check",
+  "collate",
+  "commit",
+  "constraint",
+  "create",
+  "default",
+  "deferrable",
+  "delete",
+  "distinct",
+  "drop",
+  "else",
+  "escape",
+  "except",
+  "exists",
+  "foreign",
+  "from",
+  "group",
+  "having",
+  "if",
+  "in",
+  "index",
+  "insert",
+  "intersect",
+  "into",
+  "is",
+  "isnull",
+  "join",
+  "limit",
+  "not",
+  "notnull",
+  "null",
+  "on",
+  "or",
+  "order",
+  "primary",
+  "references",
+  "select",
+  "set",
+  "table",
+  "then",
+  "to",
+  "transaction",
+  "union",
+  "unique",
+  "update",
+  "using",
+  "values",
+  "when",
+  "where"
+]);
+
+Set<String> _allKeywords = new Set.from([
+  "abort",
+  "action",
+  "add",
+  "after",
+  "all",
+  "alter",
+  "analyze",
+  "and",
+  "as",
+  "asc",
+  "attach",
+  "autoincrement",
+  "before",
+  "begin",
+  "between",
+  "by",
+  "cascade",
+  "case",
+  "cast",
+  "check",
+  "collate",
+  "column",
+  "commit",
+  "conflict",
+  "constraint",
+  "create",
+  "cross",
+  "current_date",
+  "current_time",
+  "current_timestamp",
+  "database",
+  "default",
+  "deferrable",
+  "deferred",
+  "delete",
+  "desc",
+  "detach",
+  "distinct",
+  "drop",
+  "each",
+  "else",
+  "end",
+  "escape",
+  "except",
+  "exclusive",
+  "exists",
+  "explain",
+  "fail",
+  "for",
+  "foreign",
+  "from",
+  "full",
+  "glob",
+  "group",
+  "having",
+  "if",
+  "ignore",
+  "immediate",
+  "in",
+  "index",
+  "indexed",
+  "initially",
+  "inner",
+  "insert",
+  "instead",
+  "intersect",
+  "into",
+  "is",
+  "isnull",
+  "join",
+  "key",
+  "left",
+  "like",
+  "limit",
+  "match",
+  "natural",
+  "no",
+  "not",
+  "notnull",
+  "null",
+  "of",
+  "offset",
+  "on",
+  "or",
+  "order",
+  "outer",
+  "plan",
+  "pragma",
+  "primary",
+  "query",
+  "raise",
+  "recursive",
+  "references",
+  "regexp",
+  "reindex",
+  "release",
+  "rename",
+  "replace",
+  "restrict",
+  "right",
+  "rollback",
+  "row",
+  "savepoint",
+  "select",
+  "set",
+  "table",
+  "temp",
+  "temporary",
+  "then",
+  "to",
+  "transaction",
+  "trigger",
+  "union",
+  "unique",
+  "update",
+  "using",
+  "vacuum",
+  "values",
+  "view",
+  "virtual",
+  "when",
+  "where",
+  "with",
+  "without"
+]);

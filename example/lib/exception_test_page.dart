@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sql.dart';
 import 'test_page.dart';
 
 class ExceptionTestPage extends TestPage {
@@ -203,5 +206,243 @@ class ExceptionTestPage extends TestPage {
         assert(e.isDatabaseClosedError());
       }
     });
+
+    test("Non escaping fields", () async {
+      //await Sqflite.setDebugModeOn(true);
+      String path = await initDeleteDb("non_escaping_fields.db");
+      Database db = await openDatabase(path);
+
+      String table = "table";
+      try {
+        await db.execute("CREATE TABLE $table (group INTEGER)");
+        fail("should fail");
+      } on DatabaseException catch (e) {
+        print(e);
+        assert(e.isSyntaxError());
+      }
+      try {
+        await db.execute("INSERT INTO $table (group) VALUES (1)");
+        fail("should fail");
+      } on DatabaseException catch (e) {
+        print(e);
+        assert(e.isSyntaxError());
+      }
+      try {
+        await db.rawQuery("SELECT * FROM $table ORDER BY group DESC");
+      } on DatabaseException catch (e) {
+        print(e);
+        assert(e.isSyntaxError());
+      }
+
+      try {
+        await db.rawQuery("DELETE FROM $table");
+      } on DatabaseException catch (e) {
+        print(e);
+        assert(e.isSyntaxError());
+      }
+
+      // Build our escape list from all the sqlite keywords
+      List<String> toExclude = [];
+      for (String name in allEscapeNames) {
+        try {
+          await db.execute("CREATE TABLE $name (value INTEGER)");
+        } on DatabaseException catch (e) {
+          await db.execute("CREATE TABLE ${escapeName(name)} (value INTEGER)");
+
+          assert(e.isSyntaxError());
+          toExclude.add(name);
+        }
+      }
+      print(JSON.encode(toExclude));
+
+      await db.close();
+    });
   }
 }
+
+var escapeNames = [
+  "add",
+  "all",
+  "alter",
+  "and",
+  "as",
+  "autoincrement",
+  "between",
+  "case",
+  "check",
+  "collate",
+  "commit",
+  "constraint",
+  "create",
+  "default",
+  "deferrable",
+  "delete",
+  "distinct",
+  "drop",
+  "else",
+  "escape",
+  "except",
+  "exists",
+  "foreign",
+  "from",
+  "group",
+  "having",
+  "if",
+  "in",
+  "index",
+  "insert",
+  "intersect",
+  "into",
+  "is",
+  "isnull",
+  "join",
+  "limit",
+  "not",
+  "notnull",
+  "null",
+  "on",
+  "or",
+  "order",
+  "primary",
+  "references",
+  "select",
+  "set",
+  "table",
+  "then",
+  "to",
+  "transaction",
+  "union",
+  "unique",
+  "update",
+  "using",
+  "values",
+  "when",
+  "where"
+];
+
+var allEscapeNames = [
+  "abort",
+  "action",
+  "add",
+  "after",
+  "all",
+  "alter",
+  "analyze",
+  "and",
+  "as",
+  "asc",
+  "attach",
+  "autoincrement",
+  "before",
+  "begin",
+  "between",
+  "by",
+  "cascade",
+  "case",
+  "cast",
+  "check",
+  "collate",
+  "column",
+  "commit",
+  "conflict",
+  "constraint",
+  "create",
+  "cross",
+  "current_date",
+  "current_time",
+  "current_timestamp",
+  "database",
+  "default",
+  "deferrable",
+  "deferred",
+  "delete",
+  "desc",
+  "detach",
+  "distinct",
+  "drop",
+  "each",
+  "else",
+  "end",
+  "escape",
+  "except",
+  "exclusive",
+  "exists",
+  "explain",
+  "fail",
+  "for",
+  "foreign",
+  "from",
+  "full",
+  "glob",
+  "group",
+  "having",
+  "if",
+  "ignore",
+  "immediate",
+  "in",
+  "index",
+  "indexed",
+  "initially",
+  "inner",
+  "insert",
+  "instead",
+  "intersect",
+  "into",
+  "is",
+  "isnull",
+  "join",
+  "key",
+  "left",
+  "like",
+  "limit",
+  "match",
+  "natural",
+  "no",
+  "not",
+  "notnull",
+  "null",
+  "of",
+  "offset",
+  "on",
+  "or",
+  "order",
+  "outer",
+  "plan",
+  "pragma",
+  "primary",
+  "query",
+  "raise",
+  "recursive",
+  "references",
+  "regexp",
+  "reindex",
+  "release",
+  "rename",
+  "replace",
+  "restrict",
+  "right",
+  "rollback",
+  "row",
+  "savepoint",
+  "select",
+  "set",
+  "table",
+  "temp",
+  "temporary",
+  "then",
+  "to",
+  "transaction",
+  "trigger",
+  "union",
+  "unique",
+  "update",
+  "using",
+  "vacuum",
+  "values",
+  "view",
+  "virtual",
+  "when",
+  "where",
+  "with",
+  "without"
+];

@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sql.dart';
 
 main() {
   group("sqflite", () {
@@ -24,11 +25,18 @@ main() {
     });
 
     test("exported", () {
-      Database db;
       try {
-        db.batch();
-        db.update(null, null);
+        Database db;
+        db.update(null, null, conflictAlgorithm: ConflictAlgorithm.abort);
       } catch (_) {}
+    });
+
+    test("escapeName_export", () {
+      expect(escapeName("group"), '"group"');
+    });
+
+    test("unescapeName_export", () {
+      expect(unescapeName('"group"'), "group");
     });
   });
 }

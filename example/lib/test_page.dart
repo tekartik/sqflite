@@ -39,6 +39,11 @@ class TestPage extends StatefulWidget {
     tests.add(new Test(name, fn));
   }
 
+  // Thrown an exception
+  fail(String message) {
+    throw new Exception(message);
+  }
+
   TestPage(this.title) {}
 
   @override

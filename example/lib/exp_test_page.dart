@@ -42,7 +42,7 @@ class ExpTestPage extends TestPage {
     });
 
     test("in", () async {
-      await Sqflite.setDebugModeOn(true);
+      //await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("simple_exp.db");
       Database db = await openDatabase(path);
 
@@ -79,5 +79,88 @@ class ExpTestPage extends TestPage {
 
       await db.close();
     });
+
+    test("Raw escaping", () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("raw_escaping_fields.db");
+      Database db = await openDatabase(path);
+
+      String table = "table";
+      await db.execute('CREATE TABLE "$table" ("group" INTEGER)');
+      // inserted in a wrong order to check ASC/DESC
+      await db.execute('INSERT INTO "$table" ("group") VALUES (1)');
+
+      var expectedResult = [
+        {"group": 1}
+      ];
+
+      var result = await db
+          .rawQuery('SELECT "group" FROM "$table" ORDER BY "group" DESC');
+      print(result);
+      assert(const DeepCollectionEquality().equals(result, expectedResult));
+      result =
+          await db.rawQuery("SELECT * FROM '$table' ORDER BY `group` DESC");
+      //print(JSON.encode(result));
+      assert(const DeepCollectionEquality().equals(result, expectedResult));
+
+      await db.rawDelete("DELETE FROM '$table'");
+
+      await db.close();
+    });
+
+    test("Escaping fields", () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("escaping_fields.db");
+      Database db = await openDatabase(path);
+
+      String table = "group";
+      await db.execute('CREATE TABLE "$table" ("group" TEXT)');
+      // inserted in a wrong order to check ASC/DESC
+
+      await db.insert(table, {"group": "group_value"});
+      await db.update(table, {"group": "group_new_value"},
+          where: "\"group\" = 'group_value'");
+
+      var expectedResult = [
+        {"group": "group_new_value"}
+      ];
+
+      var result =
+          await db.query(table, columns: ["group"], orderBy: '"group" DESC');
+      //print(JSON.encode(result));
+      assert(const DeepCollectionEquality().equals(result, expectedResult));
+
+      await db.delete(table);
+
+      await db.close();
+    });
+
+    /*
+
+    Save code that modify a map from a result - unused
+    var rawResult = await rawQuery(builder.sql, builder.arguments);
+
+    // Super slow if we escape a name, please avoid it
+    // This won't be called if no keywords were used
+    if (builder.hasEscape) {
+      for (Map map in rawResult) {
+        var keys = new Set<String>();
+
+        for (String key in map.keys) {
+          if (isEscapedName(key)) {
+            keys.add(key);
+          }
+        }
+        if (keys.isNotEmpty) {
+          for (var key in keys) {
+            var value = map[key];
+            map.remove(key);
+            map[unescapeName(key)] = value;
+          }
+        }
+      }
+    }
+    return rawResult;
+    */
   }
 }

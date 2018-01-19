@@ -75,14 +75,48 @@ main() {
 
     test("query", () {
       SqlBuilder builder = new SqlBuilder.query("table", orderBy: "value");
-      expect(builder.sql, "SELECT * FROM table ORDER BY value");
+      expect(builder.sql, 'SELECT * FROM "table" ORDER BY value');
       expect(builder.arguments, isNull);
 
       builder =
           new SqlBuilder.query("table", orderBy: "column_1 ASC, column_2 DESC");
       expect(builder.sql,
-          "SELECT * FROM table ORDER BY column_1 ASC, column_2 DESC");
+          'SELECT * FROM "table" ORDER BY column_1 ASC, column_2 DESC');
       expect(builder.arguments, isNull);
+    });
+
+    test("isEscapedName", () {
+      expect(isEscapedName(null), false);
+      expect(isEscapedName("group"), false);
+      expect(isEscapedName("'group'"), false);
+      expect(isEscapedName('"group"'), true);
+      expect(isEscapedName("`group`"), true);
+      expect(isEscapedName("`group'"), false);
+      expect(isEscapedName("\"group\""), true);
+    });
+
+    test("escapeName", () {
+      expect(escapeName(null), null);
+      expect(escapeName("group"), '"group"');
+      expect(escapeName("dummy"), "dummy");
+
+      for (String name in escapeNames) {
+        expect(escapeName(name), '"${name}"');
+      }
+    });
+
+    test("unescapeName", () {
+      expect(unescapeName(null), null);
+
+      expect(unescapeName("dummy"), "dummy");
+      expect(unescapeName("'dummy'"), "'dummy'");
+      expect(unescapeName("'group'"), "'group'");
+      expect(unescapeName('"group"'), "group");
+      expect(unescapeName('`group`'), "group");
+
+      for (String name in escapeNames) {
+        expect(unescapeName('"$name"'), name);
+      }
     });
   });
 }
