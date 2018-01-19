@@ -171,7 +171,7 @@ class SqlBuilder {
           sbValues.write(", ");
         }
 
-        insert.write(colName);
+        insert.write('`' + colName + '`');
         if (value == null) {
           sbValues.write("NULL");
         } else {
