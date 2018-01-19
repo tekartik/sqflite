@@ -1,3 +1,8 @@
+## 0.5.0
+
+* Escape table and column name when needed in insert/update/query/delete
+* Export ConflictAlgorithm, escapeName, unescapeName in new sql.dart
+
 ## 0.4.0
 
 * Add support for Batch (insert/update/delete)
