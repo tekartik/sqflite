@@ -1,3 +1,7 @@
+## 0.6.0
+
+* add support for `onConfigure` to allow for database configuration
+ 
 ## 0.5.0
 
 * Escape table and column name when needed in insert/update/query/delete

@@ -333,10 +333,11 @@ abstract class Database {
   Batch batch();
 }
 
-typedef Future OnDatabaseVersionChangeFn(
+typedef FutureOr OnDatabaseVersionChangeFn(
     Database db, int oldVersion, int newVersion);
-typedef Future OnDatabaseCreateFn(Database db, int newVersion);
-typedef Future OnDatabaseOpenFn(Database db);
+typedef FutureOr OnDatabaseCreateFn(Database db, int newVersion);
+typedef FutureOr OnDatabaseOpenFn(Database db);
+typedef FutureOr OnDatabaseConfigureFn(Database db);
 
 // Downgrading will always fail
 Future onDatabaseVersionChangeError(
@@ -370,10 +371,17 @@ Future<int> _openDatabase(String path) {
 ///
 /// Open the database at a given path
 /// setting a version is optional
-/// onCreate, onUpgrade, onDowngrade are called in a transaction
+/// [onConfigure], [onCreate],  [onUpgrade], [onDowngrade] are called in a transaction
+///
+/// [onConfigure] is alled when the database connection is being configured,
+/// to enable features such as write-ahead logging or foreign key support.
+/// This method is called before [onCreate], [onUpgrade], [onDowngrade]
+/// [onOpen] are called. It should not modify the database except to configure
+/// the database connection as required.
 ///
 Future<Database> openDatabase(String path,
     {int version,
+    OnDatabaseConfigureFn onConfigure,
     OnDatabaseCreateFn onCreate,
     OnDatabaseVersionChangeFn onUpgrade,
     OnDatabaseVersionChangeFn onDowngrade,
@@ -399,7 +407,7 @@ Future<Database> openDatabase(String path,
   int databaseId = await _openDatabase(path);
 
   try {
-    // Special on downgrade elete database
+    // Special on downgrade delete database
     if (onDowngrade == onDatabaseDowngradeDelete) {
       // Downgrading will delete the database and open it again
       Future _onDatabaseDowngradeDelete(
@@ -413,7 +421,23 @@ Future<Database> openDatabase(String path,
         // get a new database id after open
         (db as SqfliteDatabase).id = databaseId = await _openDatabase(path);
 
-        // no end transaction it will be done
+        try {
+          // Since we deleted the database re-run the needed first steps:
+          // onConfigure then onCreate
+          if (onConfigure != null) {
+            await onConfigure(db);
+          }
+        } catch (e) {
+          // This exception is sometimes hard te catch
+          // during development
+          print(e);
+
+          // create a transaction just to make the current transaction happy
+          await db._beginTransaction(exclusive: true);
+          rethrow;
+        }
+
+        // no end transaction it will be done later before calling then onOpen
         await db._beginTransaction(exclusive: true);
         if (onCreate != null) {
           await onCreate(db, version);
@@ -424,6 +448,12 @@ Future<Database> openDatabase(String path,
     }
 
     Database database = new SqfliteDatabase(path, databaseId);
+
+    // first configure it
+    if (onConfigure != null) {
+      await onConfigure(database);
+    }
+
     if (version != null) {
       // init
       await database.inTransaction(() async {
@@ -447,11 +477,12 @@ Future<Database> openDatabase(String path,
         }
         await database.setVersion(version);
       }, exclusive: true);
-
-      if (onOpen != null) {
-        await onOpen(database);
-      }
     }
+
+    if (onOpen != null) {
+      await onOpen(database);
+    }
+
     return database;
   } catch (e) {
     await _closeDatabase(databaseId);

@@ -145,44 +145,6 @@ class ExceptionTestPage extends TestPage {
       await database.close();
     });
 
-    test("Open onDowngrade delete", () async {
-      //await Sqflite.setDebugModeOn();
-
-      String path = await initDeleteDb("open_on_downgrade_delete.db");
-      Database database = await openDatabase(path, version: 3,
-          onCreate: (Database db, int version) async {
-        await db.execute("CREATE TABLE Test(id INTEGER PRIMARY KEY)");
-      });
-      await database.close();
-
-      // should fail going back in versions
-      bool onCreated = false;
-      bool onOpened = false;
-      database = await openDatabase(path, version: 2,
-          onCreate: (Database db, int version) {
-        onCreated = true;
-        assert(version == 2);
-      }, onOpen: (Database db) {
-        onOpened = true;
-      }, onDowngrade: onDatabaseDowngradeDelete);
-      await database.close();
-
-      assert(onCreated);
-      assert(onOpened);
-
-      onCreated = false;
-      onOpened = false;
-
-      database = await openDatabase(path, version: 2,
-          onCreate: (Database db, int version) {
-        assert(false, "should not be called");
-      }, onOpen: (Database db) {
-        onOpened = true;
-      }, onDowngrade: onDatabaseDowngradeDelete);
-      assert(onOpened);
-      await database.close();
-    });
-
     test("Access after close", () async {
       String path = await initDeleteDb("access_after_close.db");
       Database database = await openDatabase(path, version: 3,

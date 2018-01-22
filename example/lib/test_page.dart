@@ -50,6 +50,16 @@ class TestPage extends StatefulWidget {
   _TestPageState createState() => new _TestPageState();
 }
 
+bool verify(bool condition, [String message]) {
+  if (condition == null) {
+    throw new Exception('"$message" null condition');
+  }
+  if (!condition) {
+    throw new Exception('"$message"');
+  }
+  return condition;
+}
+
 class _TestPageState extends State<TestPage> {
   int get _itemCount => items.length;
 

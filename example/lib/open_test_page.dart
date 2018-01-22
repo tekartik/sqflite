@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:sqflite/sqflite.dart';
@@ -5,6 +6,75 @@ import 'test_page.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+
+class OpenCallbacks {
+  bool onConfigureCalled;
+  bool onOpenCalled;
+  bool onCreateCalled;
+  bool onDowngradeCalled;
+  bool onUpgradeCalled;
+  void reset() {
+    onConfigureCalled = false;
+    onOpenCalled = false;
+    onCreateCalled = false;
+    onDowngradeCalled = false;
+    onUpgradeCalled = false;
+  }
+
+  OnDatabaseCreateFn onCreate;
+  OnDatabaseConfigureFn onConfigure;
+  OnDatabaseVersionChangeFn onDowngrade;
+  OnDatabaseVersionChangeFn onUpgrade;
+  OnDatabaseOpenFn onOpen;
+
+  OpenCallbacks() {
+    onConfigure = (Database db) {
+      //print("onConfigure");
+      //verify(!onConfigureCalled, "onConfigure must be called once");
+      assert(!onConfigureCalled); // onConfigure must be called once
+      onConfigureCalled = true;
+    };
+
+    onCreate = (Database db, int version) {
+      //print("onCreate");
+      assert(onConfigureCalled);
+      assert(!onCreateCalled);
+      onCreateCalled = true;
+    };
+
+    onOpen = (Database db) {
+      //print("onOpen");
+      verify(onConfigureCalled, "onConfigure must be called before onOpen");
+      assert(!onOpenCalled);
+      onOpenCalled = true;
+    };
+
+    onUpgrade = (Database db, int oldVersion, int newVersion) {
+      assert(onConfigureCalled);
+      assert(!onUpgradeCalled);
+      onUpgradeCalled = true;
+    };
+
+    onDowngrade = (Database db, int oldVersion, int newVersion) {
+      assert(onConfigureCalled);
+      assert(!onDowngradeCalled);
+      onDowngradeCalled = true;
+    };
+
+    reset();
+  }
+
+  Future<Database> open(String path, {int version}) async {
+    reset();
+    return openDatabase(path,
+        version: version,
+        onConfigure: onConfigure,
+        onCreate: onCreate,
+        onUpgrade: onUpgrade,
+        onDowngrade: onDowngrade,
+        onOpen: onOpen);
+  }
+}
 
 class OpenTestPage extends TestPage {
   OpenTestPage() : super("Open tests") {
@@ -138,6 +208,128 @@ class OpenTestPage extends TestPage {
       List<Map<String, dynamic>> list = await db.rawQuery("SELECT * FROM Test");
       print(list);
       assert(list.first["name"] == "simple value");
+
+      await db.close();
+    });
+
+    test("Open on configure", () async {
+      Directory documentsDirectory = await getApplicationDocumentsDirectory();
+      String path = join(documentsDirectory.path, "open_on_configure.db");
+      bool onConfigured = false;
+      Future _onConfigure(Database db) async {
+        onConfigured = true;
+      }
+
+      var db = await openDatabase(path, onConfigure: _onConfigure);
+      assert(onConfigured);
+
+      await db.close();
+    });
+
+    test("Open onDowngrade delete", () async {
+      //await Sqflite.devSetDebugModeOn(false);
+
+      String path = await initDeleteDb("open_on_downgrade_delete.db");
+      Database database = await openDatabase(path, version: 3,
+          onCreate: (Database db, int version) async {
+        await db.execute("CREATE TABLE Test(id INTEGER PRIMARY KEY)");
+      });
+      await database.close();
+
+      // should fail going back in versions
+      bool onCreated = false;
+      bool onOpened = false;
+      bool onConfiguredOnce = false; // onConfigure will be called twice here
+      // since the database is re-opened
+      bool onConfigured = false;
+      database =
+          await openDatabase(path, version: 2, onConfigure: (Database db) {
+        // Must not be configured nor created yet
+        assert(!onConfigured);
+        assert(!onCreated);
+        if (!onConfiguredOnce) {
+          // first time
+          onConfiguredOnce = true;
+        } else {
+          onConfigured = true;
+        }
+      }, onCreate: (Database db, int version) {
+        assert(onConfigured);
+        assert(!onCreated);
+        assert(!onOpened);
+        onCreated = true;
+        assert(version == 2);
+      }, onOpen: (Database db) {
+        assert(onCreated);
+        onOpened = true;
+      }, onDowngrade: onDatabaseDowngradeDelete);
+      await database.close();
+
+      assert(onCreated);
+      assert(onOpened);
+      assert(onConfigured);
+
+      onCreated = false;
+      onOpened = false;
+
+      database = await openDatabase(path, version: 2,
+          onCreate: (Database db, int version) {
+        assert(false, "should not be called");
+      }, onOpen: (Database db) {
+        onOpened = true;
+      }, onDowngrade: onDatabaseDowngradeDelete);
+      assert(onOpened);
+      await database.close();
+    });
+
+    test("All open callback", () async {
+      String path = await initDeleteDb("open_all_callbacks.db");
+
+      OpenCallbacks openCallbacks = new OpenCallbacks();
+      var db = await openCallbacks.open(path, version: 1);
+      assert(openCallbacks.onConfigureCalled);
+      assert(openCallbacks.onCreateCalled);
+      assert(openCallbacks.onOpenCalled);
+      assert(!openCallbacks.onUpgradeCalled);
+      assert(!openCallbacks.onDowngradeCalled);
+      await db.close();
+
+      db = await openCallbacks.open(path, version: 3);
+      assert(openCallbacks.onConfigureCalled);
+      assert(!openCallbacks.onCreateCalled);
+      assert(openCallbacks.onOpenCalled);
+      assert(openCallbacks.onUpgradeCalled);
+      assert(!openCallbacks.onDowngradeCalled);
+      await db.close();
+
+      db = await openCallbacks.open(path, version: 2);
+      assert(openCallbacks.onConfigureCalled);
+      assert(!openCallbacks.onCreateCalled);
+      assert(openCallbacks.onOpenCalled);
+      assert(!openCallbacks.onUpgradeCalled);
+      assert(openCallbacks.onDowngradeCalled);
+      await db.close();
+
+      openCallbacks.onDowngrade = onDatabaseDowngradeDelete;
+      int configureCount = 0;
+      var callback = openCallbacks.onConfigure;
+      // allow being called twice
+      openCallbacks.onConfigure = (Database db) {
+        if (configureCount == 1) {
+          openCallbacks.onConfigureCalled = false;
+        }
+        configureCount++;
+        callback(db);
+      };
+      db = await openCallbacks.open(path, version: 1);
+
+      assert(openCallbacks.onConfigureCalled);
+      assert(configureCount == 2);
+      assert(openCallbacks.onCreateCalled);
+      assert(openCallbacks.onOpenCalled);
+      assert(!openCallbacks.onUpgradeCalled);
+      assert(!openCallbacks.onDowngradeCalled);
+      await db.close();
     });
   }
 }
