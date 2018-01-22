@@ -175,6 +175,27 @@ If you don't care about the result and worry about performance in big batches, y
 
     await batch.commit(noResult: true);
     
+## Table and column names
+
+In general it is better to avoid using SQLite keywords for entity names. If any of the following
+name is used:
+
+    "add","all","alter","and","as","autoincrement","between","case","check","collate","commit","constraint","create","default","deferrable","delete","distinct","drop","else","escape","except","exists","foreign","from","group","having","if","in","index","insert","intersect","into","is","isnull","join","limit","not","notnull","null","on","or","order","primary","references","select","set","table","then","to","transaction","union","unique","update","using","values","when","where"
+    
+the helper will *escape* the name i.e.
+
+    db.query("table")
+    
+will be equivalent to manually adding double-quote around the table name (confusingly here named `table`)
+
+    db.rawQuery('SELECT * FROM "table"');
+    
+However in any other raw statement (including `orderBy`, `where`, `groupBy`), make sure to escape the name
+properly using double quote. For example see below where the column name `group` is not escaped in the columns
+argument, but is escaped in the `where` argument.
+
+    db.query("table", columns: ["group"], where: '"group": ?', whereArgs: ["my_group"]);
+
 
 ## Supported SQLite types
 
