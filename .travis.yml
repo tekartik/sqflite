@@ -5,3 +5,4 @@ before_script:
   - flutter doctor
 script:
   - flutter test
+  - dartdoc
