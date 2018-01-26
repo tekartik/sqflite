@@ -2,7 +2,7 @@ name: sqflite
 author: Tekartik <alex@tekartik.com>
 homepage: https://github.com/tekartik/sqflite
 description: SQLite flutter plugin
-version: 0.6.1
+version: 0.6.2
 
 environment:
   sdk: ">=1.24.0 <2.0.0"

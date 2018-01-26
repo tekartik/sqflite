@@ -389,6 +389,9 @@ Set<String> escapeNames = new Set.from([
   "where"
 ]);
 
+/*
+All keywords kept here for reference
+
 Set<String> _allKeywords = new Set.from([
   "abort",
   "action",
@@ -515,3 +518,4 @@ Set<String> _allKeywords = new Set.from([
   "with",
   "without"
 ]);
+*/

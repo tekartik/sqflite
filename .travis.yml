@@ -4,6 +4,4 @@ before_script:
   - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
   - flutter doctor
 script:
-  - flutter test
-  - dartanalyzer lib test
-  - dartdoc
+  - tool/travis.sh
