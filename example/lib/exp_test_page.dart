@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+
 import 'src/common_import.dart';
 import 'test_page.dart';
 
@@ -131,6 +132,40 @@ class ExpTestPage extends TestPage {
       assert(const DeepCollectionEquality().equals(result, expectedResult));
 
       await db.delete(table);
+
+      await db.close();
+    });
+
+    test("Functions", () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("exp_functions.db");
+      Database db = await openDatabase(path);
+
+      String table = "functions";
+      await db.execute('CREATE TABLE "$table" (one TEXT, another TEXT)');
+      await db.insert(table, {"one": "1", "another": "2"});
+      await db.insert(table, {"one": "1", "another": "3"});
+      await db.insert(table, {"one": "2", "another": "2"});
+
+      var result = await db.rawQuery('''
+      select one, GROUP_CONCAT(another) as my_col
+      from $table
+      GROUP BY one''');
+      //print('result :$result');
+      assert(const DeepCollectionEquality().equals(result, [
+        {"one": "1", "my_col": "2,3"},
+        {"one": "2", "my_col": "2"}
+      ]));
+
+      result = await db.rawQuery('''
+      select one, GROUP_CONCAT(another)
+      from $table
+      GROUP BY one''');
+      // print('result :$result');
+      assert(const DeepCollectionEquality().equals(result, [
+        {"one": "1", "GROUP_CONCAT(another)": "2,3"},
+        {"one": "2", "GROUP_CONCAT(another)": "2"}
+      ]));
 
       await db.close();
     });
