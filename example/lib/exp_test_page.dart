@@ -167,7 +167,37 @@ class ExpTestPage extends TestPage {
         {"one": "2", "GROUP_CONCAT(another)": "2"}
       ]));
 
+      // user alias
+      result = await db.rawQuery('''
+      select t.one, GROUP_CONCAT(t.another)
+      from $table as t
+      GROUP BY t.one''');
+      //print('result :$result');
+      assert(const DeepCollectionEquality().equals(result, [
+        {"one": "1", "GROUP_CONCAT(t.another)": "2,3"},
+        {"one": "2", "GROUP_CONCAT(t.another)": "2"}
+      ]));
+
       await db.close();
+    });
+
+    test("Alias", () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("exp_alias.db");
+      Database db = await openDatabase(path);
+
+      String table = "alias";
+      await db
+          .execute("CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)");
+      await db.insert(table, {"column_1": 1, "column_2": 2});
+
+      var result = await db.rawQuery('''
+      select t.column_1, t.column_1 as "t.column1", column_1 as column_alias_1, column_2
+      from $table as t''');
+      print('result :$result');
+      assert(const DeepCollectionEquality().equals(result, [
+        {"t.column1": 1, "column_1": 1, "column_alias_1": 1, "column_2": 2}
+      ]));
     });
 
     /*
