@@ -1,3 +1,15 @@
+## 0.6.2+1
+
+* Add longer description to pubspec.yaml
+
+## 0.6.2
+
+* Fix travis warning
+
+## 0.6.1
+
+* Add Flutter SDK constraint to pubspec.yaml
+
 ## 0.6.0
 
 * add support for `onConfigure` to allow for database configuration
