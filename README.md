@@ -194,7 +194,7 @@ However in any other raw statement (including `orderBy`, `where`, `groupBy`), ma
 properly using double quote. For example see below where the column name `group` is not escaped in the columns
 argument, but is escaped in the `where` argument.
 
-    db.query("table", columns: ["group"], where: '"group": ?', whereArgs: ["my_group"]);
+    db.query("table", columns: ["group"], where: '"group" = ?', whereArgs: ["my_group"]);
 
 
 ## Supported SQLite types
