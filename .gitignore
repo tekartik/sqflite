@@ -10,3 +10,6 @@ pubspec.lock
 
 # Directory created by dartdoc
 doc/api/
+
+# Local folder
+.local/
