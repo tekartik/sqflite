@@ -23,6 +23,10 @@ class SqfliteBatch implements Batch {
         }
         List results = await channel.invokeMethod(methodBatch, arguments);
 
+        // Typically when noResult is true
+        if (results == null) {
+          return null;
+        }
         // dart1 support
         if (results is List<dynamic>) {
           return results;
