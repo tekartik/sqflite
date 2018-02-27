@@ -1,3 +1,7 @@
+## 0.7.0
+
+* Add support for `--preview-dart-2`
+
 ## 0.6.2+1
 
 * Add longer description to pubspec.yaml
