@@ -9,3 +9,7 @@ packages
 pubspec.lock
 .flutter-plugins
 sqflite_example.iml
+
+# local files
+.local/
+tmp/

@@ -7,7 +7,6 @@ import 'package:path/path.dart';
 import 'package:func/func.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_example/src/utils.dart';
 import 'model/item.dart';
 import 'model/test.dart';
 import 'src/item_widget.dart';
@@ -120,7 +119,6 @@ class _TestPageState extends State<TestPage> {
       item = new Item("${test.name}")..state = ItemState.success;
     } catch (e) {
       print("TEST Error $e running ${test.name}");
-      // devPrint("st: $_st");
       item = new Item("${test.name}")..state = ItemState.failure;
     }
 
