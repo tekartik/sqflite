@@ -20,7 +20,8 @@ main() {
 
     test("setDebugModeOn", () async {
       await Sqflite.setDebugModeOn();
-      //expect(log, equals(<MethodCall>[new MethodCall('debugMode', true)]));
+      expect(log.first.method, "debugMode");
+      expect(log.first.arguments, true);
     });
 
     test("exported", () {

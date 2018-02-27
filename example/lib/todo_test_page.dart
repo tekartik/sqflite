@@ -78,7 +78,7 @@ create table $tableTodo (
 class TodoTestPage extends TestPage {
   TodoTestPage() : super("Todo example") {
     test("open", () async {
-      //await Sqflite.setDebugModeOn(true);
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("simple_todo_open.db");
       TodoProvider todoProvider = new TodoProvider();
       await todoProvider.open(path);
@@ -88,7 +88,7 @@ class TodoTestPage extends TestPage {
     });
 
     test("insert/query/update/delete", () async {
-      await Sqflite.setDebugModeOn(true);
+      // await Sqflite.devSetDebugModeOn();
       String path = await initDeleteDb("simple_todo.db");
       TodoProvider todoProvider = new TodoProvider();
       await todoProvider.open(path);

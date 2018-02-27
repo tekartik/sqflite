@@ -21,11 +21,13 @@ class SqfliteBatch implements Batch {
         if (noResult == true) {
           arguments[paramNoResult] = noResult;
         }
-        List<dynamic> results =
-            await channel.invokeMethod(methodBatch, arguments);
-        if (results == null) {
-          return null;
+        List results = await channel.invokeMethod(methodBatch, arguments);
+
+        // dart1 support
+        if (results is List<dynamic>) {
+          return results;
         }
+        // dart2 - wrap if we need to support more results than just int
         return new BatchResults.from(results);
       });
     }, exclusive: exclusive);

@@ -211,8 +211,9 @@ class ExpTestPage extends TestPage {
       await db.insert(table, {"column_1": 1, "column_2": 2});
 
       var result = await db.rawQuery('''
-      select column_1, column_2
-      from $table as t''');
+         select column_1, column_2
+         from $table as t
+      ''');
       print('result: $result');
       // test output types
       assert(result.runtimeType.toString() == "Rows");

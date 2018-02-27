@@ -106,8 +106,8 @@ abstract class Database {
   /// for INSERT sql query
   /// returns the last inserted record id
   Future<int> rawInsert(String sql, [List arguments]) {
-    return writeSynchronized<int>(() {
-      return wrapDatabaseException<int>(() {
+    return writeSynchronized(() {
+      return wrapDatabaseException(() {
         return invokeMethod<int>(
             methodInsert,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
@@ -179,8 +179,8 @@ abstract class Database {
   /// for UPDATE sql query
   /// return the number of changes made
   Future<int> rawUpdate(String sql, [List arguments]) {
-    return writeSynchronized<int>(() {
-      return wrapDatabaseException<int>(() {
+    return writeSynchronized(() {
+      return wrapDatabaseException(() {
         return invokeMethod<int>(
             methodUpdate,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
@@ -235,14 +235,21 @@ abstract class Database {
 
   /// for SELECT sql query
   Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]) {
-    return synchronized<List<Map<String, dynamic>>>(() {
-      return wrapDatabaseException<List<Map<String, dynamic>>>(() async {
+    return synchronized(() {
+      return wrapDatabaseException(() async {
         List result = await invokeMethod<List>(
             methodQuery,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
               ..addAll(_baseDatabaseMethodArguments));
-        Rows rows = new Rows.from(result);
-        return rows;
+
+        // dart1
+        if (result is List<Map<String, dynamic>>) {
+          return result;
+        } else {
+          // dart2 support
+          Rows rows = new Rows.from(result);
+          return rows;
+        }
       });
     });
   }

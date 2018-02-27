@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:core';
 
 import 'package:flutter/src/services/platform_channel.dart';
 import 'package:sqflite/src/utils.dart';
@@ -17,49 +18,23 @@ Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
   return result;
 }
 
-class PluginIterator<T> implements Iterator<T> {
-  final List<T> list;
-  PluginIterator(this.list);
-  int _currentIndex;
-
-  @override
-  bool moveNext() {
-    if (_currentIndex == null) {
-      if (list.length == 0) {
-        return false;
-      }
-      _currentIndex = 0;
-      return true;
-    } else {
-      return (++_currentIndex < list.length - 1);
-    }
-  }
-
-  @override
-  T get current => list[_currentIndex];
-}
-
-class RowIterator extends PluginIterator<Map<String, dynamic>> {
-  RowIterator(List<Map<String, dynamic>> list) : super(list);
-}
-
 // Starting Dart preview 2, wrap the result
 class Rows extends PluginList<Map<String, dynamic>> {
   Rows.from(List list) : super.from(list);
-  /*new List.generate(list.length, (index) {
-    devPrint("######");
-    return new Row.from(list[index]);
-  });
-  */
 
   @override
   Map<String, dynamic> operator [](int index) {
-    return new Row.from(_list[index]);
+    Map item = rawList[index];
+    if (item is Map<String, dynamic>) {
+      return item;
+    }
+    return item.cast<String, dynamic>();
   }
 }
 
 class BatchResult {
   final result;
+
   BatchResult(this.result);
 }
 
@@ -72,80 +47,14 @@ class BatchResults extends PluginList<dynamic> {
   }
 }
 
-class PluginMap<K, V> extends Object with MapMixin<K, V> implements Map<K, V> {
-  final Map _map;
-
-  PluginMap.from(this._map);
-
-  @override
-  void forEach(void Function(K key, V value) action) {
-    _map.forEach((key, value) {
-      action(key, value);
-    });
-  }
-
-  @override
-  operator [](Object key) {
-    return _map[key];
-  }
-
-  @override
-  void operator []=(K key, value) {
-    throw "unsupported";
-    //_map[key] = value;
-  }
-
-  @override
-  void clear() {
-    throw "unsupported";
-    //_map.clear();
-  }
-
-  @override
-  Iterable<K> get keys => new List.from(_map.keys);
-
-  @override
-  remove(Object key) {
-    throw "unsupported";
-    // _map.remove(key);
-  }
-
-  @override
-  toString() {
-    return _map.toString();
-  }
-
-  @override
-  Iterable<V> get values => new List.from(_map.values);
-
-  Map toJson() {
-    return this;
-  }
-
-  @override
-  int get length => _map.length;
-}
-
-class Row extends PluginMap<String, dynamic> {
-  Row.from(Map _map) : super.from(_map);
-}
-
-abstract class PluginList<T> extends Object
-    with ListMixin<T>
-    implements List<T> {
+abstract class PluginList<T> extends ListBase<T> {
   final List _list;
 
   PluginList.from(List list) : _list = list;
 
-  @override
-  void forEach(void Function(T element) action) {
-    for (int i = 0; i < _list.length; i++) {
-      action(this[i]);
-    }
-  }
+  List get rawList => _list;
 
-  @override
-  Iterator<T> get iterator => new PluginIterator(this);
+  dynamic rawElementAt(int index) => _list[index];
 
   @override
   int get length => _list.length;
@@ -158,24 +67,5 @@ abstract class PluginList<T> extends Object
   @override
   void operator []=(int index, T value) {
     throw "unsupported";
-  }
-
-  @override
-  String toString() {
-    return _list.toString();
-  }
-
-  List toJson() {
-    return this;
-  }
-
-  @override
-  T get first {
-    return this[0];
-  }
-
-  @override
-  T get last {
-    return this[length - 1];
   }
 }
