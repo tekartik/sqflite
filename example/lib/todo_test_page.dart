@@ -12,8 +12,11 @@ class Todo {
   String title;
   bool done;
 
-  Map toMap() {
-    Map map = {columnTitle: title, columnDone: done == true ? 1 : 0};
+  Map<String, dynamic> toMap() {
+    Map map = <String, dynamic>{
+      columnTitle: title,
+      columnDone: done == true ? 1 : 0
+    };
     if (id != null) {
       map[columnId] = id;
     }
@@ -85,7 +88,7 @@ class TodoTestPage extends TestPage {
     });
 
     test("insert/query/update/delete", () async {
-      //await Sqflite.setDebugModeOn(true);
+      await Sqflite.setDebugModeOn(true);
       String path = await initDeleteDb("simple_todo.db");
       TodoProvider todoProvider = new TodoProvider();
       await todoProvider.open(path);

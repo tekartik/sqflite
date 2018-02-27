@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
 import 'dart:io';
@@ -15,16 +14,21 @@ export 'src/exception.dart' show DatabaseException;
 /// sqflite plugin
 ///
 class Sqflite {
-  static MethodChannel get _channel => channel;
+  //static MethodChannel get _channel => channel;
   static bool _debugModeOn = false;
   static bool _supportsConcurrency = supportsConcurrency;
+
   static Future<String> get platformVersion =>
-      _channel.invokeMethod(methodGetPlatformVersion);
+      invokeMethod<String>(methodGetPlatformVersion);
+  //print("result $result");
+  //print("result ${await result}");
+  //return await result;
+  //}
 
   /// turn on debug mode if you want to see the SQL query
   /// executed natively
   static Future setDebugModeOn([bool on = true]) async {
-    await Sqflite._channel.invokeMethod(methodSetDebugModeOn, on);
+    await invokeMethod(methodSetDebugModeOn, on);
   }
 
   static Future<bool> getDebugModeOn() async {
@@ -91,7 +95,7 @@ abstract class Database {
   Future execute(String sql, [List arguments]) {
     return writeSynchronized(() {
       return wrapDatabaseException(() {
-        return Sqflite._channel.invokeMethod(
+        return invokeMethod(
             methodExecute,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
               ..addAll(_baseDatabaseMethodArguments));
@@ -102,9 +106,9 @@ abstract class Database {
   /// for INSERT sql query
   /// returns the last inserted record id
   Future<int> rawInsert(String sql, [List arguments]) {
-    return writeSynchronized(() {
-      return wrapDatabaseException(() {
-        return Sqflite._channel.invokeMethod(
+    return writeSynchronized<int>(() {
+      return wrapDatabaseException<int>(() {
+        return invokeMethod<int>(
             methodInsert,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
               ..addAll(_baseDatabaseMethodArguments));
@@ -175,9 +179,9 @@ abstract class Database {
   /// for UPDATE sql query
   /// return the number of changes made
   Future<int> rawUpdate(String sql, [List arguments]) {
-    return writeSynchronized(() {
-      return wrapDatabaseException(() {
-        return Sqflite._channel.invokeMethod(
+    return writeSynchronized<int>(() {
+      return wrapDatabaseException<int>(() {
+        return invokeMethod<int>(
             methodUpdate,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
               ..addAll(_baseDatabaseMethodArguments));
@@ -231,12 +235,14 @@ abstract class Database {
 
   /// for SELECT sql query
   Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]) {
-    return synchronized(() {
-      return wrapDatabaseException(() async {
-        return await Sqflite._channel.invokeMethod(
+    return synchronized<List<Map<String, dynamic>>>(() {
+      return wrapDatabaseException<List<Map<String, dynamic>>>(() async {
+        List result = await invokeMethod<List>(
             methodQuery,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
               ..addAll(_baseDatabaseMethodArguments));
+        Rows rows = new Rows.from(result);
+        return rows;
       });
     });
   }
@@ -271,11 +277,12 @@ abstract class Database {
   /// ensure that no other calls outside the inner action will
   /// access the database
   ///
-  FutureOr synchronized(action()) {
+  Future<T> synchronized<T>(Future<T> action()) async {
     if (Sqflite._supportsConcurrency) {
-      return action;
+      return await action();
     } else {
-      return _lock.synchronized(action);
+      T result = await _lock.synchronized(action);
+      return result;
     }
   }
 
@@ -284,15 +291,16 @@ abstract class Database {
   /// ensure that no other calls outside the inner action will
   /// write the database
   ///
-  Future writeSynchronized(action()) {
-    return _writeLock.synchronized(action);
+  Future<T> writeSynchronized<T>(Future<T> action()) async {
+    T result = await _writeLock.synchronized(action);
+    return result;
   }
 
   ///
   /// Simple transaction mechanism
   ///
-  Future inTransaction(action(), {bool exclusive}) {
-    return writeSynchronized(() async {
+  Future<T> inTransaction<T>(Future<T> action(), {bool exclusive}) {
+    return writeSynchronized<T>(() async {
       _Transaction transaction;
       bool successfull;
       if (_transactionRefCount++ == 0) {
@@ -316,8 +324,8 @@ abstract class Database {
   /// Get the database inner version
   ///
   Future<int> getVersion() async {
-    return parseInt(
-        _first(await rawQuery("PRAGMA user_version;"))?.values?.first);
+    List<Map<String, dynamic>> rows = await rawQuery("PRAGMA user_version;");
+    return parseInt(_first(rows)?.values?.first);
   }
 
   ///
@@ -356,15 +364,15 @@ final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
 
 Future _closeDatabase(int databaseId) {
   return wrapDatabaseException(() {
-    return Sqflite._channel.invokeMethod(
+    return invokeMethod(
         methodCloseDatabase, <String, dynamic>{paramId: databaseId});
   });
 }
 
 Future<int> _openDatabase(String path) {
-  return wrapDatabaseException(() {
-    return Sqflite._channel
-        .invokeMethod(methodOpenDatabase, <String, dynamic>{paramPath: path});
+  return wrapDatabaseException<int>(() {
+    return invokeMethod<int>(
+        methodOpenDatabase, <String, dynamic>{paramPath: path});
   });
 }
 
@@ -405,7 +413,6 @@ Future<Database> openDatabase(String path,
     }
   }
   int databaseId = await _openDatabase(path);
-
   try {
     // Special on downgrade delete database
     if (onDowngrade == onDatabaseDowngradeDelete) {
@@ -455,11 +462,8 @@ Future<Database> openDatabase(String path,
     }
 
     if (version != null) {
-      // init
       await database.inTransaction(() async {
-        //print("opening...");
         int oldVersion = await database.getVersion();
-        //print("got version");
         if (oldVersion == null || oldVersion == 0) {
           if (onCreate != null) {
             await onCreate(database, version);

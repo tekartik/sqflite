@@ -1,11 +1,10 @@
-import 'dart:async';
-
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/exception.dart';
+import 'package:sqflite/src/utils.dart';
 
 class SqfliteBatch implements Batch {
   final SqfliteDatabase database;
@@ -15,14 +14,16 @@ class SqfliteBatch implements Batch {
 
   @override
   Future<List<dynamic>> commit({bool exclusive, bool noResult}) {
-    return database.inTransaction(() {
-      return wrapDatabaseException(() {
+    return database.inTransaction<List>(() {
+      return wrapDatabaseException<List>(() async {
         var arguments = <String, dynamic>{paramOperations: operations}
           ..addAll(database.baseDatabaseMethodArguments);
         if (noResult == true) {
           arguments[paramNoResult] = noResult;
         }
-        return channel.invokeMethod(methodBatch, arguments);
+        List<dynamic> results =
+            await channel.invokeMethod(methodBatch, arguments);
+        return new BatchResults.from(results);
       });
     }, exclusive: exclusive);
   }

@@ -200,6 +200,32 @@ class ExpTestPage extends TestPage {
       ]));
     });
 
+    test("Dart2 query", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("exp_alias.db");
+      Database db = await openDatabase(path);
+
+      String table = "test";
+      await db
+          .execute("CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)");
+      await db.insert(table, {"column_1": 1, "column_2": 2});
+
+      var result = await db.rawQuery('''
+      select column_1, column_2
+      from $table as t''');
+      print('result: $result');
+      // test output types
+      assert(result.runtimeType.toString() == "Rows");
+      print('result.first: ${result.first}');
+      Map<String, dynamic> first = result.first;
+      assert(first.runtimeType.toString() == "Row");
+      print('result.first.keys: ${result.first.keys}');
+      Iterable<String> keys = result.first.keys;
+      assert(keys.first == "column_1");
+      print('result.last.keys: ${result.last.keys}');
+      keys = result.last.keys;
+      assert(keys.last == "column_2");
+    });
     /*
 
     Save code that modify a map from a result - unused

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_example/src/utils.dart';
 import 'test_page.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart';
@@ -115,7 +116,7 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open onCreate", () async {
-      //await Sqflite.devSetDebugModeOn(true);
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_test2.db");
       bool onCreate = false;
       Database db = await openDatabase(path, version: 1,
@@ -189,6 +190,7 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open asset database", () async {
+      // await Sqflite.devSetDebugModeOn(false);
       Directory documentsDirectory = await getApplicationDocumentsDirectory();
       String path = join(documentsDirectory.path, "asset_example.db");
 
@@ -206,7 +208,7 @@ class OpenTestPage extends TestPage {
 
       // Our database as a single table with a single element
       List<Map<String, dynamic>> list = await db.rawQuery("SELECT * FROM Test");
-      print(list);
+      print("list $list");
       assert(list.first["name"] == "simple value");
 
       await db.close();
@@ -227,7 +229,7 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open onDowngrade delete", () async {
-      //await Sqflite.devSetDebugModeOn(false);
+      // await Sqflite.devSetDebugModeOn(false);
 
       String path = await initDeleteDb("open_on_downgrade_delete.db");
       Database database = await openDatabase(path, version: 3,

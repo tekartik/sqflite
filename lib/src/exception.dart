@@ -43,9 +43,9 @@ class DatabaseException implements Exception {
   }
 }
 
-Future wrapDatabaseException(action()) async {
+Future<T> wrapDatabaseException<T>(Future<T> action()) async {
   try {
-    var result = await action();
+    T result = await action();
     return result;
   } on PlatformException catch (e) {
     if (e.code == sqliteErrorCode) {
