@@ -218,7 +218,7 @@ class ExpTestPage extends TestPage {
       // test output types
       print('result.first: ${result.first}');
       Map<String, dynamic> first = result.first;
-      print('result.first.keys: ${result.first.keys}');
+      print('result.first.keys: ${first.keys}');
       Iterable<String> keys = result.first.keys;
       Iterable values = result.first.values;
       assert(keys.first == "column_1" || keys.first == "column_2");
