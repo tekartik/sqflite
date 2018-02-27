@@ -1,3 +1,5 @@
+export 'dart:async';
+
 int parseInt(Object object) {
   if (object is int) {
     return object;

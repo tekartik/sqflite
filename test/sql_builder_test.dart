@@ -71,6 +71,11 @@ main() {
           new SqlBuilder.update("test", {"value": 1, "other_value": null});
       expect(builder.sql, "UPDATE test SET value = ?, other_value = NULL");
       expect(builder.arguments, [1]);
+
+      // testing where
+      builder = new SqlBuilder.update('test', {"value": 1},
+          where: "a = ? AND b = ?", whereArgs: ['some_test', 1]);
+      expect(builder.arguments, [1, "some_test", 1]);
     });
 
     test("query", () {
@@ -83,6 +88,11 @@ main() {
       expect(builder.sql,
           'SELECT * FROM "table" ORDER BY column_1 ASC, column_2 DESC');
       expect(builder.arguments, isNull);
+
+      // testing where
+      builder = new SqlBuilder.query('test',
+          where: "a = ? AND b = ?", whereArgs: ['some_test', 1]);
+      expect(builder.arguments, ["some_test", 1]);
     });
 
     test("isEscapedName", () {

@@ -209,9 +209,7 @@ class SqlBuilder {
   /// @param conflictAlgorithm for update conflict resolver
 
   SqlBuilder.update(String table, Map<String, dynamic> values,
-      {String where,
-      List<String> whereArgs,
-      ConflictAlgorithm conflictAlgorithm}) {
+      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm}) {
     if (values == null || values.isEmpty) {
       throw new ArgumentError("Empty values");
     }

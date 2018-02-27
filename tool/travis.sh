@@ -4,5 +4,9 @@
 set -e
 
 flutter analyze lib test
+flutter analyze --preview-dart-2 lib test
+
 flutter test
-dartdoc
+# flutter test --preview-dart-2
+
+# dartdoc
