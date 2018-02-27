@@ -63,12 +63,12 @@ class BatchResult {
   BatchResult(this.result);
 }
 
-class BatchResults extends PluginList<BatchResult> {
+class BatchResults extends PluginList<dynamic> {
   BatchResults.from(List list) : super.from(list);
 
   @override
-  BatchResult operator [](int index) {
-    return new BatchResult(_list[index]);
+  dynamic operator [](int index) {
+    return _list[index];
   }
 }
 

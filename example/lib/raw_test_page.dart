@@ -242,6 +242,7 @@ class SimpleTestPage extends TestPage {
       batch = db.batch();
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
       results = await batch.commit();
+      devPrint("$results ${results[0]}");
       assert(results[0] == 1);
 
       // two insert

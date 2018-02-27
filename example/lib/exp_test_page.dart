@@ -221,10 +221,14 @@ class ExpTestPage extends TestPage {
       assert(first.runtimeType.toString() == "Row");
       print('result.first.keys: ${result.first.keys}');
       Iterable<String> keys = result.first.keys;
-      assert(keys.first == "column_1");
+      Iterable values = result.first.values;
+      assert(keys.first == "column_1" || keys.first == "column_2");
+      assert(values.first == 1 || values.first == 2);
       print('result.last.keys: ${result.last.keys}');
       keys = result.last.keys;
-      assert(keys.last == "column_2");
+      values = result.last.values;
+      assert(keys.last == "column_1" || keys.last == "column_2");
+      assert(values.last == 1 || values.last == 2);
     });
     /*
 

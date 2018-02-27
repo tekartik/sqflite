@@ -23,6 +23,9 @@ class SqfliteBatch implements Batch {
         }
         List<dynamic> results =
             await channel.invokeMethod(methodBatch, arguments);
+        if (results == null) {
+          return null;
+        }
         return new BatchResults.from(results);
       });
     }, exclusive: exclusive);
