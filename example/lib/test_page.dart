@@ -1,37 +1,16 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:path/path.dart';
 import 'package:func/func.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
+
 import 'model/item.dart';
 import 'model/test.dart';
 import 'src/item_widget.dart';
 
+export 'database/database.dart';
+
 class TestPage extends StatefulWidget {
-  // return the path
-  Future<String> initDeleteDb(String dbName) async {
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    print(documentsDirectory);
-
-    String path = join(documentsDirectory.path, dbName);
-
-    // make sure the folder exists
-    if (await new Directory(dirname(path)).exists()) {
-      await deleteDatabase(path);
-    } else {
-      try {
-        await new Directory(dirname(path)).create(recursive: true);
-      } catch (e) {
-        print(e);
-      }
-    }
-    return path;
-  }
-
   final String title;
   final List<Test> tests = [];
 
