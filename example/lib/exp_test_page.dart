@@ -216,10 +216,8 @@ class ExpTestPage extends TestPage {
       ''');
       print('result: $result');
       // test output types
-      assert(result.runtimeType.toString() == "Rows");
       print('result.first: ${result.first}');
       Map<String, dynamic> first = result.first;
-      assert(first.runtimeType.toString() == "Row");
       print('result.first.keys: ${result.first.keys}');
       Iterable<String> keys = result.first.keys;
       Iterable values = result.first.values;
