@@ -32,33 +32,33 @@ class OpenCallbacks {
     onConfigure = (Database db) {
       //print("onConfigure");
       //verify(!onConfigureCalled, "onConfigure must be called once");
-      assert(!onConfigureCalled); // onConfigure must be called once
+      expect(onConfigureCalled, false); // onConfigure must be called once
       onConfigureCalled = true;
     };
 
     onCreate = (Database db, int version) {
       //print("onCreate");
-      assert(onConfigureCalled);
-      assert(!onCreateCalled);
+      expect(onConfigureCalled, true);
+      expect(onCreateCalled, false);
       onCreateCalled = true;
     };
 
     onOpen = (Database db) {
       //print("onOpen");
       verify(onConfigureCalled, "onConfigure must be called before onOpen");
-      assert(!onOpenCalled);
+      verify(!onOpenCalled);
       onOpenCalled = true;
     };
 
     onUpgrade = (Database db, int oldVersion, int newVersion) {
-      assert(onConfigureCalled);
-      assert(!onUpgradeCalled);
+      verify(onConfigureCalled);
+      verify(!onUpgradeCalled);
       onUpgradeCalled = true;
     };
 
     onDowngrade = (Database db, int oldVersion, int newVersion) {
-      assert(onConfigureCalled);
-      assert(!onDowngradeCalled);
+      verify(onConfigureCalled);
+      verify(!onDowngradeCalled);
       onDowngradeCalled = true;
     };
 
@@ -84,35 +84,35 @@ class OpenTestPage extends TestPage {
       String path = await initDeleteDb("delete_database.db");
       Database db = await openDatabase(path);
       await db.close();
-      assert((await new File(path).exists()) == true);
+      expect((await new File(path).exists()), true);
       print("Deleting database $path");
       await deleteDatabase(path);
-      assert((await new File(path).exists()) == false);
+      expect((await new File(path).exists()), false);
     });
 
     test("Open no version", () async {
       //await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_no_version.db");
-      assert((await new File(path).exists()) == false);
+      expect((await new File(path).exists()), false);
       Database db = await openDatabase(path);
-      assert((await new File(path).exists()) == true);
+      verify(await new File(path).exists());
       await db.close();
     });
 
     test("Open no version onCreate", () async {
       // should fail
       String path = await initDeleteDb("open_no_version_on_create.db");
-      assert((await new File(path).exists()) == false);
+      verify(!(await new File(path).exists()));
       Database db;
       try {
         db = await openDatabase(path, onCreate: (Database db, int version) {
           // never called
-          assert(false);
+          verify(false);
         });
-        assert(false);
+        verify(false);
       } on ArgumentError catch (_) {}
-      assert((await new File(path).exists()) == false);
-      assert(db == null);
+      verify(!await new File(path).exists());
+      expect(db, null);
     });
 
     test("Open onCreate", () async {
@@ -121,10 +121,10 @@ class OpenTestPage extends TestPage {
       bool onCreate = false;
       Database db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) {
-        assert(version == 1);
+        expect(version, 1);
         onCreate = true;
       });
-      assert(onCreate);
+      verify(onCreate);
       await db.close();
     });
 
@@ -148,12 +148,12 @@ class OpenTestPage extends TestPage {
       await database.close();
       database = await openDatabase(path, version: 2,
           onUpgrade: (Database db, int oldVersion, int newVersion) async {
-        assert(oldVersion == 1);
-        assert(newVersion == 2);
+        expect(oldVersion, 1);
+        expect(newVersion, 2);
         await db.execute("ALTER TABLE Test ADD name TEXT");
         onUpgrade = true;
       });
-      assert(onUpgrade);
+      verify(onUpgrade);
       await database.close();
     });
 
@@ -163,19 +163,19 @@ class OpenTestPage extends TestPage {
           onCreate: (Database db, int version) async {
         await db.execute("CREATE TABLE Test(id INTEGER PRIMARY KEY)");
       }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
-        assert(false, "should not be called");
+        verify(false, "should not be called");
       });
       await database.close();
 
       bool onDowngrade = false;
       database = await openDatabase(path, version: 1,
           onDowngrade: (Database db, int oldVersion, int newVersion) async {
-        assert(oldVersion == 2);
-        assert(newVersion == 1);
+        expect(oldVersion, 2);
+        expect(newVersion, 1);
         await db.execute("ALTER TABLE Test ADD name TEXT");
         onDowngrade = true;
       });
-      assert(onDowngrade);
+      verify(onDowngrade);
 
       await database.close();
     });
@@ -183,9 +183,9 @@ class OpenTestPage extends TestPage {
     test("Open bad path", () async {
       try {
         await openDatabase("/invalid_path");
-        assert(false);
+        fail();
       } on DatabaseException catch (e) {
-        assert(e.isOpenFailedError());
+        verify(e.isOpenFailedError());
       }
     });
 
@@ -209,7 +209,7 @@ class OpenTestPage extends TestPage {
       // Our database as a single table with a single element
       List<Map<String, dynamic>> list = await db.rawQuery("SELECT * FROM Test");
       print("list $list");
-      assert(list.first["name"] == "simple value");
+      expect(list.first["name"], "simple value");
 
       await db.close();
     });
@@ -223,7 +223,7 @@ class OpenTestPage extends TestPage {
       }
 
       var db = await openDatabase(path, onConfigure: _onConfigure);
-      assert(onConfigured);
+      expect(onConfigured, true);
 
       await db.close();
     });
@@ -247,8 +247,8 @@ class OpenTestPage extends TestPage {
       database =
           await openDatabase(path, version: 2, onConfigure: (Database db) {
         // Must not be configured nor created yet
-        assert(!onConfigured);
-        assert(!onCreated);
+        verify(!onConfigured);
+        verify(!onCreated);
         if (!onConfiguredOnce) {
           // first time
           onConfiguredOnce = true;
@@ -256,31 +256,31 @@ class OpenTestPage extends TestPage {
           onConfigured = true;
         }
       }, onCreate: (Database db, int version) {
-        assert(onConfigured);
-        assert(!onCreated);
-        assert(!onOpened);
+        verify(onConfigured);
+        verify(!onCreated);
+        verify(!onOpened);
         onCreated = true;
-        assert(version == 2);
+        expect(version, 2);
       }, onOpen: (Database db) {
-        assert(onCreated);
+        verify(onCreated);
         onOpened = true;
       }, onDowngrade: onDatabaseDowngradeDelete);
       await database.close();
 
-      assert(onCreated);
-      assert(onOpened);
-      assert(onConfigured);
+      expect(onCreated, true);
+      expect(onOpened, true);
+      expect(onConfigured, true);
 
       onCreated = false;
       onOpened = false;
 
       database = await openDatabase(path, version: 2,
           onCreate: (Database db, int version) {
-        assert(false, "should not be called");
+        expect(false, "should not be called");
       }, onOpen: (Database db) {
         onOpened = true;
       }, onDowngrade: onDatabaseDowngradeDelete);
-      assert(onOpened);
+      expect(onOpened, true);
       await database.close();
     });
 
@@ -289,27 +289,27 @@ class OpenTestPage extends TestPage {
 
       OpenCallbacks openCallbacks = new OpenCallbacks();
       var db = await openCallbacks.open(path, version: 1);
-      assert(openCallbacks.onConfigureCalled);
-      assert(openCallbacks.onCreateCalled);
-      assert(openCallbacks.onOpenCalled);
-      assert(!openCallbacks.onUpgradeCalled);
-      assert(!openCallbacks.onDowngradeCalled);
+      verify(openCallbacks.onConfigureCalled);
+      verify(openCallbacks.onCreateCalled);
+      verify(openCallbacks.onOpenCalled);
+      verify(!openCallbacks.onUpgradeCalled);
+      verify(!openCallbacks.onDowngradeCalled);
       await db.close();
 
       db = await openCallbacks.open(path, version: 3);
-      assert(openCallbacks.onConfigureCalled);
-      assert(!openCallbacks.onCreateCalled);
-      assert(openCallbacks.onOpenCalled);
-      assert(openCallbacks.onUpgradeCalled);
-      assert(!openCallbacks.onDowngradeCalled);
+      verify(openCallbacks.onConfigureCalled);
+      verify(!openCallbacks.onCreateCalled);
+      verify(openCallbacks.onOpenCalled);
+      verify(openCallbacks.onUpgradeCalled);
+      verify(!openCallbacks.onDowngradeCalled);
       await db.close();
 
       db = await openCallbacks.open(path, version: 2);
-      assert(openCallbacks.onConfigureCalled);
-      assert(!openCallbacks.onCreateCalled);
-      assert(openCallbacks.onOpenCalled);
-      assert(!openCallbacks.onUpgradeCalled);
-      assert(openCallbacks.onDowngradeCalled);
+      verify(openCallbacks.onConfigureCalled);
+      verify(!openCallbacks.onCreateCalled);
+      verify(openCallbacks.onOpenCalled);
+      verify(!openCallbacks.onUpgradeCalled);
+      verify(openCallbacks.onDowngradeCalled);
       await db.close();
 
       openCallbacks.onDowngrade = onDatabaseDowngradeDelete;
@@ -325,12 +325,12 @@ class OpenTestPage extends TestPage {
       };
       db = await openCallbacks.open(path, version: 1);
 
-      assert(openCallbacks.onConfigureCalled);
-      assert(configureCount == 2);
-      assert(openCallbacks.onCreateCalled);
-      assert(openCallbacks.onOpenCalled);
-      assert(!openCallbacks.onUpgradeCalled);
-      assert(!openCallbacks.onDowngradeCalled);
+      verify(openCallbacks.onConfigureCalled);
+      verify(configureCount == 2);
+      verify(openCallbacks.onCreateCalled);
+      verify(openCallbacks.onOpenCalled);
+      verify(!openCallbacks.onUpgradeCalled);
+      verify(!openCallbacks.onDowngradeCalled);
       await db.close();
     });
   }

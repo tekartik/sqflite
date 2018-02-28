@@ -20,7 +20,7 @@ class ExceptionTestPage extends TestPage {
           await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
           int afterCount = Sqflite
               .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-          assert(afterCount == 1);
+          expect(afterCount, 1);
 
           hasFailed = true;
           // this failure should cancel the insertion before
@@ -31,11 +31,11 @@ class ExceptionTestPage extends TestPage {
         // iOS: native_error: PlatformException(sqlite_error, Error Domain=FMDatabase Code=1 "near "DUMMY": syntax error" UserInfo={NSLocalizedDescription=near "DUMMY": syntax error}, null)
         print("native_error: $e");
       }
-      assert(hasFailed);
+      verify(hasFailed);
 
       int afterCount =
           Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-      assert(afterCount == 0);
+      expect(afterCount, 0);
 
       await db.close();
     });
@@ -54,7 +54,7 @@ class ExceptionTestPage extends TestPage {
             await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
             int afterCount = Sqflite
                 .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-            assert(afterCount == 1);
+            expect(afterCount, 1);
 
             hasFailed = true;
             // this failure should cancel the insertion before
@@ -66,11 +66,11 @@ class ExceptionTestPage extends TestPage {
         print("native error: $e");
       }
 
-      assert(hasFailed);
+      verify(hasFailed);
 
       int afterCount =
           Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-      assert(afterCount == 0);
+      expect(afterCount, 0);
 
       await db.close();
     });
@@ -83,38 +83,38 @@ class ExceptionTestPage extends TestPage {
       // Query
       try {
         await db.rawQuery("SELECT COUNT(*) FROM Test");
-        assert(false); // should fail before
+        fail(); // should fail before
       } on DatabaseException catch (e) {
-        assert(e.isNoSuchTableError("Test"));
+        verify(e.isNoSuchTableError("Test"));
       }
 
       // Catch without using on DatabaseException
       try {
         await db.rawQuery("malformed query");
-        assert(false); // should fail before
+        fail(); // should fail before
       } catch (e) {
-        assert(e.isSyntaxError());
+        verify(e.isSyntaxError());
       }
 
       try {
         await db.execute("DUMMY");
-        assert(false); // should fail before
+        fail(); // should fail before
       } on DatabaseException catch (e) {
-        assert(e.isSyntaxError());
+        verify(e.isSyntaxError());
       }
 
       try {
         await db.rawInsert("DUMMY");
-        assert(false); // should fail before
+        fail(); // should fail before
       } on DatabaseException catch (e) {
-        assert(e.isSyntaxError());
+        verify(e.isSyntaxError());
       }
 
       try {
         await db.rawUpdate("DUMMY");
-        assert(false); // should fail before
+        fail(); // should fail before
       } on DatabaseException catch (e) {
-        assert(e.isSyntaxError());
+        verify(e.isSyntaxError());
       }
 
       await db.close();
@@ -133,7 +133,7 @@ class ExceptionTestPage extends TestPage {
       try {
         database = await openDatabase(path,
             version: 1, onDowngrade: onDatabaseVersionChangeError);
-        assert(false);
+        verify(false);
       } catch (e) {
         print(e);
       }
@@ -154,18 +154,18 @@ class ExceptionTestPage extends TestPage {
       await database.close();
       try {
         await database.getVersion();
-        assert(false);
+        verify(false);
       } on DatabaseException catch (e) {
         print(e);
-        assert(e.isDatabaseClosedError());
+        verify(e.isDatabaseClosedError());
       }
 
       try {
         await database.setVersion(1);
-        assert(false);
+        fail();
       } on DatabaseException catch (e) {
         print(e);
-        assert(e.isDatabaseClosedError());
+        verify(e.isDatabaseClosedError());
       }
     });
 
@@ -180,27 +180,27 @@ class ExceptionTestPage extends TestPage {
         fail("should fail");
       } on DatabaseException catch (e) {
         print(e);
-        assert(e.isSyntaxError());
+        verify(e.isSyntaxError());
       }
       try {
         await db.execute("INSERT INTO $table (group) VALUES (1)");
         fail("should fail");
       } on DatabaseException catch (e) {
         print(e);
-        assert(e.isSyntaxError());
+        verify(e.isSyntaxError());
       }
       try {
         await db.rawQuery("SELECT * FROM $table ORDER BY group DESC");
       } on DatabaseException catch (e) {
         print(e);
-        assert(e.isSyntaxError());
+        verify(e.isSyntaxError());
       }
 
       try {
         await db.rawQuery("DELETE FROM $table");
       } on DatabaseException catch (e) {
         print(e);
-        assert(e.isSyntaxError());
+        verify(e.isSyntaxError());
       }
 
       // Build our escape list from all the sqlite keywords
@@ -211,7 +211,7 @@ class ExceptionTestPage extends TestPage {
         } on DatabaseException catch (e) {
           await db.execute("CREATE TABLE ${escapeName(name)} (value INTEGER)");
 
-          assert(e.isSyntaxError());
+          verify(e.isSyntaxError());
           toExclude.add(name);
         }
       }

@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:func/func.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_example/src/common_import.dart';
 import 'model/item.dart';
 import 'model/test.dart';
 import 'src/item_widget.dart';
@@ -40,14 +41,26 @@ class TestPage extends StatefulWidget {
   }
 
   // Thrown an exception
-  fail(String message) {
-    throw new Exception(message);
+  fail([String message]) {
+    throw new Exception(message ?? "should fail");
   }
 
   TestPage(this.title) {}
 
   @override
   _TestPageState createState() => new _TestPageState();
+}
+
+expect(dynamic value, dynamic expected, {String reason}) {
+  if (value != expected) {
+    if (value is List || value is Map) {
+      if (!const DeepCollectionEquality().equals(value, expected)) {
+        throw new Exception("collection $value != $expected ${reason ?? ""}");
+      }
+      return;
+    }
+    throw new Exception("$value != $expected ${reason ?? ""}");
+  }
 }
 
 bool verify(bool condition, [String message]) {
@@ -117,8 +130,14 @@ class _TestPageState extends State<TestPage> {
       print("TEST Done ${test.name}");
 
       item = new Item("${test.name}")..state = ItemState.success;
-    } catch (e) {
+    } catch (e, st) {
       print("TEST Error $e running ${test.name}");
+      try {
+        //print(st);
+        if (await Sqflite.getDebugModeOn()) {
+          print(st);
+        }
+      } catch (_) {}
       item = new Item("${test.name}")..state = ItemState.failure;
     }
 

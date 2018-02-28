@@ -2,6 +2,7 @@
 const String methodInsert = "insert";
 const String methodBatch = "batch";
 const String methodSetDebugModeOn = "debugMode";
+const String methodOptions = "options";
 const String methodCloseDatabase = "closeDatabase";
 const String methodOpenDatabase = "openDatabase";
 const String methodExecute = "execute";

@@ -32,6 +32,101 @@ class Rows extends PluginList<Map<String, dynamic>> {
   }
 }
 
+Map newQueryResultSetMap(List<String> columns, List<List<dynamic>> rows) {
+  Map map = {"columns": columns, "rows": rows};
+  return map;
+}
+
+QueryResultSet queryResultSetFromMap(Map queryResultSetMap) {
+  return new QueryResultSet(
+      queryResultSetMap["columns"], queryResultSetMap["rows"]);
+}
+
+List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
+  // New 0.7.1 format
+  //devPrint("queryResultToList: $queryResult");
+  if (queryResult == null) {
+    return null;
+  }
+  if (queryResult is Map) {
+    return queryResultSetFromMap(queryResult);
+  }
+  // dart1
+  if (queryResult is List<Map<String, dynamic>>) {
+    return queryResult;
+  }
+  // dart2 support <= 0.7.0 - this is a list
+  // to remove once done on iOS and Android
+  Rows rows = new Rows.from(queryResult);
+  return rows;
+}
+
+class QueryResultSet extends ListBase<Map<String, dynamic>> {
+  List<List<dynamic>> _rows;
+  List<String> _columns;
+
+  QueryResultSet(List rawColmuns, List rawRows) {
+    _columns = rawColmuns?.cast<String>();
+    _rows = rawRows?.cast<List>();
+  }
+
+  @override
+  int get length => _rows?.length ?? 0;
+
+  @override
+  Map<String, dynamic> operator [](int index) {
+    return new QueryRow(this, _rows[index]);
+  }
+
+  @override
+  void operator []=(int index, Map<String, dynamic> value) {
+    throw new UnsupportedError("read-only");
+  }
+
+  @override
+  set length(int newLength) {
+    throw new UnsupportedError("read-only");
+  }
+
+  int columnIndex(String name) {
+    return _columns.indexOf(name);
+  }
+}
+
+class QueryRow extends MapBase<String, dynamic> {
+  final QueryResultSet queryResultSet;
+  final List row;
+
+  QueryRow(this.queryResultSet, this.row);
+
+  @override
+  operator [](Object key) {
+    int columnIndex = queryResultSet.columnIndex(key);
+    if (columnIndex >= 0) {
+      return row[columnIndex];
+    }
+    return null;
+  }
+
+  @override
+  void operator []=(String key, value) {
+    throw new UnsupportedError("read-only");
+  }
+
+  @override
+  void clear() {
+    throw new UnsupportedError("read-only");
+  }
+
+  @override
+  Iterable<String> get keys => queryResultSet._columns;
+
+  @override
+  remove(Object key) {
+    throw new UnsupportedError("read-only");
+  }
+}
+
 class BatchResult {
   final result;
 
@@ -43,7 +138,16 @@ class BatchResults extends PluginList<dynamic> {
 
   @override
   dynamic operator [](int index) {
-    return _list[index];
+    var result = _list[index];
+
+    // list or map, this is a result
+    if (result is Map) {
+      return queryResultToList(result);
+    } else if (result is List) {
+      return queryResultToList(result);
+    }
+
+    return result;
   }
 }
 
@@ -61,11 +165,11 @@ abstract class PluginList<T> extends ListBase<T> {
 
   @override
   set length(int newLength) {
-    throw "unsupported";
+    throw new UnsupportedError("read-only");
   }
 
   @override
   void operator []=(int index, T value) {
-    throw "unsupported";
+    throw new UnsupportedError("read-only");
   }
 }

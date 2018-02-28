@@ -1,6 +1,4 @@
 import 'package:sqflite/sqflite.dart';
-
-import 'src/common_import.dart';
 import 'test_page.dart';
 
 final String tableTodo = "todo";
@@ -35,9 +33,9 @@ class ExpTestPage extends TestPage {
       var result = await db.rawQuery(
           "SELECT * FROM $table ORDER BY column_1 ASC, column_2 DESC");
       //print(JSON.encode(result));
-      assert(const DeepCollectionEquality().equals(result, expectedResult));
+      expect(result, expectedResult);
       result = await db.query(table, orderBy: "column_1 ASC, column_2 DESC");
-      assert(const DeepCollectionEquality().equals(result, expectedResult));
+      expect(result, expectedResult);
 
       await db.close();
     });
@@ -69,14 +67,14 @@ class ExpTestPage extends TestPage {
       var result = await db.query(table,
           where: "column_1 IN (1, 2)", orderBy: "column_1 ASC, column_2 ASC");
       //print(JSON.encode(result));
-      assert(const DeepCollectionEquality().equals(result, expectedResult));
+      expect(result, expectedResult);
 
       // testing with value as arguments
       result = await db.query(table,
           where: "column_1 IN (?, ?)",
           whereArgs: ["1", "2"],
           orderBy: "column_1 ASC, column_2 ASC");
-      assert(const DeepCollectionEquality().equals(result, expectedResult));
+      expect(result, expectedResult);
 
       await db.close();
     });
@@ -98,11 +96,11 @@ class ExpTestPage extends TestPage {
       var result = await db
           .rawQuery('SELECT "group" FROM "$table" ORDER BY "group" DESC');
       print(result);
-      assert(const DeepCollectionEquality().equals(result, expectedResult));
+      expect(result, expectedResult);
       result =
           await db.rawQuery("SELECT * FROM '$table' ORDER BY `group` DESC");
       //print(JSON.encode(result));
-      assert(const DeepCollectionEquality().equals(result, expectedResult));
+      expect(result, expectedResult);
 
       await db.rawDelete("DELETE FROM '$table'");
 
@@ -129,7 +127,7 @@ class ExpTestPage extends TestPage {
       var result =
           await db.query(table, columns: ["group"], orderBy: '"group" DESC');
       //print(JSON.encode(result));
-      assert(const DeepCollectionEquality().equals(result, expectedResult));
+      expect(result, expectedResult);
 
       await db.delete(table);
 
@@ -152,20 +150,20 @@ class ExpTestPage extends TestPage {
       from $table
       GROUP BY one''');
       //print('result :$result');
-      assert(const DeepCollectionEquality().equals(result, [
+      expect(result, [
         {"one": "1", "my_col": "2,3"},
         {"one": "2", "my_col": "2"}
-      ]));
+      ]);
 
       result = await db.rawQuery('''
       select one, GROUP_CONCAT(another)
       from $table
       GROUP BY one''');
       // print('result :$result');
-      assert(const DeepCollectionEquality().equals(result, [
+      expect(result, [
         {"one": "1", "GROUP_CONCAT(another)": "2,3"},
         {"one": "2", "GROUP_CONCAT(another)": "2"}
-      ]));
+      ]);
 
       // user alias
       result = await db.rawQuery('''
@@ -173,10 +171,10 @@ class ExpTestPage extends TestPage {
       from $table as t
       GROUP BY t.one''');
       //print('result :$result');
-      assert(const DeepCollectionEquality().equals(result, [
+      expect(result, [
         {"one": "1", "GROUP_CONCAT(t.another)": "2,3"},
         {"one": "2", "GROUP_CONCAT(t.another)": "2"}
-      ]));
+      ]);
 
       await db.close();
     });
@@ -195,9 +193,9 @@ class ExpTestPage extends TestPage {
       select t.column_1, t.column_1 as "t.column1", column_1 as column_alias_1, column_2
       from $table as t''');
       print('result :$result');
-      assert(const DeepCollectionEquality().equals(result, [
+      expect(result, [
         {"t.column1": 1, "column_1": 1, "column_alias_1": 1, "column_2": 2}
-      ]));
+      ]);
     });
 
     test("Dart2 query", () async {
@@ -221,13 +219,13 @@ class ExpTestPage extends TestPage {
       print('result.first.keys: ${first.keys}');
       Iterable<String> keys = result.first.keys;
       Iterable values = result.first.values;
-      assert(keys.first == "column_1" || keys.first == "column_2");
-      assert(values.first == 1 || values.first == 2);
+      verify(keys.first == "column_1" || keys.first == "column_2");
+      verify(values.first == 1 || values.first == 2);
       print('result.last.keys: ${result.last.keys}');
       keys = result.last.keys;
       values = result.last.values;
-      assert(keys.last == "column_1" || keys.last == "column_2");
-      assert(values.last == 1 || values.last == 2);
+      verify(keys.last == "column_1" || keys.last == "column_2");
+      verify(values.last == 1 || values.last == 2);
     });
     /*
 

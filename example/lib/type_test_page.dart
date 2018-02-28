@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:collection/collection.dart';
+
 import 'package:sqflite/sqflite.dart';
+
 import 'test_page.dart';
 
 class _Data {
@@ -32,31 +33,33 @@ class TypeTestPage extends TestPage {
             "CREATE TABLE Test (_id INTEGER PRIMARY KEY, value INTEGER)");
       });
       int id = await insertValue(-1);
-      assert(await getValue(id) == -1);
+      expect(await getValue(id), -1);
 
       // less than 32 bits
       id = await insertValue(pow(2, 31));
-      assert(await getValue(id) == pow(2, 31));
+      expect(await getValue(id), pow(2, 31));
 
       // more than 32 bits
       id = await insertValue(pow(2, 33));
       //devPrint("2^33: ${await getValue(id)}");
-      assert(await getValue(id) == pow(2, 33));
+      expect(await getValue(id), pow(2, 33));
 
       id = await insertValue(pow(2, 62));
       //devPrint("2^62: ${pow(2, 62)} ${await getValue(id)}");
-      assert(await getValue(id) == pow(2, 62),
-          "2^62: ${pow(2, 62)} ${await getValue(id)}");
+      expect(await getValue(id), pow(2, 62),
+          reason: "2^62: ${pow(2, 62)} ${await getValue(id)}");
 
       int value = pow(2, 63) - 1;
       id = await insertValue(value);
       //devPrint("${value} ${await getValue(id)}");
-      assert(await getValue(id) == value, "${value} ${await getValue(id)}");
+      expect(await getValue(id), value,
+          reason: "${value} ${await getValue(id)}");
 
       value = -(pow(2, 63));
       id = await insertValue(value);
       //devPrint("${value} ${await getValue(id)}");
-      assert(await getValue(id) == value, "${value} ${await getValue(id)}");
+      expect(await getValue(id), value,
+          reason: "${value} ${await getValue(id)}");
       /*
       id = await insertValue(pow(2, 63));
       devPrint("2^63: ${pow(2, 63)} ${await getValue(id)}");
@@ -82,16 +85,16 @@ class TypeTestPage extends TestPage {
             .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value REAL)");
       });
       int id = await insertValue(-1.1);
-      assert(await getValue(id) == -1.1);
+      expect(await getValue(id), -1.1);
       // big float
       id = await insertValue(1 / 3);
-      assert(await getValue(id) == 1 / 3);
+      expect(await getValue(id), 1 / 3);
       id = await insertValue(pow(2, 63) + .1);
-      assert(await getValue(id) == pow(2, 63) + 0.1);
+      expect(await getValue(id), pow(2, 63) + 0.1);
 
       // integer?
       id = await insertValue(pow(2, 62));
-      assert(await getValue(id) == pow(2, 62));
+      expect(await getValue(id), pow(2, 62));
       await data.db.close();
     });
 
@@ -104,14 +107,14 @@ class TypeTestPage extends TestPage {
             .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)");
       });
       int id = await insertValue("simple text");
-      assert(await getValue(id) == "simple text");
+      expect(await getValue(id), "simple text");
       // null
       id = await insertValue(null);
-      assert(await getValue(id) == null);
+      expect(await getValue(id), null);
 
       // utf-8
       id = await insertValue("àöé");
-      assert(await getValue(id) == "àöé");
+      expect(await getValue(id), "àöé");
 
       await data.db.close();
     });
@@ -127,16 +130,14 @@ class TypeTestPage extends TestPage {
       try {
         // insert text in blob
         int id = await insertValue("simple text");
-        assert(await getValue(id) == "simple text");
-
-        var eq = const DeepCollectionEquality();
+        expect(await getValue(id), "simple text");
 
         // UInt8List - default
         ByteData byteData = new ByteData(1);
         byteData.setInt8(0, 1);
         id = await insertValue(byteData.buffer.asUint8List());
         //print(await getValue(id));
-        assert(eq.equals(await getValue(id), [1]));
+        expect(await getValue(id), [1]);
 
         // empty array not supported
         //id = await insertValue([]);
@@ -145,8 +146,8 @@ class TypeTestPage extends TestPage {
 
         id = await insertValue([1, 2, 3, 4]);
         //print(await getValue(id));
-        assert(eq.equals(await getValue(id), [1, 2, 3, 4]),
-            "reason: ${await getValue(id)}");
+        expect(await getValue(id), [1, 2, 3, 4],
+            reason: "${await getValue(id)}");
       } finally {
         await data.db.close();
       }

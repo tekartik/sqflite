@@ -8,6 +8,7 @@ public class Constant {
 
     static final public String METHOD_GET_PLATFORM_VERSION = "getPlatformVersion";
     static final public String METHOD_DEBUG_MODE = "debugMode";
+    static final public String METHOD_OPTIONS = "options";
     static final public String METHOD_OPEN_DATABASE = "openDatabase";
     static final public String METHOD_CLOSE_DATABASE = "closeDatabase";
     static final public String METHOD_INSERT = "insert";
@@ -18,6 +19,8 @@ public class Constant {
 
     static final String PARAM_ID = "id";
     static final String PARAM_PATH = "path";
+
+    static final String PARAM_QUERY_AS_MAP_LIST = "queryAsMapList"; // boolean
 
     public static final String PARAM_SQL = "sql";
     public static final String PARAM_SQL_ARGUMENTS = "arguments";

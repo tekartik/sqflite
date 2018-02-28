@@ -17,6 +17,7 @@ import com.tekartik.sqflite.operation.OperationResult;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
 import static com.tekartik.sqflite.Constant.METHOD_GET_PLATFORM_VERSION;
 import static com.tekartik.sqflite.Constant.METHOD_INSERT;
 import static com.tekartik.sqflite.Constant.METHOD_OPEN_DATABASE;
+import static com.tekartik.sqflite.Constant.METHOD_OPTIONS;
 import static com.tekartik.sqflite.Constant.METHOD_QUERY;
 import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
 import static com.tekartik.sqflite.Constant.PARAM_ID;
@@ -53,6 +55,8 @@ public class SqflitePlugin implements MethodCallHandler {
     static private boolean LOGV = false;
     static private boolean _EXTRA_LOGV = false; // to set to true for type debugging
     static private boolean EXTRA_LOGV = false; // to set to true for type debugging
+    static private boolean QUERY_AS_MAP_LIST = false; // set by options
+
     static private String TAG = "Sqflite";
     private final Object databaseMapLocker = new Object();
     private Context context;
@@ -116,6 +120,35 @@ public class SqflitePlugin implements MethodCallHandler {
     public static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "com.tekartik.sqflite");
         channel.setMethodCallHandler(new SqflitePlugin(registrar.activity().getApplicationContext()));
+    }
+
+    private static Object cursorValue(Cursor cursor, int index) {
+        switch (cursor.getType(index)) {
+            case Cursor.FIELD_TYPE_NULL:
+                return null;
+            case Cursor.FIELD_TYPE_INTEGER:
+                return cursor.getLong(index);
+            case Cursor.FIELD_TYPE_FLOAT:
+                return cursor.getDouble(index);
+            case Cursor.FIELD_TYPE_STRING:
+                return cursor.getString(index);
+            case Cursor.FIELD_TYPE_BLOB:
+                return cursor.getBlob(index);
+        }
+        return null;
+    }
+
+    private static List<Object> cursorRowToList(Cursor cursor, int length) {
+        List<Object> list = new ArrayList<>(length);
+
+        for (int i = 0; i < length; i++) {
+            Object value = cursorValue(cursor, i);
+            if (EXTRA_LOGV) {
+                Log.d(TAG, "column " + i + " " + cursor.getType(i) + ": " + value);
+            }
+            list.add(value);
+        }
+        return list;
     }
 
     private static Map<String, Object> cursorRowToMap(Cursor cursor) {
@@ -319,33 +352,9 @@ public class SqflitePlugin implements MethodCallHandler {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                String sql = call.argument(PARAM_SQL);
-                List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+                MethodCallOperation operation = new MethodCallOperation(call, bgResult);
+                query(database, operation);
 
-                List<Map<String, Object>> results = new ArrayList<>();
-                if (LOGV) {
-                    Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
-                }
-                Cursor cursor = null;
-                try {
-                    cursor = database.getReadableDatabase().rawQuery(sql, getQuerySqlArguments(arguments));
-                    while (cursor.moveToNext()) {
-                        //ContentValues cv = new ContentValues();
-                        //DatabaseUtils.cursorRowToContentValues(cursor, cv);
-                        Map<String, Object> map = cursorRowToMap(cursor);
-                        if (LOGV) {
-                            Log.d(TAG, SqflitePlugin.toString(map));
-                        }
-                        results.add(map);
-                    }
-                    bgResult.success(results);
-                } catch (SQLException exception) {
-                    handleException(exception, bgResult, database);
-                } finally {
-                    if (cursor != null) {
-                        cursor.close();
-                    }
-                }
             }
         });
     }
@@ -377,8 +386,28 @@ public class SqflitePlugin implements MethodCallHandler {
                     BatchOperation operation = new BatchOperation(map, noResult);
                     String method = operation.getMethod();
                     switch (method) {
+                        case METHOD_EXECUTE:
+                            if (execute(database, operation)) {
+                                //devLog(TAG, "results: " + operation.getBatchResults());
+                                operation.handleSuccess(results);
+                            } else {
+                                // we stop at the first error
+                                operation.handleError(bgResult);
+                                return;
+                            }
+                            break;
                         case METHOD_INSERT:
                             if (insert(database, operation)) {
+                                //devLog(TAG, "results: " + operation.getBatchResults());
+                                operation.handleSuccess(results);
+                            } else {
+                                // we stop at the first error
+                                operation.handleError(bgResult);
+                                return;
+                            }
+                            break;
+                        case METHOD_QUERY:
+                            if (query(database, operation)) {
                                 //devLog(TAG, "results: " + operation.getBatchResults());
                                 operation.handleSuccess(results);
                             } else {
@@ -414,6 +443,15 @@ public class SqflitePlugin implements MethodCallHandler {
     }
 
     // Return true on success
+    private boolean execute(Database database, final Operation operation) {
+        if (!executeOrError(database, operation)) {
+            return false;
+        }
+        operation.success(null);
+        return true;
+    }
+
+    // Return true on success
     private boolean insert(Database database, final Operation operation) {
         if (!executeOrError(database, operation)) {
             return false;
@@ -444,6 +482,62 @@ public class SqflitePlugin implements MethodCallHandler {
             return true;
         } catch (
                 SQLException exception) {
+            handleException(exception, operation, database);
+            return false;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    // Return true on success
+    private boolean query(Database database, final Operation operation) {
+        String sql = operation.getSql();
+        List<Object> arguments = operation.getSqlArguments();
+        //Object[] sqlArguments = getSqlArguments(arguments);
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        Map<String, Object> newResults = null;
+        List<List<Object>> rows = null;
+        int newColumnCount = 0;
+        if (LOGV) {
+            Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+        }
+        Cursor cursor = null;
+        boolean queryAsMapList = QUERY_AS_MAP_LIST;
+        try {
+            cursor = database.getReadableDatabase().rawQuery(sql, getQuerySqlArguments(arguments));
+            while (cursor.moveToNext()) {
+                if (queryAsMapList) {
+                    Map<String, Object> map = cursorRowToMap(cursor);
+                    if (LOGV) {
+                        Log.d(TAG, SqflitePlugin.toString(map));
+                    }
+                    results.add(map);
+                } else {
+                    if (newResults == null) {
+                        rows = new ArrayList<>();
+                        newResults = new HashMap<>();
+                        newColumnCount = cursor.getColumnCount();
+                        newResults.put("columns", Arrays.asList(cursor.getColumnNames()));
+                        newResults.put("rows", rows);
+                    }
+                    rows.add(cursorRowToList(cursor, newColumnCount));
+                }
+            }
+            if (queryAsMapList) {
+                operation.success(results);
+            } else {
+                // Handle empty
+                if (newResults == null) {
+                    newResults = new HashMap<>();
+                }
+                operation.success(newResults);
+            }
+            return true;
+
+        } catch (SQLException exception) {
             handleException(exception, operation, database);
             return false;
         } finally {
@@ -706,6 +800,10 @@ public class SqflitePlugin implements MethodCallHandler {
                 onBatchCall(call, result);
                 break;
             }
+            case METHOD_OPTIONS: {
+                onOptionsCall(call, result);
+                break;
+            }
             default:
                 result.notImplemented();
                 break;
@@ -723,5 +821,11 @@ public class SqflitePlugin implements MethodCallHandler {
         private void open() {
             getReadableDatabase();
         }
+    }
+
+    void onOptionsCall(final MethodCall call, Result result) {
+        Object on = call.argument(Constant.PARAM_QUERY_AS_MAP_LIST);
+        QUERY_AS_MAP_LIST = Boolean.TRUE.equals(on);
+        result.success(null);
     }
 }

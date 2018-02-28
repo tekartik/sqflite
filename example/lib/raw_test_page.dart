@@ -1,15 +1,75 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:collection/collection.dart';
+
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/src/utils.dart';
+
 import 'test_page.dart';
 
 class SimpleTestPage extends TestPage {
   SimpleTestPage() : super("Raw tests") {
+    test("Options (not ios yet)", () async {
+      // Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("raw_query_format.db");
+      Database db = await openDatabase(path);
+
+      Batch batch = db.batch();
+      batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
+      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 2"]);
+      await batch.commit();
+
+      var sqfliteOptions = new SqfliteOptions()..queryAsMapList = true;
+      // ignore: deprecated_member_use
+      await Sqflite.devSetOptions(sqfliteOptions);
+      String sql = "SELECT id, name FROM Test";
+      // ignore: deprecated_member_use
+      var result = await db.devInvokeSqlMethod("query", sql);
+      List expected = [
+        {'id': 1, 'name': 'item 1'},
+        {'id': 2, 'name': 'item 2'}
+      ];
+      print("result as map list $result");
+      expect(result, expected);
+
+      // empty
+      sql = "SELECT id, name FROM Test WHERE id=1234";
+      // ignore: deprecated_member_use
+      result = await db.devInvokeSqlMethod("query", sql);
+      expected = [];
+      print("result as map list $result");
+      expect(result, expected);
+
+      sqfliteOptions = new SqfliteOptions()..queryAsMapList = false;
+      // ignore: deprecated_member_use
+      await Sqflite.devSetOptions(sqfliteOptions);
+
+      sql = "SELECT id, name FROM Test";
+      // ignore: deprecated_member_use
+      var resultSet = await db.devInvokeSqlMethod("query", sql);
+      var expectedResultSetMap = {
+        "columns": ["id", "name"],
+        "rows": [
+          [1, "item 1"],
+          [2, "item 2"]
+        ]
+      };
+      print("result as r/c $resultSet");
+      expect(resultSet, expectedResultSetMap);
+
+      // empty
+      sql = "SELECT id, name FROM Test WHERE id=1234";
+      // ignore: deprecated_member_use
+      resultSet = await db.devInvokeSqlMethod("query", sql);
+      expectedResultSetMap = {};
+      print("result as r/c $resultSet");
+      expect(resultSet, expectedResultSetMap);
+
+      await db.close();
+    });
     test("Transaction", () async {
       String path = await initDeleteDb("simple_transaction.db");
       Database db = await openDatabase(path);
@@ -24,7 +84,7 @@ class SimpleTestPage extends TestPage {
           //print(await db.query("SELECT COUNT(*) FROM Test"));
           int afterCount = Sqflite
               .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-          assert(count + 1 == afterCount);
+          expect(count + 1, afterCount);
         });
       }
 
@@ -52,13 +112,13 @@ class SimpleTestPage extends TestPage {
       });
       int afterCount =
           Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-      assert(afterCount == 2);
+      expect(afterCount, 2);
 
       await db.close();
     });
 
     test("Transaction open twice", () async {
-      //Sqflite.setDebugModeOn(true);
+      //Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("transaction_open_twice.db");
       Database db = await openDatabase(path);
 
@@ -70,7 +130,7 @@ class SimpleTestPage extends TestPage {
         await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
         int afterCount = Sqflite
             .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-        assert(afterCount == 1);
+        expect(afterCount, 1);
 
         /*
         // this is not working on Android
@@ -81,11 +141,11 @@ class SimpleTestPage extends TestPage {
       });
       int db2AfterCount = Sqflite
           .firstIntValue(await db2.rawQuery("SELECT COUNT(*) FROM Test"));
-      assert(db2AfterCount == 1);
+      expect(db2AfterCount, 1);
 
       int afterCount =
           Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-      assert(afterCount == 1);
+      expect(afterCount, 1);
 
       await db.close();
       await db2.close();
@@ -138,7 +198,7 @@ class SimpleTestPage extends TestPage {
           'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
           ["updated name", "9876", "some name"]);
       print("updated: $count");
-      assert(count == 1);
+      expect(count, 1);
       List<Map> list = await database.rawQuery('SELECT * FROM Test');
       List<Map> expectedList = [
         {"name": "updated name", "id": 1, "value": 9876, "num": 456.789},
@@ -147,12 +207,12 @@ class SimpleTestPage extends TestPage {
 
       print("list: ${JSON.encode(list)}");
       print("expected $expectedList");
-      assert(const DeepCollectionEquality().equals(list, expectedList));
+      expect(list, expectedList);
 
       count = await database
           .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
       print('deleted: $count');
-      assert(count == 1);
+      expect(count, 1);
       list = await database.rawQuery('SELECT * FROM Test');
       expectedList = [
         {"name": "updated name", "id": 1, "value": 9876, "num": 456.789},
@@ -160,7 +220,7 @@ class SimpleTestPage extends TestPage {
 
       print("list: ${JSON.encode(list)}");
       print("expected $expectedList");
-      assert(const DeepCollectionEquality().equals(list, expectedList));
+      expect(list, expectedList);
 
       await database.close();
     });
@@ -212,17 +272,18 @@ class SimpleTestPage extends TestPage {
       ];
       print(list);
       print(expectedList);
-      assert(const DeepCollectionEquality().equals(list, expectedList));
+      //assert(const DeepCollectionEquality().equals(list, expectedList));
+      expect(list, expectedList);
 
       // Count the records
       count = Sqflite
           .firstIntValue(await database.rawQuery("SELECT COUNT(*) FROM Test"));
-      assert(count == 2);
+      expect(count, 2);
 
       // Delete a record
       count = await database
           .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
-      assert(count == 1);
+      expect(count, 1);
 
       // Close the database
       await database.close();
@@ -232,25 +293,46 @@ class SimpleTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn();
       String path = await initDeleteDb("batch.db");
       Database db = await openDatabase(path);
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+
       // empty batch
       Batch batch = db.batch();
       var results = await batch.commit();
-      assert(results.length == 0);
+      expect(results.length, 0);
+
+      // one create table
+      batch = db.batch();
+      batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+      results = await batch.commit();
+      // devPrint("$results ${results[0]}");
+      expect(results, [null]);
+      expect(results[0], null);
 
       // one insert
       batch = db.batch();
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
       results = await batch.commit();
+
+      // one query
+      batch = db.batch();
+      batch.rawQuery("SELECT id, name FROM Test");
+      batch.query("Test", columns: ["id", "name"]);
+      results = await batch.commit();
       // devPrint("$results ${results[0]}");
-      assert(results[0] == 1);
+      expect(results, [
+        [
+          {"id": 1, "name": "item1"}
+        ],
+        [
+          {"id": 1, "name": "item1"}
+        ]
+      ]);
 
       // two insert
       batch = db.batch();
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item2"]);
       batch.insert("Test", {"name": "item3"});
       results = await batch.commit();
-      assert(const DeepCollectionEquality().equals(results, [2, 3]));
+      expect(results, [2, 3]);
 
       // update
       batch = db.batch();
@@ -259,7 +341,7 @@ class SimpleTestPage extends TestPage {
       batch.update("Test", {"name": "new_other_item"},
           where: "name != ?", whereArgs: <String>["new_item"]);
       results = await batch.commit();
-      assert(const DeepCollectionEquality().equals(results, [1, 2]));
+      expect(results, [1, 2]);
 
       // delete
       batch = db.batch();
@@ -267,7 +349,7 @@ class SimpleTestPage extends TestPage {
       batch.delete("Test",
           where: "name = ?", whereArgs: <String>["new_other_item"]);
       results = await batch.commit();
-      assert(const DeepCollectionEquality().equals(results, [1, 2]));
+      expect(results, [1, 2]);
 
       // No result
       batch = db.batch();
@@ -276,7 +358,7 @@ class SimpleTestPage extends TestPage {
           where: "name = ?", whereArgs: <String>["item"]);
       batch.delete("Test", where: "name = ?", whereArgs: ["item"]);
       results = await batch.commit(noResult: true);
-      assert(results == null);
+      expect(results, null);
 
       await db.close();
     });

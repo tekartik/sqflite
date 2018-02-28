@@ -27,10 +27,6 @@ class SqfliteBatch implements Batch {
         if (results == null) {
           return null;
         }
-        // dart1 support
-        if (results is List<dynamic>) {
-          return results;
-        }
         // dart2 - wrap if we need to support more results than just int
         return new BatchResults.from(results);
       });
@@ -53,6 +49,35 @@ class SqfliteBatch implements Batch {
     SqlBuilder builder = new SqlBuilder.insert(table, values,
         nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
+  }
+
+  @override
+  void rawQuery(String sql, [List arguments]) {
+    _add(methodQuery, sql, arguments);
+  }
+
+  @override
+  void query(String table,
+      {bool distinct,
+      List<String> columns,
+      String where,
+      List whereArgs,
+      String groupBy,
+      String having,
+      String orderBy,
+      int limit,
+      int offset}) {
+    SqlBuilder builder = new SqlBuilder.query(table,
+        distinct: distinct,
+        columns: columns,
+        where: where,
+        whereArgs: whereArgs,
+        groupBy: groupBy,
+        having: having,
+        orderBy: orderBy,
+        limit: limit,
+        offset: offset);
+    return rawQuery(builder.sql, builder.arguments);
   }
 
   @override
@@ -80,5 +105,10 @@ class SqfliteBatch implements Batch {
   @override
   void rawDelete(String sql, [List arguments]) {
     rawUpdate(sql, arguments);
+  }
+
+  @override
+  void execute(String sql, [List arguments]) {
+    _add(methodExecute, sql, arguments);
   }
 }

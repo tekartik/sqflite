@@ -10,6 +10,19 @@ import 'src/utils.dart';
 import 'package:synchronized/synchronized.dart';
 export 'src/exception.dart' show DatabaseException;
 
+class SqfliteOptions {
+  // true =<0.7.0
+  bool queryAsMapList;
+
+  Map toMap() {
+    return {'queryAsMapList': queryAsMapList};
+  }
+
+  fromMap(Map map) {
+    queryAsMapList = map['queryAsMapList'];
+  }
+}
+
 ///
 /// sqflite plugin
 ///
@@ -40,6 +53,18 @@ class Sqflite {
   static Future devSetDebugModeOn([bool on = true]) {
     _debugModeOn = on;
     return setDebugModeOn(on);
+  }
+
+  // Testing only
+  @deprecated
+  static Future devSetOptions(SqfliteOptions options) async {
+    await invokeMethod(methodOptions, options.toMap());
+  }
+
+  // Testing only
+  @deprecated
+  static Future devInvokeMethod(String method, [dynamic arguments]) async {
+    await invokeMethod(method, arguments);
   }
 
   /// helper to get the first int value in a query
@@ -237,19 +262,11 @@ abstract class Database {
   Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]) {
     return synchronized(() {
       return wrapDatabaseException(() async {
-        List result = await invokeMethod<List>(
+        var result = await invokeMethod(
             methodQuery,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
               ..addAll(_baseDatabaseMethodArguments));
-
-        // dart1
-        if (result is List<Map<String, dynamic>>) {
-          return result;
-        } else {
-          // dart2 support
-          Rows rows = new Rows.from(result);
-          return rows;
-        }
+        return queryResultToList(result);
       });
     });
   }
@@ -346,6 +363,12 @@ abstract class Database {
   /// Creates a batch, used for performing multiple operation
   /// in a single atomic operation.
   Batch batch();
+
+  @deprecated
+  Future devInvokeMethod(String method, [dynamic arguments]);
+
+  @deprecated
+  Future devInvokeSqlMethod(String method, String sql, [List arguments]);
 }
 
 typedef FutureOr OnDatabaseVersionChangeFn(
@@ -544,4 +567,22 @@ abstract class Batch {
 
   /// See [Database.delete]
   void delete(String table, {String where, List whereArgs});
+
+  /// See [Database.execute];
+  void execute(String sql, [List arguments]);
+
+  /// See [Database.query];
+  void query(String table,
+      {bool distinct,
+      List<String> columns,
+      String where,
+      List whereArgs,
+      String groupBy,
+      String having,
+      String orderBy,
+      int limit,
+      int offset});
+
+  /// See [Database.query];
+  void rawQuery(String sql, [List arguments]);
 }

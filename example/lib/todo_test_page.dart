@@ -95,24 +95,24 @@ class TodoTestPage extends TestPage {
 
       Todo todo = new Todo()..title = "test";
       await todoProvider.insert(todo);
-      assert(todo.id == 1);
+      expect(todo.id, 1);
 
-      assert(await todoProvider.getTodo(0) == null);
+      expect(await todoProvider.getTodo(0), null);
       todo = await todoProvider.getTodo(1);
-      assert(todo.id == 1);
-      assert(todo.title == "test");
-      assert(todo.done == false);
+      expect(todo.id, 1);
+      expect(todo.title, "test");
+      expect(todo.done, false);
 
       todo.done = true;
-      assert(await todoProvider.update(todo) == 1);
+      expect(await todoProvider.update(todo), 1);
       todo = await todoProvider.getTodo(1);
-      assert(todo.id == 1);
-      assert(todo.title == "test");
-      assert(todo.done == true);
+      expect(todo.id, 1);
+      expect(todo.title, "test");
+      expect(todo.done, true);
 
-      assert(await todoProvider.delete(0) == 0);
-      assert(await todoProvider.delete(1) == 1);
-      assert(await todoProvider.getTodo(1) == null);
+      expect(await todoProvider.delete(0), 0);
+      expect(await todoProvider.delete(1), 1);
+      expect(await todoProvider.getTodo(1), null);
 
       await todoProvider.close();
       //await Sqflite.setDebugModeOn(false);

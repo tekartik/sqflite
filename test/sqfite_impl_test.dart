@@ -31,5 +31,41 @@ main() {
       expect(rows, raw);
       expect(row, {"col": 1});
     });
+
+    test('ResultSet', () {
+      var raw = {
+        "columns": ["column"],
+        "rows": [
+          [1]
+        ]
+      };
+      var queryResultSet = new QueryResultSet([
+        "column"
+      ], [
+        [1]
+      ]);
+      var row = queryResultSet.first;
+      //expect(rows, raw);
+      expect(row, {"column": 1});
+
+      var queryResultSetMap = {
+        "columns": ["id", "name"],
+        "rows": [
+          [1, "item 1"],
+          [2, "item 2"]
+        ]
+      };
+      var expected = [
+        {'id': 1, 'name': 'item 1'},
+        {'id': 2, 'name': 'item 2'}
+      ];
+      expect(queryResultToList(queryResultSetMap), expected);
+      expect(queryResultToList(expected), expected);
+      expect(queryResultToList(raw), [
+        {'column': 1}
+      ]);
+
+      expect(queryResultToList({}), []);
+    });
   });
 }
