@@ -19,7 +19,7 @@ class SqfliteOptions {
   }
 
   fromMap(Map map) {
-    queryAsMapList = map['queryAsMapList'];
+    queryAsMapList = map['queryAsMapList'] as bool;
   }
 }
 
@@ -330,7 +330,7 @@ abstract class Database {
       if (_transactionRefCount++ == 0) {
         transaction = await _beginTransaction(exclusive: exclusive);
       }
-      var result;
+      T result;
       try {
         result = await action();
         successfull = true;

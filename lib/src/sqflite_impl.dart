@@ -14,7 +14,7 @@ final bool supportsConcurrency = false;
 
 // Make it async safe for dart 2.0.0-dev28+ preview dart 2
 Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
-  var result = await channel.invokeMethod(method, arguments);
+  T result = await channel.invokeMethod(method, arguments);
   return result;
 }
 
@@ -39,7 +39,7 @@ Map newQueryResultSetMap(List<String> columns, List<List<dynamic>> rows) {
 
 QueryResultSet queryResultSetFromMap(Map queryResultSetMap) {
   return new QueryResultSet(
-      queryResultSetMap["columns"], queryResultSetMap["rows"]);
+      queryResultSetMap["columns"] as List, queryResultSetMap["rows"] as List);
 }
 
 List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
@@ -57,17 +57,25 @@ List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
   }
   // dart2 support <= 0.7.0 - this is a list
   // to remove once done on iOS and Android
-  Rows rows = new Rows.from(queryResult);
+  Rows rows = new Rows.from(queryResult as List);
   return rows;
 }
 
 class QueryResultSet extends ListBase<Map<String, dynamic>> {
   List<List<dynamic>> _rows;
   List<String> _columns;
+  Map<String, int> _columnIndexMap;
 
   QueryResultSet(List rawColmuns, List rawRows) {
     _columns = rawColmuns?.cast<String>();
     _rows = rawRows?.cast<List>();
+    if (_columns != null) {
+      _columnIndexMap = <String, int>{};
+
+      for (int i = 0; i < _columns.length; i++) {
+        _columnIndexMap[_columns[i]] = i;
+      }
+    }
   }
 
   @override
@@ -89,7 +97,7 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
   }
 
   int columnIndex(String name) {
-    return _columns.indexOf(name);
+    return _columnIndexMap[name];
   }
 }
 
@@ -101,8 +109,8 @@ class QueryRow extends MapBase<String, dynamic> {
 
   @override
   operator [](Object key) {
-    int columnIndex = queryResultSet.columnIndex(key);
-    if (columnIndex >= 0) {
+    int columnIndex = queryResultSet.columnIndex(key as String);
+    if (columnIndex != null) {
       return row[columnIndex];
     }
     return null;
