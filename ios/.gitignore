@@ -29,3 +29,5 @@ xcuserdata
 Icon?
 .tags*
 
+Pods/
+Podfile
