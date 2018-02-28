@@ -44,7 +44,7 @@ QueryResultSet queryResultSetFromMap(Map queryResultSetMap) {
 
 List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
   // New 0.7.1 format
-  //devPrint("queryResultToList: $queryResult");
+  // devPrint("queryResultToList: $queryResult");
   if (queryResult == null) {
     return null;
   }

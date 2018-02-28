@@ -60,7 +60,7 @@
 
 - (void)handleSuccess:(NSMutableArray*)results {
     if (![self getNoResult]) {
-        [results addObject:self.results];
+        [results addObject:((self.results == nil) ? [NSNull null] : self.results)];
     }
 }
 - (void)handleError:(FlutterResult)result {
