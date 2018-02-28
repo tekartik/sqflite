@@ -1,3 +1,8 @@
+## 0.7.1
+
+* add `Batch.query`, `Batch.rawQuery` and `Batch.execute`
+* pack query result as colums/rows instead of List<Map>
+
 ## 0.7.0
 
 * Add support for `--preview-dart-2`

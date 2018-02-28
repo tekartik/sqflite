@@ -44,6 +44,8 @@ main() {
       ], [
         [1]
       ]);
+      expect(queryResultSet.columnIndex("dummy"), isNull);
+      expect(queryResultSet.columnIndex("column"), 0);
       var row = queryResultSet.first;
       //expect(rows, raw);
       expect(row, {"column": 1});
