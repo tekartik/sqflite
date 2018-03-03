@@ -9,11 +9,8 @@ class MyList1 extends Object with ListMixin<Map<String, dynamic>> {
 
   @override
   Map<String, dynamic> operator [](int index) {
-    var value = _list[index];
-    if (value is Map<String, dynamic>) {
-      return value;
-    }
-    return null;
+    Map value = _list[index];
+    return value.cast<String, dynamic>();
   }
 
   @override
@@ -37,11 +34,8 @@ class MyList2 extends ListBase<Map<String, dynamic>> {
 
   @override
   Map<String, dynamic> operator [](int index) {
-    var value = _list[index];
-    if (value is Map<String, dynamic>) {
-      return value;
-    }
-    return null;
+    Map value = _list[index];
+    return value.cast<String, dynamic>();
   }
 
   @override

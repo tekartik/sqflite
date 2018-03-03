@@ -24,6 +24,7 @@ main() {
       expect(log.first.arguments, true);
     });
 
+    // Check that public api are exported
     test("exported", () {
       Database db;
       try {
