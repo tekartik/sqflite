@@ -30,6 +30,8 @@ main() {
 
       db?.batch();
       db?.update(null, null);
+      db?.transaction((Transaction txt) => null);
+      // ignore: deprecated_member_use
       db?.inTransaction(null);
 
       Transaction transaction;

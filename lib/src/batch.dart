@@ -12,7 +12,8 @@ class SqfliteBatch implements Batch {
 
   SqfliteBatch(this.database);
 
-  Future<List<dynamic>> commit({bool exclusive, bool noResult}) => apply(exclusive: exclusive, noResult: noResult);
+  Future<List<dynamic>> commit({bool exclusive, bool noResult}) =>
+      apply(exclusive: exclusive, noResult: noResult);
 
   @override
   Future<List<dynamic>> apply({bool exclusive, bool noResult}) {

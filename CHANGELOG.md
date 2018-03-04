@@ -1,7 +1,8 @@
-## 0.8.0
+## 0.8.1
 
 * New `Transaction` mechanism not using Zone (old one still supported for now)
 * Start using `Batch.apply` instead of `Batch.commit`
+* Deprecate `Database.inTransaction` and `Database.synchronized` so that Zones are not used anymore
 
 ## 0.7.1
 

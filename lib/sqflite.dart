@@ -178,9 +178,9 @@ abstract class Database implements DatabaseExecutor {
   /// synchronized call to the database
   /// ensure that no other calls outside the inner action will
   /// access the database
-  /// Use [Zone] so should be deprecated soon starting 0.9.0
+  /// Use [Zone] so should be deprecated soon starting 0.8.1
   ///
-  // @deprecated
+  @deprecated
   Future<T> synchronized<T>(Future<T> action());
 
   /// Calls in action must only be done using the transaction object
@@ -188,10 +188,11 @@ abstract class Database implements DatabaseExecutor {
   Future<T> transaction<T>(Future<T> action(Transaction txn), {bool exclusive});
 
   ///
-  /// Simple soon to be deprecated soon starting 0.9.0
-  /// (used Zone) transaction mechanism
+  /// Simple soon to be deprecated soon starting 0.8.1
+  /// (it uses Zone in order to be re-entrant) transaction mechanism
   ///
-  // @deprecated
+  // User [transaction] instead
+  @deprecated
   Future<T> inTransaction<T>(Future<T> action(), {bool exclusive});
 
   ///
@@ -283,12 +284,8 @@ Future deleteDatabase(String path) async {
 /// executed (or visible locally) until commit() is called.
 ///
 abstract class Batch {
-  // Commits all of the operations in this batch as a single atomic unit
-  // The result is a list of the result of each operation in the same order
-  // if [noResult] is true, the result list is empty (i.e. the id inserted
-  // the count of item changed is not returned
-  // Will be deprecated for apply
-  // @deprecated
+  // User [apply] instead, it is not really a commit yet...
+  @deprecated
   Future<List<dynamic>> commit({bool exclusive, bool noResult});
 
   /// Commits all of the operations in this batch as a single atomic unit
@@ -296,7 +293,6 @@ abstract class Batch {
   /// if [noResult] is true, the result list is empty (i.e. the id inserted
   /// the count of item changed is not returned
   Future<List<dynamic>> apply({bool exclusive, bool noResult});
-
 
   /// See [Database.rawInsert]
   void rawInsert(String sql, [List arguments]);

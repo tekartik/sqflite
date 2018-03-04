@@ -67,6 +67,7 @@ class DeprecatedTestPage extends TestPage {
       Future action2() async {
         await step1.future;
 
+        // ignore: deprecated_member_use
         await db.inTransaction(() async {
           // Wait for table being created;
 
@@ -119,6 +120,7 @@ class DeprecatedTestPage extends TestPage {
         // this is the change from concurrency 1
         // Wait for table being created;
 
+        // ignore: deprecated_member_use
         await db.inTransaction(() async {
           await db
               .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");

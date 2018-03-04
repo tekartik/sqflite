@@ -166,6 +166,22 @@ create table $tableTodo (
 }
 ```
 
+### Transaction
+
+Don't use the database but only use the Transaction object in a transaction
+to access the database
+
+```dart
+await database.transaction((txn) async {
+  // Ok
+  await txn.execute("CREATE TABLE Test1 (id INTEGER PRIMARY KEY)");
+  
+  // DON'T  use the database object in a transaction
+  // this will deadlock!
+  await database.execute("CREATE TABLE Test2 (id INTEGER PRIMARY KEY)");
+});
+```
+
 ### Batch support
 
 To avoid ping-pong between dart and native code, you can use `Batch`:
