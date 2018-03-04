@@ -31,6 +31,11 @@ main() {
         db.batch();
         db.update(null, null);
       } catch (_) {}
+
+      Transaction transaction;
+      transaction?.execute(null, null);
+
+      expect(ConflictAlgorithm.abort, isNotNull);
     });
   });
 }

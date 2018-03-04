@@ -23,8 +23,8 @@ main() {
     });
 
     test('Rows', () {
-      var raw = [
-        {'col': 1}
+      var raw = <dynamic>[
+        <dynamic, dynamic>{'col': 1}
       ];
       var rows = new Rows.from(raw);
       var row = rows.first;

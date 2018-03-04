@@ -16,7 +16,7 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  synchronized: '>=1.1.0'
+  synchronized: '>=1.3.0'
 
 dev_dependencies:
   flutter_test:
