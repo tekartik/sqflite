@@ -27,10 +27,10 @@ main() {
     // Check that public api are exported
     test("exported", () {
       Database db;
-      try {
-        db.batch();
-        db.update(null, null);
-      } catch (_) {}
+
+      db?.batch();
+      db?.update(null, null);
+      db?.inTransaction(null);
 
       Transaction transaction;
       transaction?.execute(null, null);

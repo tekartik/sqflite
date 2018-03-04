@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:sqflite/src/constant.dart';
-import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/database.dart' as impl;
 import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/sql_builder.dart';
@@ -74,15 +73,101 @@ class Sqflite {
   }
 }
 
+abstract class DatabaseExecutor {
+  /// for sql without return values
+  Future execute(String sql, [List arguments]);
+
+  /// for INSERT sql query
+  /// returns the last inserted record id
+  Future<int> rawInsert(String sql, [List arguments]);
+
+  // INSERT helper
+  Future<int> insert(String table, Map<String, dynamic> values,
+      {String nullColumnHack, ConflictAlgorithm conflictAlgorithm});
+
+  /// Helper to query a table
+  ///
+  /// @param distinct true if you want each row to be unique, false otherwise.
+  /// @param table The table names to compile the query against.
+  /// @param columns A list of which columns to return. Passing null will
+  ///            return all columns, which is discouraged to prevent reading
+  ///            data from storage that isn't going to be used.
+  /// @param where A filter declaring which rows to return, formatted as an SQL
+  ///            WHERE clause (excluding the WHERE itself). Passing null will
+  ///            return all rows for the given URL.
+  /// @param groupBy A filter declaring how to group rows, formatted as an SQL
+  ///            GROUP BY clause (excluding the GROUP BY itself). Passing null
+  ///            will cause the rows to not be grouped.
+  /// @param having A filter declare which row groups to include in the cursor,
+  ///            if row grouping is being used, formatted as an SQL HAVING
+  ///            clause (excluding the HAVING itself). Passing null will cause
+  ///            all row groups to be included, and is required when row
+  ///            grouping is not being used.
+  /// @param orderBy How to order the rows, formatted as an SQL ORDER BY clause
+  ///            (excluding the ORDER BY itself). Passing null will use the
+  ///            default sort order, which may be unordered.
+  /// @param limit Limits the number of rows returned by the query,
+  /// @param offset starting index,
+
+  /// @return the items found
+  Future<List<Map<String, dynamic>>> query(String table,
+      {bool distinct,
+      List<String> columns,
+      String where,
+      List whereArgs,
+      String groupBy,
+      String having,
+      String orderBy,
+      int limit,
+      int offset});
+
+  /// for SELECT sql query
+  Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]);
+
+  /// for UPDATE sql query
+  /// return the number of changes made
+  Future<int> rawUpdate(String sql, [List arguments]);
+
+  /// Convenience method for updating rows in the database.
+  ///
+  /// update into table [table] with the [values], a map from column names
+  /// to new column values. null is a valid value that will be translated to NULL.
+  /// [where] is the optional WHERE clause to apply when updating.
+  ///            Passing null will update all rows.
+  /// You may include ?s in the where clause, which
+  ///            will be replaced by the values from [whereArgs]
+  /// optional [conflictAlgorithm] for update conflict resolver
+  /// return the number of rows affected
+  Future<int> update(String table, Map<String, dynamic> values,
+      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm});
+
+  /// for DELETE sql query
+  /// return the number of changes made
+  Future<int> rawDelete(String sql, [List arguments]);
+
+  /// Convenience method for deleting rows in the database.
+  ///
+  /// delete from [table]
+  /// [where] is the optional WHERE clause to apply when updating.
+  ///            Passing null will update all rows.
+  /// You may include ?s in the where clause, which
+  ///            will be replaced by the values from [whereArgs]
+  /// optional [conflictAlgorithm] for update conflict resolver
+  /// return the number of rows affected if a whereClause is passed in, 0
+  ///         otherwise. To remove all rows and get a count pass "1" as the
+  ///         whereClause.
+  Future<int> delete(String table, {String where, List whereArgs});
+}
+
 /// Database transaction
 /// to use during a transaction
-abstract class Transaction extends SqfliteDatabaseExecutor {}
+abstract class Transaction implements DatabaseExecutor {}
 
 ///
 /// Database support
 /// to send sql commands
 ///
-abstract class Database extends SqfliteDatabaseExecutor {
+abstract class Database implements DatabaseExecutor {
   /// The path of the database
   String get path;
 
@@ -93,26 +178,42 @@ abstract class Database extends SqfliteDatabaseExecutor {
   /// synchronized call to the database
   /// ensure that no other calls outside the inner action will
   /// access the database
-  /// Use [Zone] so should be deprecated soon
+  /// Use [Zone] so should be deprecated soon starting 0.9.0
   ///
+  // @deprecated
   Future<T> synchronized<T>(Future<T> action());
 
   /// Calls in action must only be done using the transaction object
   /// using the database will trigger a dead-lock
-  Future<T> transaction<T>(Future<T> action(Transaction), {bool exclusive});
+  Future<T> transaction<T>(Future<T> action(Transaction txn), {bool exclusive});
 
   ///
-  /// Simple soon to be deprecated (used Zone) transaction mechanism
+  /// Simple soon to be deprecated soon starting 0.9.0
+  /// (used Zone) transaction mechanism
   ///
+  // @deprecated
   Future<T> inTransaction<T>(Future<T> action(), {bool exclusive});
+
+  ///
+  /// Get the database inner version
+  ///
+  Future<int> getVersion();
+
+  ///
+  /// Set the database inner version
+  /// Used internally for open helpers and automatic versioning
+  ///
+  Future setVersion(int version);
 
   /// Creates a batch, used for performing multiple operation
   /// in a single atomic operation.
   Batch batch();
 
+  /// testing only
   @deprecated
   Future devInvokeMethod(String method, [dynamic arguments]);
 
+  /// testing only
   @deprecated
   Future devInvokeSqlMethod(String method, String sql, [List arguments]);
 }
@@ -186,7 +287,16 @@ abstract class Batch {
   // The result is a list of the result of each operation in the same order
   // if [noResult] is true, the result list is empty (i.e. the id inserted
   // the count of item changed is not returned
+  // Will be deprecated for apply
+  // @deprecated
   Future<List<dynamic>> commit({bool exclusive, bool noResult});
+
+  /// Commits all of the operations in this batch as a single atomic unit
+  /// The result is a list of the result of each operation in the same order
+  /// if [noResult] is true, the result list is empty (i.e. the id inserted
+  /// the count of item changed is not returned
+  Future<List<dynamic>> apply({bool exclusive, bool noResult});
+
 
   /// See [Database.rawInsert]
   void rawInsert(String sql, [List arguments]);

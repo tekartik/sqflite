@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
@@ -9,84 +8,24 @@ import 'package:sqflite_example/src/utils.dart';
 
 import 'test_page.dart';
 
-class SimpleTestPage extends TestPage {
-  SimpleTestPage() : super("Raw tests") {
-    test("Options", () async {
-      // Sqflite.devSetDebugModeOn(true);
-
-      String path = await initDeleteDb("raw_query_format.db");
-      Database db = await openDatabase(path);
-
-      Batch batch = db.batch();
-
-      batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
-      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 2"]);
-      await batch.apply();
-
-      var sqfliteOptions = new SqfliteOptions()..queryAsMapList = true;
-      // ignore: deprecated_member_use
-      await Sqflite.devSetOptions(sqfliteOptions);
-      String sql = "SELECT id, name FROM Test";
-      // ignore: deprecated_member_use
-      var result = await db.devInvokeSqlMethod("query", sql);
-      List expected = [
-        {'id': 1, 'name': 'item 1'},
-        {'id': 2, 'name': 'item 2'}
-      ];
-      print("result as map list $result");
-      expect(result, expected);
-
-      // empty
-      sql = "SELECT id, name FROM Test WHERE id=1234";
-      // ignore: deprecated_member_use
-      result = await db.devInvokeSqlMethod("query", sql);
-      expected = [];
-      print("result as map list $result");
-      expect(result, expected);
-
-      sqfliteOptions = new SqfliteOptions()..queryAsMapList = false;
-      // ignore: deprecated_member_use
-      await Sqflite.devSetOptions(sqfliteOptions);
-
-      sql = "SELECT id, name FROM Test";
-      // ignore: deprecated_member_use
-      var resultSet = await db.devInvokeSqlMethod("query", sql);
-      var expectedResultSetMap = {
-        "columns": ["id", "name"],
-        "rows": [
-          [1, "item 1"],
-          [2, "item 2"]
-        ]
-      };
-      print("result as r/c $resultSet");
-      expect(resultSet, expectedResultSetMap);
-
-      // empty
-      sql = "SELECT id, name FROM Test WHERE id=1234";
-      // ignore: deprecated_member_use
-      resultSet = await db.devInvokeSqlMethod("query", sql);
-      expectedResultSetMap = {};
-      print("result as r/c $resultSet");
-      expect(resultSet, expectedResultSetMap);
-
-      await db.close();
-    });
+class DeprecatedTestPage extends TestPage {
+  DeprecatedTestPage() : super("Deprecated transaction tests") {
     test("Transaction", () async {
+      //Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("simple_transaction.db");
       Database db = await openDatabase(path);
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
       _test(int i) async {
-        await db.transaction((txn) async {
+        // ignore: deprecated_member_use
+        await db.inTransaction(() async {
           int count = Sqflite
-              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+              .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
           await new Future.delayed(new Duration(milliseconds: 40));
-          await txn
-              .rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
+          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
           //print(await db.query("SELECT COUNT(*) FROM Test"));
           int afterCount = Sqflite
-              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+              .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(count + 1, afterCount);
         });
       }
@@ -114,10 +53,10 @@ class SimpleTestPage extends TestPage {
 
         await step2.future;
         try {
-          await db
+          var map = await db
               .rawQuery("SELECT COUNT(*) FROM Test")
               .timeout(new Duration(seconds: 1));
-          throw "should fail";
+          throw "should fail ($map)";
         } catch (e) {
           expect(e is TimeoutException, true);
         }
@@ -126,16 +65,18 @@ class SimpleTestPage extends TestPage {
       }
 
       Future action2() async {
-        await db.transaction((txn) async {
+        await step1.future;
+
+        await db.inTransaction(() async {
           // Wait for table being created;
-          await step1.future;
-          await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
+
+          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
           step2.complete();
 
           await step3.future;
 
           int count = Sqflite
-              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+              .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(count, 1);
         });
       }
@@ -158,40 +99,38 @@ class SimpleTestPage extends TestPage {
       Database db = await openDatabase(path);
       var step1 = new Completer();
       var step2 = new Completer();
-      var step3 = new Completer();
 
       Future action1() async {
-        await db
-            .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-        step1.complete();
+        await step1.future;
 
-        await step2.future;
         try {
-          await db
+          var map = await db
               .rawQuery("SELECT COUNT(*) FROM Test")
               .timeout(new Duration(seconds: 1));
-          throw "should fail";
+          throw "should fail ($map)";
         } catch (e) {
           expect(e is TimeoutException, true);
         }
 
-        step3.complete();
+        step2.complete();
       }
 
       Future action2() async {
-        // This is the change from concurrency 1
+        // this is the change from concurrency 1
         // Wait for table being created;
-        await step1.future;
 
-        await db.transaction((txn) async {
-          // Wait for table being created;
-          await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
-          step2.complete();
+        await db.inTransaction(() async {
+          await db
+              .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
-          await step3.future;
+          step1.complete();
+
+          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
+
+          await step2.future;
 
           int count = Sqflite
-              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+              .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(count, 1);
         });
       }
@@ -215,10 +154,14 @@ class SimpleTestPage extends TestPage {
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
       // insert then fails to make sure the transaction is cancelled
-      await db.transaction((txn) async {
-        await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
+      // ignore: deprecated_member_use
+      await db.inTransaction(() async {
+        await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
 
-        await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 2"]);
+        // ignore: deprecated_member_use
+        await db.inTransaction(() async {
+          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 2"]);
+        });
       });
       int afterCount =
           Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
@@ -236,10 +179,11 @@ class SimpleTestPage extends TestPage {
 
       Database db2 = await openDatabase(path);
 
-      await db.transaction((txn) async {
-        await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+      // ignore: deprecated_member_use
+      await db.inTransaction(() async {
+        await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
         int afterCount = Sqflite
-            .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+            .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
         expect(afterCount, 1);
 
         /*
@@ -259,80 +203,6 @@ class SimpleTestPage extends TestPage {
 
       await db.close();
       await db2.close();
-    });
-
-    test("Debug mode (log)", () async {
-      //await Sqflite.devSetDebugModeOn(false);
-      String path = await initDeleteDb("debug_mode.db");
-      Database db = await openDatabase(path);
-
-      bool debugModeOn = await Sqflite.getDebugModeOn();
-      await Sqflite.setDebugModeOn(true);
-      await db.setVersion(1);
-      await Sqflite.setDebugModeOn(false);
-      // this message should not appear
-      await db.setVersion(2);
-      await Sqflite.setDebugModeOn(true);
-      await db.setVersion(3);
-      // restore
-      await Sqflite.setDebugModeOn(debugModeOn);
-
-      await db.close();
-    });
-
-    test("Demo", () async {
-      // await Sqflite.devSetDebugModeOn();
-      String path = await initDeleteDb("simple_demo.db");
-      Database database = await openDatabase(path);
-
-      //int version = await database.update("PRAGMA user_version");
-      //print("version: ${await database.update("PRAGMA user_version")}");
-      print("version: ${await database.rawQuery("PRAGMA user_version")}");
-
-      //print("drop: ${await database.update("DROP TABLE IF EXISTS Test")}");
-      await database.execute("DROP TABLE IF EXISTS Test");
-
-      print("dropped");
-      await database.execute(
-          "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)");
-      print("table created");
-      int id = await database.rawInsert(
-          'INSERT INTO Test(name, value, num) VALUES("some name",1234,?)',
-          [456.789]);
-      print("inserted1: $id");
-      id = await database.rawInsert(
-          'INSERT INTO Test(name, value) VALUES(?, ?)',
-          ["another name", 12345678]);
-      print("inserted2: $id");
-      int count = await database.rawUpdate(
-          'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
-          ["updated name", "9876", "some name"]);
-      print("updated: $count");
-      expect(count, 1);
-      List<Map> list = await database.rawQuery('SELECT * FROM Test');
-      List<Map> expectedList = [
-        {"name": "updated name", "id": 1, "value": 9876, "num": 456.789},
-        {"name": "another name", "id": 2, "value": 12345678, "num": null}
-      ];
-
-      print("list: ${JSON.encode(list)}");
-      print("expected $expectedList");
-      expect(list, expectedList);
-
-      count = await database
-          .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
-      print('deleted: $count');
-      expect(count, 1);
-      list = await database.rawQuery('SELECT * FROM Test');
-      expectedList = [
-        {"name": "updated name", "id": 1, "value": 9876, "num": 456.789},
-      ];
-
-      print("list: ${JSON.encode(list)}");
-      print("expected $expectedList");
-      expect(list, expectedList);
-
-      await database.close();
     });
 
     test("Demo clean", () async {
@@ -358,11 +228,12 @@ class SimpleTestPage extends TestPage {
       });
 
       // Insert some records in a transaction
-      await database.transaction((txn) async {
-        int id1 = await txn.rawInsert(
+      // ignore: deprecated_member_use
+      await database.inTransaction(() async {
+        int id1 = await database.rawInsert(
             'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
         print("inserted1: $id1");
-        int id2 = await txn.rawInsert(
+        int id2 = await database.rawInsert(
             'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
             ["another name", 12345678, 3.1416]);
         print("inserted2: $id2");
@@ -505,6 +376,44 @@ class SimpleTestPage extends TestPage {
       batch.delete("Test", where: "name = ?", whereArgs: ["item"]);
       results = await batch.apply(noResult: true);
       expect(results, null);
+
+      await db.close();
+    });
+
+    //
+    // Exception
+    //
+    test("Transaction failed", () async {
+      //await Sqflite.setDebugModeOn(true);
+      String path = await initDeleteDb("transaction_failed.db");
+      Database db = await openDatabase(path);
+
+      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+
+      // insert then fails to make sure the transaction is cancelled
+      bool hasFailed = false;
+      try {
+        // ignore: deprecated_member_use
+        await db.inTransaction(() async {
+          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+          int afterCount = Sqflite
+              .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+          expect(afterCount, 1);
+
+          hasFailed = true;
+          // this failure should cancel the insertion before
+          await db.execute("DUMMY CALL");
+          hasFailed = false;
+        });
+      } catch (e) {
+        // iOS: native_error: PlatformException(sqlite_error, Error Domain=FMDatabase Code=1 "near "DUMMY": syntax error" UserInfo={NSLocalizedDescription=near "DUMMY": syntax error}, null)
+        print("native_error: $e");
+      }
+      verify(hasFailed);
+
+      int afterCount =
+          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+      expect(afterCount, 0);
 
       await db.close();
     });

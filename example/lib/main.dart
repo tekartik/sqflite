@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/exp_test_page.dart';
+import 'package:sqflite_example/deprecated_test_page.dart';
 import 'model/main_item.dart';
 import 'open_test_page.dart';
 import 'package:sqflite_example/exception_test_page.dart';
@@ -29,6 +30,7 @@ const String testThreadRoute = "/test/thread";
 const String testTodoRoute = "/test/todo";
 const String testExceptionRoute = "/test/exception";
 const String testExpRoute = "/test/exp";
+const String testDeprecatedRoute = "/test/deprecated";
 
 class _MyAppState extends State<MyApp> {
   var routes = <String, WidgetBuilder>{
@@ -40,6 +42,7 @@ class _MyAppState extends State<MyApp> {
     testThreadRoute: (BuildContext context) => new TypeTestPage(),
     testExceptionRoute: (BuildContext context) => new ExceptionTestPage(),
     testExpRoute: (BuildContext context) => new ExpTestPage(),
+    testDeprecatedRoute: (BuildContext context) => new DeprecatedTestPage(),
   };
   @override
   Widget build(BuildContext context) {
@@ -81,6 +84,9 @@ class MyHomePage extends StatefulWidget {
         route: testExpRoute));
     items.add(new MainItem("Exception tests", "Tests that trigger exceptions",
         route: testExceptionRoute));
+    items.add(new MainItem(
+        "Deprecated test", "Currently keep old synchronized functionality",
+        route: testDeprecatedRoute));
 
     // Uncomment to view all logs
     //Sqflite.devSetDebugModeOn(true);

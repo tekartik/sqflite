@@ -3,10 +3,10 @@ author: Tekartik <alex@tekartik.com>
 homepage: https://github.com/tekartik/sqflite
 description: Flutter plugin for SQLite, a self-contained, high-reliability,
   embedded, SQL database engine.
-version: 0.7.1
+version: 0.7.2
 
 environment:
-  sdk: ">=1.24.0 <2.0.0"
+  sdk: ">=2.0.0-dev <2.0.0"
 
 flutter:
   plugin:

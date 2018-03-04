@@ -12,16 +12,18 @@ class SqfliteBatch implements Batch {
 
   SqfliteBatch(this.database);
 
+  Future<List<dynamic>> commit({bool exclusive, bool noResult}) => apply(exclusive: exclusive, noResult: noResult);
+
   @override
-  Future<List<dynamic>> commit({bool exclusive, bool noResult}) {
-    return database.inTransaction<List>(() {
+  Future<List<dynamic>> apply({bool exclusive, bool noResult}) {
+    return database.transaction<List>((txn) {
       return wrapDatabaseException<List>(() async {
         var arguments = <String, dynamic>{paramOperations: operations}
           ..addAll(database.baseDatabaseMethodArguments);
         if (noResult == true) {
           arguments[paramNoResult] = noResult;
         }
-        List results = await channel.invokeMethod(methodBatch, arguments);
+        List results = await database.invokeMethod(methodBatch, arguments);
 
         // Typically when noResult is true
         if (results == null) {

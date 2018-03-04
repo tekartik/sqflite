@@ -1,3 +1,8 @@
+## 0.8.0
+
+* New `Transaction` mechanism not using Zone (old one still supported for now)
+* Start using `Batch.apply` instead of `Batch.commit`
+
 ## 0.7.1
 
 * add `Batch.query`, `Batch.rawQuery` and `Batch.execute`

@@ -16,56 +16,21 @@ class ExceptionTestPage extends TestPage {
       // insert then fails to make sure the transaction is cancelled
       bool hasFailed = false;
       try {
-        await db.inTransaction(() async {
-          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+        await db.transaction((txn) async {
+          await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
           int afterCount = Sqflite
-              .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(afterCount, 1);
 
           hasFailed = true;
           // this failure should cancel the insertion before
-          await db.execute("DUMMY CALL");
+          await txn.execute("DUMMY CALL");
           hasFailed = false;
         });
       } catch (e) {
         // iOS: native_error: PlatformException(sqlite_error, Error Domain=FMDatabase Code=1 "near "DUMMY": syntax error" UserInfo={NSLocalizedDescription=near "DUMMY": syntax error}, null)
         print("native_error: $e");
       }
-      verify(hasFailed);
-
-      int afterCount =
-          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-      expect(afterCount, 0);
-
-      await db.close();
-    });
-
-    test("Transaction recursive failed", () async {
-      String path = await initDeleteDb("transaction_failed.db");
-      Database db = await openDatabase(path);
-
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-
-      // insert then fails to make sure the transaction is cancelled
-      bool hasFailed = false;
-      try {
-        await db.inTransaction(() async {
-          await db.inTransaction(() async {
-            await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
-            int afterCount = Sqflite
-                .firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
-            expect(afterCount, 1);
-
-            hasFailed = true;
-            // this failure should cancel the insertion before
-            await db.execute("DUMMY CALL");
-            hasFailed = false;
-          });
-        });
-      } catch (e) {
-        print("native error: $e");
-      }
-
       verify(hasFailed);
 
       int afterCount =
