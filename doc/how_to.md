@@ -4,6 +4,8 @@
 
 ## Development guide
 
+### Check list
+
 * run test
 * no warning
 * string mode / implicit-casts: false
@@ -18,3 +20,7 @@ flutter test
 flutter run
 flutter run --preview-dart-2
 ````
+
+### Publishing
+
+    flutter packages pub publish
