@@ -9,7 +9,7 @@ class MockDatabase extends SqfliteDatabase {
   @override
   Future<T> invokeMethod<T>(String method, [arguments]) {
     // return super.invokeMethod(method, arguments);
-    print('$method: $arguments');
+    // print('$method: $arguments');
     return null;
   }
 }
