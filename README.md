@@ -3,8 +3,8 @@
 SQLite plugin for [Flutter](https://flutter.io).
 Supports both iOS and Android.
 
-* Support recursive inTransaction calls
-* Automatic version managment
+* Support transactions and batches
+* Automatic version managment during open
 * Helpers for insert/query/update/delete queries
 * DB operation executed in a background thread on iOS and Android
 
@@ -50,11 +50,11 @@ Database database = await openDatabase(path, version: 1,
 });
 
 // Insert some records in a transaction
-await database.inTransaction(() async {
-  int id1 = await database.rawInsert(
+await database.transaction((txn) async {
+  int id1 = await txn.rawInsert(
       'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
   print("inserted1: $id1");
-  int id2 = await database.rawInsert(
+  int id2 = await txn.rawInsert(
       'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
       ["another name", 12345678, 3.1416]);
   print("inserted2: $id2");
@@ -175,7 +175,7 @@ batch = db.batch();
 batch.insert("Test", {"name": "item"});
 batch.update("Test", {"name": "new_item"}, where: "name = ?", whereArgs: ["item"]);
 batch.delete("Test", where: "name = ?", whereArgs: ["item"]);
-results = await batch.commit();
+results = await batch.apply();
 ```
 
 Getting the result for each operation has a cost (id for insertion and number of changes for
@@ -183,7 +183,7 @@ update and delete), especially on Android where an extra SQL request is executed
 If you don't care about the result and worry about performance in big batches, you can use
 
 ```dart
-await batch.commit(noResult: true);
+await batch.apply(noResult: true);
 ```
 
 ## Table and column names
