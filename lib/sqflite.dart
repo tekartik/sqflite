@@ -179,7 +179,7 @@ abstract class Database implements DatabaseExecutor {
   /// ensure that no other calls outside the inner action will
   /// access the database
   /// Use [Zone] so should be deprecated soon starting 0.8.1
-  ///
+  // Deprecated since 2018-03-01 - 0.8.1
   @deprecated
   Future<T> synchronized<T>(Future<T> action());
 
@@ -192,6 +192,7 @@ abstract class Database implements DatabaseExecutor {
   /// (it uses Zone in order to be re-entrant) transaction mechanism
   ///
   // User [transaction] instead
+  // Deprecated since 2018-03-01 - 0.8.1
   @deprecated
   Future<T> inTransaction<T>(Future<T> action(), {bool exclusive});
 
@@ -285,6 +286,7 @@ Future deleteDatabase(String path) async {
 ///
 abstract class Batch {
   // User [apply] instead, it is not really a commit yet...
+  // Deprecated since 2018-03-01 - 0.8.1
   @deprecated
   Future<List<dynamic>> commit({bool exclusive, bool noResult});
 
