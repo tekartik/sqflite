@@ -119,12 +119,19 @@ class OpenTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_test2.db");
       bool onCreate = false;
+      bool onCreateTransaction = false;
       Database db = await openDatabase(path, version: 1,
-          onCreate: (Database db, int version) {
+          onCreate: (Database db, int version) async {
         expect(version, 1);
         onCreate = true;
+
+        await db.transaction((txn) async {
+          await txn.execute("CREATE TABLE Test2 (id INTEGER PRIMARY KEY)");
+          onCreateTransaction = true;
+        });
       });
       verify(onCreate);
+      expect(onCreateTransaction, true);
       await db.close();
     });
 
@@ -215,15 +222,22 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open on configure", () async {
-      Directory documentsDirectory = await getApplicationDocumentsDirectory();
-      String path = join(documentsDirectory.path, "open_on_configure.db");
+      String path = await initDeleteDb("open_on_configure.db");
+
       bool onConfigured = false;
+      bool onConfiguredTransaction = false;
       Future _onConfigure(Database db) async {
         onConfigured = true;
+        await db.execute("CREATE TABLE Test1 (id INTEGER PRIMARY KEY)");
+        await db.transaction((txn) async {
+          await txn.execute("CREATE TABLE Test2 (id INTEGER PRIMARY KEY)");
+          onConfiguredTransaction = true;
+        });
       }
 
       var db = await openDatabase(path, onConfigure: _onConfigure);
       expect(onConfigured, true);
+      expect(onConfiguredTransaction, true);
 
       await db.close();
     });

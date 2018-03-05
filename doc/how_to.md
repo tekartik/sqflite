@@ -14,11 +14,14 @@
 # quick run before commiting
 
 dartfmt -w .
-dartanalyzer lib test
+flutter analyze lib test
 flutter test
 
 flutter run
 flutter run --preview-dart-2
+
+# Using preview dart 2
+flutter test --preview-dart-2
 ````
 
 ### Publishing

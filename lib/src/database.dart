@@ -143,7 +143,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
 }
 
 class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
-  SqfliteDatabase(this._path, this.id);
+  SqfliteDatabase(this._path);
 
   // will be removed once writeSynchronized and synchronized are removed
 
@@ -212,10 +212,11 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   /// not re-entrant
   /// Ugly compatibility step to not support older synchronized
   /// mechanism
-  Future<T> txnSynchronized<T>(Transaction txn, Future<T> action()) async {
+  Future<T> txnSynchronized<T>(
+      Transaction txn, Future<T> action(Transaction txn)) async {
     // If in a transaction, execute right away
     if (txn != null) {
-      return await action();
+      return await action(txn);
     } else {
       T result;
       bool useOldSynchronized = false;
@@ -226,7 +227,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
           if (rawSynchronizedlock != null) {
             useOldSynchronized = true;
           } else {
-            return action();
+            return action(txn);
           }
         });
       } else {
@@ -234,7 +235,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       }
 
       if (useOldSynchronized) {
-        result = await rawSynchronizedlock.synchronized(action);
+        result = await rawSynchronizedlock.synchronized(() => action(txn));
       }
       return result;
     }
@@ -242,12 +243,13 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
 
   /// synchronized call to the database
   /// not re-entrant
-  Future<T> txnWriteSynchronized<T>(Transaction txn, Future<T> action()) =>
+  Future<T> txnWriteSynchronized<T>(
+          Transaction txn, Future<T> action(Transaction txn)) =>
       txnSynchronized(txn, action);
 
   /// for sql without return values
   Future txnExecute(SqfliteTransaction txn, String sql, [List arguments]) {
-    return txnWriteSynchronized(txn, () {
+    return txnWriteSynchronized(txn, (_) {
       return invokeExecute(sql, arguments);
     });
   }
@@ -264,7 +266,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   /// for INSERT sql query
   /// returns the last inserted record id
   Future<int> txnRawInsert(SqfliteTransaction txn, String sql, List arguments) {
-    return txnWriteSynchronized(txn, () {
+    return txnWriteSynchronized(txn, (_) {
       return wrapDatabaseException(() {
         return invokeMethod<int>(
             methodInsert,
@@ -276,7 +278,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
 
   Future<List<Map<String, dynamic>>> txnRawQuery(
       SqfliteTransaction txn, String sql, List arguments) {
-    return txnSynchronized(txn, () {
+    return txnSynchronized(txn, (_) {
       return wrapDatabaseException(() async {
         var result = await invokeMethod(
             methodQuery,
@@ -290,7 +292,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   /// for INSERT sql query
   /// returns the last inserted record id
   Future<int> txnRawUpdate(SqfliteTransaction txn, String sql, List arguments) {
-    return txnWriteSynchronized(txn, () {
+    return txnWriteSynchronized(txn, (_) {
       return wrapDatabaseException(() {
         return invokeMethod<int>(
             methodUpdate,
@@ -318,9 +320,9 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
     }
   }
 
-  Future<T> _runTransaction<T>(Future<T> action(Transaction txn),
+  Future<T> _runTransaction<T>(
+      Transaction txn, Future<T> action(Transaction txn),
       {bool exclusive}) async {
-    SqfliteTransaction txn;
     bool successfull;
     if (transactionRefCount++ == 0) {
       txn = await beginTransaction(exclusive: exclusive);
@@ -331,8 +333,8 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       successfull = true;
     } finally {
       if (--transactionRefCount == 0) {
-        txn.successfull = successfull;
-        await endTransaction(txn);
+        (txn as SqfliteTransaction).successfull = successfull;
+        await endTransaction((txn as SqfliteTransaction));
       }
     }
     return result;
@@ -341,8 +343,8 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   @override
   Future<T> transaction<T>(Future<T> action(Transaction txn),
       {bool exclusive}) {
-    return txnWriteSynchronized<T>(null, () async {
-      return _runTransaction(action, exclusive: exclusive);
+    return txnWriteSynchronized<T>(txn, (txn) async {
+      return _runTransaction(txn, action, exclusive: exclusive);
     });
   }
 
@@ -368,7 +370,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   ///
   Future<T> inTransaction<T>(Future<T> action(), {bool exclusive}) {
     return writeSynchronized<T>(() async {
-      return _runTransaction((_) => action(), exclusive: exclusive);
+      return _runTransaction(null, (_) => action(), exclusive: exclusive);
     });
   }
 
@@ -412,6 +414,140 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   String toString() {
     return "${id} $path";
   }
+
+  Future<int> _openDatabase() {
+    return wrapDatabaseException<int>(() {
+      return invokeMethod<int>(
+          methodOpenDatabase, <String, dynamic>{paramPath: path});
+    });
+  }
+
+  Future _closeDatabase(int databaseId) {
+    return wrapDatabaseException(() {
+      return invokeMethod(
+          methodCloseDatabase, <String, dynamic>{paramId: databaseId});
+    });
+  }
+
+  // To call during open
+  Future<Database> open(
+      {int version,
+      OnDatabaseConfigureFn onConfigure,
+      OnDatabaseCreateFn onCreate,
+      OnDatabaseVersionChangeFn onUpgrade,
+      OnDatabaseVersionChangeFn onDowngrade,
+      OnDatabaseOpenFn onOpen}) async {
+    if (version != null) {
+      if (version == 0) {
+        throw new ArgumentError("version cannot be set to 0 in openDatabase");
+      }
+    } else {
+      if (onCreate != null) {
+        throw new ArgumentError(
+            "onCreate must be null if no version is specified");
+      }
+      if (onUpgrade != null) {
+        throw new ArgumentError(
+            "onUpgrade must be null if no version is specified");
+      }
+      if (onDowngrade != null) {
+        throw new ArgumentError(
+            "onDowngrade must be null if no version is specified");
+      }
+    }
+    int databaseId = await _openDatabase();
+
+    try {
+      // Special on downgrade delete database
+      if (onDowngrade == onDatabaseDowngradeDelete) {
+        // Downgrading will delete the database and open it again
+        Future _onDatabaseDowngradeDelete(
+            Database _db, int oldVersion, int newVersion) async {
+          SqfliteDatabase db = _db as SqfliteDatabase;
+          // This is tricky as we are in a middel of opening a database
+          // need to close what is being done and retart
+          await db.execute("ROLLBACK;");
+          await db.close();
+          await deleteDatabase(db.path);
+
+          // get a new database id after open
+          db.id = databaseId = await _openDatabase();
+
+          try {
+            // Since we deleted the database re-run the needed first steps:
+            // onConfigure then onCreate
+            if (onConfigure != null) {
+              await onConfigure(db);
+            }
+          } catch (e) {
+            // This exception is sometimes hard te catch
+            // during development
+            print(e);
+
+            // create a transaction just to make the current transaction happy
+            await db.beginTransaction(exclusive: true);
+            rethrow;
+          }
+
+          // no end transaction it will be done later before calling then onOpen
+          await db.beginTransaction(exclusive: true);
+          if (onCreate != null) {
+            await onCreate(db, version);
+          }
+        }
+
+        onDowngrade = _onDatabaseDowngradeDelete;
+      }
+
+      id = databaseId;
+
+      // create dummy open transaction
+      openTransaction = new SqfliteTransaction(this);
+
+      // first configure it
+      if (onConfigure != null) {
+        await onConfigure(this);
+      }
+
+      if (version != null) {
+        await transaction((txn) async {
+          // Set the current transaction as the open one
+          // to allow direct database call during open
+          openTransaction = txn as SqfliteTransaction;
+
+          int oldVersion = await getVersion();
+          if (oldVersion == null || oldVersion == 0) {
+            if (onCreate != null) {
+              await onCreate(this, version);
+            } else if (onUpgrade != null) {
+              await onUpgrade(this, 0, version);
+            }
+          } else if (version > oldVersion) {
+            if (onUpgrade != null) {
+              await onUpgrade(this, oldVersion, version);
+            }
+          } else if (version < oldVersion) {
+            if (onDowngrade != null) {
+              await onDowngrade(this, oldVersion, version);
+            }
+          }
+          await setVersion(version);
+        }, exclusive: true);
+      }
+
+      if (onOpen != null) {
+        await onOpen(this);
+      }
+
+      return this;
+    } catch (e) {
+      await _closeDatabase(databaseId);
+      rethrow;
+    } finally {
+      // clean up open transaction
+      openTransaction = null;
+    }
+  }
 }
 
 Future<Database> openDatabase(String path,
@@ -421,128 +557,12 @@ Future<Database> openDatabase(String path,
     OnDatabaseVersionChangeFn onUpgrade,
     OnDatabaseVersionChangeFn onDowngrade,
     OnDatabaseOpenFn onOpen}) async {
-  if (version != null) {
-    if (version == 0) {
-      throw new ArgumentError("version cannot be set to 0 in openDatabase");
-    }
-  } else {
-    if (onCreate != null) {
-      throw new ArgumentError(
-          "onCreate must be null if no version is specified");
-    }
-    if (onUpgrade != null) {
-      throw new ArgumentError(
-          "onUpgrade must be null if no version is specified");
-    }
-    if (onDowngrade != null) {
-      throw new ArgumentError(
-          "onDowngrade must be null if no version is specified");
-    }
-  }
-  int databaseId = await _openDatabase(path);
-  SqfliteDatabase database;
-  try {
-    // Special on downgrade delete database
-    if (onDowngrade == onDatabaseDowngradeDelete) {
-      // Downgrading will delete the database and open it again
-      Future _onDatabaseDowngradeDelete(
-          Database _db, int oldVersion, int newVersion) async {
-        SqfliteDatabase db = _db as SqfliteDatabase;
-        // This is tricky as we are in a middel of opening a database
-        // need to close what is being done and retart
-        await db.execute("ROLLBACK;");
-        await db.close();
-        await deleteDatabase(db.path);
-
-        // get a new database id after open
-        db.id = databaseId = await _openDatabase(path);
-
-        try {
-          // Since we deleted the database re-run the needed first steps:
-          // onConfigure then onCreate
-          if (onConfigure != null) {
-            await onConfigure(db);
-          }
-        } catch (e) {
-          // This exception is sometimes hard te catch
-          // during development
-          print(e);
-
-          // create a transaction just to make the current transaction happy
-          await db.beginTransaction(exclusive: true);
-          rethrow;
-        }
-
-        // no end transaction it will be done later before calling then onOpen
-        await db.beginTransaction(exclusive: true);
-        if (onCreate != null) {
-          await onCreate(db, version);
-        }
-      }
-
-      onDowngrade = _onDatabaseDowngradeDelete;
-    }
-
-    database = new SqfliteDatabase(path, databaseId);
-
-    // create dummy open transaction
-    database.openTransaction = new SqfliteTransaction(database);
-
-    // first configure it
-    if (onConfigure != null) {
-      await onConfigure(database);
-    }
-
-    if (version != null) {
-      await database.transaction((txn) async {
-        // Set the current transaction as the open one
-        // to allow direct database call during open
-        database.openTransaction = txn as SqfliteTransaction;
-
-        int oldVersion = await database.getVersion();
-        if (oldVersion == null || oldVersion == 0) {
-          if (onCreate != null) {
-            await onCreate(database, version);
-          } else if (onUpgrade != null) {
-            await onUpgrade(database, 0, version);
-          }
-        } else if (version > oldVersion) {
-          if (onUpgrade != null) {
-            await onUpgrade(database, oldVersion, version);
-          }
-        } else if (version < oldVersion) {
-          if (onDowngrade != null) {
-            await onDowngrade(database, oldVersion, version);
-          }
-        }
-        await database.setVersion(version);
-      }, exclusive: true);
-    }
-
-    if (onOpen != null) {
-      await onOpen(database);
-    }
-
-    return database;
-  } catch (e) {
-    await _closeDatabase(databaseId);
-    rethrow;
-  } finally {
-    // clean up open transaction
-    database?.openTransaction = null;
-  }
-}
-
-Future<int> _openDatabase(String path) {
-  return wrapDatabaseException<int>(() {
-    return invokeMethod<int>(
-        methodOpenDatabase, <String, dynamic>{paramPath: path});
-  });
-}
-
-Future _closeDatabase(int databaseId) {
-  return wrapDatabaseException(() {
-    return invokeMethod(
-        methodCloseDatabase, <String, dynamic>{paramId: databaseId});
-  });
+  SqfliteDatabase database = new SqfliteDatabase(path);
+  return database.open(
+      version: version,
+      onConfigure: onConfigure,
+      onCreate: onCreate,
+      onUpgrade: onUpgrade,
+      onDowngrade: onDowngrade,
+      onOpen: onOpen);
 }

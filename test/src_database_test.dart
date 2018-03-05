@@ -1,15 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/utils.dart';
 
 class MockDatabase extends SqfliteDatabase {
-  MockDatabase() : super(null, null);
+  MockDatabase() : super(null);
 
+  List<String> methods = [];
+  List<String> sqls = [];
   @override
   Future<T> invokeMethod<T>(String method, [arguments]) {
     // return super.invokeMethod(method, arguments);
-    // print('$method: $arguments');
+    methods.add(method);
+    if (arguments is Map) {
+      sqls.add(arguments[paramSql] as String);
+    } else {
+      sqls.add(null);
+    }
     return null;
   }
 }
@@ -59,6 +67,97 @@ main() {
       await batch.apply();
 
       expect(db.rawSynchronizedlock, isNull);
+    });
+
+    group('openTransaction', () {
+      test('onCreate', () async {
+        var db = new MockDatabase();
+        await db.open(
+            version: 1,
+            onCreate: (db, version) async {
+              await db.execute("test1");
+              await db.transaction((txn) async {
+                await txn.execute("test2");
+              });
+            });
+
+        expect(db.rawSynchronizedlock, isNull);
+        await db.close();
+        expect(db.methods, [
+          'openDatabase',
+          'execute',
+          'query',
+          'execute',
+          'execute',
+          'execute',
+          'execute',
+          'closeDatabase'
+        ]);
+        expect(db.sqls, [
+          null,
+          'BEGIN EXCLUSIVE',
+          'PRAGMA user_version;',
+          'test1',
+          'test2',
+          'PRAGMA user_version = 1;',
+          'COMMIT',
+          null
+        ]);
+      });
+
+      test('onConfigure', () async {
+        var db = new MockDatabase();
+        await db.open(
+            version: 1,
+            onConfigure: (db) async {
+              await db.execute("test1");
+              await db.transaction((txn) async {
+                await txn.execute("test2");
+              });
+            });
+
+        expect(db.rawSynchronizedlock, isNull);
+        await db.close();
+        expect(db.sqls, [
+          null,
+          'test1',
+          'BEGIN IMMEDIATE',
+          'test2',
+          'COMMIT',
+          'BEGIN EXCLUSIVE',
+          'PRAGMA user_version;',
+          'PRAGMA user_version = 1;',
+          'COMMIT',
+          null
+        ]);
+      });
+
+      test('onOpen', () async {
+        var db = new MockDatabase();
+        await db.open(
+            version: 1,
+            onOpen: (db) async {
+              await db.execute("test1");
+              await db.transaction((txn) async {
+                await txn.execute("test2");
+              });
+            });
+
+        expect(db.rawSynchronizedlock, isNull);
+        await db.close();
+        expect(db.sqls, [
+          null,
+          'BEGIN EXCLUSIVE',
+          'PRAGMA user_version;',
+          'PRAGMA user_version = 1;',
+          'COMMIT',
+          'test1',
+          'BEGIN IMMEDIATE',
+          'test2',
+          'COMMIT',
+          null
+        ]);
+      });
     });
 
     group('concurrency', () {
