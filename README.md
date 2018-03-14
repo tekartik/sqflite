@@ -191,7 +191,7 @@ batch = db.batch();
 batch.insert("Test", {"name": "item"});
 batch.update("Test", {"name": "new_item"}, where: "name = ?", whereArgs: ["item"]);
 batch.delete("Test", where: "name = ?", whereArgs: ["item"]);
-results = await batch.apply();
+results = await batch.commit();
 ```
 
 Getting the result for each operation has a cost (id for insertion and number of changes for
