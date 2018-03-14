@@ -157,15 +157,17 @@ abstract class DatabaseExecutor {
   ///         otherwise. To remove all rows and get a count pass "1" as the
   ///         whereClause.
   Future<int> delete(String table, {String where, List whereArgs});
-
-  /// Creates a batch, used for performing multiple operation
-  /// in a single atomic operation.
-  Batch batch();
 }
 
 /// Database transaction
 /// to use during a transaction
-abstract class Transaction implements DatabaseExecutor {}
+abstract class Transaction implements DatabaseExecutor {
+  /// Execute all batch operation
+  /// The result is a list of the result of each operation in the same order
+  /// if [noResult] is true, the result list is empty (i.e. the id inserted
+  /// the count of item changed is not returned
+  Future<List<dynamic>> applyBatch(Batch batch, {bool noResult});
+}
 
 ///
 /// Database support
@@ -218,6 +220,13 @@ abstract class Database implements DatabaseExecutor {
   /// testing only
   @deprecated
   Future devInvokeSqlMethod(String method, String sql, [List arguments]);
+
+  /// Creates a batch, used for performing multiple operation
+  /// in a single atomic operation.
+  Batch batch();
+
+  Future<List<dynamic>> applyBatch(Batch batch,
+      {bool exclusive, bool noResult});
 }
 
 typedef FutureOr OnDatabaseVersionChangeFn(
@@ -285,11 +294,15 @@ Future deleteDatabase(String path) async {
 /// executed (or visible locally) until commit() is called.
 ///
 abstract class Batch {
-  // User [apply] instead, it is not really a commit yet...
-  // Deprecated since 2018-03-01 - 0.8.1
-  @deprecated
+  /// Commits all of the operations in this batch as a single atomic unit
+  /// The result is a list of the result of each operation in the same order
+  /// if [noResult] is true, the result list is empty (i.e. the id inserted
+  /// the count of item changed is not returned
+  ///
+  /// Don't use this if you are in a transaction but use [Transaction.applyBatch] instead
   Future<List<dynamic>> commit({bool exclusive, bool noResult});
 
+  // compatibility...should we use commit or apply?
   /// Commits all of the operations in this batch as a single atomic unit
   /// The result is a list of the result of each operation in the same order
   /// if [noResult] is true, the result list is empty (i.e. the id inserted

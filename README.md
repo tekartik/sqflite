@@ -191,7 +191,7 @@ batch = db.batch();
 batch.insert("Test", {"name": "item"});
 batch.update("Test", {"name": "new_item"}, where: "name = ?", whereArgs: ["item"]);
 batch.delete("Test", where: "name = ?", whereArgs: ["item"]);
-results = await batch.apply();
+results = await batch.commit();
 ```
 
 Getting the result for each operation has a cost (id for insertion and number of changes for
@@ -199,7 +199,19 @@ update and delete), especially on Android where an extra SQL request is executed
 If you don't care about the result and worry about performance in big batches, you can use
 
 ```dart
-await batch.apply(noResult: true);
+await batch.commit(noResult: true);
+```
+
+Warning, during a transaction you should use `Transaction.applyBatch` instead
+
+```dart
+await database.transaction((txn) async {
+  // Ok
+  await txn.applyBatch(batch);
+  
+  // DON'T this will deadlock!
+  await batch.commit();
+});
 ```
 
 ## Table and column names

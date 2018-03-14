@@ -376,11 +376,14 @@ main() {
       test('in_transaction', () async {
         var db = new MockDatabase();
         await db.open();
+
+        var batch = db.batch();
+
         await db.transaction((txn) async {
-          var batch = txn.batch();
           batch.execute("test");
-          await batch.apply();
-          await batch.apply();
+
+          await txn.applyBatch(batch);
+          await txn.applyBatch(batch);
         });
         await db.close();
         expect(db.methods, [
@@ -391,6 +394,24 @@ main() {
           'execute',
           'closeDatabase'
         ]);
+      });
+
+      test('wrong database', () async {
+        var db = new MockDatabase();
+        var db2 = new MockDatabase();
+        await db.open();
+
+        var batch = db2.batch();
+
+        await db.transaction((txn) async {
+          try {
+            await txn.applyBatch(batch);
+            fail("should fail");
+          } on ArgumentError catch (e) {}
+        });
+        await db.close();
+        expect(db.methods,
+            ['openDatabase', 'execute', 'execute', 'closeDatabase']);
       });
     });
   });

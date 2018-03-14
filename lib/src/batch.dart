@@ -6,10 +6,7 @@ import 'package:sqflite/src/transaction.dart';
 import 'package:sqflite/src/utils.dart';
 
 abstract class SqfliteBatch implements Batch {
-  final SqfliteDatabaseExecutor databaseExecutor;
   final List<Map<String, dynamic>> operations = [];
-
-  SqfliteBatch(this.databaseExecutor);
 
   Future<List<dynamic>> commit({bool exclusive, bool noResult}) =>
       apply(exclusive: exclusive, noResult: noResult);
@@ -92,25 +89,17 @@ abstract class SqfliteBatch implements Batch {
   void execute(String sql, [List arguments]) {
     _add(methodExecute, sql, arguments);
   }
-}
-
-class SqfliteTransactionBatch extends SqfliteBatch {
-  SqfliteTransactionBatch(SqfliteTransaction transaction) : super(transaction);
-
-  SqfliteTransaction get transaction => databaseExecutor as SqfliteTransaction;
 
   @override
   Future<List> apply({bool exclusive, bool noResult}) {
-    // we are in an innert transaction, txn is ignored
-    return transaction.database
-        .txnApplyBatch(transaction, this, noResult: noResult);
+    throw new UnsupportedError("use applyBatch instead");
   }
 }
 
 class SqfliteDatabaseBatch extends SqfliteBatch {
-  SqfliteDatabaseBatch(SqfliteDatabase database) : super(database);
+  SqfliteDatabaseBatch(this.database);
 
-  SqfliteDatabase get database => databaseExecutor as SqfliteDatabase;
+  final SqfliteDatabase database;
 
   @override
   Future<List> apply({bool exclusive, bool noResult}) {

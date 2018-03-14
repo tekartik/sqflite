@@ -516,15 +516,15 @@ class SimpleTestPage extends TestPage {
 
       var results;
 
+      var batch1 = db.batch();
+      batch1.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+      var batch2 = db.batch();
+      batch2.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
       await db.transaction((txn) async {
-        var batch = txn.batch();
-        batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-        results = await batch.apply();
+        results = await txn.applyBatch(batch1);
         expect(results, [null]);
 
-        batch = txn.batch();
-        batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
-        results = await batch.apply();
+        results = await txn.applyBatch(batch2);
         expect(results, [1]);
       });
 
