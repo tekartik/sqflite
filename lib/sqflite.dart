@@ -157,6 +157,10 @@ abstract class DatabaseExecutor {
   ///         otherwise. To remove all rows and get a count pass "1" as the
   ///         whereClause.
   Future<int> delete(String table, {String where, List whereArgs});
+
+  /// Creates a batch, used for performing multiple operation
+  /// in a single atomic operation.
+  Batch batch();
 }
 
 /// Database transaction
@@ -206,10 +210,6 @@ abstract class Database implements DatabaseExecutor {
   /// Used internally for open helpers and automatic versioning
   ///
   Future setVersion(int version);
-
-  /// Creates a batch, used for performing multiple operation
-  /// in a single atomic operation.
-  Batch batch();
 
   /// testing only
   @deprecated

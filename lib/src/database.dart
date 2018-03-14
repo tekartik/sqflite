@@ -188,7 +188,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
 
   @override
   Batch batch() {
-    return new SqfliteBatch(this);
+    return new SqfliteDatabaseBatch(this);
   }
 
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
@@ -298,6 +298,28 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
             methodUpdate,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
               ..addAll(baseDatabaseMethodArguments));
+      });
+    });
+  }
+
+  Future<List<dynamic>> txnApplyBatch(
+      SqfliteTransaction txn, SqfliteBatch batch,
+      {bool noResult}) {
+    return txnWriteSynchronized(txn, (_) {
+      return wrapDatabaseException<List>(() async {
+        var arguments = <String, dynamic>{paramOperations: batch.operations}
+          ..addAll(baseDatabaseMethodArguments);
+        if (noResult == true) {
+          arguments[paramNoResult] = noResult;
+        }
+        List results = await invokeMethod(methodBatch, arguments);
+
+        // Typically when noResult is true
+        if (results == null) {
+          return null;
+        }
+        // dart2 - wrap if we need to support more results than just int
+        return new BatchResults.from(results);
       });
     });
   }

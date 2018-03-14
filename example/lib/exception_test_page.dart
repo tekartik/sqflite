@@ -27,10 +27,38 @@ class ExceptionTestPage extends TestPage {
           await txn.execute("DUMMY CALL");
           hasFailed = false;
         });
-      } catch (e) {
+      } on DatabaseException catch (e) {
         // iOS: native_error: PlatformException(sqlite_error, Error Domain=FMDatabase Code=1 "near "DUMMY": syntax error" UserInfo={NSLocalizedDescription=near "DUMMY": syntax error}, null)
         print("native_error: $e");
       }
+      verify(hasFailed);
+
+      int afterCount =
+          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+      expect(afterCount, 0);
+
+      await db.close();
+    });
+
+    test("Batch failed", () async {
+      //await Sqflite.setDebugModeOn(true);
+      String path = await initDeleteDb("batch_failed.db");
+      Database db = await openDatabase(path);
+
+      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+
+      var batch = db.batch();
+      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+      batch.execute("DUMMY CALL");
+
+      bool hasFailed = true;
+      try {
+        await batch.apply();
+        hasFailed = false;
+      } on DatabaseException catch (e) {
+        print("native_error: $e");
+      }
+
       verify(hasFailed);
 
       int afterCount =

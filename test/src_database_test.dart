@@ -18,6 +18,7 @@ class MockDatabase extends SqfliteDatabase {
     } else {
       sqls.add(null);
     }
+    // devPrint("$method $arguments");
     return null;
   }
 }
@@ -347,6 +348,49 @@ main() {
         await Future.wait([future1, future2]);
         // check ready
         await db.synchronized(() => null);
+      });
+    });
+
+    group('batch', () {
+      test('simple', () async {
+        var db = new MockDatabase();
+        await db.open();
+
+        var batch = db.batch();
+        batch.execute("test");
+        await batch.apply();
+        await batch.apply();
+        await db.close();
+        expect(db.methods, [
+          'openDatabase',
+          'execute',
+          'batch',
+          'execute',
+          'execute',
+          'batch',
+          'execute',
+          'closeDatabase'
+        ]);
+      });
+
+      test('in_transaction', () async {
+        var db = new MockDatabase();
+        await db.open();
+        await db.transaction((txn) async {
+          var batch = txn.batch();
+          batch.execute("test");
+          await batch.apply();
+          await batch.apply();
+        });
+        await db.close();
+        expect(db.methods, [
+          'openDatabase',
+          'execute',
+          'batch',
+          'batch',
+          'execute',
+          'closeDatabase'
+        ]);
       });
     });
   });

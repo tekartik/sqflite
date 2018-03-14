@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/src/batch.dart';
 import 'package:sqflite/src/database.dart';
 
 class SqfliteTransaction extends SqfliteDatabaseExecutor
@@ -14,4 +15,7 @@ class SqfliteTransaction extends SqfliteDatabaseExecutor
 
   @override
   SqfliteTransaction get txn => this;
+
+  @override
+  Batch batch() => new SqfliteTransactionBatch(this);
 }

@@ -508,5 +508,27 @@ class SimpleTestPage extends TestPage {
 
       await db.close();
     });
+
+    test('Batch in transaction', () async {
+      // await Sqflite.devSetDebugModeOn();
+      String path = await initDeleteDb("batch_in_transaction.db");
+      Database db = await openDatabase(path);
+
+      var results;
+
+      await db.transaction((txn) async {
+        var batch = txn.batch();
+        batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+        results = await batch.apply();
+        expect(results, [null]);
+
+        batch = txn.batch();
+        batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
+        results = await batch.apply();
+        expect(results, [1]);
+      });
+
+      await db.close();
+    });
   }
 }

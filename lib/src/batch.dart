@@ -1,40 +1,18 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
-import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/sql_builder.dart';
-import 'package:sqflite/src/exception.dart';
+import 'package:sqflite/src/transaction.dart';
 import 'package:sqflite/src/utils.dart';
 
-class SqfliteBatch implements Batch {
-  final SqfliteDatabase database;
+abstract class SqfliteBatch implements Batch {
+  final SqfliteDatabaseExecutor databaseExecutor;
   final List<Map<String, dynamic>> operations = [];
 
-  SqfliteBatch(this.database);
+  SqfliteBatch(this.databaseExecutor);
 
   Future<List<dynamic>> commit({bool exclusive, bool noResult}) =>
       apply(exclusive: exclusive, noResult: noResult);
-
-  @override
-  Future<List<dynamic>> apply({bool exclusive, bool noResult}) {
-    return database.transaction<List>((txn) {
-      return wrapDatabaseException<List>(() async {
-        var arguments = <String, dynamic>{paramOperations: operations}
-          ..addAll(database.baseDatabaseMethodArguments);
-        if (noResult == true) {
-          arguments[paramNoResult] = noResult;
-        }
-        List results = await database.invokeMethod(methodBatch, arguments);
-
-        // Typically when noResult is true
-        if (results == null) {
-          return null;
-        }
-        // dart2 - wrap if we need to support more results than just int
-        return new BatchResults.from(results);
-      });
-    }, exclusive: exclusive);
-  }
 
   _add(String method, String sql, List arguments) {
     operations.add(
@@ -113,5 +91,32 @@ class SqfliteBatch implements Batch {
   @override
   void execute(String sql, [List arguments]) {
     _add(methodExecute, sql, arguments);
+  }
+}
+
+class SqfliteTransactionBatch extends SqfliteBatch {
+  SqfliteTransactionBatch(SqfliteTransaction transaction) : super(transaction);
+
+  SqfliteTransaction get transaction => databaseExecutor as SqfliteTransaction;
+
+  @override
+  Future<List> apply({bool exclusive, bool noResult}) {
+    // we are in an innert transaction, txn is ignored
+    return transaction.database
+        .txnApplyBatch(transaction, this, noResult: noResult);
+  }
+}
+
+class SqfliteDatabaseBatch extends SqfliteBatch {
+  SqfliteDatabaseBatch(SqfliteDatabase database) : super(database);
+
+  SqfliteDatabase get database => databaseExecutor as SqfliteDatabase;
+
+  @override
+  Future<List> apply({bool exclusive, bool noResult}) {
+    return database.transaction<List>((txn) {
+      return database.txnApplyBatch(txn as SqfliteTransaction, this,
+          noResult: noResult);
+    }, exclusive: exclusive);
   }
 }
