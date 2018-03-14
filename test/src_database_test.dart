@@ -407,7 +407,7 @@ main() {
           try {
             await txn.applyBatch(batch);
             fail("should fail");
-          } on ArgumentError catch (e) {}
+          } on ArgumentError catch (_) {}
         });
         await db.close();
         expect(db.methods,
