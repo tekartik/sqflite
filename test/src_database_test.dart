@@ -14,11 +14,19 @@ class MockDatabase extends SqfliteDatabase {
     // return super.invokeMethod(method, arguments);
     methods.add(method);
     if (arguments is Map) {
-      sqls.add(arguments[paramSql] as String);
+      if (arguments[paramOperations] != null) {
+        var operations =
+            arguments[paramOperations] as List<Map<String, dynamic>>;
+        for (var operation in operations) {
+          sqls.add(operation[paramSql] as String);
+        }
+      } else {
+        sqls.add(arguments[paramSql] as String);
+      }
     } else {
       sqls.add(null);
     }
-    // devPrint("$method $arguments");
+    //devPrint("$method $arguments");
     return null;
   }
 }
@@ -155,6 +163,45 @@ main() {
           'test1',
           'BEGIN IMMEDIATE',
           'test2',
+          'COMMIT',
+          null
+        ]);
+      });
+
+      test('batch', () async {
+        var db = new MockDatabase();
+        await db.open(
+            version: 1,
+            onConfigure: (db) async {
+              var batch = db.batch();
+              batch.execute("test1");
+              await batch.commit();
+            },
+            onCreate: (db, _) async {
+              var batch = db.batch();
+              batch.execute("test2");
+              await batch.commit();
+            },
+            onOpen: (db) async {
+              var batch = db.batch();
+              batch.execute("test3");
+              await batch.commit();
+            });
+
+        expect(db.rawSynchronizedlock, isNull);
+        await db.close();
+        expect(db.sqls, [
+          null,
+          'BEGIN IMMEDIATE',
+          'test1',
+          'COMMIT',
+          'BEGIN EXCLUSIVE',
+          'PRAGMA user_version;',
+          'test2',
+          'PRAGMA user_version = 1;',
+          'COMMIT',
+          'BEGIN IMMEDIATE',
+          'test3',
           'COMMIT',
           null
         ]);
@@ -371,6 +418,16 @@ main() {
           'execute',
           'closeDatabase'
         ]);
+        expect(db.sqls, [
+          null,
+          'BEGIN IMMEDIATE',
+          'test',
+          'COMMIT',
+          'BEGIN IMMEDIATE',
+          'test',
+          'COMMIT',
+          null
+        ]);
       });
 
       test('in_transaction', () async {
@@ -394,6 +451,8 @@ main() {
           'execute',
           'closeDatabase'
         ]);
+        expect(
+            db.sqls, [null, 'BEGIN IMMEDIATE', 'test', 'test', 'COMMIT', null]);
       });
 
       test('wrong database', () async {
@@ -412,6 +471,7 @@ main() {
         await db.close();
         expect(db.methods,
             ['openDatabase', 'execute', 'execute', 'closeDatabase']);
+        expect(db.sqls, [null, 'BEGIN IMMEDIATE', 'COMMIT', null]);
       });
     });
   });

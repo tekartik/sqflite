@@ -324,15 +324,6 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
     });
   }
 
-  @override
-  Future<List<dynamic>> applyBatch(Batch batch,
-      {bool exclusive, bool noResult}) {
-    return transaction((txn) {
-      return txnApplyBatch(txn as SqfliteTransaction, batch as SqfliteBatch,
-          noResult: noResult);
-    }, exclusive: exclusive);
-  }
-
   Future<SqfliteTransaction> beginTransaction({bool exclusive}) async {
     SqfliteTransaction txn = new SqfliteTransaction(this);
     if (exclusive == true) {

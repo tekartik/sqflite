@@ -54,14 +54,14 @@ class MyList2 extends ListBase<Map<String, dynamic>> {
 
 main() {
   group("mixin", () {
-    // This currently fails...
+    // This fails on beta 1, should work now
     test('ListMixin', () {
       var raw = [
         {'col': 1}
       ];
       var rows = new MyList1.from(raw);
       expect(rows, raw);
-    }, skip: true);
+    });
 
     test('ListBase', () {
       var raw = [

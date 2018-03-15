@@ -1,3 +1,8 @@
+## 0.8.3
+
+* Allow running a batch during a transaction using `Transaction.applyBatch`
+* Restore `Batch.commit` to use outside a transaction
+
 ## 0.8.2
 
 * Although already in a transaction, allow creating nested transactions during open

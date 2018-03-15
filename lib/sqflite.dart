@@ -11,6 +11,9 @@ import 'src/utils.dart';
 export 'sql.dart' show ConflictAlgorithm;
 export 'src/exception.dart' show DatabaseException;
 
+///
+/// internal options
+///
 class SqfliteOptions {
   // true =<0.7.0
   bool queryAsMapList;
@@ -73,6 +76,9 @@ class Sqflite {
   }
 }
 
+///
+/// Common API for [Database] and [Transaction] to execute SQL commands
+///
 abstract class DatabaseExecutor {
   /// for sql without return values
   Future execute(String sql, [List arguments]);
@@ -170,8 +176,7 @@ abstract class Transaction implements DatabaseExecutor {
 }
 
 ///
-/// Database support
-/// to send sql commands
+/// Database to send sql commands, created during [openDatabase]
 ///
 abstract class Database implements DatabaseExecutor {
   /// The path of the database
@@ -223,10 +228,11 @@ abstract class Database implements DatabaseExecutor {
 
   /// Creates a batch, used for performing multiple operation
   /// in a single atomic operation.
+  ///
+  /// a batch can be commited using [Batch.commit] if you are not in
+  /// a transaction. You can create within a transaction
+  /// however call [Transaction.applyBatch] to run the batch
   Batch batch();
-
-  Future<List<dynamic>> applyBatch(Batch batch,
-      {bool exclusive, bool noResult});
 }
 
 typedef FutureOr OnDatabaseVersionChangeFn(
@@ -235,7 +241,8 @@ typedef FutureOr OnDatabaseCreateFn(Database db, int newVersion);
 typedef FutureOr OnDatabaseOpenFn(Database db);
 typedef FutureOr OnDatabaseConfigureFn(Database db);
 
-// Downgrading will always fail
+/// to specify during [openDatabase] for [onDowngrade]
+/// Downgrading will always fail
 Future onDatabaseVersionChangeError(
     Database db, int oldVersion, int newVersion) async {
   throw new ArgumentError(
@@ -253,13 +260,13 @@ final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
 ///
 /// Open the database at a given path
 /// setting a version is optional
-/// [onConfigure], [onCreate],  [onUpgrade], [onDowngrade] are called in a transaction
+/// [onCreate],  [onUpgrade], [onDowngrade] are called in a transaction
 ///
-/// [onConfigure] is alled when the database connection is being configured,
+/// [onConfigure] is called when the database connection is being configured,
 /// to enable features such as write-ahead logging or foreign key support.
 /// This method is called before [onCreate], [onUpgrade], [onDowngrade]
-/// [onOpen] are called. It should not modify the database except to configure
-/// the database connection as required.
+///
+/// [onOpen] is called after [onCreate], [onUpgrade], [onDowngrade] are called
 ///
 Future<Database> openDatabase(String path,
         {int version,
@@ -299,14 +306,15 @@ abstract class Batch {
   /// if [noResult] is true, the result list is empty (i.e. the id inserted
   /// the count of item changed is not returned
   ///
-  /// Don't use this if you are in a transaction but use [Transaction.applyBatch] instead
+  /// Don't use this if you are in a transaction but use
+  /// [Transaction.applyBatch] instead
+  ///
+  /// During [Database.onCreate], [Database.onUpgrade], [Database.onDowngrade]
+  /// we are already in a transaction so it will only be commited when
+  /// the transaction is commited (during open)
   Future<List<dynamic>> commit({bool exclusive, bool noResult});
 
-  // compatibility...should we use commit or apply?
-  /// Commits all of the operations in this batch as a single atomic unit
-  /// The result is a list of the result of each operation in the same order
-  /// if [noResult] is true, the result list is empty (i.e. the id inserted
-  /// the count of item changed is not returned
+  /// See [Batch.commit], kept for compatibility...
   Future<List<dynamic>> apply({bool exclusive, bool noResult});
 
   /// See [Database.rawInsert]

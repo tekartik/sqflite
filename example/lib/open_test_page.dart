@@ -347,5 +347,39 @@ class OpenTestPage extends TestPage {
       verify(!openCallbacks.onDowngradeCalled);
       await db.close();
     });
+
+    test("Open batch", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("open_batch.db");
+
+      Future _onConfigure(Database db) async {
+        var batch = db.batch();
+        db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)");
+        await batch.commit();
+      }
+
+      Future _onCreate(Database db, int version) async {
+        var batch = db.batch();
+        db.rawInsert('INSERT INTO Test(value) VALUES("value1")');
+        await batch.commit();
+      }
+
+      Future _onOpen(Database db) async {
+        var batch = db.batch();
+        db.rawInsert('INSERT INTO Test(value) VALUES("value2")');
+        await batch.commit();
+      }
+
+      var db = await openDatabase(path,
+          version: 1,
+          onConfigure: _onConfigure,
+          onCreate: _onCreate,
+          onOpen: _onOpen);
+      expect(
+          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test")),
+          2);
+
+      await db.close();
+    });
   }
 }
