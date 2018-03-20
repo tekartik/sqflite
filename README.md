@@ -39,7 +39,7 @@ Directory documentsDirectory = await getApplicationDocumentsDirectory();
 String path = join(documentsDirectory.path, "demo.db");
 
 // Delete the database
-deleteDatabase(path);
+await deleteDatabase(path);
 
 // open the database
 Database database = await openDatabase(path, version: 1,

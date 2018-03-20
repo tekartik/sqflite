@@ -16,6 +16,8 @@ NSString *const _methodUpdate = @"update";
 NSString *const _methodQuery = @"query";
 NSString *const _methodBatch = @"batch";
 
+// For open
+NSString *const _paramReadOnly = @"readOnly";
 // For batch
 NSString *const _paramOperations = @"operations";
 NSString *const _paramNoResult = @"noResult";
@@ -66,7 +68,7 @@ NSString *const _paramQueryAsMapList = @"queryAsMapList";
 @synthesize operationQueue;
 
 bool _queryAsMapList = false;
-BOOL _log = false;
+BOOL _log = true;
 BOOL _extra_log = false;
 
 BOOL __extra_log = false; // to set to true for type debugging
@@ -474,10 +476,13 @@ NSInteger _databaseOpenCount = 0;
 //
 - (void)handleOpenDatabaseCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSString* path = call.arguments[_paramPath];
+    NSNumber* readOnlyValue = call.arguments[_paramReadOnly];
+    bool readOnly = [readOnlyValue boolValue];
+    
     if (_log) {
-        NSLog(@"opening %@", path);
+        NSLog(@"opening %@ %d", path, (int)readOnly);
     }
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:path];
+    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:path flags:(readOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE))];
     bool success = queue != nil;
     
     if (!success) {

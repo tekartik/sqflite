@@ -383,7 +383,7 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open read-only", () async {
-      // await Sqflite.devSetDebugModeOn(true);
+      await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_read_only.db");
 
       Future _onCreate(Database db, int version) async {
