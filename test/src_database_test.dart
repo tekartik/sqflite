@@ -78,6 +78,14 @@ main() {
       expect(db.rawSynchronizedlock, isNull);
     });
 
+    group('open', () {
+      test('read-only', () async {
+        var db = new MockDatabase();
+        await db.openReadOnlyDatabase();
+        await db.close();
+        expect(db.methods, ['openDatabase', 'closeDatabase']);
+      });
+    });
     group('openTransaction', () {
       test('onCreate', () async {
         var db = new MockDatabase();

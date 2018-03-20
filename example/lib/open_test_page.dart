@@ -354,19 +354,19 @@ class OpenTestPage extends TestPage {
 
       Future _onConfigure(Database db) async {
         var batch = db.batch();
-        db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)");
+        batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)");
         await batch.commit();
       }
 
       Future _onCreate(Database db, int version) async {
         var batch = db.batch();
-        db.rawInsert('INSERT INTO Test(value) VALUES("value1")');
+        batch.rawInsert('INSERT INTO Test(value) VALUES("value1")');
         await batch.commit();
       }
 
       Future _onOpen(Database db) async {
         var batch = db.batch();
-        db.rawInsert('INSERT INTO Test(value) VALUES("value2")');
+        batch.rawInsert('INSERT INTO Test(value) VALUES("value2")');
         await batch.commit();
       }
 
@@ -378,6 +378,44 @@ class OpenTestPage extends TestPage {
       expect(
           Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test")),
           2);
+
+      await db.close();
+    });
+
+    test("Open read-only", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("open_read_only.db");
+
+      Future _onCreate(Database db, int version) async {
+        var batch = db.batch();
+        batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)");
+        batch.rawInsert('INSERT INTO Test(value) VALUES("value1")');
+        await batch.commit();
+      }
+
+      var db = await openDatabase(path, version: 1, onCreate: _onCreate);
+      expect(
+          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test")),
+          1);
+
+      await db.close();
+
+      db = await openReadOnlyDatabase(path);
+      expect(
+          Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test")),
+          1);
+
+      try {
+        await db.rawInsert('INSERT INTO Test(value) VALUES("value1")');
+        fail("should fail");
+      } on DatabaseException catch (e) {
+        // Error DatabaseException(attempt to write a readonly database (code 8)) running Open read-only
+        expect(e.isReadOnlyError(), true);
+      }
+
+      var batch = db.batch();
+      batch.rawQuery("SELECT COUNT(*) FROM Test");
+      await batch.commit();
 
       await db.close();
     });

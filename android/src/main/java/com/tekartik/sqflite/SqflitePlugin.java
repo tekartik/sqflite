@@ -42,6 +42,7 @@ import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
 import static com.tekartik.sqflite.Constant.PARAM_ID;
 import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
 import static com.tekartik.sqflite.Constant.PARAM_PATH;
+import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
 import static com.tekartik.sqflite.Constant.PARAM_SQL;
 import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
 
@@ -678,6 +679,7 @@ public class SqflitePlugin implements MethodCallHandler {
     //
     private void onOpenDatabaseCall(MethodCall call, Result result) {
         String path = call.argument(PARAM_PATH);
+        Boolean readOnly = call.argument(PARAM_READ_ONLY);
         //int version = call.argument(PARAM_VERSION);
         File file = new File(path);
         File directory = new File(file.getParent());
@@ -697,8 +699,11 @@ public class SqflitePlugin implements MethodCallHandler {
         Database database = new Database(context, path);
         // force opening
         try {
-
-            database.open();
+            if (Boolean.TRUE.equals(readOnly)) {
+                database.openReadOnly();
+            } else {
+                database.open();
+            }
         } catch (SQLException e) {
             if (handleException(e, result, path)) {
                 return;
@@ -810,18 +815,36 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    private static class Database extends SQLiteOpenHelper {
+    private static class Database {
         String path;
+        SQLiteDatabase sqliteDatabase;
 
         private Database(Context context, String path) {
-            super(context, path, null);
             this.path = path;
         }
 
         private void open() {
-            getReadableDatabase();
+            sqliteDatabase = SQLiteDatabase.openOrCreateDatabase(path, null);
+        }
+
+        private void openReadOnly() {
+            sqliteDatabase = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY);
+        }
+
+        public void close() {
+            sqliteDatabase.close();
+        }
+
+        public SQLiteDatabase getWritableDatabase() {
+            return sqliteDatabase;
+        }
+
+        public SQLiteDatabase getReadableDatabase() {
+            return sqliteDatabase;
         }
     }
+
+    //private static class Database
 
     void onOptionsCall(final MethodCall call, Result result) {
         Object on = call.argument(Constant.PARAM_QUERY_AS_MAP_LIST);

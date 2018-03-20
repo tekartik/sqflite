@@ -101,7 +101,7 @@ class SimpleTestPage extends TestPage {
 
     test("Concurrency 1", () async {
       // Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("simple_concurrency.db");
+      String path = await initDeleteDb("simple_concurrency_1.db");
       Database db = await openDatabase(path);
       var step1 = new Completer();
       var step2 = new Completer();
@@ -154,7 +154,7 @@ class SimpleTestPage extends TestPage {
 
     test("Concurrency 2", () async {
       // Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("simple_concurrency.db");
+      String path = await initDeleteDb("simple_concurrency_1.db");
       Database db = await openDatabase(path);
       var step1 = new Completer();
       var step2 = new Completer();
@@ -207,6 +207,66 @@ class SimpleTestPage extends TestPage {
 
       await db.close();
     });
+
+    /*
+    test("Concurrency open_twice", () async {
+      // Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("concurrency_open_twice.db");
+      Database db = await openDatabase(path);
+      Database db2 = await openDatabase(path);
+      var step1 = new Completer();
+      var step2 = new Completer();
+      var step3 = new Completer();
+
+      Future action1() async {
+        await db
+            .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+        step1.complete();
+
+        await step2.future;
+        try {
+          await db
+              .rawQuery("SELECT COUNT(*) FROM Test")
+              .timeout(new Duration(seconds: 1));
+          throw "should fail";
+        } catch (e) {
+          expect(e is TimeoutException, true);
+        }
+
+        step3.complete();
+      }
+
+      Future action2() async {
+        // This is the change from concurrency 1
+        // Wait for table being created;
+        await step1.future;
+
+        await db2.transaction((txn) async {
+          // Wait for table being created;
+          await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
+          step2.complete();
+
+          await step3.future;
+
+          int count = Sqflite
+              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+          expect(count, 1);
+        });
+      }
+
+      var future1 = action1();
+      var future2 = action2();
+
+      await Future.wait([future1, future2]);
+
+      int count =
+      Sqflite.firstIntValue(await db.rawQuery("SELECT COUNT(*) FROM Test"));
+      expect(count, 1);
+
+      await db.close();
+      await db2.close();
+    });
+    */
 
     test("Transaction recursive", () async {
       String path = await initDeleteDb("transaction_recursive.db");
