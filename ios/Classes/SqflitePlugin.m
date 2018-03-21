@@ -68,7 +68,7 @@ NSString *const _paramQueryAsMapList = @"queryAsMapList";
 @synthesize operationQueue;
 
 bool _queryAsMapList = false;
-BOOL _log = true;
+BOOL _log = false;
 BOOL _extra_log = false;
 
 BOOL __extra_log = false; // to set to true for type debugging
