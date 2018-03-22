@@ -163,17 +163,19 @@ abstract class DatabaseExecutor {
   ///         otherwise. To remove all rows and get a count pass "1" as the
   ///         whereClause.
   Future<int> delete(String table, {String where, List whereArgs});
-}
 
-/// Database transaction
-/// to use during a transaction
-abstract class Transaction implements DatabaseExecutor {
   /// Execute all batch operation
   /// The result is a list of the result of each operation in the same order
   /// if [noResult] is true, the result list is empty (i.e. the id inserted
   /// the count of item changed is not returned
+  ///
+  /// If called on a database a transaction is created
   Future<List<dynamic>> applyBatch(Batch batch, {bool noResult});
 }
+
+/// Database transaction
+/// to use during a transaction
+abstract class Transaction implements DatabaseExecutor {}
 
 ///
 /// Database to send sql commands, created during [openDatabase]
@@ -282,6 +284,12 @@ Future<Database> openDatabase(String path,
         onUpgrade: onUpgrade,
         onDowngrade: onDowngrade,
         onOpen: onOpen);
+
+///
+/// Open the database at a given path in read only mode
+///
+Future<Database> openReadOnlyDatabase(String path) =>
+    impl.openReadOnlyDatabase(path);
 
 ///
 /// delete the database at the given path

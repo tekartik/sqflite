@@ -143,6 +143,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
 }
 
 class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
+  bool readOnly;
   SqfliteDatabase(this._path);
 
   // will be removed once writeSynchronized and synchronized are removed
@@ -159,6 +160,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   @override
   SqfliteDatabase get db => this;
 
+  @override
   String get path => _path;
   String _path;
 
@@ -324,21 +326,36 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
     });
   }
 
+  @override
+  Future<List<dynamic>> applyBatch(Batch batch,
+      {bool exclusive, bool noResult}) {
+    return transaction((txn) {
+      return txnApplyBatch(txn as SqfliteTransaction, batch as SqfliteBatch,
+          noResult: noResult);
+    }, exclusive: exclusive);
+  }
+
   Future<SqfliteTransaction> beginTransaction({bool exclusive}) async {
     SqfliteTransaction txn = new SqfliteTransaction(this);
-    if (exclusive == true) {
-      await txnExecute(txn, "BEGIN EXCLUSIVE");
-    } else {
-      await txnExecute(txn, "BEGIN IMMEDIATE");
+    // never create transaction in read-only mode
+    if (readOnly != true) {
+      if (exclusive == true) {
+        await txnExecute(txn, "BEGIN EXCLUSIVE");
+      } else {
+        await txnExecute(txn, "BEGIN IMMEDIATE");
+      }
     }
     return txn;
   }
 
   Future endTransaction(SqfliteTransaction txn) async {
-    if (txn.successfull == true) {
-      await txnExecute(txn, "COMMIT");
-    } else {
-      await txnExecute(txn, "ROLLBACK");
+    // never commit transaction in read-only mode
+    if (readOnly != true) {
+      if (txn.successfull == true) {
+        await txnExecute(txn, "COMMIT");
+      } else {
+        await txnExecute(txn, "ROLLBACK");
+      }
     }
   }
 
@@ -451,6 +468,15 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
     });
   }
 
+  Future<Database> openReadOnlyDatabase() async {
+    id = await wrapDatabaseException<int>(() {
+      return invokeMethod<int>(methodOpenDatabase,
+          <String, dynamic>{paramPath: path, paramReadOnly: true});
+    });
+    readOnly = true;
+    return this;
+  }
+
   // To call during open
   Future<Database> open(
       {int version,
@@ -522,6 +548,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       }
 
       id = databaseId;
+      readOnly = false;
 
       // create dummy open transaction
       openTransaction = new SqfliteTransaction(this);
@@ -578,7 +605,7 @@ Future<Database> openDatabase(String path,
     OnDatabaseCreateFn onCreate,
     OnDatabaseVersionChangeFn onUpgrade,
     OnDatabaseVersionChangeFn onDowngrade,
-    OnDatabaseOpenFn onOpen}) async {
+    OnDatabaseOpenFn onOpen}) {
   SqfliteDatabase database = new SqfliteDatabase(path);
   return database.open(
       version: version,
@@ -587,4 +614,9 @@ Future<Database> openDatabase(String path,
       onUpgrade: onUpgrade,
       onDowngrade: onDowngrade,
       onOpen: onOpen);
+}
+
+Future<Database> openReadOnlyDatabase(String path) {
+  SqfliteDatabase database = new SqfliteDatabase(path);
+  return database.openReadOnlyDatabase();
 }

@@ -41,6 +41,13 @@ class DatabaseException implements Exception {
     }
     return false;
   }
+
+  isReadOnlyError() {
+    if (_message != null) {
+      return _message.contains("readonly");
+    }
+    return false;
+  }
 }
 
 Future<T> wrapDatabaseException<T>(Future<T> action()) async {

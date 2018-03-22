@@ -101,7 +101,7 @@ class SimpleTestPage extends TestPage {
 
     test("Concurrency 1", () async {
       // Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("simple_concurrency.db");
+      String path = await initDeleteDb("simple_concurrency_1.db");
       Database db = await openDatabase(path);
       var step1 = new Completer();
       var step2 = new Completer();
@@ -154,7 +154,7 @@ class SimpleTestPage extends TestPage {
 
     test("Concurrency 2", () async {
       // Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("simple_concurrency.db");
+      String path = await initDeleteDb("simple_concurrency_1.db");
       Database db = await openDatabase(path);
       var step1 = new Completer();
       var step2 = new Completer();
@@ -341,13 +341,13 @@ class SimpleTestPage extends TestPage {
 
       // Make sure the directory exists
       try {
-        documentsDirectory.create(recursive: true);
+        await documentsDirectory.create(recursive: true);
       } catch (_) {}
 
       String path = join(documentsDirectory.path, "demo.db");
 
       // Delete the database
-      deleteDatabase(path);
+      await deleteDatabase(path);
 
       // open the database
       Database database = await openDatabase(path, version: 1,
@@ -529,6 +529,20 @@ class SimpleTestPage extends TestPage {
       });
 
       await db.close();
+    });
+
+    test("Open twice", () async {
+      // Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("open_twice.db");
+      Database db = await openDatabase(path);
+      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+      Database db2 = await openReadOnlyDatabase(path);
+
+      int count = Sqflite
+          .firstIntValue(await db2.rawQuery("SELECT COUNT(*) FROM Test"));
+      expect(count, 0);
+      await db.close();
+      await db2.close();
     });
   }
 }
