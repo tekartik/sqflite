@@ -1,5 +1,6 @@
 # Sqflite guide
 
+* How to [Open a database](opening_db.md)
 * How to [Open an asset database](opening_asset_db.md)
 
 ## Development guide

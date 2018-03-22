@@ -15,10 +15,10 @@ import 'src/item_widget.dart';
 class TestPage extends StatefulWidget {
   // return the path
   Future<String> initDeleteDb(String dbName) async {
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    print(documentsDirectory);
+    var documentsDirectory = await getApplicationDocumentsDirectory();
+    var path = join(documentsDirectory.path, dbName);
 
-    String path = join(documentsDirectory.path, dbName);
+    print(documentsDirectory);
 
     // make sure the folder exists
     if (await new Directory(dirname(path)).exists()) {

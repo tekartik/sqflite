@@ -419,5 +419,54 @@ class OpenTestPage extends TestPage {
 
       await db.close();
     });
+
+    test('Open demo (doc)', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("open_read_only.db");
+
+      {
+        _onConfigure(Database db) async {
+          // Add support for cascade delete
+          await db.execute("PRAGMA foreign_keys = ON");
+        }
+
+        var db = await openDatabase(path, onConfigure: _onConfigure);
+        await db.close();
+      }
+
+      {
+        _onCreate(Database db, int version) async {
+          // Database is created, delete the table
+          await db.execute(
+              "CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)");
+        }
+
+        _onUpgrade(Database db, int oldVersion, int newVersion) async {
+          // Database version is updated, alter the table
+          await db.execute("ALTER TABLE Test ADD name TEXT");
+        }
+
+        // Special callback used for onDowngrade here to recreate the database
+        var db = await openDatabase(path,
+            version: 1,
+            onCreate: _onCreate,
+            onUpgrade: _onUpgrade,
+            onDowngrade: onDatabaseDowngradeDelete);
+        await db.close();
+      }
+
+      {
+        _onOpen(Database db) async {
+          // Database is open, print its version
+          print('db version ${await db.getVersion()}');
+        }
+
+        var db = await openDatabase(
+          path,
+          onOpen: _onOpen,
+        );
+        await db.close();
+      }
+    });
   }
 }
