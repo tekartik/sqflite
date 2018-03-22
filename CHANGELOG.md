@@ -1,3 +1,7 @@
+## 0.8.4
+
+* Add read-only support using `openReadOnlyDatabase`
+
 ## 0.8.3
 
 * Allow running a batch during a transaction using `Transaction.applyBatch`
