@@ -341,13 +341,13 @@ class SimpleTestPage extends TestPage {
 
       // Make sure the directory exists
       try {
-        documentsDirectory.create(recursive: true);
+        await documentsDirectory.create(recursive: true);
       } catch (_) {}
 
       String path = join(documentsDirectory.path, "demo.db");
 
       // Delete the database
-      deleteDatabase(path);
+      await deleteDatabase(path);
 
       // open the database
       Database database = await openDatabase(path, version: 1,

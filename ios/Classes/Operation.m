@@ -55,7 +55,7 @@
     self.results = results;
 }
 - (void)error:(NSObject*)error {
-    self.results = error;
+    self.error = error;
 }
 
 - (void)handleSuccess:(NSMutableArray*)results {
