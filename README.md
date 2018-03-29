@@ -15,7 +15,7 @@ In your flutter project add the dependency:
 ```yml
 dependencies:
   ...
-  sqflite: any
+  sqflite: '>=0.8.5'
 ```
 
 For help getting started with Flutter, view the online
@@ -242,13 +242,14 @@ db.query("table", columns: ["group"], where: '"group" = ?', whereArgs: ["my_gro
 
 ## Supported SQLite types
 
-No validity check is done on values yet so please avoid non supported types
+No validity check is done on values yet so please avoid non supported types. DateTime is not
+a supported SQL type (https://www.sqlite.org/datatype3.html). Personally I store them as 
+int (millisSinceEpoch) or string (iso8601)
 
 ### INTEGER
 
 * Dart type: `int`
 * Supported values: from -2^63 to 2^63 - 1
-* Android can accept any value
 
 ### REAL
 
