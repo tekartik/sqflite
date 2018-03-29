@@ -315,7 +315,7 @@ class SimpleTestPage extends TestPage {
         {"name": "another name", "id": 2, "value": 12345678, "num": null}
       ];
 
-      print("list: ${JSON.encode(list)}");
+      print("list: ${json.encode(list)}");
       print("expected $expectedList");
       expect(list, expectedList);
 
@@ -328,7 +328,7 @@ class SimpleTestPage extends TestPage {
         {"name": "updated name", "id": 1, "value": 9876, "num": 456.789},
       ];
 
-      print("list: ${JSON.encode(list)}");
+      print("list: ${json.encode(list)}");
       print("expected $expectedList");
       expect(list, expectedList);
 

@@ -23,6 +23,11 @@ class TypeTestPage extends TestPage {
     return await data.db.insert("Test", {"value": value});
   }
 
+  // insert the value field and return the id
+  Future<int> updateValue(int id, dynamic value) async {
+    return await data.db.update("Test", {"value": value}, where: "_id = $id");
+  }
+
   TypeTestPage() : super("Type tests") {
     test("int", () async {
       //await Sqflite.devSetDebugModeOn(true);
@@ -151,6 +156,25 @@ class TypeTestPage extends TestPage {
       } finally {
         await data.db.close();
       }
+    });
+
+    test("null", () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("type_null.db");
+      data.db = await openDatabase(path, version: 1,
+          onCreate: (Database db, int version) async {
+        await db
+            .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)");
+      });
+      int id = await insertValue(null);
+      expect(await getValue(id), null);
+
+      // Make a string
+      expect(await updateValue(id, "dummy"), 1);
+      expect(await getValue(id), "dummy");
+
+      expect(await updateValue(id, null), 1);
+      expect(await getValue(id), null);
     });
   }
 }

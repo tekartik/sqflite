@@ -208,7 +208,7 @@ class ExceptionTestPage extends TestPage {
           toExclude.add(name);
         }
       }
-      print(JSON.encode(toExclude));
+      print(json.encode(toExclude));
 
       await db.close();
     });
