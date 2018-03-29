@@ -60,7 +60,7 @@ class TypeTestPage extends TestPage {
       expect(await getValue(id), value,
           reason: "${value} ${await getValue(id)}");
 
-      value = -(pow(2, 63));
+      value = -(pow(2, 63)).round();
       id = await insertValue(value);
       //devPrint("${value} ${await getValue(id)}");
       expect(await getValue(id), value,

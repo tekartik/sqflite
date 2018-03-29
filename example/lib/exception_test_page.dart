@@ -85,7 +85,7 @@ class ExceptionTestPage extends TestPage {
       try {
         await db.rawQuery("malformed query");
         fail(); // should fail before
-      } catch (e) {
+      } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
       }
 

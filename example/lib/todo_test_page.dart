@@ -13,7 +13,7 @@ class Todo {
   bool done;
 
   Map<String, dynamic> toMap() {
-    Map map = <String, dynamic>{
+    var map = <String, dynamic>{
       columnTitle: title,
       columnDone: done == true ? 1 : 0
     };
@@ -26,8 +26,8 @@ class Todo {
   Todo();
 
   Todo.fromMap(Map map) {
-    id = map[columnId];
-    title = map[columnTitle];
+    id = map[columnId] as int;
+    title = map[columnTitle] as String;
     done = map[columnDone] == 1;
   }
 }

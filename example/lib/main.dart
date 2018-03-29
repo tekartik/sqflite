@@ -110,7 +110,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _platformVersion = 'Unknown';
 
-  get _itemCount => widget.items.length;
+  int get _itemCount => widget.items.length;
 
   @override
   initState() {
