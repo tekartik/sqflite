@@ -66,8 +66,8 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
   List<String> _columns;
   Map<String, int> _columnIndexMap;
 
-  QueryResultSet(List rawColmuns, List rawRows) {
-    _columns = rawColmuns?.cast<String>();
+  QueryResultSet(List rawColumns, List rawRows) {
+    _columns = rawColumns?.cast<String>();
     _rows = rawRows?.cast<List>();
     if (_columns != null) {
       _columnIndexMap = <String, int>{};
