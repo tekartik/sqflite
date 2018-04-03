@@ -22,3 +22,18 @@ analyzer:
   strong-mode:
     implicit-casts: false
 ```
+
+# Common issues
+
+## Cast error
+
+```
+Unhandled exception: type '_InternalLinkedHashMap' is not a subtype of type 'Map<String, dynamic>'
+ where
+  _InternalLinkedHashMap is from dart:collection
+  Map is from dart:core
+  String is from dart:core
+```
+
+Make sure you create object of type `Map<String, dynamic>` and not simply `Map` for records you
+insert and update. The option `implicit-casts: false` explained above helps to find such issues
