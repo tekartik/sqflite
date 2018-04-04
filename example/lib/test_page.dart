@@ -114,7 +114,7 @@ class _TestPageState extends State<TestPage> with Group {
     setState(() {
       items.clear();
     });
-
+    _tests.clear();
     for (Test test in widget.tests) {
       add(test);
     }
@@ -150,7 +150,7 @@ class _TestPageState extends State<TestPage> with Group {
       return null;
     }
 
-    Test test = widget.tests[index];
+    Test test = _tests[index];
 
     Item item = items[index];
     setState(() {

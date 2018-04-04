@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sql.dart';
+
 import 'test_page.dart';
 
 class ExceptionTestPage extends TestPage {
   ExceptionTestPage() : super("Exception tests") {
     test("Transaction failed", () async {
-      //await Sqflite.setDebugModeOn(true);
+      //await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("transaction_failed.db");
       Database db = await openDatabase(path);
 
@@ -41,7 +42,7 @@ class ExceptionTestPage extends TestPage {
     });
 
     test("Batch failed", () async {
-      //await Sqflite.setDebugModeOn(true);
+      //await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("batch_failed.db");
       Database db = await openDatabase(path);
 
@@ -163,7 +164,7 @@ class ExceptionTestPage extends TestPage {
     });
 
     test("Non escaping fields", () async {
-      //await Sqflite.setDebugModeOn(true);
+      //await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("non_escaping_fields.db");
       Database db = await openDatabase(path);
 
@@ -209,6 +210,56 @@ class ExceptionTestPage extends TestPage {
         }
       }
       print(json.encode(toExclude));
+
+      await db.close();
+    });
+
+    test("Bind no argument", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("batch_failed.db");
+      Database db = await openDatabase(path);
+
+      await db.execute("CREATE TABLE Test (name TEXT)");
+
+      await db.rawInsert("INSERT INTO Test (name) VALUES (\"?\")", []);
+
+      await db.rawQuery("SELECT * FROM Test WHERE name = ?", []);
+
+      await db.rawDelete("DELETE FROM Test WHERE name = ?", []);
+
+      await db.close();
+    });
+
+    test("Bind no parameter", () async {
+      // await Sqflite.devSetDebugModeOn(false);
+      String path = await initDeleteDb("batch_failed.db");
+      Database db = await openDatabase(path);
+
+      await db.execute("CREATE TABLE Test (name TEXT)");
+
+      try {
+        await db.rawInsert(
+            "INSERT INTO Test (name) VALUES (\"value\")", ["value2"]);
+      } on DatabaseException catch (e) {
+        print("ERR: $e");
+        expect(e.toString().contains("running sql INSERT INTO Test"), true);
+      }
+
+      try {
+        await db
+            .rawQuery("SELECT * FROM Test WHERE name = \"value\"", ["value2"]);
+      } on DatabaseException catch (e) {
+        print("ERR: $e");
+        expect(e.toString().contains("running sql SELECT * FROM Test"), true);
+      }
+
+      try {
+        await db
+            .rawDelete("DELETE FROM Test WHERE name = \"value\"", ["value2"]);
+      } on DatabaseException catch (e) {
+        print("ERR: $e");
+        expect(e.toString().contains("running sql DELETE FROM Test"), true);
+      }
 
       await db.close();
     });

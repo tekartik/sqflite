@@ -7,3 +7,7 @@ set -e
 # $FLUTTER_ROOT/bin/cache/dart-sdk/bin/dartdoc
 flutter analyze lib test
 flutter test
+
+pushd example
+flutter analyze lib test
+flutter test

@@ -37,5 +37,4 @@ public class Constant {
     static final String ERROR_BAD_PARAM = "bad_param"; // internal only
     static final String ERROR_OPEN_FAILED = "open_failed"; // msg
     static final String ERROR_DATABASE_CLOSED = "database_closed"; // msg
-
 }

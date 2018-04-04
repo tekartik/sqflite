@@ -10,7 +10,7 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
  * Created by alex on 09/01/18.
  */
 
-public abstract class BaseOperation implements Operation {
+public abstract class BaseOperation extends BaseReadOperation {
     public String getSql() {
         return getArgument(PARAM_SQL);
     }

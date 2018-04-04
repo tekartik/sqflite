@@ -1,10 +1,12 @@
 import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:sqflite/src/constant.dart';
 
 // Wrap sqlite native exception
-class DatabaseException implements Exception {
+abstract class DatabaseException implements Exception {
   String _message;
+
   DatabaseException(this._message);
 
   @override
@@ -50,13 +52,34 @@ class DatabaseException implements Exception {
   }
 }
 
+class SqfliteDatabaseException extends DatabaseException {
+  dynamic result;
+
+  @override
+  String toString() {
+    if (result is Map) {
+      if (result[paramSql] != null) {
+        var args = result[paramSqlArguments];
+        if (args == null) {
+          return "DatabaseException($_message) running sql ${result[paramSql]}";
+        } else {
+          return "DatabaseException($_message) running sql ${result[paramSql]} args ${result[paramSqlArguments]}}";
+        }
+      }
+    }
+    return super.toString();
+  }
+
+  SqfliteDatabaseException(String message, this.result) : super(message);
+}
+
 Future<T> wrapDatabaseException<T>(Future<T> action()) async {
   try {
     T result = await action();
     return result;
   } on PlatformException catch (e) {
     if (e.code == sqliteErrorCode) {
-      throw new DatabaseException(e.message);
+      throw new SqfliteDatabaseException(e.message, e.details);
       //rethrow;
     } else {
       rethrow;
