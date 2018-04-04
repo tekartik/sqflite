@@ -159,7 +159,7 @@ class TypeTestPage extends TestPage {
     });
 
     test("null", () async {
-      //await Sqflite.devSetDebugModeOn(true);
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("type_null.db");
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
@@ -175,6 +175,23 @@ class TypeTestPage extends TestPage {
 
       expect(await updateValue(id, null), 1);
       expect(await getValue(id), null);
+    });
+
+    test("date_time", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("type_date_time.db");
+      data.db = await openDatabase(path, version: 1,
+          onCreate: (Database db, int version) async {
+        await db
+            .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)");
+      });
+      bool failed = false;
+      try {
+        await insertValue(new DateTime.fromMillisecondsSinceEpoch(1234567890));
+      } on ArgumentError catch (_) {
+        failed = true;
+      }
+      expect(failed, true);
     });
   }
 }
