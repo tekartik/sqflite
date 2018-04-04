@@ -297,8 +297,9 @@ Future<Database> openReadOnlyDatabase(String path) =>
 Future deleteDatabase(String path) async {
   try {
     await new File(path).delete(recursive: true);
-  } catch (e) {
-    print(e);
+  } catch (_e) {
+    // 0.8.4
+    // print(e);
   }
 }
 

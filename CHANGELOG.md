@@ -1,3 +1,8 @@
+## 0.8.6
+
+* no longer print an error when deleting a database fails
+* better sql error report
+
 ## 0.8.4
 
 * Add read-only support using `openReadOnlyDatabase`
