@@ -344,6 +344,40 @@ class ExceptionTestPage extends TestPage {
       }
     });
 
+    test("Bind null argument", () async {
+      if (!Platform.isIOS) {
+        // await Sqflite.devSetDebugModeOn(true);
+        String path = await initDeleteDb("bind_null_failed.db");
+        Database db = await openDatabase(path);
+
+        await db.execute("CREATE TABLE Test (name TEXT)");
+
+        //await db.rawInsert("INSERT INTO Test (name) VALUES (\"?\")", [null]);
+        try {
+          await db.rawInsert("INSERT INTO Test (name) VALUES (?)", [null]);
+        } on DatabaseException catch (e) {
+          print("ERR: $e");
+          expect(e.toString().contains("sql 'INSERT"), true);
+        }
+
+        try {
+          await db.rawQuery("SELECT * FROM Test WHERE name = ?", [null]);
+        } on DatabaseException catch (e) {
+          print("ERR: $e");
+          expect(e.toString().contains("sql 'SELECT * FROM Test"), true);
+        }
+
+        try {
+          await db.rawDelete("DELETE FROM Test WHERE name = ?", [null]);
+        } on DatabaseException catch (e) {
+          print("ERR: $e");
+          expect(e.toString().contains("sql 'DELETE FROM Test"), true);
+        }
+
+        await db.close();
+      }
+    });
+
     test("Bind no parameter", () async {
       // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("bind_no_parameter_failed.db");
