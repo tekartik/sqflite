@@ -34,9 +34,10 @@ public class ExecuteOperation extends BaseReadOperation {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getArgument(String key) {
-        return null;
+        return (T) map.get(key);
     }
 
     @Override
