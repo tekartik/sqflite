@@ -121,9 +121,20 @@ NSInteger _databaseOpenCount = 0;
 - (BOOL)handleError:(FMDatabase*)db operation:(Operation*)operation {
     // handle error
     if ([db hadError]) {
+        NSMutableDictionary* details = nil;
+        NSString* sql = [operation getSql];
+        if (sql != nil) {
+            details = [NSMutableDictionary new];
+            [details setObject:sql forKey:_paramSql];
+            NSArray* sqlArguments = [operation getSqlArguments];
+            if (sqlArguments != nil) {
+                [details setObject:sqlArguments forKey:_paramSqlArguments];
+            }
+        }
+        
         [operation error:([FlutterError errorWithCode:_sqliteErrorCode
                                               message:[NSString stringWithFormat:@"%@", [db lastError]]
-                                              details:nil])];
+                                              details:details])];
         return YES;
     }
     return NO;
@@ -258,7 +269,7 @@ NSInteger _databaseOpenCount = 0;
     }
     
     bool queryAsMapList = _queryAsMapList;
-
+    
     // NSLog(@"queryAsMapList %d", (int)queryAsMapList);
     if (queryAsMapList) {
         NSMutableArray* results = [NSMutableArray new];
@@ -290,9 +301,9 @@ NSInteger _databaseOpenCount = 0;
             [rows addObject:row];
         }
         
-         if (_log) {
-             NSLog(@"columns %@ rows %@", columns, rows);
-         }
+        if (_log) {
+            NSLog(@"columns %@ rows %@", columns, rows);
+        }
         [operation success:results];
     }
     return true;
@@ -545,7 +556,7 @@ NSInteger _databaseOpenCount = 0;
 - (void)handleOptionsCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSNumber* queryAsMapList = call.arguments[_paramQueryAsMapList];
     _queryAsMapList = [queryAsMapList boolValue];
-
+    
     result(nil);
 }
 

@@ -61,9 +61,9 @@ class SqfliteDatabaseException extends DatabaseException {
       if (result[paramSql] != null) {
         var args = result[paramSqlArguments];
         if (args == null) {
-          return "DatabaseException($_message) running sql ${result[paramSql]}";
+          return "DatabaseException($_message) sql '${result[paramSql]}'";
         } else {
-          return "DatabaseException($_message) running sql ${result[paramSql]} args ${result[paramSqlArguments]}}";
+          return "DatabaseException($_message) sql '${result[paramSql]}' args ${args}}";
         }
       }
     }

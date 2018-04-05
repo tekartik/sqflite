@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sql.dart';
+// import 'package:sqflite_example/src/utils.dart';
 
 import 'test_page.dart';
 
@@ -70,7 +72,7 @@ class ExceptionTestPage extends TestPage {
     });
 
     test("Sqlite Exception", () async {
-      //await Sqflite.setDebugModeOn(true);
+      await Sqflite.setDebugModeOn(true);
       String path = await initDeleteDb("exception.db");
       Database db = await openDatabase(path);
 
@@ -88,6 +90,19 @@ class ExceptionTestPage extends TestPage {
         fail(); // should fail before
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
+        //verify(e.toString().contains("sql 'malformed query' args"));
+        // devPrint(e);
+      }
+
+      try {
+        await db.rawQuery("malformed query with args ?", [1]);
+        fail(); // should fail before
+      } on DatabaseException catch (e) {
+        verify(e.isSyntaxError());
+        // devPrint(e);
+        verify(e
+            .toString()
+            .contains("sql 'malformed query with args ?' args [1]"));
       }
 
       try {
@@ -95,6 +110,8 @@ class ExceptionTestPage extends TestPage {
         fail(); // should fail before
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
+        // devPrint(e);
+        verify(e.toString().contains("sql 'DUMMY' args []"));
       }
 
       try {
@@ -102,6 +119,7 @@ class ExceptionTestPage extends TestPage {
         fail(); // should fail before
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
+        verify(e.toString().contains("sql 'DUMMY' args []"));
       }
 
       try {
@@ -109,6 +127,80 @@ class ExceptionTestPage extends TestPage {
         fail(); // should fail before
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
+        verify(e.toString().contains("sql 'DUMMY' args []"));
+      }
+
+      await db.close();
+    });
+
+    test("Sqlite batch Exception", () async {
+      await Sqflite.setDebugModeOn(true);
+      String path = await initDeleteDb("batch_exception.db");
+      Database db = await openDatabase(path);
+
+      // Query
+      try {
+        var batch = db.batch();
+        batch.rawQuery("SELECT COUNT(*) FROM Test");
+        await batch.commit();
+        fail(); // should fail before
+      } on DatabaseException catch (e) {
+        verify(e.isNoSuchTableError("Test"));
+        // devPrint(e);
+      }
+
+      // Catch without using on DatabaseException
+      try {
+        await db.rawQuery("malformed query");
+        fail(); // should fail before
+      } on DatabaseException catch (e) {
+        verify(e.isSyntaxError());
+        // devPrint(e);
+        verify(e.toString().contains("sql 'malformed query' args []"));
+      }
+
+      try {
+        var batch = db.batch();
+        batch.rawQuery("malformed query with args ?", [1]);
+        await batch.commit();
+        fail(); // should fail before
+      } on DatabaseException catch (e) {
+        verify(e.isSyntaxError());
+        // devPrint(e);
+        verify(e
+            .toString()
+            .contains("sql 'malformed query with args ?' args [1]"));
+      }
+
+      try {
+        var batch = db.batch();
+        batch.execute("DUMMY");
+        await batch.commit();
+        fail(); // should fail before
+      } on DatabaseException catch (e) {
+        verify(e.isSyntaxError());
+        // devPrint(e);
+        verify(e.toString().contains("sql 'DUMMY' args []"));
+      }
+
+      try {
+        var batch = db.batch();
+        batch.rawInsert("DUMMY");
+        await batch.commit();
+        fail(); // should fail before
+      } on DatabaseException catch (e) {
+        verify(e.isSyntaxError());
+        verify(e.toString().contains("sql 'DUMMY' args []"));
+      }
+
+      try {
+        var batch = db.batch();
+        batch.rawUpdate("DUMMY");
+        await batch.commit();
+        fail(); // should fail before
+      } on DatabaseException catch (e) {
+        verify(e.isSyntaxError());
+        verify(e.toString().contains("sql 'DUMMY' args []"));
       }
 
       await db.close();
@@ -140,6 +232,7 @@ class ExceptionTestPage extends TestPage {
     });
 
     test("Access after close", () async {
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("access_after_close.db");
       Database database = await openDatabase(path, version: 3,
           onCreate: (Database db, int version) async {
@@ -214,25 +307,45 @@ class ExceptionTestPage extends TestPage {
       await db.close();
     });
 
-    test("Bind no argument", () async {
-      // await Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("batch_failed.db");
-      Database db = await openDatabase(path);
+    test("Bind no argument (no iOS)", () async {
+      if (!Platform.isIOS) {
+        // await Sqflite.devSetDebugModeOn(true);
+        String path = await initDeleteDb("bind_no_arg_failed.db");
+        Database db = await openDatabase(path);
 
-      await db.execute("CREATE TABLE Test (name TEXT)");
+        await db.execute("CREATE TABLE Test (name TEXT)");
 
-      await db.rawInsert("INSERT INTO Test (name) VALUES (\"?\")", []);
+        await db.rawInsert("INSERT INTO Test (name) VALUES (\"?\")", []);
 
-      await db.rawQuery("SELECT * FROM Test WHERE name = ?", []);
+        await db.rawQuery("SELECT * FROM Test WHERE name = ?", []);
 
-      await db.rawDelete("DELETE FROM Test WHERE name = ?", []);
+        await db.rawDelete("DELETE FROM Test WHERE name = ?", []);
 
-      await db.close();
+        await db.close();
+      }
+    });
+
+    test("crash ios (no iOS)", () async {
+      // This crashes natively on iOS...can't catch it yet
+      if (!Platform.isIOS) {
+        //if (true) {
+        // await Sqflite.devSetDebugModeOn(true);
+        String path = await initDeleteDb("bind_no_arg_failed.db");
+        Database db = await openDatabase(path);
+
+        await db.execute("CREATE TABLE Test (name TEXT)");
+
+        await db.rawInsert("INSERT INTO Test (name) VALUES (\"?\")", []);
+
+        await db.rawQuery("SELECT * FROM Test WHERE name = ?", []);
+
+        await db.close();
+      }
     });
 
     test("Bind no parameter", () async {
-      // await Sqflite.devSetDebugModeOn(false);
-      String path = await initDeleteDb("batch_failed.db");
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("bind_no_parameter_failed.db");
       Database db = await openDatabase(path);
 
       await db.execute("CREATE TABLE Test (name TEXT)");
@@ -242,7 +355,7 @@ class ExceptionTestPage extends TestPage {
             "INSERT INTO Test (name) VALUES (\"value\")", ["value2"]);
       } on DatabaseException catch (e) {
         print("ERR: $e");
-        expect(e.toString().contains("running sql INSERT INTO Test"), true);
+        expect(e.toString().contains("sql 'INSERT INTO Test"), true);
       }
 
       try {
@@ -250,7 +363,7 @@ class ExceptionTestPage extends TestPage {
             .rawQuery("SELECT * FROM Test WHERE name = \"value\"", ["value2"]);
       } on DatabaseException catch (e) {
         print("ERR: $e");
-        expect(e.toString().contains("running sql SELECT * FROM Test"), true);
+        expect(e.toString().contains("sql 'SELECT * FROM Test"), true);
       }
 
       try {
@@ -258,7 +371,7 @@ class ExceptionTestPage extends TestPage {
             .rawDelete("DELETE FROM Test WHERE name = \"value\"", ["value2"]);
       } on DatabaseException catch (e) {
         print("ERR: $e");
-        expect(e.toString().contains("running sql DELETE FROM Test"), true);
+        expect(e.toString().contains("sql 'DELETE FROM Test"), true);
       }
 
       await db.close();

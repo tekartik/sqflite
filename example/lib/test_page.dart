@@ -47,6 +47,11 @@ class TestPage extends StatefulWidget {
     tests.add(new Test(name, fn, solo: true));
   }
 
+  @Deprecated("SKIP_TEST - On purpose to remove before checkin")
+  void skip_test(String name, Func0<FutureOr> fn) {
+    tests.add(new Test(name, fn, skip: true));
+  }
+
   // Thrown an exception
   fail([String message]) {
     throw new Exception(message ?? "should fail");
@@ -71,6 +76,7 @@ expect(dynamic value, dynamic expected, {String reason}) {
 }
 
 bool verify(bool condition, [String message]) {
+  message ??= "verify failed";
   if (condition == null) {
     throw new Exception('"$message" null condition');
   }
@@ -87,14 +93,16 @@ abstract class Group {
   List<Test> _tests = [];
 
   void add(Test test) {
-    if (test.solo) {
-      if (_hasSolo != true) {
-        _hasSolo = true;
-        _tests.clear();
+    if (!test.skip) {
+      if (test.solo) {
+        if (_hasSolo != true) {
+          _hasSolo = true;
+          _tests.clear();
+        }
+        _tests.add(test);
+      } else if (_hasSolo != true) {
+        _tests.add(test);
       }
-      _tests.add(test);
-    } else if (_hasSolo != true) {
-      _tests.add(test);
     }
   }
 
