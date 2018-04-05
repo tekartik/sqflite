@@ -37,3 +37,13 @@ Unhandled exception: type '_InternalLinkedHashMap' is not a subtype of type 'Map
 
 Make sure you create object of type `Map<String, dynamic>` and not simply `Map` for records you
 insert and update. The option `implicit-casts: false` explained above helps to find such issues
+
+## Debugging SQL commands
+
+A quick way to view SQL commands printed out is to call before opening any database
+
+```dart
+await Sqflite.devSetDebugModeOn(true);
+```
+
+This call is on purpose deprecated to force removing it once the SQL issues has been resolved.

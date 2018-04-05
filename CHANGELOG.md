@@ -1,7 +1,8 @@
 ## 0.8.6
 
-* no longer print an error when deleting a database fails
 * better sql error report
+* catch android native errors
+* no longer print an error when deleting a database fails
 
 ## 0.8.4
 
