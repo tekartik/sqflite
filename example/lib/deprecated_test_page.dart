@@ -216,10 +216,10 @@ class DeprecatedTestPage extends TestPage {
         documentsDirectory.create(recursive: true);
       } catch (_) {}
 
-      String path = join(documentsDirectory.path, "demo.db");
+      String path = join(documentsDirectory.path, "deprecated_demo.db");
 
       // Delete the database
-      deleteDatabase(path);
+      await deleteDatabase(path);
 
       // open the database
       Database database = await openDatabase(path, version: 1,
