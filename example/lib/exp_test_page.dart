@@ -285,5 +285,23 @@ class ExpTestPage extends TestPage {
       expect(resultSet.length, 1);
       await db.close();
     });
+
+    test("Issue#52", () async {
+      // Sqflite.devSetDebugModeOn(true);
+      // Try to insert string with quote
+      String path = await initDeleteDb("exp_issue_52.db");
+      Database db = await openDatabase(path, version: 1,
+          onCreate: (Database db, int version) async {
+        await db.execute("CREATE TABLE test (id INT, value TEXT)");
+        await db.insert("test", {"id": 1, "value": 'without quote'});
+        await db.insert("test", {"id": 2, "value": 'with " quote'});
+      });
+      print(await db.query("test"));
+      var resultSet = await db
+          .query("test", where: 'value = ?', whereArgs: ['with " quote']);
+      expect(resultSet.length, 1);
+      expect(resultSet.first['id'], 2);
+      await db.close();
+    });
   }
 }
