@@ -296,9 +296,13 @@ class ExpTestPage extends TestPage {
         await db.insert("test", {"id": 1, "value": 'without quote'});
         await db.insert("test", {"id": 2, "value": 'with " quote'});
       });
-      print(await db.query("test"));
       var resultSet = await db
           .query("test", where: 'value = ?', whereArgs: ['with " quote']);
+      expect(resultSet.length, 1);
+      expect(resultSet.first['id'], 2);
+
+      resultSet = await db
+          .rawQuery('SELECT * FROM test WHERE value = ?', ['with " quote']);
       expect(resultSet.length, 1);
       expect(resultSet.first['id'], 2);
       await db.close();
