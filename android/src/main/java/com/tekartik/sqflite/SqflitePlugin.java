@@ -120,7 +120,7 @@ public class SqflitePlugin implements MethodCallHandler {
     //
     public static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "com.tekartik.sqflite");
-        channel.setMethodCallHandler(new SqflitePlugin(registrar.activity().getApplicationContext()));
+        channel.setMethodCallHandler(new SqflitePlugin(registrar.context().getApplicationContext()));
     }
 
     private static Object cursorValue(Cursor cursor, int index) {

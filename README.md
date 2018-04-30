@@ -15,7 +15,7 @@ In your flutter project add the dependency:
 ```yml
 dependencies:
   ...
-  sqflite: '>=0.8.5'
+  sqflite: any
 ```
 
 For help getting started with Flutter, view the online
