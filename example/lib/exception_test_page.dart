@@ -81,6 +81,7 @@ class ExceptionTestPage extends TestPage {
         fail(); // should fail before
       } on DatabaseException catch (e) {
         verify(e.isNoSuchTableError("Test"));
+        // Error Domain=FMDatabase Code=1 "no such table: Test" UserInfo={NSLocalizedDescription=no such table: Test})
       }
 
       // Catch without using on DatabaseException
@@ -144,6 +145,7 @@ class ExceptionTestPage extends TestPage {
       try {
         await db.insert("Test", {"name": "test1"});
       } on DatabaseException catch (e) {
+        // iOS: Error Domain=FMDatabase Code=19 "UNIQUE constraint failed: Test.name" UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name}) s
         // Android: UNIQUE constraint failed: Test.name (code 2067))
         print(e);
         verify(e.isUniqueConstraintError());
@@ -202,6 +204,7 @@ class ExceptionTestPage extends TestPage {
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
         // devPrint(e);
+        // iOS Error Domain=FMDatabase Code=1 "near "DUMMY": syntax error" UserInfo={NSLocalizedDescription=near "DUMMY": syntax error})
         verify(e.toString().contains("sql 'DUMMY'"));
       }
 
