@@ -1,3 +1,7 @@
+## 0.8.8
+
+* Allow testing for constraint exception
+
 ## 0.8.6
 
 * better sql error report

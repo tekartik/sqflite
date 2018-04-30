@@ -61,6 +61,27 @@ abstract class DatabaseException implements Exception {
     }
     return false;
   }
+}
+
+class SqfliteDatabaseException extends DatabaseException {
+  dynamic result;
+
+  @override
+  String toString() {
+    if (result is Map) {
+      if (result[paramSql] != null) {
+        var args = result[paramSqlArguments];
+        if (args == null) {
+          return "DatabaseException($_message) sql '${result[paramSql]}'";
+        } else {
+          return "DatabaseException($_message) sql '${result[paramSql]}' args ${args}}";
+        }
+      }
+    }
+    return super.toString();
+  }
+
+  SqfliteDatabaseException(String message, this.result) : super(message);
 
   /// Parse the sqlite native message to extract the code
   /// See https://www.sqlite.org/rescode.html for the list of result code
@@ -93,27 +114,6 @@ abstract class DatabaseException implements Exception {
     }
     return null;
   }
-}
-
-class SqfliteDatabaseException extends DatabaseException {
-  dynamic result;
-
-  @override
-  String toString() {
-    if (result is Map) {
-      if (result[paramSql] != null) {
-        var args = result[paramSqlArguments];
-        if (args == null) {
-          return "DatabaseException($_message) sql '${result[paramSql]}'";
-        } else {
-          return "DatabaseException($_message) sql '${result[paramSql]}' args ${args}}";
-        }
-      }
-    }
-    return super.toString();
-  }
-
-  SqfliteDatabaseException(String message, this.result) : super(message);
 }
 
 Future<T> wrapDatabaseException<T>(Future<T> action()) async {
