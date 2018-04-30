@@ -239,7 +239,7 @@ abstract class Database implements DatabaseExecutor {
 
 typedef FutureOr OnDatabaseVersionChangeFn(
     Database db, int oldVersion, int newVersion);
-typedef FutureOr OnDatabaseCreateFn(Database db, int newVersion);
+typedef FutureOr OnDatabaseCreateFn(Database db, int version);
 typedef FutureOr OnDatabaseOpenFn(Database db);
 typedef FutureOr OnDatabaseConfigureFn(Database db);
 

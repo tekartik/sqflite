@@ -71,7 +71,7 @@ class ExceptionTestPage extends TestPage {
     });
 
     test("Sqlite Exception", () async {
-      await Sqflite.setDebugModeOn(true);
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("exception.db");
       Database db = await openDatabase(path);
 
@@ -132,8 +132,29 @@ class ExceptionTestPage extends TestPage {
       await db.close();
     });
 
+    test("Sqlite constraint Exception", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("constraint_exception.db");
+      Database db =
+          await openDatabase(path, version: 1, onCreate: (db, version) {
+        db.execute("CREATE TABLE Test (name TEXT UNIQUE)");
+      });
+      await db.insert("Test", {"name": "test1"});
+
+      try {
+        await db.insert("Test", {"name": "test1"});
+      } on DatabaseException catch (e) {
+        // Android: UNIQUE constraint failed: Test.name (code 2067))
+        print(e);
+        verify(e.isUniqueConstraintError());
+        verify(e.isUniqueConstraintError("Test.name"));
+      }
+
+      await db.close();
+    });
+
     test("Sqlite batch Exception", () async {
-      await Sqflite.setDebugModeOn(true);
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("batch_exception.db");
       Database db = await openDatabase(path);
 

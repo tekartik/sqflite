@@ -23,7 +23,7 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
-  bool isSyntaxError([String table]) {
+  bool isSyntaxError() {
     if (_message != null) {
       return _message.contains("syntax error");
     }
@@ -44,11 +44,54 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
-  isReadOnlyError() {
+  bool isReadOnlyError() {
     if (_message != null) {
       return _message.contains("readonly");
     }
     return false;
+  }
+
+  bool isUniqueConstraintError([String field]) {
+    if (_message != null) {
+      String expected = "UNIQUE constraint failed: ";
+      if (field != null) {
+        expected += field;
+      }
+      return _message.toLowerCase().contains(expected.toLowerCase());
+    }
+    return false;
+  }
+
+  /// Parse the sqlite native message to extract the code
+  /// See https://www.sqlite.org/rescode.html for the list of result code
+  int getResultCode() {
+    String message = _message.toLowerCase();
+    int findCode(String patternPrefix) {
+      int index = message.indexOf(patternPrefix);
+      if (index != -1) {
+        String code = message.substring(index + patternPrefix.length);
+        int endIndex = code.indexOf(")");
+        if (endIndex != -1) {
+          try {
+            int resultCode = int.parse(code.substring(0, endIndex));
+            if (resultCode != null) {
+              return resultCode;
+            }
+          } catch (_) {}
+        }
+      }
+      return null;
+    }
+
+    int code = findCode("(sqlite code ");
+    if (code != null) {
+      return code;
+    }
+    code = findCode("(code ");
+    if (code != null) {
+      return code;
+    }
+    return null;
   }
 }
 
