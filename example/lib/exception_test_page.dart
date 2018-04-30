@@ -155,6 +155,28 @@ class ExceptionTestPage extends TestPage {
       await db.close();
     });
 
+    test("Sqlite constraint primary key Exception", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("constraint_primary_key_exception.db");
+      Database db =
+      await openDatabase(path, version: 1, onCreate: (db, version) {
+        db.execute("CREATE TABLE Test (name TEXT PRIMARY KEY)");
+      });
+      await db.insert("Test", {"name": "test1"});
+
+      try {
+        await db.insert("Test", {"name": "test1"});
+      } on DatabaseException catch (e) {
+        // iOS: Error Domain=FMDatabase Code=19 "UNIQUE constraint failed: Test.name" UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name}) s
+        // Android: UNIQUE constraint failed: Test.name (code 2067))
+        print(e);
+        verify(e.isUniqueConstraintError());
+        verify(e.isUniqueConstraintError("Test.name"));
+      }
+
+      await db.close();
+    });
+
     test("Sqlite batch Exception", () async {
       // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("batch_exception.db");
