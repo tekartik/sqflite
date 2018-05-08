@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/src/utils.dart';
+import 'package:synchronized/synchronized.dart';
 import 'test_page.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart';
@@ -14,6 +15,7 @@ class OpenCallbacks {
   bool onCreateCalled;
   bool onDowngradeCalled;
   bool onUpgradeCalled;
+
   void reset() {
     onConfigureCalled = false;
     onOpenCalled = false;
@@ -468,5 +470,37 @@ class OpenTestPage extends TestPage {
         await db.close();
       }
     });
+
+    test('Database locked (doc)', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("open_locked.db");
+      var helper = new Helper(path);
+
+      // without the synchronized fix, this could faild
+      for (int i = 0; i < 100; i++) {
+        helper.getDb();
+      }
+      var db = await helper.getDb();
+      await db.close();
+    });
+  }
+}
+
+class Helper {
+  final String path;
+  Helper(this.path);
+  Database _db;
+  final _lock = new Lock();
+
+  Future<Database> getDb() async {
+    if (_db == null) {
+      await _lock.synchronized(() async {
+        // Check again once entering the synchronized block
+        if (_db == null) {
+          _db = await openDatabase(path);
+        }
+      });
+    }
+    return _db;
   }
 }
