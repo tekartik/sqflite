@@ -576,10 +576,12 @@ class SimpleTestPage extends TestPage {
       try {
         String path = await initDeleteDb("without_rowid.db");
         db = await openDatabase(path);
-        // This table has no primary key however sqlite generates an hidden row id
+        // This table has no primary key and we ask sqlite not to generate
+        // a rowid
         await db
             .execute("CREATE TABLE Test (name TEXT PRIMARY KEY) WITHOUT ROWID");
         int id = await db.insert("Test", {"name": "test"});
+        // it seems to always return 1
         expect(id, 1);
         id = await db.insert("Test", {"name": "other"});
         // it seems to always return 1
