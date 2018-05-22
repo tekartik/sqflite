@@ -544,5 +544,55 @@ class SimpleTestPage extends TestPage {
       await db.close();
       await db2.close();
     });
+
+    test("text primary key", () async {
+      // Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("text_primary_key.db");
+      Database db = await openDatabase(path);
+      // This table has no primary key however sqlite generates an hidden row id
+      await db.execute("CREATE TABLE Test (name TEXT PRIMARY KEY)");
+      int id = await db.insert("Test", {"name": "test"});
+      expect(id, 1);
+      id = await db.insert("Test", {"name": "other"});
+      expect(id, 2);
+      // row id is not retrieve by default
+      var list = await db.query("Test");
+      expect(list, [
+        {"name": "test"},
+        {"name": "other"}
+      ]);
+      list = await db.query("Test", columns: ['name', 'rowid']);
+      expect(list, [
+        {"name": "test", "rowid": 1},
+        {"name": "other", "rowid": 2}
+      ]);
+
+      await db.close();
+    });
+
+    test("without rowid", () async {
+      // Sqflite.devSetDebugModeOn(true);
+      Database db;
+      try {
+        String path = await initDeleteDb("without_rowid.db");
+        db = await openDatabase(path);
+        // This table has no primary key however sqlite generates an hidden row id
+        await db
+            .execute("CREATE TABLE Test (name TEXT PRIMARY KEY) WITHOUT ROWID");
+        int id = await db.insert("Test", {"name": "test"});
+        expect(id, 1);
+        id = await db.insert("Test", {"name": "other"});
+        // it seems to always return 1
+        expect(id, 1);
+        // notice the order is based on the primary key
+        var list = await db.query("Test");
+        expect(list, [
+          {"name": "other"},
+          {"name": "test"}
+        ]);
+      } finally {
+        await db?.close();
+      }
+    });
   }
 }
