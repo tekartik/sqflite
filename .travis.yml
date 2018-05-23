@@ -1,5 +1,4 @@
-os:
-  - linux
+os: linux
 # Copied from https://github.com/flutter/plugins/blob/master/.travis.yml
 addons:
   apt:
