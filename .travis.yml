@@ -1,5 +1,7 @@
-os: linux
+os:
+  - linux
 # Copied from https://github.com/flutter/plugins/blob/master/.travis.yml
+sudo: false
 addons:
   apt:
     # Flutter depends on /usr/lib/x86_64-linux-gnu/libstdc++.so.6 version GLIBCXX_3.4.18
