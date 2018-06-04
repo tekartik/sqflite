@@ -1,19 +1,26 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
+import 'package:sqflite/src/database_factory.dart';
 import 'package:sqflite/src/utils.dart';
 
 class MockDatabase extends SqfliteDatabase {
-  MockDatabase() : super(null);
+  MockDatabase(SqfliteDatabaseOpenHelper openHelper, [String name])
+      : super(openHelper, name);
 
   List<String> methods = [];
   List<String> sqls = [];
+  List<Map<String, dynamic>> argumentsLists = [];
+
   @override
   Future<T> invokeMethod<T>(String method, [arguments]) {
     // return super.invokeMethod(method, arguments);
+
     methods.add(method);
     if (arguments is Map) {
+      argumentsLists.add(arguments.cast<String, dynamic>());
       if (arguments[paramOperations] != null) {
         var operations =
             arguments[paramOperations] as List<Map<String, dynamic>>;
@@ -24,6 +31,7 @@ class MockDatabase extends SqfliteDatabase {
         sqls.add(arguments[paramSql] as String);
       }
     } else {
+      argumentsLists.add(null);
       sqls.add(null);
     }
     //devPrint("$method $arguments");
@@ -31,10 +39,24 @@ class MockDatabase extends SqfliteDatabase {
   }
 }
 
+class MockDatabaseFactory extends SqfliteDatabaseFactory {
+  MockDatabase newEmptyDatabase() {
+    SqfliteDatabaseOpenHelper helper =
+        new SqfliteDatabaseOpenHelper(this, new OpenDatabaseOptions());
+    return helper.newDatabase(null) as MockDatabase;
+  }
+
+  MockDatabase newDatabase(SqfliteDatabaseOpenHelper openHelper, String path) {
+    return new MockDatabase(openHelper, path);
+  }
+}
+
+final MockDatabaseFactory mockDatabaseFactory = new MockDatabaseFactory();
+
 main() {
   group("database", () {
     test("synchronized", () async {
-      var db = new MockDatabase();
+      var db = mockDatabaseFactory.newEmptyDatabase();
       expect(db.rawSynchronizedlock, isNull);
       expect(db.rawWriteSynchronizedLock, isNull);
       await db.synchronized(() {});
@@ -80,23 +102,25 @@ main() {
 
     group('open', () {
       test('read-only', () async {
-        var db = new MockDatabase();
-        await db.openReadOnlyDatabase();
+        // var db = mockDatabaseFactory.newEmptyDatabase();
+        var db = await mockDatabaseFactory.openDatabase(
+            new SqfliteOpenDatabaseOptions(readOnly: true)) as MockDatabase;
         await db.close();
         expect(db.methods, ['openDatabase', 'closeDatabase']);
+        expect(db.argumentsLists.first, {'path': null, 'readOnly': true});
       });
     });
     group('openTransaction', () {
       test('onCreate', () async {
-        var db = new MockDatabase();
-        await db.open(
-            version: 1,
-            onCreate: (db, version) async {
-              await db.execute("test1");
-              await db.transaction((txn) async {
-                await txn.execute("test2");
-              });
-            });
+        var db = await mockDatabaseFactory
+            .openDatabase(new SqfliteOpenDatabaseOptions(
+                version: 1,
+                onCreate: (db, version) async {
+                  await db.execute("test1");
+                  await db.transaction((txn) async {
+                    await txn.execute("test2");
+                  });
+                })) as MockDatabase;
 
         expect(db.rawSynchronizedlock, isNull);
         await db.close();
@@ -123,15 +147,14 @@ main() {
       });
 
       test('onConfigure', () async {
-        var db = new MockDatabase();
-        await db.open(
+        var db = await mockDatabaseFactory.openDatabase(new OpenDatabaseOptions(
             version: 1,
             onConfigure: (db) async {
               await db.execute("test1");
               await db.transaction((txn) async {
                 await txn.execute("test2");
               });
-            });
+            })) as MockDatabase;
 
         expect(db.rawSynchronizedlock, isNull);
         await db.close();
@@ -150,15 +173,14 @@ main() {
       });
 
       test('onOpen', () async {
-        var db = new MockDatabase();
-        await db.open(
+        var db = await mockDatabaseFactory.openDatabase(new OpenDatabaseOptions(
             version: 1,
             onOpen: (db) async {
               await db.execute("test1");
               await db.transaction((txn) async {
                 await txn.execute("test2");
               });
-            });
+            })) as MockDatabase;
 
         expect(db.rawSynchronizedlock, isNull);
         await db.close();
@@ -177,8 +199,7 @@ main() {
       });
 
       test('batch', () async {
-        var db = new MockDatabase();
-        await db.open(
+        var db = await mockDatabaseFactory.openDatabase(new OpenDatabaseOptions(
             version: 1,
             onConfigure: (db) async {
               var batch = db.batch();
@@ -194,7 +215,7 @@ main() {
               var batch = db.batch();
               batch.execute("test3");
               await batch.commit();
-            });
+            })) as MockDatabase;
 
         expect(db.rawSynchronizedlock, isNull);
         await db.close();
@@ -218,7 +239,7 @@ main() {
 
     group('concurrency', () {
       test('concurrent 1', () async {
-        var db = new MockDatabase();
+        var db = mockDatabaseFactory.newEmptyDatabase();
         var step1 = new Completer();
         var step2 = new Completer();
         var step3 = new Completer();
@@ -263,7 +284,7 @@ main() {
       });
 
       test('concurrent 2', () async {
-        var db = new MockDatabase();
+        var db = mockDatabaseFactory.newEmptyDatabase();
         var step1 = new Completer();
         var step2 = new Completer();
         var step3 = new Completer();
@@ -309,7 +330,7 @@ main() {
 
     group('compatibility 1', () {
       test('concurrent 1', () async {
-        var db = new MockDatabase();
+        var db = mockDatabaseFactory.newEmptyDatabase();
         var step1 = new Completer();
         var step2 = new Completer();
         var step3 = new Completer();
@@ -354,7 +375,7 @@ main() {
       });
 
       test('concurrent 2', () async {
-        var db = new MockDatabase();
+        var db = mockDatabaseFactory.newEmptyDatabase();
         var step1 = new Completer();
         var step2 = new Completer();
         var step3 = new Completer();
@@ -408,8 +429,7 @@ main() {
 
     group('batch', () {
       test('simple', () async {
-        var db = new MockDatabase();
-        await db.open();
+        var db = await mockDatabaseFactory.openDatabase(null) as MockDatabase;
 
         var batch = db.batch();
         batch.execute("test");
@@ -439,8 +459,7 @@ main() {
       });
 
       test('in_transaction', () async {
-        var db = new MockDatabase();
-        await db.open();
+        var db = await mockDatabaseFactory.openDatabase(null) as MockDatabase;
 
         var batch = db.batch();
 
@@ -464,9 +483,9 @@ main() {
       });
 
       test('wrong database', () async {
-        var db = new MockDatabase();
-        var db2 = new MockDatabase();
-        await db.open();
+        var db2 = mockDatabaseFactory.newEmptyDatabase();
+        var db = await mockDatabaseFactory
+            .openDatabase(new OpenDatabaseOptions()) as MockDatabase;
 
         var batch = db2.batch();
 
@@ -480,6 +499,44 @@ main() {
         expect(db.methods,
             ['openDatabase', 'execute', 'execute', 'closeDatabase']);
         expect(db.sqls, [null, 'BEGIN IMMEDIATE', 'COMMIT', null]);
+      });
+    });
+
+    group('instances', () {
+      test('singleInstance same', () async {
+        var futureDb1 = mockDatabaseFactory
+            .openDatabase(new OpenDatabaseOptions(singleInstance: true));
+        var db2 = await mockDatabaseFactory
+            .openDatabase(new OpenDatabaseOptions(singleInstance: true));
+        var db1 = await futureDb1;
+        expect(db1, db2);
+      });
+      test('singleInstance', () async {
+        var futureDb1 = mockDatabaseFactory
+            .openDatabase(new OpenDatabaseOptions(singleInstance: true));
+        var db2 = await mockDatabaseFactory
+            .openDatabase(new OpenDatabaseOptions(singleInstance: true));
+        var db1 = await futureDb1;
+        var db3 = await mockDatabaseFactory.openDatabase(
+            new OpenDatabaseOptions(path: "other", singleInstance: true));
+        var db4 = await mockDatabaseFactory.openDatabase(
+            new OpenDatabaseOptions(
+                path: join(".", "other"), singleInstance: true));
+        //expect(db1, db2);
+        expect(db1, isNot(db3));
+        expect(db3, db4);
+        await db1.close();
+        await db2.close();
+        await db3.close();
+      });
+
+      test('default', () async {
+        var futureDb1 = mockDatabaseFactory.openDatabase(null);
+        var db2 = await mockDatabaseFactory.openDatabase(null);
+        var db1 = await futureDb1;
+        expect(db1, isNot(db2));
+        await db1.close();
+        await db2.close();
       });
     });
   });

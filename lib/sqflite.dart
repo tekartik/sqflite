@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart' as impl;
+import 'package:sqflite/src/database_factory.dart' as impl;
 import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/sql_builder.dart';
 
@@ -10,6 +11,7 @@ import 'src/utils.dart';
 
 export 'sql.dart' show ConflictAlgorithm;
 export 'src/exception.dart' show DatabaseException;
+export 'src/database_factory.dart' show DatabaseFactory, databaseFactory;
 
 ///
 /// internal options
@@ -259,6 +261,44 @@ Future __onDatabaseDowngradeDelete(
 final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
     __onDatabaseDowngradeDelete;
 
+/// Options for opening the database
+/// [singleInstance] means the same instance is returned for a given path
+abstract class OpenDatabaseOptions {
+  factory OpenDatabaseOptions(
+      {String path,
+      int version,
+      OnDatabaseConfigureFn onConfigure,
+      OnDatabaseCreateFn onCreate,
+      OnDatabaseVersionChangeFn onUpgrade,
+      OnDatabaseVersionChangeFn onDowngrade,
+      OnDatabaseOpenFn onOpen,
+      bool readOnly,
+      bool singleInstance,
+      OpenDatabaseOptions options}) {
+    options ??= new impl.SqfliteOpenDatabaseOptions();
+    options.path = path;
+    options.version ??= version;
+    options.onConfigure ??= onConfigure;
+    options.onCreate ??= onCreate;
+    options.onUpgrade ??= onUpgrade;
+    options.onDowngrade ??= onDowngrade;
+    options.onOpen ??= onOpen;
+    options.readOnly ??= readOnly;
+    options.singleInstance ??= singleInstance;
+    return options;
+  }
+
+  String path;
+  int version;
+  OnDatabaseConfigureFn onConfigure;
+  OnDatabaseCreateFn onCreate;
+  OnDatabaseVersionChangeFn onUpgrade;
+  OnDatabaseVersionChangeFn onDowngrade;
+  OnDatabaseOpenFn onOpen;
+  bool readOnly;
+  bool singleInstance;
+}
+
 ///
 /// Open the database at a given path
 /// setting a version is optional
@@ -271,19 +311,23 @@ final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
 /// [onOpen] is called after [onCreate], [onUpgrade], [onDowngrade] are called
 ///
 Future<Database> openDatabase(String path,
-        {int version,
-        OnDatabaseConfigureFn onConfigure,
-        OnDatabaseCreateFn onCreate,
-        OnDatabaseVersionChangeFn onUpgrade,
-        OnDatabaseVersionChangeFn onDowngrade,
-        OnDatabaseOpenFn onOpen}) =>
-    impl.openDatabase(path,
-        version: version,
-        onConfigure: onConfigure,
-        onCreate: onCreate,
-        onUpgrade: onUpgrade,
-        onDowngrade: onDowngrade,
-        onOpen: onOpen);
+    {int version,
+    OnDatabaseConfigureFn onConfigure,
+    OnDatabaseCreateFn onCreate,
+    OnDatabaseVersionChangeFn onUpgrade,
+    OnDatabaseVersionChangeFn onDowngrade,
+    OnDatabaseOpenFn onOpen}) {
+  var options = new impl.SqfliteOpenDatabaseOptions(
+      path: path, version: version, onConfigure: onConfigure);
+  options.path ??= path;
+  options.version ??= version;
+  options.onConfigure ??= onConfigure;
+  options.onCreate ??= onCreate;
+  options.onUpgrade ??= onUpgrade;
+  options.onDowngrade ??= onDowngrade;
+  options.onOpen ??= onOpen;
+  return impl.databaseFactory.openDatabase(options);
+}
 
 ///
 /// Open the database at a given path in read only mode
