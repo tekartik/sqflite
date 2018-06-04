@@ -148,14 +148,14 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
 
   // will be removed once writeSynchronized and synchronized are removed
 
-  SynchronizedLock get synchronizedLock =>
-      rawSynchronizedlock ??= new SynchronizedLock();
-  SynchronizedLock get writeSynchronizedLock => rawWriteSynchronizedLock ??=
-      (supportsConcurrency ? new SynchronizedLock() : synchronizedLock);
-  SynchronizedLock rawSynchronizedlock;
-  SynchronizedLock rawWriteSynchronizedLock;
+  Lock get synchronizedLock =>
+      rawSynchronizedlock ??= new Lock(reentrant: true);
+  Lock get writeSynchronizedLock => rawWriteSynchronizedLock ??=
+      (supportsConcurrency ? new Lock(reentrant: true) : synchronizedLock);
+  Lock rawSynchronizedlock;
+  Lock rawWriteSynchronizedLock;
 
-  SynchronizedLock get transactionLock => rawSynchronizedlock;
+  Lock get transactionLock => rawSynchronizedlock;
 
   @override
   SqfliteDatabase get db => this;
