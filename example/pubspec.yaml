@@ -33,6 +33,7 @@ flutter:
   #  - images/a_dot_ham.jpeg
   assets:
     - assets/example.db
+    - assets/issue_64.db
 
 # dev only
 # dependency_overrides:

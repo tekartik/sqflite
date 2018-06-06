@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:flutter/services.dart';
+import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'test_page.dart';
@@ -305,6 +309,48 @@ class ExpTestPage extends TestPage {
           .rawQuery('SELECT * FROM test WHERE value = ?', ['with " quote']);
       expect(resultSet.length, 1);
       expect(resultSet.first['id'], 2);
+      await db.close();
+    });
+
+    test("Issue#64", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("issue_64.db");
+
+      // delete existing if any
+      await deleteDatabase(path);
+
+      // Copy from asset
+      var data = await rootBundle.load(join("assets", "issue_64.db"));
+      var bytes =
+          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      await new File(path).writeAsBytes(bytes);
+
+      // open the database
+      Database db =
+          await openDatabase(path, version: 1, onConfigure: (db) async {
+        await db.execute("PRAGMA foreign_keys = ON");
+      }, onOpen: (db) async {
+        await db.execute("PRAGMA foreign_keys = ON");
+      });
+
+      // This one does not work
+      var result = await db.query('recordings',
+          columns: ['id', 'content', 'file', 'speaker', 'reference']);
+      print('result1: $result');
+      result = await db.query('recordings',
+          columns: ['id', 'content', 'file', 'speaker', 'reference'],
+          where: 'speaker = ?',
+          whereArgs: [1]);
+
+      print('result2: $result');
+
+      result = await db.query(
+        'recordings',
+        columns: ['id', 'content', 'file', 'speaker', 'reference'],
+        where: 'speaker = 1',
+      );
+      print('result3: $result');
+
       await db.close();
     });
   }
