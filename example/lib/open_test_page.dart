@@ -71,14 +71,14 @@ class OpenCallbacks {
 
   Future<Database> open(String path, {int version}) async {
     reset();
-    return await databaseFactory.openDatabase(new OpenDatabaseOptions(
-        path: path,
-        version: version,
-        onCreate: onCreate,
-        onConfigure: onConfigure,
-        onDowngrade: onDowngrade,
-        onUpgrade: onUpgrade,
-        onOpen: onOpen));
+    return await databaseFactory.openDatabase(path,
+        options: new OpenDatabaseOptions(
+            version: version,
+            onCreate: onCreate,
+            onConfigure: onConfigure,
+            onDowngrade: onDowngrade,
+            onUpgrade: onUpgrade,
+            onOpen: onOpen));
   }
 }
 
@@ -492,6 +492,22 @@ class OpenTestPage extends TestPage {
       }
       var db = await helper.getDb();
       await db.close();
+    });
+
+    test('single instance', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("instances_test.db");
+      var db1 = await databaseFactory.openDatabase(path,
+          options: new OpenDatabaseOptions(singleInstance: false));
+      var db2 = await databaseFactory.openDatabase(path,
+          options: new OpenDatabaseOptions(singleInstance: true));
+      var db3 = await databaseFactory.openDatabase(path,
+          options: new OpenDatabaseOptions(singleInstance: true));
+      verify(db1 != db2);
+      verify(db3 == db3);
+      await db1.close();
+      await db2.close();
+      await db3.close(); // safe to close the same instance
     });
 
     test('In memory database', () async {

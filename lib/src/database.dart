@@ -148,9 +148,10 @@ class SqfliteDatabaseOpenHelper {
   final SqfliteDatabaseFactory factory;
   final OpenDatabaseOptions options;
   final lock = new Lock();
+  final String path;
   SqfliteDatabase sqfliteDatabase;
 
-  SqfliteDatabaseOpenHelper(this.factory, this.options);
+  SqfliteDatabaseOpenHelper(this.factory, this.path, this.options);
 
   bool get isOpened => sqfliteDatabase != null;
 
@@ -161,7 +162,7 @@ class SqfliteDatabaseOpenHelper {
     if (!isOpened) {
       return await lock.synchronized(() async {
         if (!isOpened) {
-          SqfliteDatabase database = newDatabase(options.path);
+          SqfliteDatabase database = newDatabase(path);
           await database.doOpen(options);
           this.sqfliteDatabase = database;
         }

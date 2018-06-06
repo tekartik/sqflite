@@ -13,17 +13,16 @@ SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
     _databaseFactory ??= new SqfliteDatabaseFactory();
 
 Future<Database> openReadOnlyDatabase(String path) async {
-  var options = new SqfliteOpenDatabaseOptions(path: path)..readOnly = true;
-  return sqlfliteDatabaseFactory.openDatabase(options);
+  var options = new SqfliteOpenDatabaseOptions(readOnly: true);
+  return sqlfliteDatabaseFactory.openDatabase(path, options: options);
 }
 
 abstract class DatabaseFactory {
-  Future<Database> openDatabase(OpenDatabaseOptions options);
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions options});
 }
 
 class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
   SqfliteOpenDatabaseOptions({
-    this.path,
     this.version,
     this.onConfigure,
     this.onCreate,
@@ -33,8 +32,6 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     this.readOnly,
     this.singleInstance,
   });
-  @override
-  String path;
   @override
   int version;
   @override
@@ -77,7 +74,8 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
   }
 
   @override
-  Future<Database> openDatabase(OpenDatabaseOptions options) async {
+  Future<Database> openDatabase(String path,
+      {OpenDatabaseOptions options}) async {
     options ??= new SqfliteOpenDatabaseOptions();
 
     if (options?.singleInstance == true) {
@@ -90,7 +88,6 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
       }
 
       setDatabaseOpenHelper(SqfliteDatabaseOpenHelper helper) {
-        var path = helper.options.path;
         if (path == null) {
           nullDatabaseOpenHelper = helper;
         } else {
@@ -102,17 +99,18 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
         }
       }
 
-      if (options.path != null) {
-        options.path = absolute(normalize(options.path));
+      if (path != null) {
+        path = absolute(normalize(path));
       }
-      var databaseOpenHelper = getExistingDatabaseOpenHelper(options.path);
+      var databaseOpenHelper = getExistingDatabaseOpenHelper(path);
       if (databaseOpenHelper == null) {
-        databaseOpenHelper = new SqfliteDatabaseOpenHelper(this, options);
+        databaseOpenHelper = new SqfliteDatabaseOpenHelper(this, path, options);
         setDatabaseOpenHelper(databaseOpenHelper);
       }
       return await databaseOpenHelper.openDatabase();
     } else {
-      var databaseOpenHelper = new SqfliteDatabaseOpenHelper(this, options);
+      var databaseOpenHelper =
+          new SqfliteDatabaseOpenHelper(this, path, options);
       return await databaseOpenHelper.openDatabase();
     }
   }

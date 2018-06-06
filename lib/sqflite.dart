@@ -266,8 +266,7 @@ final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
 /// [singleInstance] means the same instance is returned for a given path
 abstract class OpenDatabaseOptions {
   factory OpenDatabaseOptions(
-      {String path,
-      int version,
+      {int version,
       OnDatabaseConfigureFn onConfigure,
       OnDatabaseCreateFn onCreate,
       OnDatabaseVersionChangeFn onUpgrade,
@@ -277,7 +276,6 @@ abstract class OpenDatabaseOptions {
       bool singleInstance,
       OpenDatabaseOptions options}) {
     options ??= new impl.SqfliteOpenDatabaseOptions();
-    options.path = path;
     options.version ??= version;
     options.onConfigure ??= onConfigure;
     options.onCreate ??= onCreate;
@@ -289,7 +287,6 @@ abstract class OpenDatabaseOptions {
     return options;
   }
 
-  String path;
   int version;
   OnDatabaseConfigureFn onConfigure;
   OnDatabaseCreateFn onCreate;
@@ -319,15 +316,14 @@ Future<Database> openDatabase(String path,
     OnDatabaseVersionChangeFn onDowngrade,
     OnDatabaseOpenFn onOpen}) {
   var options = new impl.SqfliteOpenDatabaseOptions(
-      path: path, version: version, onConfigure: onConfigure);
-  options.path ??= path;
+      version: version, onConfigure: onConfigure);
   options.version ??= version;
   options.onConfigure ??= onConfigure;
   options.onCreate ??= onCreate;
   options.onUpgrade ??= onUpgrade;
   options.onDowngrade ??= onDowngrade;
   options.onOpen ??= onOpen;
-  return impl.databaseFactory.openDatabase(options);
+  return impl.databaseFactory.openDatabase(path, options: options);
 }
 
 ///
