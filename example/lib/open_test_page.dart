@@ -513,9 +513,31 @@ class OpenTestPage extends TestPage {
       db = await openDatabase(path);
       try {
         await db.query("Test");
+        fail("fail");
       } on DatabaseException catch (e) {
         print(e);
       }
+      await db.close();
+    });
+
+    test('Not in memory database', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("not_in_memory.db");
+
+      var db = await openDatabase(path);
+      await db
+          .execute("CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)");
+      await db.insert("Test", {"id": 1});
+      expect(await db.query("Test"), [
+        {"id": 1}
+      ]);
+      await db.close();
+
+      // reopen, content should be done
+      db = await openDatabase(path);
+      expect(await db.query("Test"), [
+        {"id": 1}
+      ]);
       await db.close();
     });
   }
