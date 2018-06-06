@@ -651,6 +651,10 @@ public class SqflitePlugin implements MethodCallHandler {
 
     }
 
+    static boolean isInMemoryPath(String path) {
+        return (path == null || path.equals(":memory:"));
+    }
+
     //
     // Sqflite.open
     //
@@ -658,13 +662,15 @@ public class SqflitePlugin implements MethodCallHandler {
         String path = call.argument(PARAM_PATH);
         Boolean readOnly = call.argument(PARAM_READ_ONLY);
         //int version = call.argument(PARAM_VERSION);
-        File file = new File(path);
-        File directory = new File(file.getParent());
-        if (!directory.exists()) {
-            if (!directory.mkdirs()) {
-                if (!directory.exists()) {
-                    result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
-                    return;
+        if (!isInMemoryPath(path)) {
+            File file = new File(path);
+            File directory = new File(file.getParent());
+            if (!directory.exists()) {
+                if (!directory.mkdirs()) {
+                    if (!directory.exists()) {
+                        result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
+                        return;
+                    }
                 }
             }
         }

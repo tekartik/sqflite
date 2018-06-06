@@ -35,3 +35,5 @@ const String paramSqlArguments = "arguments";
 
 // Error
 const String sqliteErrorCode = "sqlite_error";
+
+const String inMemoryDatabasePath = ":memory:";

@@ -34,7 +34,9 @@ class OpenCallbacks {
     onConfigure = (Database db) {
       //print("onConfigure");
       //verify(!onConfigureCalled, "onConfigure must be called once");
-      expect(onConfigureCalled, false, reason: "onConfigure already called"); // onConfigure must be called once
+      expect(onConfigureCalled, false,
+          reason:
+              "onConfigure already called"); // onConfigure must be called once
       onConfigureCalled = true;
     };
 
@@ -69,9 +71,14 @@ class OpenCallbacks {
 
   Future<Database> open(String path, {int version}) async {
     reset();
-    return await databaseFactory
-        .openDatabase(new OpenDatabaseOptions(path: path, version: version, onCreate: onCreate, onConfigure: onConfigure, onDowngrade: onDowngrade,
-    onUpgrade: onUpgrade, onOpen: onOpen));
+    return await databaseFactory.openDatabase(new OpenDatabaseOptions(
+        path: path,
+        version: version,
+        onCreate: onCreate,
+        onConfigure: onConfigure,
+        onDowngrade: onDowngrade,
+        onUpgrade: onUpgrade,
+        onOpen: onOpen));
   }
 }
 
@@ -312,7 +319,7 @@ class OpenTestPage extends TestPage {
 
       ++step;
       db = await openCallbacks.open(path, version: 3);
-      verify(openCallbacks.onConfigureCalled,"onConfiguredCalled $step");
+      verify(openCallbacks.onConfigureCalled, "onConfiguredCalled $step");
       verify(!openCallbacks.onCreateCalled, "onCreateCalled $step");
       verify(openCallbacks.onOpenCalled, "onOpenCalled $step");
       verify(openCallbacks.onUpgradeCalled, "onUpdateCalled $step");
@@ -322,12 +329,11 @@ class OpenTestPage extends TestPage {
       ++step;
       db = await openCallbacks.open(path, version: 2);
       verify(openCallbacks.onConfigureCalled, "onConfiguredCalled $step");
-      verify(!openCallbacks.onCreateCalled,"onCreateCalled $step");
+      verify(!openCallbacks.onCreateCalled, "onCreateCalled $step");
       verify(openCallbacks.onOpenCalled, "onOpenCalled $step");
       verify(!openCallbacks.onUpgradeCalled, "onUpdateCalled $step");
       verify(openCallbacks.onDowngradeCalled, "onDowngradCalled $step");
       await db.close();
-
 
       openCallbacks.onDowngrade = onDatabaseDowngradeDelete;
       int configureCount = 0;
@@ -352,7 +358,6 @@ class OpenTestPage extends TestPage {
       verify(!openCallbacks.onDowngradeCalled, "onDowngradCalled $step");
       */
       await db.close();
-
     });
 
     test("Open batch", () async {
@@ -486,6 +491,31 @@ class OpenTestPage extends TestPage {
         helper.getDb();
       }
       var db = await helper.getDb();
+      await db.close();
+    });
+
+    test('In memory database', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String inMemoryPath =
+          inMemoryDatabasePath; // tried null without success, as it crashes on Android
+      String path = inMemoryPath;
+
+      var db = await openDatabase(path);
+      await db
+          .execute("CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)");
+      await db.insert("Test", {"id": 1});
+      expect(await db.query("Test"), [
+        {"id": 1}
+      ]);
+      await db.close();
+
+      // reopen, content should be done
+      db = await openDatabase(path);
+      try {
+        await db.query("Test");
+      } on DatabaseException catch (e) {
+        print(e);
+      }
       await db.close();
     });
   }

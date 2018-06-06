@@ -12,6 +12,7 @@ import 'src/utils.dart';
 export 'sql.dart' show ConflictAlgorithm;
 export 'src/exception.dart' show DatabaseException;
 export 'src/database_factory.dart' show DatabaseFactory, databaseFactory;
+export 'src/constant.dart' show inMemoryDatabasePath;
 
 ///
 /// internal options
