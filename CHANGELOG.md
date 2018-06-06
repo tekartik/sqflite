@@ -1,3 +1,9 @@
+## 0.9.0
+
+* Support for in-memory database (`:memory:` path)
+* Support for single instance
+* new database factory for handling the new options
+
 ## 0.8.9
 
 * Upgrade to sdk 27
