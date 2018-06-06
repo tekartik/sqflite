@@ -326,29 +326,29 @@ class ExpTestPage extends TestPage {
       await new File(path).writeAsBytes(bytes);
 
       // open the database
-      Database db =
-          await openDatabase(path, version: 1, onConfigure: (db) async {
-        await db.execute("PRAGMA foreign_keys = ON");
-      }, onOpen: (db) async {
-        await db.execute("PRAGMA foreign_keys = ON");
-      });
+      Database db = await openDatabase(path);
 
-      // This one does not work
       var result = await db.query('recordings',
           columns: ['id', 'content', 'file', 'speaker', 'reference']);
       print('result1: $result');
+      expect(result.length, 2);
+
+      // This one does not work
+      // to investigate
       result = await db.query('recordings',
           columns: ['id', 'content', 'file', 'speaker', 'reference'],
           where: 'speaker = ?',
           whereArgs: [1]);
 
       print('result2: $result');
+      // expect(result.length, 2);
 
       result = await db.query(
         'recordings',
         columns: ['id', 'content', 'file', 'speaker', 'reference'],
         where: 'speaker = 1',
       );
+      expect(result.length, 2);
       print('result3: $result');
 
       await db.close();
