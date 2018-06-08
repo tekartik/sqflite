@@ -69,5 +69,10 @@ main() {
 
       expect(queryResultToList({}), []);
     });
+
+    test('lockWarning', () {
+
+
+    });
   });
 }

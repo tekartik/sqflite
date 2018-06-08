@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/batch.dart';
-import 'package:sqflite/src/constant.dart';
+import 'package:sqflite/src/constant.dart' hide lockWarningDuration;
 import 'package:sqflite/src/database_factory.dart';
 import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
@@ -195,16 +195,6 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
 
   SqfliteDatabase(this.openHelper, this._path, {this.options});
 
-  Lock get synchronizedLock =>
-      rawSynchronizedlock ??= new Lock(reentrant: true);
-
-  Lock get writeSynchronizedLock => rawWriteSynchronizedLock ??=
-      (supportsConcurrency ? new Lock(reentrant: true) : synchronizedLock);
-  Lock rawSynchronizedlock;
-  Lock rawWriteSynchronizedLock;
-
-  Lock get transactionLock => rawSynchronizedlock;
-
   @override
   SqfliteDatabase get db => this;
 
@@ -214,7 +204,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   String get path => _path;
   String _path;
 
-  // only set during inTransaction to allow recursivity in transactions
+  // only set during inTransaction to allow transaction during open
   int transactionRefCount = 0;
 
   // Not null during opening
@@ -268,26 +258,28 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
     if (txn != null) {
       return await action(txn);
     } else {
-      T result;
-      bool useOldSynchronized = false;
-      // We use the old synchronized lock as soon as it is used
-      // We might have pending queries that would return
-      if (rawSynchronizedlock == null) {
-        result = await rawLock.synchronized(() {
-          if (rawSynchronizedlock != null) {
-            useOldSynchronized = true;
-          } else {
-            return action(txn);
-          }
-        });
-      } else {
-        useOldSynchronized = true;
+      // Simple timeout warning if we cannot get the lock after XX seconds
+      bool handleTimeoutWarning = (lockWarningDuration != null && lockWarningCallback != null);
+      Completer timeoutCompleter;
+      if (handleTimeoutWarning) {
+        timeoutCompleter = new Completer();
       }
 
-      if (useOldSynchronized) {
-        result = await rawSynchronizedlock.synchronized(() => action(txn));
+      // Grab the lock
+      Future<T> operation = rawLock.synchronized(() {
+        if (handleTimeoutWarning) {
+          timeoutCompleter.complete();
+        }
+        return action(txn);
+      });
+      // Simply warn the developer as this could likely be a deadlock
+      if (handleTimeoutWarning) {
+        timeoutCompleter.future.timeout(lockWarningDuration, onTimeout: () {
+          lockWarningCallback();
+        });
       }
-      return result;
+      return await operation;
+
     }
   }
 
@@ -435,46 +427,6 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
     });
   }
 
-  ///
-  /// synchronized all write calls to the database
-  /// ensure that no other calls outside the inner action will
-  /// write the database
-  /// This should be removed once synchronized is removed
-  ///
-  Future<T> writeSynchronized<T>(Future<T> action()) {
-    // this is true once synchronized or inTransaction has been used once
-    // All remaining calls will be done in a zone
-    //return writeSynchronizedLock.synchronized(action);
-
-    // that should be the necessary step, to check if issue arises
-    // especially on first call
-    // but anyway this code will disappear
-    return writeSynchronizedLock.synchronized(action);
-  }
-
-  ///
-  /// Simple soon to be deprecated (used Zone) transaction mechanism
-  ///
-  Future<T> inTransaction<T>(Future<T> action(), {bool exclusive}) {
-    return writeSynchronized<T>(() async {
-      return _runTransaction(null, (_) => action(), exclusive: exclusive);
-    });
-  }
-
-  ///
-  /// synchronized call to the database
-  /// ensure that no other calls outside the inner action will
-  /// access the database
-  /// Use [Zone] so should be deprecated soon
-  ///
-  Future<T> synchronized<T>(Future<T> action()) async {
-    if (supportsConcurrency) {
-      return await action();
-    } else {
-      T result = await synchronizedLock.synchronized(action);
-      return result;
-    }
-  }
 
   ///
   /// Get the database inner version
@@ -522,17 +474,6 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
           methodCloseDatabase, <String, dynamic>{paramId: databaseId});
     });
   }
-
-  /*
-  Future<SqfliteDatabase> openReadOnlyDatabase() async {
-    id = await wrapDatabaseException<int>(() {
-      return invokeMethod<int>(methodOpenDatabase,
-          <String, dynamic>{paramPath: path, paramReadOnly: true});
-    });
-    readOnly = true;
-    return this;
-  }
-  */
 
   // To call during open
   // not exported

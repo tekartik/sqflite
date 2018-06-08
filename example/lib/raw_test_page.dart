@@ -22,7 +22,7 @@ class SimpleTestPage extends TestPage {
       batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 2"]);
-      await batch.apply();
+      await batch.commit();
 
       var sqfliteOptions = new SqfliteOptions()..queryAsMapList = true;
       // ignore: deprecated_member_use
@@ -408,7 +408,7 @@ class SimpleTestPage extends TestPage {
       Batch batch = db.batch();
       batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
-      var results = await batch.apply();
+      var results = await batch.commit();
       expect(results, [null, 1]);
 
       var dbResult = await db.rawQuery("SELECT id, name FROM Test");
@@ -421,7 +421,7 @@ class SimpleTestPage extends TestPage {
       batch = db.batch();
       batch.rawQuery("SELECT id, name FROM Test");
       batch.query("Test", columns: ["id", "name"]);
-      results = await batch.apply();
+      results = await batch.commit();
       // devPrint("select $results ${results?.first}");
       expect(results, [
         [
@@ -440,14 +440,14 @@ class SimpleTestPage extends TestPage {
 
       // empty batch
       Batch batch = db.batch();
-      var results = await batch.apply();
+      var results = await batch.commit();
       expect(results.length, 0);
       expect(results, []);
 
       // one create table
       batch = db.batch();
       batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-      results = await batch.apply();
+      results = await batch.commit();
       // devPrint("1 $results ${results?.first}");
       expect(results, [null]);
       expect(results[0], null);
@@ -455,14 +455,14 @@ class SimpleTestPage extends TestPage {
       // one insert
       batch = db.batch();
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
-      results = await batch.apply();
+      results = await batch.commit();
       expect(results, [1]);
 
       // one query
       batch = db.batch();
       batch.rawQuery("SELECT id, name FROM Test");
       batch.query("Test", columns: ["id", "name"]);
-      results = await batch.apply();
+      results = await batch.commit();
       // devPrint("select $results ${results?.first}");
       expect(results, [
         [
@@ -477,7 +477,7 @@ class SimpleTestPage extends TestPage {
       batch = db.batch();
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item2"]);
       batch.insert("Test", {"name": "item3"});
-      results = await batch.apply();
+      results = await batch.commit();
       expect(results, [2, 3]);
 
       // update
@@ -486,7 +486,7 @@ class SimpleTestPage extends TestPage {
           "UPDATE Test SET name = ? WHERE name = ?", ["new_item", "item1"]);
       batch.update("Test", {"name": "new_other_item"},
           where: "name != ?", whereArgs: <String>["new_item"]);
-      results = await batch.apply();
+      results = await batch.commit();
       expect(results, [1, 2]);
 
       // delete
@@ -494,7 +494,7 @@ class SimpleTestPage extends TestPage {
       batch.rawDelete("DELETE FROM Test WHERE name = ?", ["new_item"]);
       batch.delete("Test",
           where: "name = ?", whereArgs: <String>["new_other_item"]);
-      results = await batch.apply();
+      results = await batch.commit();
       expect(results, [1, 2]);
 
       // No result
@@ -503,7 +503,7 @@ class SimpleTestPage extends TestPage {
       batch.update("Test", {"name": "new_item"},
           where: "name = ?", whereArgs: <String>["item"]);
       batch.delete("Test", where: "name = ?", whereArgs: ["item"]);
-      results = await batch.apply(noResult: true);
+      results = await batch.commit(noResult: true);
       expect(results, null);
 
       await db.close();
@@ -516,15 +516,16 @@ class SimpleTestPage extends TestPage {
 
       var results;
 
-      var batch1 = db.batch();
-      batch1.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-      var batch2 = db.batch();
-      batch2.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
+
       await db.transaction((txn) async {
-        results = await txn.applyBatch(batch1);
+        var batch1 = txn.batch();
+        batch1.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+        var batch2 = txn.batch();
+        batch2.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item1"]);
+        results = await batch1.commit();
         expect(results, [null]);
 
-        results = await txn.applyBatch(batch2);
+        results = await batch2.commit();
         expect(results, [1]);
       });
 

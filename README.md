@@ -202,15 +202,19 @@ If you don't care about the result and worry about performance in big batches, y
 await batch.commit(noResult: true);
 ```
 
-Warning, during a transaction you should use `Transaction.applyBatch` instead
+Warning, during a transaction, the batch won't be commited until the transaction is commited
 
 ```dart
 await database.transaction((txn) async {
-  // Ok
-  await txn.applyBatch(batch);
+  var batch = txn.batch();
   
-  // DON'T this will deadlock!
+  // ...
+  
+  // commit but the actual commit will happen when the transaction is commited
+  // however the data is available in this transaction
   await batch.commit();
+  
+  //  ...
 });
 ```
 

@@ -5,7 +5,15 @@ import 'dart:core';
 import 'package:flutter/src/services/platform_channel.dart';
 import 'package:sqflite/src/utils.dart';
 
+import 'constant.dart' as constant;
+
 const String channelName = 'com.tekartik.sqflite';
+
+Duration lockWarningDuration = constant.lockWarningDuration;
+void Function() lockWarningCallback = () {
+  print('Warning database has been locked for ${lockWarningDuration}. '
+      'Make sure you always use the transaction object for database operations during a transaction');
+};
 
 const MethodChannel channel = const MethodChannel(channelName);
 
@@ -180,4 +188,9 @@ abstract class PluginList<T> extends ListBase<T> {
   void operator []=(int index, T value) {
     throw new UnsupportedError("read-only");
   }
+}
+
+void setLockWarningInfo({Duration duration, void callback()}) {
+  lockWarningDuration = duration ?? lockWarningDuration;
+  lockWarningCallback = callback ?? lockWarningCallback;
 }

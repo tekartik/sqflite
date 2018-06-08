@@ -37,3 +37,7 @@ const String paramSqlArguments = "arguments";
 const String sqliteErrorCode = "sqlite_error";
 
 const String inMemoryDatabasePath = ":memory:";
+
+// Non final for changing it during testing
+// If a database called is delayed by this duration, a print will happen
+const Duration lockWarningDuration = const Duration(seconds: 10);

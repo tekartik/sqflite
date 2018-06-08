@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/src/constant.dart';
+import 'package:sqflite/src/constant.dart' hide lockWarningDuration;
 import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/database_factory.dart';
+import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/utils.dart';
 
 class MockDatabase extends SqfliteDatabase {
@@ -55,27 +56,9 @@ final MockDatabaseFactory mockDatabaseFactory = new MockDatabaseFactory();
 
 main() {
   group("database", () {
-    test("synchronized", () async {
+    test("transaction", () async {
       var db = mockDatabaseFactory.newEmptyDatabase();
-      expect(db.rawSynchronizedlock, isNull);
-      expect(db.rawWriteSynchronizedLock, isNull);
-      await db.synchronized(() {});
-      expect(db.rawSynchronizedlock, isNotNull);
-      expect(db.rawWriteSynchronizedLock, isNull);
-
-      db.rawSynchronizedlock = null;
-      db.rawWriteSynchronizedLock = null;
-
-      await db.inTransaction(() {
-        expect(db.rawLock.locked, isFalse);
-      });
-      expect(db.rawSynchronizedlock, isNotNull);
-      expect(db.rawWriteSynchronizedLock, db.rawSynchronizedlock);
-
-      db.rawSynchronizedlock = null;
-      db.rawWriteSynchronizedLock = null;
-
-      await db.execute("test");
+          await db.execute("test");
       await db.insert("test", {'test': 1});
       await db.update("test", {'test': 1});
       await db.delete("test");
@@ -95,9 +78,7 @@ main() {
       batch.update("test", {'test': 1});
       batch.delete("test");
       batch.query("test");
-      await batch.apply();
-
-      expect(db.rawSynchronizedlock, isNull);
+      await batch.commit();
     });
 
     group('open', () {
@@ -123,7 +104,6 @@ main() {
                   });
                 })) as MockDatabase;
 
-        expect(db.rawSynchronizedlock, isNull);
         await db.close();
         expect(db.methods, [
           'openDatabase',
@@ -158,7 +138,6 @@ main() {
                   });
                 })) as MockDatabase;
 
-        expect(db.rawSynchronizedlock, isNull);
         await db.close();
         expect(db.sqls, [
           null,
@@ -185,7 +164,6 @@ main() {
                   });
                 })) as MockDatabase;
 
-        expect(db.rawSynchronizedlock, isNull);
         await db.close();
         expect(db.sqls, [
           null,
@@ -221,7 +199,6 @@ main() {
                   await batch.commit();
                 })) as MockDatabase;
 
-        expect(db.rawSynchronizedlock, isNull);
         await db.close();
         expect(db.sqls, [
           null,
@@ -284,7 +261,7 @@ main() {
 
         await Future.wait([future1, future2]);
         // check ready
-        await db.synchronized(() => null);
+        await db.transaction((_) => null);
       });
 
       test('concurrent 2', () async {
@@ -327,8 +304,6 @@ main() {
         var future2 = action2();
 
         await Future.wait([future1, future2]);
-        // check ready
-        await db.synchronized(() => null);
       });
     });
 
@@ -359,14 +334,14 @@ main() {
         Future action2() async {
           // This is the change with concurrency 2
           await step1.future;
-          await db.inTransaction(() async {
+          await db.transaction((txn) async {
             // Wait for table being created;
-            await db.execute("test");
+            await txn.execute("test");
             step2.complete();
 
             await step3.future;
 
-            await db.execute("test");
+            await txn.execute("test");
           });
         }
 
@@ -375,7 +350,7 @@ main() {
 
         await Future.wait([future1, future2]);
         // check ready
-        await db.synchronized(() => null);
+        await db.transaction((_) => null);
       });
 
       test('concurrent 2', () async {
@@ -409,16 +384,16 @@ main() {
         }
 
         Future action2() async {
-          await db.inTransaction(() async {
+          await db.transaction((txn) async {
             step1.complete();
 
             // Wait for table being created;
-            await db.execute("test");
+            await txn.execute("test");
             step2.complete();
 
             await step3.future;
 
-            await db.execute("test");
+            await txn.execute("test");
           });
         }
 
@@ -427,7 +402,7 @@ main() {
 
         await Future.wait([future1, future2]);
         // check ready
-        await db.synchronized(() => null);
+        await db.transaction((_) => null);
       });
     });
 
@@ -437,8 +412,8 @@ main() {
 
         var batch = db.batch();
         batch.execute("test");
-        await batch.apply();
-        await batch.apply();
+        await batch.commit();
+        await batch.commit();
         await db.close();
         expect(db.methods, [
           'openDatabase',
@@ -465,13 +440,13 @@ main() {
       test('in_transaction', () async {
         var db = await mockDatabaseFactory.openDatabase(null) as MockDatabase;
 
-        var batch = db.batch();
 
         await db.transaction((txn) async {
+          var batch = txn.batch();
           batch.execute("test");
 
-          await txn.applyBatch(batch);
-          await txn.applyBatch(batch);
+          await batch.commit();
+          await batch.commit();
         });
         await db.close();
         expect(db.methods, [
@@ -495,6 +470,7 @@ main() {
 
         await db.transaction((txn) async {
           try {
+            // ignore: deprecated_member_use
             await txn.applyBatch(batch);
             fail("should fail");
           } on ArgumentError catch (_) {}
@@ -541,6 +517,26 @@ main() {
         await db1.close();
         await db2.close();
       });
+    });
+
+    test('dead lock', () async {
+      var db = mockDatabaseFactory.newEmptyDatabase();
+      bool hasTimedOut = false;
+      int callbackCount = 0;
+      setLockWarningInfo(duration: new Duration(milliseconds: 200), callback: () {
+        callbackCount++;
+      });
+      try {
+        await db.transaction((txn) async {
+          await db.execute('test');
+          fail("should fail");
+        }).timeout(new Duration(milliseconds: 500));
+      } on TimeoutException catch (_) {
+        hasTimedOut = true;
+      }
+      expect(hasTimedOut, isTrue);
+      expect(callbackCount, 1);
+      await db.close();
     });
   });
 }

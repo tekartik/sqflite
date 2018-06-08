@@ -91,9 +91,8 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  Future<List> apply({bool exclusive, bool noResult}) {
-    throw new UnsupportedError("use applyBatch instead");
-  }
+  Future<List> apply({bool exclusive, bool noResult}) =>
+      commit(exclusive: exclusive, noResult: noResult);
 }
 
 class SqfliteDatabaseBatch extends SqfliteBatch {
@@ -102,10 +101,26 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   final SqfliteDatabase database;
 
   @override
-  Future<List> apply({bool exclusive, bool noResult}) {
+  Future<List> commit({bool exclusive, bool noResult}) {
     return database.transaction<List>((txn) {
       return database.txnApplyBatch(txn as SqfliteTransaction, this,
           noResult: noResult);
     }, exclusive: exclusive);
+  }
+}
+
+class SqfliteTransactionBatch extends SqfliteBatch {
+  final SqfliteTransaction transaction;
+
+  SqfliteTransactionBatch(this.transaction);
+
+  @override
+  Future<List> commit({bool exclusive, bool noResult}) {
+    if (exclusive != null) {
+      throw new ArgumentError.value(exclusive, "exclusive",
+          "must not be set when commiting a batch in a transaction");
+    }
+    return transaction.database
+        .txnApplyBatch(transaction, this, noResult: noResult);
   }
 }

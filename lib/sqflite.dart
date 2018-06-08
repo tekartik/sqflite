@@ -5,6 +5,7 @@ import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart' as impl;
 import 'package:sqflite/src/database_factory.dart' as impl;
 import 'package:sqflite/src/sqflite_impl.dart';
+import 'package:sqflite/src/sqflite_impl.dart' as impl;
 import 'package:sqflite/src/sql_builder.dart';
 
 import 'src/utils.dart';
@@ -76,6 +77,12 @@ class Sqflite {
       return parseInt(list.first?.values?.first);
     }
     return null;
+  }
+
+  /// Sqlite has a dead lock warning feature that will print some text
+  /// after 10s, you can override the default behavior
+  static void setLockWarningInfo({Duration duration, void callback()}) {
+    impl.setLockWarningInfo(duration: duration,callback: callback);
   }
 }
 
@@ -173,7 +180,17 @@ abstract class DatabaseExecutor {
   /// the count of item changed is not returned
   ///
   /// If called on a database a transaction is created
+  @Deprecated("User batch.commit() instead")
   Future<List<dynamic>> applyBatch(Batch batch, {bool noResult});
+
+  /// Creates a batch, used for performing multiple operation
+  /// in a single atomic operation.
+  ///
+  /// a batch can be commited using [Batch.commit]
+  ///
+  /// If the batch was created in a transaction, it will be commited
+  /// when the transaction is done
+  Batch batch();
 }
 
 /// Database transaction
@@ -190,27 +207,9 @@ abstract class Database implements DatabaseExecutor {
   /// Close the database. Cannot be access anymore
   Future close();
 
-  ///
-  /// synchronized call to the database
-  /// ensure that no other calls outside the inner action will
-  /// access the database
-  /// Use [Zone] so should be deprecated soon starting 0.8.1
-  // Deprecated since 2018-03-01 - 0.8.1
-  @deprecated
-  Future<T> synchronized<T>(Future<T> action());
-
   /// Calls in action must only be done using the transaction object
   /// using the database will trigger a dead-lock
   Future<T> transaction<T>(Future<T> action(Transaction txn), {bool exclusive});
-
-  ///
-  /// Simple soon to be deprecated soon starting 0.8.1
-  /// (it uses Zone in order to be re-entrant) transaction mechanism
-  ///
-  // User [transaction] instead
-  // Deprecated since 2018-03-01 - 0.8.1
-  @deprecated
-  Future<T> inTransaction<T>(Future<T> action(), {bool exclusive});
 
   ///
   /// Get the database inner version
@@ -230,14 +229,6 @@ abstract class Database implements DatabaseExecutor {
   /// testing only
   @deprecated
   Future devInvokeSqlMethod(String method, String sql, [List arguments]);
-
-  /// Creates a batch, used for performing multiple operation
-  /// in a single atomic operation.
-  ///
-  /// a batch can be commited using [Batch.commit] if you are not in
-  /// a transaction. You can create within a transaction
-  /// however call [Transaction.applyBatch] to run the batch
-  Batch batch();
 }
 
 typedef FutureOr OnDatabaseVersionChangeFn(
@@ -356,15 +347,14 @@ abstract class Batch {
   /// if [noResult] is true, the result list is empty (i.e. the id inserted
   /// the count of item changed is not returned
   ///
-  /// Don't use this if you are in a transaction but use
-  /// [Transaction.applyBatch] instead
-  ///
   /// During [Database.onCreate], [Database.onUpgrade], [Database.onDowngrade]
-  /// we are already in a transaction so it will only be commited when
-  /// the transaction is commited (during open)
+  /// (we are already in a transaction) or if the batch was created in a
+  /// transaction it will only be commited when
+  /// the transaction is commited ([exclusive] is not used then)
   Future<List<dynamic>> commit({bool exclusive, bool noResult});
 
   /// See [Batch.commit], kept for compatibility...
+  @Deprecated("Use Batch.commit instead")
   Future<List<dynamic>> apply({bool exclusive, bool noResult});
 
   /// See [Database.rawInsert]

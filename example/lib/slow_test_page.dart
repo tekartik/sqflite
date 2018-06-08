@@ -54,7 +54,7 @@ class SlowTestPage extends TestPage {
         await batch
             .rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
       }
-      await batch.apply();
+      await batch.commit();
       print("1000 insert batch ${sw.elapsed}");
       await db.close();
     });
@@ -72,7 +72,7 @@ class SlowTestPage extends TestPage {
         await batch
             .rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
       }
-      await batch.apply(noResult: true);
+      await batch.commit(noResult: true);
 
       print("1000 insert batch no result ${sw.elapsed}");
       await db.close();

@@ -30,4 +30,7 @@ class SqfliteTransaction extends SqfliteDatabaseExecutor
     return database.txnApplyBatch(txn, batch as SqfliteBatch,
         noResult: noResult);
   }
+
+  @override
+  Batch batch() => new SqfliteTransactionBatch(this);
 }
