@@ -72,7 +72,7 @@ class ExceptionTestPage extends TestPage {
     });
 
     test("Sqlite Exception", () async {
-      await Sqflite.devSetDebugModeOn(true);
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("exception.db");
       Database db = await openDatabase(path);
 
