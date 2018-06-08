@@ -6,5 +6,6 @@ package com.tekartik.sqflite.operation;
 
 public interface OperationResult {
     void error(final String errorCode, final String errorMessage, final Object data);
+
     void success(final Object results);
 }

@@ -1,5 +1,7 @@
 package com.tekartik.sqflite.operation;
 
+import com.tekartik.sqflite.SqlCommand;
+
 import java.util.List;
 
 import static com.tekartik.sqflite.Constant.PARAM_NO_RESULT;
@@ -11,12 +13,16 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
  */
 
 public abstract class BaseReadOperation implements Operation {
-    public String getSql() {
+    private String getSql() {
         return getArgument(PARAM_SQL);
     }
 
-    public List<Object> getSqlArguments() {
+    private List<Object> getSqlArguments() {
         return getArgument(PARAM_SQL_ARGUMENTS);
+    }
+
+    public SqlCommand getSqlCommand() {
+        return new SqlCommand(getSql(), getSqlArguments());
     }
 
     @Override

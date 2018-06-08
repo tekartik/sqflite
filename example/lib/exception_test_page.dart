@@ -72,7 +72,7 @@ class ExceptionTestPage extends TestPage {
     });
 
     test("Sqlite Exception", () async {
-      // await Sqflite.devSetDebugModeOn(true);
+      await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("exception.db");
       Database db = await openDatabase(path);
 
@@ -112,7 +112,7 @@ class ExceptionTestPage extends TestPage {
       } on Exception catch (e) {
         //verify(e.isSyntaxError());
         print(e);
-        verify(e.toString().contains("sql 'DUMMY'"));
+        verify(e.toString().contains("DUMMY"));
       }
 
       try {
@@ -120,7 +120,7 @@ class ExceptionTestPage extends TestPage {
         fail(); // should fail before
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
-        verify(e.toString().contains("sql 'DUMMY'"));
+        verify(e.toString().contains("DUMMY"));
       }
 
       try {
@@ -128,7 +128,7 @@ class ExceptionTestPage extends TestPage {
         fail(); // should fail before
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
-        verify(e.toString().contains("sql 'DUMMY'"));
+        verify(e.toString().contains("DUMMY"));
       }
 
       await db.close();

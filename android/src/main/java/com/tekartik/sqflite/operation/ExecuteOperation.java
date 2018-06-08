@@ -1,14 +1,11 @@
 package com.tekartik.sqflite.operation;
 
+import com.tekartik.sqflite.SqlCommand;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import io.flutter.plugin.common.MethodChannel;
-
-import static com.tekartik.sqflite.Constant.PARAM_METHOD;
-import static com.tekartik.sqflite.Constant.PARAM_SQL;
-import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
 
 /**
  * Created by alex on 09/01/18.
@@ -16,12 +13,12 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
 
 public class ExecuteOperation extends BaseReadOperation {
     final Map<String, Object> map = new HashMap<>();
+    final SqlCommand command;
     final MethodChannel.Result result;
 
-    public ExecuteOperation(MethodChannel.Result result, String sql, List<Object> arguments) {
+    public ExecuteOperation(MethodChannel.Result result, SqlCommand command) {
         this.result = result;
-        map.put(PARAM_SQL, sql);
-        map.put(PARAM_SQL_ARGUMENTS, arguments);
+        this.command = command;
     }
 
     @Override

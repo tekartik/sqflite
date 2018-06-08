@@ -516,7 +516,6 @@ class SimpleTestPage extends TestPage {
 
       var results;
 
-
       await db.transaction((txn) async {
         var batch1 = txn.batch();
         batch1.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
@@ -596,6 +595,34 @@ class SimpleTestPage extends TestPage {
       } finally {
         await db?.close();
       }
+    });
+
+    test('Reference query', () async {
+      String path = await initDeleteDb("reference query.db");
+      Database db = await openDatabase(path);
+
+      Batch batch = db.batch();
+
+      batch.execute("CREATE TABLE Other (id INTEGER PRIMARY KEY, name TEXT)");
+      batch.execute(
+          "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, other REFERENCES Other(id))");
+      batch.rawInsert("INSERT INTO Other (name) VALUES (?)", ["other 1"]);
+      batch.rawInsert(
+          "INSERT INTO Test (other, name) VALUES (?, ?)", [1, "item 2"]);
+      await batch.commit();
+
+      var result = await db.query('Test',
+          columns: ['other', 'name'], where: 'other = 1');
+      print(result);
+      expect(result, [
+        {"other": 1, "name": "item 2"}
+      ]);
+      result = await db.query('Test',
+          columns: ['other', 'name'], where: 'other = ?', whereArgs: [1]);
+      print(result);
+      expect(result, [
+        {"other": 1, "name": "item 2"}
+      ]);
     });
   }
 }

@@ -341,15 +341,15 @@ class ExpTestPage extends TestPage {
           whereArgs: [1]);
 
       print('result2: $result');
-      // expect(result.length, 2);
+      expect(result.length, 2);
 
       result = await db.query(
         'recordings',
         columns: ['id', 'content', 'file', 'speaker', 'reference'],
         where: 'speaker = 1',
       );
-      expect(result.length, 2);
       print('result3: $result');
+      expect(result.length, 2);
 
       await db.close();
     });

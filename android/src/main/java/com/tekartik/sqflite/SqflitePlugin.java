@@ -14,7 +14,6 @@ import com.tekartik.sqflite.operation.BatchOperation;
 import com.tekartik.sqflite.operation.ExecuteOperation;
 import com.tekartik.sqflite.operation.MethodCallOperation;
 import com.tekartik.sqflite.operation.Operation;
-import com.tekartik.sqflite.operation.OperationResult;
 import com.tekartik.sqflite.operation.SqlErrorInfo;
 
 import java.io.File;
@@ -55,10 +54,10 @@ public class SqflitePlugin implements MethodCallHandler {
 
     static private boolean LOGV = false;
     static private boolean _EXTRA_LOGV = false; // to set to true for type debugging
-    static private boolean EXTRA_LOGV = false; // to set to true for type debugging
+    static public boolean EXTRA_LOGV = false; // to set to true for type debugging
     static private boolean QUERY_AS_MAP_LIST = false; // set by options
 
-    static private String TAG = "Sqflite";
+    static public String TAG = "Sqflite";
     private final Object databaseMapLocker = new Object();
     private Context context;
     private int databaseOpenCount = 0;
@@ -233,31 +232,6 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    // Handle list of int as byte[]
-    static private Object toValue(Object value) {
-        if (value == null) {
-            return null;
-        } else {
-            if (EXTRA_LOGV) {
-                Log.d(TAG, "arg " + value.getClass().getCanonicalName() + " " + toString(value));
-            }
-            // Assume a list is a blog
-            if (value instanceof List) {
-                @SuppressWarnings("unchecked")
-                List<Integer> list = (List<Integer>) value;
-                byte[] blob = new byte[list.size()];
-                for (int i = 0; i < list.size(); i++) {
-                    blob[i] = (byte) (int) list.get(i);
-                }
-                value = blob;
-
-            }
-            if (EXTRA_LOGV) {
-                Log.d(TAG, "arg " + value.getClass().getCanonicalName() + " " + toString(value));
-            }
-            return value;
-        }
-    }
 
     // Query only accept string arguments
     private List<String> getStringQuerySqlArguments(List<Object> rawArguments) {
@@ -270,46 +244,24 @@ public class SqflitePlugin implements MethodCallHandler {
         return stringArguments;
     }
 
-    // Query only accept string arguments
-    // so should not have byte[]
-    private String[] getQuerySqlArguments(List<Object> rawArguments) {
-        return getStringQuerySqlArguments(rawArguments).toArray(new String[0]);
-    }
-
-    private Object[] getSqlArguments(List<Object> rawArguments) {
-        List<Object> fixedArguments = new ArrayList<>();
-        if (rawArguments != null) {
-            for (Object rawArgument : rawArguments) {
-                fixedArguments.add(toValue(rawArgument));
-            }
-        }
-        return fixedArguments.toArray(new Object[0]);
+    private SqlCommand getSqlCommand(MethodCall call) {
+        String sql = call.argument(PARAM_SQL);
+        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+        return new SqlCommand(sql, arguments);
     }
 
     private Database executeOrError(Database database, MethodCall call, Result result) {
-        String sql = call.argument(PARAM_SQL);
-        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
-        return executeOrError(database, sql, arguments, result);
+        SqlCommand command = getSqlCommand(call);
+        return executeOrError(database, command, result);
     }
-
-    /*
-    private Database executeOrError(Database database, Map<String, Object> operation, Result result) {
-        String sql = (String) operation.get(PARAM_SQL);
-        @SuppressWarnings("unchecked")
-        List<Object> arguments = (List<Object>) operation.get(PARAM_SQL_ARGUMENTS);
-        return executeOrError(database, sql, arguments, result);
-    }
-    */
 
     private boolean executeOrError(Database database, Operation operation) {
-        String sql = operation.getSql();
-        List<Object> arguments = operation.getSqlArguments();
-        Object[] sqlArguments = getSqlArguments(arguments);
+        SqlCommand command = operation.getSqlCommand();
         if (LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + getStringQuerySqlArguments(arguments))));
+            Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
         }
         try {
-            database.getWritableDatabase().execSQL(sql, sqlArguments);
+            database.getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
             return true;
         } catch (Exception exception) {
             handleException(exception, operation, database);
@@ -317,15 +269,14 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    private Database executeOrError(Database database, String sql, List<Object> arguments, Result result) {
-        Object[] sqlArguments = getSqlArguments(arguments);
+    private Database executeOrError(Database database, SqlCommand command, Result result) {
         if (LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + getStringQuerySqlArguments(arguments))));
+            Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
         }
         try {
-            database.getWritableDatabase().execSQL(sql, sqlArguments);
+            database.getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
         } catch (Exception exception) {
-            Operation operation = new ExecuteOperation(result, sql, arguments);
+            Operation operation = new ExecuteOperation(result, command);
             handleException(exception, operation, database);
             return null;
         }
@@ -485,21 +436,23 @@ public class SqflitePlugin implements MethodCallHandler {
 
     // Return true on success
     private boolean query(Database database, final Operation operation) {
-        String sql = operation.getSql();
-        List<Object> arguments = operation.getSqlArguments();
-        //Object[] sqlArguments = getSqlArguments(arguments);
+        SqlCommand command = operation.getSqlCommand();
 
         List<Map<String, Object>> results = new ArrayList<>();
         Map<String, Object> newResults = null;
         List<List<Object>> rows = null;
         int newColumnCount = 0;
         if (LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + sql + ((arguments == null || arguments.isEmpty()) ? "" : (" " + arguments)));
+            Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
         }
         Cursor cursor = null;
         boolean queryAsMapList = QUERY_AS_MAP_LIST;
         try {
-            cursor = database.getReadableDatabase().rawQuery(sql, getQuerySqlArguments(arguments));
+            // For query we sanitize as it only takes String which does not work
+            // for references. Simply embed the int/long into the query itself
+            command = command.sanitizeForQuery();
+
+            cursor = database.getReadableDatabase().rawQuery(command.getSql(), command.getQuerySqlArguments());
             while (cursor.moveToNext()) {
                 if (queryAsMapList) {
                     Map<String, Object> map = cursorRowToMap(cursor);

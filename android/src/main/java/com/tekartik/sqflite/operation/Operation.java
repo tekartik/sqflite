@@ -1,10 +1,6 @@
 package com.tekartik.sqflite.operation;
 
-import java.util.List;
-
-import io.flutter.plugin.common.MethodChannel;
-
-import static com.tekartik.sqflite.Constant.PARAM_SQL;
+import com.tekartik.sqflite.SqlCommand;
 
 /**
  * Created by alex on 09/01/18.
@@ -13,8 +9,10 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL;
 public interface Operation extends OperationResult {
 
     String getMethod();
+
     <T> T getArgument(String key);
-    String getSql();
-    List<Object> getSqlArguments();
+
+    SqlCommand getSqlCommand();
+
     boolean getNoResult();
 }
