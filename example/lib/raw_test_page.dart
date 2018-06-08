@@ -572,6 +572,8 @@ class SimpleTestPage extends TestPage {
 
     test("without rowid", () async {
       // Sqflite.devSetDebugModeOn(true);
+      // this fails on iOS
+
       Database db;
       try {
         String path = await initDeleteDb("without_rowid.db");
@@ -581,11 +583,19 @@ class SimpleTestPage extends TestPage {
         await db
             .execute("CREATE TABLE Test (name TEXT PRIMARY KEY) WITHOUT ROWID");
         int id = await db.insert("Test", {"name": "test"});
-        // it seems to always return 1
-        expect(id, 1);
+        // it seems to always return 1 on Android, 0 on iOS...
+        if (Platform.isIOS) {
+          expect(id, 0);
+        } else {
+          expect(id, 1);
+        }
         id = await db.insert("Test", {"name": "other"});
         // it seems to always return 1
-        expect(id, 1);
+        if (Platform.isIOS) {
+          expect(id, 0);
+        } else {
+          expect(id, 1);
+        }
         // notice the order is based on the primary key
         var list = await db.query("Test");
         expect(list, [

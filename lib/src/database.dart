@@ -259,7 +259,8 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       return await action(txn);
     } else {
       // Simple timeout warning if we cannot get the lock after XX seconds
-      bool handleTimeoutWarning = (lockWarningDuration != null && lockWarningCallback != null);
+      bool handleTimeoutWarning =
+          (lockWarningDuration != null && lockWarningCallback != null);
       Completer timeoutCompleter;
       if (handleTimeoutWarning) {
         timeoutCompleter = new Completer();
@@ -279,7 +280,6 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
         });
       }
       return await operation;
-
     }
   }
 
@@ -426,7 +426,6 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       return _runTransaction(txn, action, exclusive: exclusive);
     });
   }
-
 
   ///
   /// Get the database inner version

@@ -58,7 +58,7 @@ main() {
   group("database", () {
     test("transaction", () async {
       var db = mockDatabaseFactory.newEmptyDatabase();
-          await db.execute("test");
+      await db.execute("test");
       await db.insert("test", {'test': 1});
       await db.update("test", {'test': 1});
       await db.delete("test");
@@ -440,7 +440,6 @@ main() {
       test('in_transaction', () async {
         var db = await mockDatabaseFactory.openDatabase(null) as MockDatabase;
 
-
         await db.transaction((txn) async {
           var batch = txn.batch();
           batch.execute("test");
@@ -523,9 +522,11 @@ main() {
       var db = mockDatabaseFactory.newEmptyDatabase();
       bool hasTimedOut = false;
       int callbackCount = 0;
-      setLockWarningInfo(duration: new Duration(milliseconds: 200), callback: () {
-        callbackCount++;
-      });
+      setLockWarningInfo(
+          duration: new Duration(milliseconds: 200),
+          callback: () {
+            callbackCount++;
+          });
       try {
         await db.transaction((txn) async {
           await db.execute('test');

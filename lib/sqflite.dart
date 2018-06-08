@@ -82,7 +82,7 @@ class Sqflite {
   /// Sqlite has a dead lock warning feature that will print some text
   /// after 10s, you can override the default behavior
   static void setLockWarningInfo({Duration duration, void callback()}) {
-    impl.setLockWarningInfo(duration: duration,callback: callback);
+    impl.setLockWarningInfo(duration: duration, callback: callback);
   }
 }
 
