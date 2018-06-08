@@ -1,3 +1,10 @@
+## 0.10.0
+
+* Preparing for 1.0
+* Remove deprecated methods (re-entrant transactions)
+* Add `Transaction.batch`
+* Show developer warning to prevent deadlock
+
 ## 0.9.0
 
 * Support for in-memory database (`:memory:` path)
