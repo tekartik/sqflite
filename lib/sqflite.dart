@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+//import 'dart:io';
 
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart' as impl;
@@ -7,8 +7,7 @@ import 'package:sqflite/src/database_factory.dart' as impl;
 import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/sqflite_impl.dart' as impl;
 import 'package:sqflite/src/sql_builder.dart';
-import 'package:sqflite/src/database_factory.dart'
-    show databaseFactory;
+import 'package:sqflite/src/database_factory.dart' show databaseFactory;
 
 import 'src/utils.dart';
 
@@ -336,16 +335,17 @@ Future<Database> openReadOnlyDatabase(String path) =>
     openDatabase(path, readOnly: true);
 
 ///
+/// Get the default databases location
+///
+/// on Android, it is typically data/data/<package_name>/databases
+/// on iOS, it is the documents directory
+///
+Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();
+
+///
 /// delete the database at the given path
 ///
-Future deleteDatabase(String path) async {
-  try {
-    await new File(path).delete(recursive: true);
-  } catch (_e) {
-    // 0.8.4
-    // print(e);
-  }
-}
+Future deleteDatabase(String path) => databaseFactory.deleteDatabase(path);
 
 ///
 /// A batch is used to perform multiple operation as a single atomic unit.

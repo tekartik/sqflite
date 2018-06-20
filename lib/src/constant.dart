@@ -9,6 +9,7 @@ const String methodExecute = "execute";
 const String methodUpdate = "update";
 const String methodQuery = "query";
 const String methodGetPlatformVersion = "getPlatformVersion";
+const String methodGetDatabasesPath = "getDatabasesPath";
 
 // For batch
 const String paramOperations = "operations";

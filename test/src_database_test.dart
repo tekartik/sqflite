@@ -41,6 +41,14 @@ class MockDatabase extends SqfliteDatabase {
 }
 
 class MockDatabaseFactory extends SqfliteDatabaseFactory {
+  List<String> methods = [];
+
+  @override
+  Future<T> invokeMethod<T>(String method, [arguments]) {
+    methods.add(method);
+    return null;
+  }
+
   MockDatabase newEmptyDatabase() {
     SqfliteDatabaseOpenHelper helper =
         new SqfliteDatabaseOpenHelper(this, null, new OpenDatabaseOptions());
@@ -55,6 +63,17 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
 final MockDatabaseFactory mockDatabaseFactory = new MockDatabaseFactory();
 
 main() {
+  group('database_factory', () {
+    test('getDatabasesPath', () async {
+      var factory = new MockDatabaseFactory();
+      try {
+        await factory.getDatabasesPath();
+        fail("should fail");
+      } on DatabaseException catch (_) {}
+      expect(factory.methods, ['getDatabasesPath']);
+      //expect(directory, )
+    });
+  });
   group("database", () {
     test("transaction", () async {
       var db = mockDatabaseFactory.newEmptyDatabase();

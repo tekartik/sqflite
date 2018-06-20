@@ -84,6 +84,19 @@ class OpenCallbacks {
 
 class OpenTestPage extends TestPage {
   OpenTestPage() : super("Open tests") {
+    test('Databases path', () async {
+      await Sqflite.devSetDebugModeOn(false);
+      var databasesPath = await getDatabasesPath();
+      // On Android we know it is current a "databases" folder in the package folder
+      print("databasesPath: " + databasesPath);
+      if (Platform.isAndroid) {
+        expect(basename(databasesPath), "databases");
+      }
+      String path = join(databasesPath, "in_default_directory.db");
+      await deleteDatabase(path);
+      Database db = await openDatabase(path);
+      await db.close();
+    });
     test("Delete database", () async {
       //await Sqflite.devSetDebugModeOn(false);
       String path = await initDeleteDb("delete_database.db");

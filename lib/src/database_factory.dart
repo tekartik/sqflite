@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
+import 'package:sqflite/src/exception.dart';
 import 'package:synchronized/synchronized.dart';
+import 'sqflite_impl.dart' as impl;
 
 SqfliteDatabaseFactory _databaseFactory;
 
@@ -19,6 +23,8 @@ Future<Database> openReadOnlyDatabase(String path) async {
 
 abstract class DatabaseFactory {
   Future<Database> openDatabase(String path, {OpenDatabaseOptions options});
+  Future<String> getDatabasesPath();
+  Future deleteDatabase(String path);
 }
 
 ///
@@ -61,6 +67,10 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
   // for single instances only
   Map<String, SqfliteDatabaseOpenHelper> databaseOpenHelpers = {};
   SqfliteDatabaseOpenHelper nullDatabaseOpenHelper;
+
+  // to allow mock overriding
+  Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
+      impl.invokeMethod(method, arguments);
 
   // open lock mechanism
   var lock = new Lock();
@@ -134,5 +144,26 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
           new SqfliteDatabaseOpenHelper(this, path, options);
       return await databaseOpenHelper.openDatabase();
     }
+  }
+
+  @override
+  Future deleteDatabase(String path) async {
+    try {
+      await new File(path).delete(recursive: true);
+    } catch (_e) {
+      // 0.8.4
+      // print(e);
+    }
+  }
+
+  @override
+  Future<String> getDatabasesPath() async {
+    var path = await wrapDatabaseException<String>(() {
+      return invokeMethod<String>(methodGetDatabasesPath);
+    });
+    if (path == null) {
+      throw new SqfliteDatabaseException("getDatabasesPath is null", null);
+    }
+    return path;
   }
 }

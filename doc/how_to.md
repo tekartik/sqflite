@@ -17,7 +17,7 @@
 ````
 # quick run before commiting
 
-dartfmt -w .
+dartfmt -w lib test example
 flutter analyze lib test
 flutter test
 
