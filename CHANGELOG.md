@@ -1,6 +1,7 @@
 ## 0.11.0
 
-* Warning: database are now single instance by default, to use the 
+* add `getDatabasesPath` to use as the base location to create a database
+* Warning: database are now single instance by default (based on `path`), to use the 
   old behavior use `singleInstance = false` when opening a database
   
 ## 0.10.0
