@@ -34,9 +34,9 @@ import 'package:sqflite/sqflite.dart';
 Demo code to perform Raw SQL queries
 
 ```dart
-// Get a location using path_provider
-Directory documentsDirectory = await getApplicationDocumentsDirectory();
-String path = join(documentsDirectory.path, "demo.db");
+// Get a location using getDatabasesPath
+var databasesPath = await getDatabasesPath();
+String path = join(databasesPath, "demo.db");
 
 // Delete the database
 await deleteDatabase(path);

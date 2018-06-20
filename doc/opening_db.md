@@ -2,12 +2,12 @@
 
 ## finding a location path for the database
 
-Sqflite does not provide any location strategy. Currently the way it is mostly used is using
-the `path_provider` plugin to find a location to write the sqlite database file
+Sqflite provides a basic location strategy using the databases path on Android and the Documents folder on iOS, as
+recommended on both platform. The location can be retrieved using `getDatabasesPath`.
 
 ```dart
-var documentsDirectory = await getApplicationDocumentsDirectory();
-var path = join(documentsDirectory.path, dbName);
+var databasesPath = await getDatabasesPath();
+var path = join(databasesPath, dbName);
 
 // Make sure the directory exists
 try {
