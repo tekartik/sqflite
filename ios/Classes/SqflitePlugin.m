@@ -6,6 +6,7 @@
 NSString *const _channelName = @"com.tekartik.sqflite";
 
 NSString *const _methodGetPlatformVersion = @"getPlatformVersion";
+NSString *const _methodGetDatabasesPath = @"getDatabasesPath";
 NSString *const _methodDebugMode = @"debugMode";
 NSString *const _methodOptions = @"options";
 NSString *const _methodOpenDatabase = @"openDatabase";
@@ -560,6 +561,15 @@ NSInteger _databaseOpenCount = 0;
     result(nil);
 }
 
+//
+// getDatabasesPath
+// returns the Documents directory on iOS
+//
+- (void)handleGetDatabasesPath:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    result(paths.firstObject);
+}
+
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([_methodGetPlatformVersion isEqualToString:call.method]) {
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
@@ -585,6 +595,8 @@ NSInteger _databaseOpenCount = 0;
         result(nil);
     } else if ([_methodOptions isEqualToString:call.method]) {
         [self handleOptionsCall:call result:result];
+    } else if ([_methodGetDatabasesPath isEqualToString:call.method]) {
+        [self handleGetDatabasesPath:call result:result];
     } else {
         result(FlutterMethodNotImplemented);
     }
