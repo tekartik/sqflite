@@ -30,10 +30,12 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
+import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_BATCH;
 import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
 import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
+import static com.tekartik.sqflite.Constant.METHOD_GET_DATABASES_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_GET_PLATFORM_VERSION;
 import static com.tekartik.sqflite.Constant.METHOD_INSERT;
 import static com.tekartik.sqflite.Constant.METHOD_OPEN_DATABASE;
@@ -66,6 +68,10 @@ public class SqflitePlugin implements MethodCallHandler {
     // Database thread execution
     private HandlerThread handlerThread;
     private Handler handler;
+
+    private Context getContext() {
+        return context;
+    }
 
     private class BgResult implements MethodChannel.Result {
         // Caller handler
@@ -605,7 +611,7 @@ public class SqflitePlugin implements MethodCallHandler {
     }
 
     static boolean isInMemoryPath(String path) {
-        return (path == null || path.equals(":memory:"));
+        return (path == null || path.equals(MEMORY_DATABASE_PATH));
     }
 
     //
@@ -746,6 +752,10 @@ public class SqflitePlugin implements MethodCallHandler {
                 onOptionsCall(call, result);
                 break;
             }
+            case METHOD_GET_DATABASES_PATH: {
+                onGetDatabasesPath(call, result);
+                break;
+            }
             default:
                 result.notImplemented();
                 break;
@@ -787,5 +797,17 @@ public class SqflitePlugin implements MethodCallHandler {
         Object on = call.argument(Constant.PARAM_QUERY_AS_MAP_LIST);
         QUERY_AS_MAP_LIST = Boolean.TRUE.equals(on);
         result.success(null);
+    }
+
+    // local cache
+    String databasesPath;
+
+    void onGetDatabasesPath(final MethodCall call, Result result) {
+        if (databasesPath == null) {
+            String dummyDatabaseName = "tekartik_sqflite.db";
+            File file = context.getDatabasePath(dummyDatabaseName);
+            databasesPath = file.getParent();
+        }
+        result.success(databasesPath);
     }
 }

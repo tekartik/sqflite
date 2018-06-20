@@ -189,48 +189,56 @@ class ExpTestPage extends TestPage {
       String path = await initDeleteDb("exp_alias.db");
       Database db = await openDatabase(path);
 
-      String table = "alias";
-      await db
-          .execute("CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)");
-      await db.insert(table, {"column_1": 1, "column_2": 2});
+      try {
+        String table = "alias";
+        await db.execute(
+            "CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)");
+        await db.insert(table, {"column_1": 1, "column_2": 2});
 
-      var result = await db.rawQuery('''
+        var result = await db.rawQuery('''
       select t.column_1, t.column_1 as "t.column1", column_1 as column_alias_1, column_2
       from $table as t''');
-      print('result :$result');
-      expect(result, [
-        {"t.column1": 1, "column_1": 1, "column_alias_1": 1, "column_2": 2}
-      ]);
+        print('result :$result');
+        expect(result, [
+          {"t.column1": 1, "column_1": 1, "column_alias_1": 1, "column_2": 2}
+        ]);
+      } finally {
+        await db.close();
+      }
     });
 
     test("Dart2 query", () async {
       // await Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("exp_alias.db");
+      String path = await initDeleteDb("exp_dart2_query.db");
       Database db = await openDatabase(path);
 
-      String table = "test";
-      await db
-          .execute("CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)");
-      await db.insert(table, {"column_1": 1, "column_2": 2});
+      try {
+        String table = "test";
+        await db.execute(
+            "CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)");
+        await db.insert(table, {"column_1": 1, "column_2": 2});
 
-      var result = await db.rawQuery('''
+        var result = await db.rawQuery('''
          select column_1, column_2
          from $table as t
       ''');
-      print('result: $result');
-      // test output types
-      print('result.first: ${result.first}');
-      Map<String, dynamic> first = result.first;
-      print('result.first.keys: ${first.keys}');
-      Iterable<String> keys = result.first.keys;
-      Iterable values = result.first.values;
-      verify(keys.first == "column_1" || keys.first == "column_2");
-      verify(values.first == 1 || values.first == 2);
-      print('result.last.keys: ${result.last.keys}');
-      keys = result.last.keys;
-      values = result.last.values;
-      verify(keys.last == "column_1" || keys.last == "column_2");
-      verify(values.last == 1 || values.last == 2);
+        print('result: $result');
+        // test output types
+        print('result.first: ${result.first}');
+        Map<String, dynamic> first = result.first;
+        print('result.first.keys: ${first.keys}');
+        Iterable<String> keys = result.first.keys;
+        Iterable values = result.first.values;
+        verify(keys.first == "column_1" || keys.first == "column_2");
+        verify(values.first == 1 || values.first == 2);
+        print('result.last.keys: ${result.last.keys}');
+        keys = result.last.keys;
+        values = result.last.values;
+        verify(keys.last == "column_1" || keys.last == "column_2");
+        verify(values.last == 1 || values.last == 2);
+      } finally {
+        await db.close();
+      }
     });
     /*
 

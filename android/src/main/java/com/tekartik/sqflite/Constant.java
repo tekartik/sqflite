@@ -7,6 +7,7 @@ package com.tekartik.sqflite;
 public class Constant {
 
     static final public String METHOD_GET_PLATFORM_VERSION = "getPlatformVersion";
+    static final public String METHOD_GET_DATABASES_PATH = "getDatabasesPath";
     static final public String METHOD_DEBUG_MODE = "debugMode";
     static final public String METHOD_OPTIONS = "options";
     static final public String METHOD_OPEN_DATABASE = "openDatabase";
@@ -37,4 +38,7 @@ public class Constant {
     static final String ERROR_BAD_PARAM = "bad_param"; // internal only
     static final String ERROR_OPEN_FAILED = "open_failed"; // msg
     static final String ERROR_DATABASE_CLOSED = "database_closed"; // msg
+
+    // memory database path
+    static final String MEMORY_DATABASE_PATH = ":memory:";
 }

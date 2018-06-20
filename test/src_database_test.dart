@@ -41,6 +41,14 @@ class MockDatabase extends SqfliteDatabase {
 }
 
 class MockDatabaseFactory extends SqfliteDatabaseFactory {
+  List<String> methods = [];
+
+  @override
+  Future<T> invokeMethod<T>(String method, [arguments]) {
+    methods.add(method);
+    return null;
+  }
+
   MockDatabase newEmptyDatabase() {
     SqfliteDatabaseOpenHelper helper =
         new SqfliteDatabaseOpenHelper(this, null, new OpenDatabaseOptions());
@@ -55,6 +63,17 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
 final MockDatabaseFactory mockDatabaseFactory = new MockDatabaseFactory();
 
 main() {
+  group('database_factory', () {
+    test('getDatabasesPath', () async {
+      var factory = new MockDatabaseFactory();
+      try {
+        await factory.getDatabasesPath();
+        fail("should fail");
+      } on DatabaseException catch (_) {}
+      expect(factory.methods, ['getDatabasesPath']);
+      //expect(directory, )
+    });
+  });
   group("database", () {
     test("transaction", () async {
       var db = mockDatabaseFactory.newEmptyDatabase();
@@ -508,9 +527,11 @@ main() {
         await db3.close();
       });
 
-      test('default', () async {
-        var futureDb1 = mockDatabaseFactory.openDatabase(null);
-        var db2 = await mockDatabaseFactory.openDatabase(null);
+      test('multiInstances', () async {
+        var futureDb1 = mockDatabaseFactory.openDatabase(null,
+            options: new OpenDatabaseOptions(singleInstance: false));
+        var db2 = await mockDatabaseFactory.openDatabase(null,
+            options: new OpenDatabaseOptions(singleInstance: false));
         var db1 = await futureDb1;
         expect(db1, isNot(db2));
         await db1.close();

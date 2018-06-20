@@ -166,15 +166,19 @@ class TypeTestPage extends TestPage {
         await db
             .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)");
       });
-      int id = await insertValue(null);
-      expect(await getValue(id), null);
+      try {
+        int id = await insertValue(null);
+        expect(await getValue(id), null);
 
-      // Make a string
-      expect(await updateValue(id, "dummy"), 1);
-      expect(await getValue(id), "dummy");
+        // Make a string
+        expect(await updateValue(id, "dummy"), 1);
+        expect(await getValue(id), "dummy");
 
-      expect(await updateValue(id, null), 1);
-      expect(await getValue(id), null);
+        expect(await updateValue(id, null), 1);
+        expect(await getValue(id), null);
+      } finally {
+        await data.db.close();
+      }
     });
 
     test("date_time", () async {
@@ -185,13 +189,18 @@ class TypeTestPage extends TestPage {
         await db
             .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)");
       });
-      bool failed = false;
       try {
-        await insertValue(new DateTime.fromMillisecondsSinceEpoch(1234567890));
-      } on ArgumentError catch (_) {
-        failed = true;
+        bool failed = false;
+        try {
+          await insertValue(
+              new DateTime.fromMillisecondsSinceEpoch(1234567890));
+        } on ArgumentError catch (_) {
+          failed = true;
+        }
+        expect(failed, true);
+      } finally {
+        await data.db.close();
       }
-      expect(failed, true);
     });
   }
 }

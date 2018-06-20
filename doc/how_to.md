@@ -4,6 +4,7 @@
 * How to [Open an asset database](opening_asset_db.md)
 * Solve you [build and runtime issues](troubleshooting.md)
 * Some personal [usage recommendations](usage_recommendations.md)
+* Some [dev tips](dev_tips.md)
 
 ## Development guide
 
@@ -16,7 +17,7 @@
 ````
 # quick run before commiting
 
-dartfmt -w .
+dartfmt -w lib test example
 flutter analyze lib test
 flutter test
 
