@@ -1,3 +1,8 @@
+## 0.11.0
+
+* Warning: database are now single instance by default, to use the 
+  old behavior use `singleInstance = false` when opening a database
+  
 ## 0.10.0
 
 * Preparing for 1.0

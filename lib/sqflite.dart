@@ -7,6 +7,8 @@ import 'package:sqflite/src/database_factory.dart' as impl;
 import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/sqflite_impl.dart' as impl;
 import 'package:sqflite/src/sql_builder.dart';
+import 'package:sqflite/src/database_factory.dart'
+    show databaseFactory;
 
 import 'src/utils.dart';
 
@@ -253,8 +255,10 @@ Future __onDatabaseDowngradeDelete(
 final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
     __onDatabaseDowngradeDelete;
 
+///
 /// Options for opening the database
-/// [singleInstance] means the same instance is returned for a given path
+/// see [openDatabase] for details
+///
 abstract class OpenDatabaseOptions {
   factory OpenDatabaseOptions(
       {int version,
@@ -263,19 +267,17 @@ abstract class OpenDatabaseOptions {
       OnDatabaseVersionChangeFn onUpgrade,
       OnDatabaseVersionChangeFn onDowngrade,
       OnDatabaseOpenFn onOpen,
-      bool readOnly,
-      bool singleInstance,
-      OpenDatabaseOptions options}) {
-    options ??= new impl.SqfliteOpenDatabaseOptions();
-    options.version ??= version;
-    options.onConfigure ??= onConfigure;
-    options.onCreate ??= onCreate;
-    options.onUpgrade ??= onUpgrade;
-    options.onDowngrade ??= onDowngrade;
-    options.onOpen ??= onOpen;
-    options.readOnly ??= readOnly;
-    options.singleInstance ??= singleInstance;
-    return options;
+      bool readOnly = false,
+      bool singleInstance = true}) {
+    return new impl.SqfliteOpenDatabaseOptions(
+        version: version,
+        onConfigure: onConfigure,
+        onCreate: onCreate,
+        onUpgrade: onUpgrade,
+        onDowngrade: onDowngrade,
+        onOpen: onOpen,
+        readOnly: readOnly,
+        singleInstance: singleInstance);
   }
 
   int version;
@@ -299,29 +301,39 @@ abstract class OpenDatabaseOptions {
 ///
 /// [onOpen] is called after [onCreate], [onUpgrade], [onDowngrade] are called
 ///
+/// When [readOnly] is true all other parameters are ignored and the database
+/// is opened as is
+///
+/// When [singleInstance] is true (the default), a single database instance is
+/// returned for a given path and other options are ignore if you call
+/// openDatabase again if the database is already opened
+///
 Future<Database> openDatabase(String path,
     {int version,
     OnDatabaseConfigureFn onConfigure,
     OnDatabaseCreateFn onCreate,
     OnDatabaseVersionChangeFn onUpgrade,
     OnDatabaseVersionChangeFn onDowngrade,
-    OnDatabaseOpenFn onOpen}) {
-  var options = new impl.SqfliteOpenDatabaseOptions(
-      version: version, onConfigure: onConfigure);
-  options.version ??= version;
-  options.onConfigure ??= onConfigure;
-  options.onCreate ??= onCreate;
-  options.onUpgrade ??= onUpgrade;
-  options.onDowngrade ??= onDowngrade;
-  options.onOpen ??= onOpen;
-  return impl.databaseFactory.openDatabase(path, options: options);
+    OnDatabaseOpenFn onOpen,
+    bool readOnly = false,
+    bool singleInstance = true}) {
+  var options = new OpenDatabaseOptions(
+      version: version,
+      onConfigure: onConfigure,
+      onCreate: onCreate,
+      onUpgrade: onUpgrade,
+      onDowngrade: onDowngrade,
+      onOpen: onOpen,
+      readOnly: readOnly,
+      singleInstance: singleInstance);
+  return databaseFactory.openDatabase(path, options: options);
 }
 
 ///
 /// Open the database at a given path in read only mode
 ///
 Future<Database> openReadOnlyDatabase(String path) =>
-    impl.openReadOnlyDatabase(path);
+    openDatabase(path, readOnly: true);
 
 ///
 /// delete the database at the given path

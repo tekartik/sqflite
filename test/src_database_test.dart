@@ -508,9 +508,11 @@ main() {
         await db3.close();
       });
 
-      test('default', () async {
-        var futureDb1 = mockDatabaseFactory.openDatabase(null);
-        var db2 = await mockDatabaseFactory.openDatabase(null);
+      test('multiInstances', () async {
+        var futureDb1 = mockDatabaseFactory.openDatabase(null,
+            options: new OpenDatabaseOptions(singleInstance: false));
+        var db2 = await mockDatabaseFactory.openDatabase(null,
+            options: new OpenDatabaseOptions(singleInstance: false));
         var db1 = await futureDb1;
         expect(db1, isNot(db2));
         await db1.close();

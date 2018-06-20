@@ -21,6 +21,10 @@ abstract class DatabaseFactory {
   Future<Database> openDatabase(String path, {OpenDatabaseOptions options});
 }
 
+///
+/// Options to open a database
+/// See [openDatabase] for details
+///
 class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
   SqfliteOpenDatabaseOptions({
     this.version,
@@ -29,9 +33,12 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     this.onUpgrade,
     this.onDowngrade,
     this.onOpen,
-    this.readOnly,
-    this.singleInstance,
-  });
+    this.readOnly = false,
+    this.singleInstance = true,
+  }) {
+    readOnly ??= false;
+    singleInstance ??= true;
+  }
   @override
   int version;
   @override
@@ -65,11 +72,15 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
   // internal close
   void doCloseDatabase(SqfliteDatabase database) {
     if (database?.options?.singleInstance == true) {
-      if (database.path == null) {
-        nullDatabaseOpenHelper = null;
-      } else {
-        databaseOpenHelpers.remove(database.path);
-      }
+      _removeDatabaseOpenHelper(database.path);
+    }
+  }
+
+  void _removeDatabaseOpenHelper(String path) {
+    if (path == null) {
+      nullDatabaseOpenHelper = null;
+    } else {
+      databaseOpenHelpers.remove(path);
     }
   }
 
@@ -99,15 +110,25 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
         }
       }
 
-      if (path != null) {
+      if (path != null && path != inMemoryDatabasePath) {
         path = absolute(normalize(path));
       }
       var databaseOpenHelper = getExistingDatabaseOpenHelper(path);
-      if (databaseOpenHelper == null) {
+
+      bool firstOpen = databaseOpenHelper == null;
+      if (firstOpen) {
         databaseOpenHelper = new SqfliteDatabaseOpenHelper(this, path, options);
         setDatabaseOpenHelper(databaseOpenHelper);
       }
-      return await databaseOpenHelper.openDatabase();
+      try {
+        return await databaseOpenHelper.openDatabase();
+      } catch (e) {
+        // If first open fail remove the reference
+        if (firstOpen) {
+          _removeDatabaseOpenHelper(path);
+        }
+        rethrow;
+      }
     } else {
       var databaseOpenHelper =
           new SqfliteDatabaseOpenHelper(this, path, options);

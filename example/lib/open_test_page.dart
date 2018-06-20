@@ -511,7 +511,6 @@ class OpenTestPage extends TestPage {
     });
 
     test('In memory database', () async {
-      // await Sqflite.devSetDebugModeOn(true);
       String inMemoryPath =
           inMemoryDatabasePath; // tried null without success, as it crashes on Android
       String path = inMemoryPath;
@@ -525,7 +524,7 @@ class OpenTestPage extends TestPage {
       ]);
       await db.close();
 
-      // reopen, content should be done
+      // reopen, content should be gone
       db = await openDatabase(path);
       try {
         await db.query("Test");

@@ -608,31 +608,34 @@ class SimpleTestPage extends TestPage {
     });
 
     test('Reference query', () async {
-      String path = await initDeleteDb("reference query.db");
+      String path = await initDeleteDb("reference_query.db");
       Database db = await openDatabase(path);
+      try {
+        Batch batch = db.batch();
 
-      Batch batch = db.batch();
+        batch.execute("CREATE TABLE Other (id INTEGER PRIMARY KEY, name TEXT)");
+        batch.execute(
+            "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, other REFERENCES Other(id))");
+        batch.rawInsert("INSERT INTO Other (name) VALUES (?)", ["other 1"]);
+        batch.rawInsert(
+            "INSERT INTO Test (other, name) VALUES (?, ?)", [1, "item 2"]);
+        await batch.commit();
 
-      batch.execute("CREATE TABLE Other (id INTEGER PRIMARY KEY, name TEXT)");
-      batch.execute(
-          "CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, other REFERENCES Other(id))");
-      batch.rawInsert("INSERT INTO Other (name) VALUES (?)", ["other 1"]);
-      batch.rawInsert(
-          "INSERT INTO Test (other, name) VALUES (?, ?)", [1, "item 2"]);
-      await batch.commit();
-
-      var result = await db.query('Test',
-          columns: ['other', 'name'], where: 'other = 1');
-      print(result);
-      expect(result, [
-        {"other": 1, "name": "item 2"}
-      ]);
-      result = await db.query('Test',
-          columns: ['other', 'name'], where: 'other = ?', whereArgs: [1]);
-      print(result);
-      expect(result, [
-        {"other": 1, "name": "item 2"}
-      ]);
+        var result = await db.query('Test',
+            columns: ['other', 'name'], where: 'other = 1');
+        print(result);
+        expect(result, [
+          {"other": 1, "name": "item 2"}
+        ]);
+        result = await db.query('Test',
+            columns: ['other', 'name'], where: 'other = ?', whereArgs: [1]);
+        print(result);
+        expect(result, [
+          {"other": 1, "name": "item 2"}
+        ]);
+      } finally {
+        await db.close();
+      }
     });
   }
 }
