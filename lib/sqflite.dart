@@ -338,7 +338,7 @@ Future<Database> openReadOnlyDatabase(String path) =>
 /// Get the default databases location
 ///
 /// on Android, it is typically data/data/<package_name>/databases
-/// on iOS, it is the documents directory
+/// on iOS, it is the Documents directory
 ///
 Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();
 

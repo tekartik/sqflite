@@ -3,15 +3,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 // return the path
 Future<String> initDeleteDb(String dbName) async {
-  Directory documentsDirectory = await getApplicationDocumentsDirectory();
-  print(documentsDirectory);
-
-  String path = join(documentsDirectory.path, dbName);
+  var databasePath = await getDatabasesPath();
+  // print(databasePath);
+  String path = join(databasePath, dbName);
 
   // make sure the folder exists
   if (await new Directory(dirname(path)).exists()) {

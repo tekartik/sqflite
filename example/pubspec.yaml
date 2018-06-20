@@ -7,7 +7,6 @@ dependencies:
   collection: any
   flutter:
     sdk: flutter
-  path_provider: '>=0.3.0'
   sqflite:
     path: ../
 

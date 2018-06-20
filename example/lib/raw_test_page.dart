@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/src/utils.dart';
 
@@ -336,15 +335,15 @@ class SimpleTestPage extends TestPage {
     });
 
     test("Demo clean", () async {
-      // Get a location using path_provider
-      Directory documentsDirectory = await getApplicationDocumentsDirectory();
+      // Get a location
+      var databasesPath = await getDatabasesPath();
 
       // Make sure the directory exists
       try {
-        await documentsDirectory.create(recursive: true);
+        await new Directory(databasesPath).create(recursive: true);
       } catch (_) {}
 
-      String path = join(documentsDirectory.path, "demo.db");
+      String path = join(databasesPath, "demo.db");
 
       // Delete the database
       await deleteDatabase(path);

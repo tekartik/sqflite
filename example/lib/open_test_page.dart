@@ -7,7 +7,6 @@ import 'package:synchronized/synchronized.dart';
 import 'test_page.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 
 class OpenCallbacks {
   bool onConfigureCalled;
@@ -85,12 +84,14 @@ class OpenCallbacks {
 class OpenTestPage extends TestPage {
   OpenTestPage() : super("Open tests") {
     test('Databases path', () async {
-      await Sqflite.devSetDebugModeOn(false);
+      // await Sqflite.devSetDebugModeOn(false);
       var databasesPath = await getDatabasesPath();
       // On Android we know it is current a "databases" folder in the package folder
       print("databasesPath: " + databasesPath);
       if (Platform.isAndroid) {
         expect(basename(databasesPath), "databases");
+      } else if (Platform.isIOS) {
+        expect(basename(databasesPath), "Documents");
       }
       String path = join(databasesPath, "in_default_directory.db");
       await deleteDatabase(path);
@@ -216,8 +217,8 @@ class OpenTestPage extends TestPage {
 
     test("Open asset database", () async {
       // await Sqflite.devSetDebugModeOn(false);
-      Directory documentsDirectory = await getApplicationDocumentsDirectory();
-      String path = join(documentsDirectory.path, "asset_example.db");
+      var databasesPath = await getDatabasesPath();
+      String path = join(databasesPath, "asset_example.db");
 
       // delete existing if any
       await deleteDatabase(path);
