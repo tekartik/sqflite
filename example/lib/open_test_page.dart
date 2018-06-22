@@ -508,7 +508,7 @@ class OpenTestPage extends TestPage {
       await db.close();
     });
 
-    test('single instance', () async {
+    test('single/multi instance (using factory)', () async {
       // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("instances_test.db");
       var db1 = await databaseFactory.openDatabase(path,
@@ -518,7 +518,20 @@ class OpenTestPage extends TestPage {
       var db3 = await databaseFactory.openDatabase(path,
           options: new OpenDatabaseOptions(singleInstance: true));
       verify(db1 != db2);
-      verify(db3 == db3);
+      verify(db2 == db3);
+      await db1.close();
+      await db2.close();
+      await db3.close(); // safe to close the same instance
+    });
+
+    test('single/multi instance', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("instances_test.db");
+      var db1 = await openDatabase(path, singleInstance: false);
+      var db2 = await openDatabase(path, singleInstance: true);
+      var db3 = await openDatabase(path, singleInstance: true);
+      verify(db1 != db2);
+      verify(db2 == db3);
       await db1.close();
       await db2.close();
       await db3.close(); // safe to close the same instance
