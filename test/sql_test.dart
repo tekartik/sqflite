@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sql.dart';
 
-main() {
+void main() {
   group("sqflite", () {
     const MethodChannel channel = const MethodChannel('com.tekartik.sqflite');
 

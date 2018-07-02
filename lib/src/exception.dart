@@ -70,7 +70,7 @@ class SqfliteDatabaseException extends DatabaseException {
   String toString() {
     if (result is Map) {
       if (result[paramSql] != null) {
-        var args = result[paramSqlArguments];
+        dynamic args = result[paramSqlArguments];
         if (args == null) {
           return "DatabaseException($_message) sql '${result[paramSql]}'";
         } else {

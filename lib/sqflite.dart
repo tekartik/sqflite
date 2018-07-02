@@ -23,11 +23,12 @@ class SqfliteOptions {
   // true =<0.7.0
   bool queryAsMapList;
 
-  Map toMap() {
-    return {'queryAsMapList': queryAsMapList};
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{'queryAsMapList': queryAsMapList};
   }
 
-  fromMap(Map map) {
+
+  void fromMap(Map<String, dynamic> map) {
     queryAsMapList = map['queryAsMapList'] as bool;
   }
 }
@@ -45,7 +46,7 @@ class Sqflite {
   /// turn on debug mode if you want to see the SQL query
   /// executed natively
   static Future setDebugModeOn([bool on = true]) async {
-    await invokeMethod(methodSetDebugModeOn, on);
+    await invokeMethod<dynamic>(methodSetDebugModeOn, on);
   }
 
   static Future<bool> getDebugModeOn() async {
@@ -62,13 +63,13 @@ class Sqflite {
   // Testing only
   @deprecated
   static Future devSetOptions(SqfliteOptions options) async {
-    await invokeMethod(methodOptions, options.toMap());
+    await invokeMethod<dynamic>(methodOptions, options.toMap());
   }
 
   // Testing only
   @deprecated
   static Future devInvokeMethod(String method, [dynamic arguments]) async {
-    await invokeMethod(method, arguments);
+    await invokeMethod<dynamic>(method, arguments);
   }
 
   /// helper to get the first int value in a query
@@ -225,11 +226,11 @@ abstract class Database implements DatabaseExecutor {
 
   /// testing only
   @deprecated
-  Future devInvokeMethod(String method, [dynamic arguments]);
+  Future<T> devInvokeMethod<T>(String method, [dynamic arguments]);
 
   /// testing only
   @deprecated
-  Future devInvokeSqlMethod(String method, String sql, [List arguments]);
+  Future<T> devInvokeSqlMethod<T>(String method, String sql, [List arguments]);
 }
 
 typedef FutureOr OnDatabaseVersionChangeFn(

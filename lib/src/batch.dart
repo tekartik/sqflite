@@ -8,12 +8,13 @@ import 'package:sqflite/src/utils.dart';
 abstract class SqfliteBatch implements Batch {
   final List<Map<String, dynamic>> operations = [];
 
+  @override
   Future<List<dynamic>> commit({bool exclusive, bool noResult}) =>
       apply(exclusive: exclusive, noResult: noResult);
 
-  _add(String method, String sql, List arguments) {
+  void _add(String method, String sql, List arguments) {
     operations.add(
-        {paramMethod: method, paramSql: sql, paramSqlArguments: arguments});
+        <String, dynamic>{paramMethod: method, paramSql: sql, paramSqlArguments: arguments});
   }
 
   @override

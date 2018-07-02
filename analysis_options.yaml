@@ -1,4 +1,23 @@
 analyzer:
   strong-mode:
     implicit-casts: false
-#   implicit-dynamic: false
+    implicit-dynamic: false
+
+linter:
+  rules:
+    - annotate_overrides
+    - hash_and_equals
+    - prefer_is_not_empty
+    - avoid_empty_else
+    - cancel_subscriptions
+    - close_sinks
+    - always_declare_return_types
+    - camel_case_types
+    - empty_constructor_bodies
+    - annotate_overrides
+    - avoid_init_to_null
+    - constant_identifier_names
+    - one_member_abstracts
+    - slash_for_doc_comments
+    - sort_constructors_first
+    - unnecessary_brace_in_string_interps

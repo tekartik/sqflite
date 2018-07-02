@@ -20,7 +20,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
   /// for sql without return values
   @override
   Future execute(String sql, [List arguments]) =>
-      db.txnExecute(txn, sql, arguments);
+      db.txnExecute<dynamic>(txn, sql, arguments);
 
   /// for INSERT sql query
   /// returns the last inserted record id
@@ -211,6 +211,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   // default transaction used during opening
   SqfliteTransaction openTransaction;
 
+  @override
   SqfliteTransaction get txn => openTransaction;
 
   // non-reentrant lock
@@ -235,15 +236,15 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       impl.invokeMethod(method, arguments);
 
   @override
-  Future devInvokeMethod(String method, [arguments]) {
-    return invokeMethod(
+  Future<T> devInvokeMethod<T>(String method, [dynamic arguments]) {
+    return invokeMethod<T>(
         method,
         (arguments ?? <String, dynamic>{})
           ..addAll(baseDatabaseMethodArguments));
   }
 
   @override
-  Future devInvokeSqlMethod(String method, String sql, [List arguments]) {
+  Future<T> devInvokeSqlMethod<T>(String method, String sql, [List arguments]) {
     return devInvokeMethod(
         method, <String, dynamic>{paramSql: sql, paramSqlArguments: arguments});
   }
@@ -263,7 +264,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
           (lockWarningDuration != null && lockWarningCallback != null);
       Completer timeoutCompleter;
       if (handleTimeoutWarning) {
-        timeoutCompleter = new Completer();
+        timeoutCompleter = new Completer<dynamic>();
       }
 
       // Grab the lock
@@ -290,13 +291,13 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       txnSynchronized(txn, action);
 
   /// for sql without return values
-  Future txnExecute(SqfliteTransaction txn, String sql, [List arguments]) {
-    return txnWriteSynchronized(txn, (_) {
-      return invokeExecute(sql, arguments);
+  Future<T> txnExecute<T>(SqfliteTransaction txn, String sql, [List arguments]) {
+    return txnWriteSynchronized<T>(txn, (_) {
+      return invokeExecute<T>(sql, arguments);
     });
   }
 
-  Future invokeExecute(String sql, List arguments) {
+  Future<T> invokeExecute<T>(String sql, List arguments) {
     return wrapDatabaseException(() {
       return invokeMethod(
           methodExecute,
@@ -322,7 +323,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       SqfliteTransaction txn, String sql, List arguments) {
     return txnSynchronized(txn, (_) {
       return wrapDatabaseException(() async {
-        var result = await invokeMethod(
+        dynamic result = await invokeMethod<dynamic>(
             methodQuery,
             <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
               ..addAll(baseDatabaseMethodArguments));
@@ -380,9 +381,9 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
     // never create transaction in read-only mode
     if (readOnly != true) {
       if (exclusive == true) {
-        await txnExecute(txn, "BEGIN EXCLUSIVE");
+        await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
       } else {
-        await txnExecute(txn, "BEGIN IMMEDIATE");
+        await txnExecute<dynamic>(txn, "BEGIN IMMEDIATE");
       }
     }
     return txn;
@@ -392,9 +393,9 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
     // never commit transaction in read-only mode
     if (readOnly != true) {
       if (txn.successfull == true) {
-        await txnExecute(txn, "COMMIT");
+        await txnExecute<dynamic>(txn, "COMMIT");
       } else {
-        await txnExecute(txn, "ROLLBACK");
+        await txnExecute<dynamic>(txn, "ROLLBACK");
       }
     }
   }
@@ -468,8 +469,8 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   }
 
   Future _closeDatabase(int databaseId) {
-    return wrapDatabaseException(() {
-      return invokeMethod(
+    return wrapDatabaseException<dynamic>(() {
+      return invokeMethod<dynamic>(
           methodCloseDatabase, <String, dynamic>{paramId: databaseId});
     });
   }

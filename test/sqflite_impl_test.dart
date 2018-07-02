@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
 
-main() {
+void main() {
   group("sqflite", () {
     const MethodChannel channel = const MethodChannel('com.tekartik.sqflite');
 
@@ -39,9 +39,9 @@ main() {
           [1]
         ]
       };
-      var queryResultSet = new QueryResultSet([
+      var queryResultSet = new QueryResultSet(<dynamic>[
         "column"
-      ], [
+      ], <dynamic>[
         [1]
       ]);
       expect(queryResultSet.columnIndex("dummy"), isNull);
@@ -67,7 +67,7 @@ main() {
         {'column': 1}
       ]);
 
-      expect(queryResultToList({}), []);
+      expect(queryResultToList(<String, dynamic>{}), <dynamic>[]);
     });
 
     test('lockWarning', () {});

@@ -2,11 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 //import 'package:test/test.dart';
 import 'package:sqflite/src/sql_builder.dart';
 
-main() {
+void main() {
   group("sql_builder", () {
     test("delete", () {
       SqlBuilder builder =
-          new SqlBuilder.delete("test", where: "value = ?", whereArgs: [1]);
+          new SqlBuilder.delete("test", where: "value = ?", whereArgs: <dynamic>[1]);
       expect(builder.sql, "DELETE FROM test WHERE value = ?");
       expect(builder.arguments, [1]);
 
@@ -24,7 +24,7 @@ main() {
           distinct: true,
           columns: ["value"],
           where: "value = ?",
-          whereArgs: [1],
+          whereArgs: <dynamic>[1],
           groupBy: "group_value",
           having: "value > 0",
           orderBy: "other_value",
@@ -46,12 +46,12 @@ main() {
       expect(builder.sql, "INSERT INTO test (value) VALUES (NULL)");
       expect(builder.arguments, isNull);
 
-      builder = new SqlBuilder.insert("test", {"value": 1});
+      builder = new SqlBuilder.insert("test", <String, dynamic>{"value": 1});
       expect(builder.sql, "INSERT INTO test (value) VALUES (?)");
       expect(builder.arguments, [1]);
 
       builder =
-          new SqlBuilder.insert("test", {"value": 1, "other_value": null});
+          new SqlBuilder.insert("test", <String, dynamic>{"value": 1, "other_value": null});
       expect(builder.sql,
           "INSERT INTO test (value, other_value) VALUES (?, NULL)");
       expect(builder.arguments, [1]);
@@ -63,18 +63,18 @@ main() {
         fail('should fail, no values');
       } on ArgumentError catch (_) {}
 
-      SqlBuilder builder = new SqlBuilder.update("test", {"value": 1});
+      SqlBuilder builder = new SqlBuilder.update("test", <String, dynamic>{"value": 1});
       expect(builder.sql, "UPDATE test SET value = ?");
       expect(builder.arguments, [1]);
 
       builder =
-          new SqlBuilder.update("test", {"value": 1, "other_value": null});
+          new SqlBuilder.update("test", <String, dynamic>{"value": 1, "other_value": null});
       expect(builder.sql, "UPDATE test SET value = ?, other_value = NULL");
       expect(builder.arguments, [1]);
 
       // testing where
-      builder = new SqlBuilder.update('test', {"value": 1},
-          where: "a = ? AND b = ?", whereArgs: ['some_test', 1]);
+      builder = new SqlBuilder.update('test', <String, dynamic>{"value": 1},
+          where: "a = ? AND b = ?", whereArgs: <dynamic>['some_test', 1]);
       expect(builder.arguments, [1, "some_test", 1]);
     });
 
@@ -91,7 +91,7 @@ main() {
 
       // testing where
       builder = new SqlBuilder.query('test',
-          where: "a = ? AND b = ?", whereArgs: ['some_test', 1]);
+          where: "a = ? AND b = ?", whereArgs: <dynamic>['some_test', 1]);
       expect(builder.arguments, ["some_test", 1]);
     });
 

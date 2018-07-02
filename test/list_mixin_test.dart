@@ -52,7 +52,7 @@ class MyList2 extends ListBase<Map<String, dynamic>> {
   int get length => _list.length;
 }
 
-main() {
+void main() {
   group("mixin", () {
     // This fails on beta 1, should work now
     test('ListMixin', () {

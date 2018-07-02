@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/src/exception.dart';
 
-main() {
+void main() {
   group("sqflite_exception", () {
     test("isUniqueContraint", () async {
       // Android

@@ -16,7 +16,7 @@ class MockDatabase extends SqfliteDatabase {
   List<Map<String, dynamic>> argumentsLists = [];
 
   @override
-  Future<T> invokeMethod<T>(String method, [arguments]) {
+  Future<T> invokeMethod<T>(String method, [dynamic arguments]) {
     // return super.invokeMethod(method, arguments);
 
     methods.add(method);
@@ -44,7 +44,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
   List<String> methods = [];
 
   @override
-  Future<T> invokeMethod<T>(String method, [arguments]) {
+  Future<T> invokeMethod<T>(String method, [dynamic arguments]) {
     methods.add(method);
     return null;
   }
@@ -55,6 +55,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
     return helper.newDatabase(null) as MockDatabase;
   }
 
+  @override
   MockDatabase newDatabase(SqfliteDatabaseOpenHelper openHelper, String path) {
     return new MockDatabase(openHelper, path);
   }
@@ -62,7 +63,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
 
 final MockDatabaseFactory mockDatabaseFactory = new MockDatabaseFactory();
 
-main() {
+void main() {
   group('database_factory', () {
     test('getDatabasesPath', () async {
       var factory = new MockDatabaseFactory();
@@ -78,23 +79,23 @@ main() {
     test("transaction", () async {
       var db = mockDatabaseFactory.newEmptyDatabase();
       await db.execute("test");
-      await db.insert("test", {'test': 1});
-      await db.update("test", {'test': 1});
+      await db.insert("test", <String, dynamic>{'test': 1});
+      await db.update("test", <String, dynamic>{'test': 1});
       await db.delete("test");
       await db.query("test");
 
       await db.transaction((txn) async {
         await txn.execute("test");
-        await txn.insert("test", {'test': 1});
-        await txn.update("test", {'test': 1});
+        await txn.insert("test", <String, dynamic>{'test': 1});
+        await txn.update("test", <String, dynamic>{'test': 1});
         await txn.delete("test");
         await txn.query("test");
       });
 
       Batch batch = db.batch();
       batch.execute("test");
-      batch.insert("test", {'test': 1});
-      batch.update("test", {'test': 1});
+      batch.insert("test", <String, dynamic>{'test': 1});
+      batch.update("test", <String, dynamic>{'test': 1});
       batch.delete("test");
       batch.query("test");
       await batch.commit();
@@ -240,9 +241,9 @@ main() {
     group('concurrency', () {
       test('concurrent 1', () async {
         var db = mockDatabaseFactory.newEmptyDatabase();
-        var step1 = new Completer();
-        var step2 = new Completer();
-        var step3 = new Completer();
+        var step1 = new Completer<dynamic>();
+        var step2 = new Completer<dynamic>();
+        var step3 = new Completer<dynamic>();
 
         Future action1() async {
           await db.execute("test");
@@ -250,7 +251,7 @@ main() {
 
           await step2.future;
           try {
-            var map = await db
+            dynamic map = await db
                 .execute("test")
                 .timeout(new Duration(milliseconds: 100));
             throw "should fail ($map)";
@@ -278,16 +279,16 @@ main() {
         var future1 = action1();
         var future2 = action2();
 
-        await Future.wait([future1, future2]);
+        await Future.wait<dynamic>([future1, future2]);
         // check ready
-        await db.transaction((_) => null);
+        await db.transaction<dynamic>((_) => null);
       });
 
       test('concurrent 2', () async {
         var db = mockDatabaseFactory.newEmptyDatabase();
-        var step1 = new Completer();
-        var step2 = new Completer();
-        var step3 = new Completer();
+        var step1 = new Completer<dynamic>();
+        var step2 = new Completer<dynamic>();
+        var step3 = new Completer<dynamic>();
 
         Future action1() async {
           await db.execute("test");
@@ -295,7 +296,7 @@ main() {
 
           await step2.future;
           try {
-            var map = await db
+            dynamic map = await db
                 .execute("test")
                 .timeout(new Duration(milliseconds: 100));
             throw "should fail ($map)";
@@ -322,16 +323,16 @@ main() {
         var future1 = action1();
         var future2 = action2();
 
-        await Future.wait([future1, future2]);
+        await Future.wait<dynamic>([future1, future2]);
       });
     });
 
     group('compatibility 1', () {
       test('concurrent 1', () async {
         var db = mockDatabaseFactory.newEmptyDatabase();
-        var step1 = new Completer();
-        var step2 = new Completer();
-        var step3 = new Completer();
+        var step1 = new Completer<dynamic>();
+        var step2 = new Completer<dynamic>();
+        var step3 = new Completer<dynamic>();
 
         Future action1() async {
           await db.execute("test");
@@ -339,7 +340,7 @@ main() {
 
           await step2.future;
           try {
-            var map = await db
+            dynamic map = await db
                 .execute("test")
                 .timeout(new Duration(milliseconds: 100));
             throw "should fail ($map)";
@@ -367,21 +368,21 @@ main() {
         var future1 = action1();
         var future2 = action2();
 
-        await Future.wait([future1, future2]);
+        await Future.wait<dynamic>([future1, future2]);
         // check ready
-        await db.transaction((_) => null);
+        await db.transaction<dynamic>((_) => null);
       });
 
       test('concurrent 2', () async {
         var db = mockDatabaseFactory.newEmptyDatabase();
-        var step1 = new Completer();
-        var step2 = new Completer();
-        var step3 = new Completer();
+        var step1 = new Completer<dynamic>();
+        var step2 = new Completer<dynamic>();
+        var step3 = new Completer<dynamic>();
 
         Future action1() async {
           await step1.future;
           try {
-            var map = await db
+            dynamic map = await db
                 .execute("test")
                 .timeout(new Duration(milliseconds: 100));
             throw "should fail ($map)";
@@ -391,7 +392,7 @@ main() {
 
           await step2.future;
           try {
-            var map = await db
+            dynamic map = await db
                 .execute("test")
                 .timeout(new Duration(milliseconds: 100));
             throw "should fail ($map)";
@@ -419,9 +420,9 @@ main() {
         var future2 = action2();
         var future1 = action1();
 
-        await Future.wait([future1, future2]);
+        await Future.wait<dynamic>([future1, future2]);
         // check ready
-        await db.transaction((_) => null);
+        await db.transaction<dynamic>((_) => null);
       });
     });
 

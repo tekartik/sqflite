@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
 
-main() {
+void main() {
   group("sqflite", () {
     const MethodChannel channel = const MethodChannel('com.tekartik.sqflite');
 
@@ -30,7 +30,7 @@ main() {
 
       db?.batch();
       db?.update(null, null);
-      db?.transaction((Transaction txt) => null);
+      db?.transaction<dynamic>((Transaction txt) => null);
 
       Transaction transaction;
       transaction?.execute(null, null);

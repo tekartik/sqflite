@@ -40,8 +40,8 @@ class Rows extends PluginList<Map<String, dynamic>> {
   }
 }
 
-Map newQueryResultSetMap(List<String> columns, List<List<dynamic>> rows) {
-  Map map = {"columns": columns, "rows": rows};
+Map<String, dynamic> newQueryResultSetMap(List<String> columns, List<List<dynamic>> rows) {
+  var map = <String, dynamic>{"columns": columns, "rows": rows};
   return map;
 }
 
@@ -116,7 +116,7 @@ class QueryRow extends MapBase<String, dynamic> {
   QueryRow(this.queryResultSet, this.row);
 
   @override
-  operator [](Object key) {
+  dynamic operator [](Object key) {
     int columnIndex = queryResultSet.columnIndex(key as String);
     if (columnIndex != null) {
       return row[columnIndex];
@@ -125,7 +125,7 @@ class QueryRow extends MapBase<String, dynamic> {
   }
 
   @override
-  void operator []=(String key, value) {
+  void operator []=(String key, dynamic value) {
     throw new UnsupportedError("read-only");
   }
 
@@ -138,13 +138,13 @@ class QueryRow extends MapBase<String, dynamic> {
   Iterable<String> get keys => queryResultSet._columns;
 
   @override
-  remove(Object key) {
+  dynamic remove(Object key) {
     throw new UnsupportedError("read-only");
   }
 }
 
 class BatchResult {
-  final result;
+  final dynamic result;
 
   BatchResult(this.result);
 }
@@ -154,7 +154,7 @@ class BatchResults extends PluginList<dynamic> {
 
   @override
   dynamic operator [](int index) {
-    var result = _list[index];
+    dynamic result = _list[index];
 
     // list or map, this is a result
     if (result is Map) {

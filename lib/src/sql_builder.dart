@@ -166,9 +166,9 @@ class SqlBuilder {
     if (size > 0) {
       StringBuffer sbValues = new StringBuffer(") VALUES (");
 
-      bindArgs = [];
+      bindArgs = <dynamic>[];
       int i = 0;
-      values.forEach((String colName, var value) {
+      values.forEach((String colName, dynamic value) {
         if (i++ > 0) {
           insert.write(", ");
           sbValues.write(", ");
@@ -222,13 +222,13 @@ class SqlBuilder {
     update.write(_escapeName(table));
     update.write(" SET ");
 
-    List bindArgs = new List();
+    var bindArgs = <dynamic>[];
     int i = 0;
 
     values.keys.forEach((colName) {
       update.write((i++ > 0) ? ", " : "");
       update.write(_escapeName(colName));
-      var value = values[colName];
+      dynamic value = values[colName];
       if (value != null) {
         bindArgs.add(values[colName]);
         update.write(" = ?");
@@ -327,7 +327,7 @@ String unescapeName(String name) {
 
 // This list was built from the whole set of keywords
 // ([allKeywords] kept here for reference
-Set<String> escapeNames = new Set.from([
+Set<String> escapeNames = new Set.from(<String>[
   "add",
   "all",
   "alter",
