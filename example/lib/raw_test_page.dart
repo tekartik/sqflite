@@ -78,14 +78,14 @@ class SimpleTestPage extends TestPage {
 
       _test(int i) async {
         await db.transaction((txn) async {
-          int count = Sqflite
-              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+          int count = Sqflite.firstIntValue(
+              await txn.rawQuery("SELECT COUNT(*) FROM Test"));
           await new Future.delayed(new Duration(milliseconds: 40));
           await txn
               .rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
           //print(await db.query("SELECT COUNT(*) FROM Test"));
-          int afterCount = Sqflite
-              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+          int afterCount = Sqflite.firstIntValue(
+              await txn.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(count + 1, afterCount);
         });
       }
@@ -133,8 +133,8 @@ class SimpleTestPage extends TestPage {
 
           await step3.future;
 
-          int count = Sqflite
-              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+          int count = Sqflite.firstIntValue(
+              await txn.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(count, 1);
         });
       }
@@ -189,8 +189,8 @@ class SimpleTestPage extends TestPage {
 
           await step3.future;
 
-          int count = Sqflite
-              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+          int count = Sqflite.firstIntValue(
+              await txn.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(count, 1);
         });
       }
@@ -237,8 +237,8 @@ class SimpleTestPage extends TestPage {
 
       await db.transaction((txn) async {
         await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
-        int afterCount = Sqflite
-            .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+        int afterCount = Sqflite.firstIntValue(
+            await txn.rawQuery("SELECT COUNT(*) FROM Test"));
         expect(afterCount, 1);
 
         /*
@@ -248,8 +248,8 @@ class SimpleTestPage extends TestPage {
         assert(db2AfterCount == 0);
         */
       });
-      int db2AfterCount = Sqflite
-          .firstIntValue(await db2.rawQuery("SELECT COUNT(*) FROM Test"));
+      int db2AfterCount = Sqflite.firstIntValue(
+          await db2.rawQuery("SELECT COUNT(*) FROM Test"));
       expect(db2AfterCount, 1);
 
       int afterCount =
@@ -385,8 +385,8 @@ class SimpleTestPage extends TestPage {
       expect(list, expectedList);
 
       // Count the records
-      count = Sqflite
-          .firstIntValue(await database.rawQuery("SELECT COUNT(*) FROM Test"));
+      count = Sqflite.firstIntValue(
+          await database.rawQuery("SELECT COUNT(*) FROM Test"));
       expect(count, 2);
 
       // Delete a record
@@ -537,8 +537,8 @@ class SimpleTestPage extends TestPage {
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
       Database db2 = await openReadOnlyDatabase(path);
 
-      int count = Sqflite
-          .firstIntValue(await db2.rawQuery("SELECT COUNT(*) FROM Test"));
+      int count = Sqflite.firstIntValue(
+          await db2.rawQuery("SELECT COUNT(*) FROM Test"));
       expect(count, 0);
       await db.close();
       await db2.close();

@@ -21,8 +21,8 @@ class ExceptionTestPage extends TestPage {
       try {
         await db.transaction((txn) async {
           await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
-          int afterCount = Sqflite
-              .firstIntValue(await txn.rawQuery("SELECT COUNT(*) FROM Test"));
+          int afterCount = Sqflite.firstIntValue(
+              await txn.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(afterCount, 1);
 
           hasFailed = true;

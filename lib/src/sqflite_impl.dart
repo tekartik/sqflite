@@ -40,7 +40,8 @@ class Rows extends PluginList<Map<String, dynamic>> {
   }
 }
 
-Map<String, dynamic> newQueryResultSetMap(List<String> columns, List<List<dynamic>> rows) {
+Map<String, dynamic> newQueryResultSetMap(
+    List<String> columns, List<List<dynamic>> rows) {
   var map = <String, dynamic>{"columns": columns, "rows": rows};
   return map;
 }

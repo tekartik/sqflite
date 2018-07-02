@@ -66,6 +66,8 @@ abstract class DatabaseException implements Exception {
 class SqfliteDatabaseException extends DatabaseException {
   dynamic result;
 
+  SqfliteDatabaseException(String message, this.result) : super(message);
+
   @override
   String toString() {
     if (result is Map) {
@@ -80,8 +82,6 @@ class SqfliteDatabaseException extends DatabaseException {
     }
     return super.toString();
   }
-
-  SqfliteDatabaseException(String message, this.result) : super(message);
 
   /// Parse the sqlite native message to extract the code
   /// See https://www.sqlite.org/rescode.html for the list of result code

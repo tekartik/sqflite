@@ -27,7 +27,6 @@ class SqfliteOptions {
     return <String, dynamic>{'queryAsMapList': queryAsMapList};
   }
 
-
   void fromMap(Map<String, dynamic> map) {
     queryAsMapList = map['queryAsMapList'] as bool;
   }

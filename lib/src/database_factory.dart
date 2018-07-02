@@ -108,7 +108,7 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
         }
       }
 
-      setDatabaseOpenHelper(SqfliteDatabaseOpenHelper helper) {
+      void setDatabaseOpenHelper(SqfliteDatabaseOpenHelper helper) {
         if (path == null) {
           nullDatabaseOpenHelper = helper;
         } else {

@@ -13,8 +13,11 @@ abstract class SqfliteBatch implements Batch {
       apply(exclusive: exclusive, noResult: noResult);
 
   void _add(String method, String sql, List arguments) {
-    operations.add(
-        <String, dynamic>{paramMethod: method, paramSql: sql, paramSqlArguments: arguments});
+    operations.add(<String, dynamic>{
+      paramMethod: method,
+      paramSql: sql,
+      paramSqlArguments: arguments
+    });
   }
 
   @override

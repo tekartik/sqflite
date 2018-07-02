@@ -144,7 +144,6 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
 }
 
 class SqfliteDatabaseOpenHelper {
-  SqfliteDatabase newDatabase(String path) => factory.newDatabase(this, path);
   final SqfliteDatabaseFactory factory;
   final OpenDatabaseOptions options;
   final lock = new Lock();
@@ -152,6 +151,8 @@ class SqfliteDatabaseOpenHelper {
   SqfliteDatabase sqfliteDatabase;
 
   SqfliteDatabaseOpenHelper(this.factory, this.path, this.options);
+
+  SqfliteDatabase newDatabase(String path) => factory.newDatabase(this, path);
 
   bool get isOpened => sqfliteDatabase != null;
 
@@ -190,10 +191,11 @@ class SqfliteDatabaseOpenHelper {
 class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   // save the open helper for proper closing
   final SqfliteDatabaseOpenHelper openHelper;
-  bool get readOnly => openHelper?.options?.readOnly == true;
   OpenDatabaseOptions options;
 
   SqfliteDatabase(this.openHelper, this._path, {this.options});
+
+  bool get readOnly => openHelper?.options?.readOnly == true;
 
   @override
   SqfliteDatabase get db => this;
@@ -291,7 +293,8 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       txnSynchronized(txn, action);
 
   /// for sql without return values
-  Future<T> txnExecute<T>(SqfliteTransaction txn, String sql, [List arguments]) {
+  Future<T> txnExecute<T>(SqfliteTransaction txn, String sql,
+      [List arguments]) {
     return txnWriteSynchronized<T>(txn, (_) {
       return invokeExecute<T>(sql, arguments);
     });

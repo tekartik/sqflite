@@ -5,8 +5,8 @@ import 'package:sqflite/src/sql_builder.dart';
 void main() {
   group("sql_builder", () {
     test("delete", () {
-      SqlBuilder builder =
-          new SqlBuilder.delete("test", where: "value = ?", whereArgs: <dynamic>[1]);
+      SqlBuilder builder = new SqlBuilder.delete("test",
+          where: "value = ?", whereArgs: <dynamic>[1]);
       expect(builder.sql, "DELETE FROM test WHERE value = ?");
       expect(builder.arguments, [1]);
 
@@ -50,8 +50,8 @@ void main() {
       expect(builder.sql, "INSERT INTO test (value) VALUES (?)");
       expect(builder.arguments, [1]);
 
-      builder =
-          new SqlBuilder.insert("test", <String, dynamic>{"value": 1, "other_value": null});
+      builder = new SqlBuilder.insert(
+          "test", <String, dynamic>{"value": 1, "other_value": null});
       expect(builder.sql,
           "INSERT INTO test (value, other_value) VALUES (?, NULL)");
       expect(builder.arguments, [1]);
@@ -63,12 +63,13 @@ void main() {
         fail('should fail, no values');
       } on ArgumentError catch (_) {}
 
-      SqlBuilder builder = new SqlBuilder.update("test", <String, dynamic>{"value": 1});
+      SqlBuilder builder =
+          new SqlBuilder.update("test", <String, dynamic>{"value": 1});
       expect(builder.sql, "UPDATE test SET value = ?");
       expect(builder.arguments, [1]);
 
-      builder =
-          new SqlBuilder.update("test", <String, dynamic>{"value": 1, "other_value": null});
+      builder = new SqlBuilder.update(
+          "test", <String, dynamic>{"value": 1, "other_value": null});
       expect(builder.sql, "UPDATE test SET value = ?, other_value = NULL");
       expect(builder.arguments, [1]);
 
