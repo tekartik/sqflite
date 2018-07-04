@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
+import com.tekartik.sqflite.dev.Debug;
 import com.tekartik.sqflite.operation.BatchOperation;
 import com.tekartik.sqflite.operation.ExecuteOperation;
 import com.tekartik.sqflite.operation.MethodCallOperation;
@@ -54,12 +55,8 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
  */
 public class SqflitePlugin implements MethodCallHandler {
 
-    static private boolean LOGV = false;
-    static private boolean _EXTRA_LOGV = false; // to set to true for type debugging
-    static public boolean EXTRA_LOGV = false; // to set to true for type debugging
     static private boolean QUERY_AS_MAP_LIST = false; // set by options
 
-    static public String TAG = "Sqflite";
     private final Object databaseMapLocker = new Object();
     private Context context;
     private int databaseOpenCount = 0;
@@ -149,8 +146,8 @@ public class SqflitePlugin implements MethodCallHandler {
 
         for (int i = 0; i < length; i++) {
             Object value = cursorValue(cursor, i);
-            if (EXTRA_LOGV) {
-                Log.d(TAG, "column " + i + " " + cursor.getType(i) + ": " + value);
+            if (Debug.EXTRA_LOGV) {
+                Log.d(Constant.TAG, "column " + i + " " + cursor.getType(i) + ": " + value);
             }
             list.add(value);
         }
@@ -162,8 +159,8 @@ public class SqflitePlugin implements MethodCallHandler {
         String[] columns = cursor.getColumnNames();
         int length = columns.length;
         for (int i = 0; i < length; i++) {
-            if (EXTRA_LOGV) {
-                Log.d(TAG, "column " + i + " " + cursor.getType(i));
+            if (Debug.EXTRA_LOGV) {
+                Log.d(Constant.TAG, "column " + i + " " + cursor.getType(i));
             }
             switch (cursor.getType(i)) {
                 case Cursor.FIELD_TYPE_NULL:
@@ -263,8 +260,8 @@ public class SqflitePlugin implements MethodCallHandler {
 
     private boolean executeOrError(Database database, Operation operation) {
         SqlCommand command = operation.getSqlCommand();
-        if (LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
+        if (Debug.LOGV) {
+            Log.d(Constant.TAG, "[" + Thread.currentThread() + "] " + command);
         }
         try {
             database.getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
@@ -276,8 +273,8 @@ public class SqflitePlugin implements MethodCallHandler {
     }
 
     private Database executeOrError(Database database, SqlCommand command, Result result) {
-        if (LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
+        if (Debug.LOGV) {
+            Log.d(Constant.TAG, "[" + Thread.currentThread() + "] " + command);
         }
         try {
             database.getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
@@ -420,13 +417,13 @@ public class SqflitePlugin implements MethodCallHandler {
             cursor = database.getWritableDatabase().rawQuery(sql, null);
             if (cursor.moveToFirst()) {
                 long id = cursor.getLong(0);
-                if (LOGV) {
-                    Log.d(TAG, "inserted " + id);
+                if (Debug.LOGV) {
+                    Log.d(Constant.TAG, "inserted " + id);
                 }
                 operation.success(id);
                 return true;
             } else {
-                Log.e(TAG, "Fail to read inserted it");
+                Log.e(Constant.TAG, "Fail to read inserted it");
             }
             operation.success(null);
             return true;
@@ -448,8 +445,8 @@ public class SqflitePlugin implements MethodCallHandler {
         Map<String, Object> newResults = null;
         List<List<Object>> rows = null;
         int newColumnCount = 0;
-        if (LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
+        if (Debug.LOGV) {
+            Log.d(Constant.TAG, "[" + Thread.currentThread() + "] " + command);
         }
         Cursor cursor = null;
         boolean queryAsMapList = QUERY_AS_MAP_LIST;
@@ -462,8 +459,8 @@ public class SqflitePlugin implements MethodCallHandler {
             while (cursor.moveToNext()) {
                 if (queryAsMapList) {
                     Map<String, Object> map = cursorRowToMap(cursor);
-                    if (LOGV) {
-                        Log.d(TAG, SqflitePlugin.toString(map));
+                    if (Debug.LOGV) {
+                        Log.d(Constant.TAG, SqflitePlugin.toString(map));
                     }
                     results.add(map);
                 } else {
@@ -558,13 +555,13 @@ public class SqflitePlugin implements MethodCallHandler {
             cursor = db.rawQuery("SELECT changes()", null);
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 final int changed = cursor.getInt(0);
-                if (LOGV) {
-                    Log.d(TAG, "changed " + changed);
+                if (Debug.LOGV) {
+                    Log.d(Constant.TAG, "changed " + changed);
                 }
                 operation.success(changed);
                 return true;
             } else {
-                Log.e(TAG, "fail to read changes for Update/Delete");
+                Log.e(Constant.TAG, "fail to read changes for Update/Delete");
             }
             operation.success(null);
             return true;
@@ -662,13 +659,13 @@ public class SqflitePlugin implements MethodCallHandler {
                 //TEST UI  Handler
                 //handler = new Handler();
                 handler = new Handler(handlerThread.getLooper());
-                if (LOGV) {
-                    Log.d(TAG, "starting thread" + handlerThread);
+                if (Debug.LOGV) {
+                    Log.d(Constant.TAG, "starting thread" + handlerThread);
                 }
             }
             databaseMap.put(databaseId, database);
-            if (LOGV) {
-                Log.d(TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
+            if (Debug.LOGV) {
+                Log.d(Constant.TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
             }
         }
 
@@ -684,16 +681,16 @@ public class SqflitePlugin implements MethodCallHandler {
         if (database == null) {
             return;
         }
-        if (LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] closing " + databaseId + " " + database.path + " total open count (" + databaseOpenCount + ")");
+        if (Debug.LOGV) {
+            Log.d(Constant.TAG, "[" + Thread.currentThread() + "] closing " + databaseId + " " + database.path + " total open count (" + databaseOpenCount + ")");
         }
         database.close();
 
         synchronized (databaseMapLocker) {
             databaseMap.remove(databaseId);
             if (--databaseOpenCount == 0) {
-                if (LOGV) {
-                    Log.d(TAG, "stopping thread" + handlerThread);
+                if (Debug.LOGV) {
+                    Log.d(Constant.TAG, "stopping thread" + handlerThread);
                 }
                 handlerThread.quit();
                 handlerThread = null;
@@ -715,8 +712,8 @@ public class SqflitePlugin implements MethodCallHandler {
 
             case METHOD_DEBUG_MODE: {
                 Object on = call.arguments();
-                LOGV = Boolean.TRUE.equals(on);
-                EXTRA_LOGV = _EXTRA_LOGV && LOGV;
+                Debug.LOGV = Boolean.TRUE.equals(on);
+                Debug.EXTRA_LOGV = Debug._EXTRA_LOGV && Debug.LOGV;
                 result.success(null);
                 break;
             }

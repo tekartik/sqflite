@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.tekartik.sqflite.SqflitePlugin.EXTRA_LOGV;
-import static com.tekartik.sqflite.SqflitePlugin.TAG;
+import static com.tekartik.sqflite.Constant.TAG;
+import static com.tekartik.sqflite.dev.Debug.EXTRA_LOGV;
 
 public class SqlCommand {
     public String getSql() {

@@ -41,4 +41,7 @@ public class Constant {
 
     // memory database path
     static final String MEMORY_DATABASE_PATH = ":memory:";
+
+    // android log tag
+    static public String TAG = "Sqflite";
 }
