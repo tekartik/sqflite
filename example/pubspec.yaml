@@ -1,6 +1,9 @@
 name: sqflite_example
 description: Demonstrates how to use the sqflite plugin.
 
+environment:
+  sdk: ">=2.0.0-dev.35 <3.0.0"
+
 dependencies:
   path: any
   collection: any
