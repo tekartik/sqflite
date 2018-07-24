@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:func/func.dart';
 
 class Test {
   final bool solo;
@@ -8,5 +7,5 @@ class Test {
       : solo = solo == true,
         skip = skip == true;
   String name;
-  Func0<FutureOr> fn;
+  FutureOr Function() fn;
 }

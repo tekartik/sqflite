@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:func/func.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/src/common_import.dart';
 import 'model/item.dart';
@@ -14,17 +13,17 @@ class TestPage extends StatefulWidget {
   final String title;
   final List<Test> tests = [];
 
-  test(String name, Func0<FutureOr> fn) {
+  test(String name, FutureOr fn()) {
     tests.add(new Test(name, fn));
   }
 
   @Deprecated("SOLO_TEST - On purpose to remove before checkin")
-  void solo_test(String name, Func0<FutureOr> fn) {
+  void solo_test(String name, FutureOr fn()) {
     tests.add(new Test(name, fn, solo: true));
   }
 
   @Deprecated("SKIP_TEST - On purpose to remove before checkin")
-  void skip_test(String name, Func0<FutureOr> fn) {
+  void skip_test(String name, FutureOr fn()) {
     tests.add(new Test(name, fn, skip: true));
   }
 
