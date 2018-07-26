@@ -171,6 +171,13 @@ class OpenTestPage extends TestPage {
           onCreate: (Database db, int version) async {
         await db.execute("CREATE TABLE Test(id INTEGER PRIMARY KEY)");
       });
+      try {
+        await database
+            .insert("Test", <String, dynamic>{'id': 1, 'name': 'test'});
+        fail('should fail');
+      } on DatabaseException catch (e) {
+        print(e);
+      }
       await database.close();
       database = await openDatabase(path, version: 2,
           onUpgrade: (Database db, int oldVersion, int newVersion) async {
@@ -180,6 +187,11 @@ class OpenTestPage extends TestPage {
         onUpgrade = true;
       });
       verify(onUpgrade);
+
+      expect(
+          await await database
+              .insert("Test", <String, dynamic>{'id': 1, 'name': 'test'}),
+          1);
       await database.close();
     });
 
