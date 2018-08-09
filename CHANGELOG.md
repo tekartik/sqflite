@@ -1,3 +1,7 @@
+## 0.11.1
+
+* add `Sqlflite.hex` to allow querying on blob fields
+
 ## 0.11.0
 
 * add `getDatabasesPath` to use as the base location to create a database

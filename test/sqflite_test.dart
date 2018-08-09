@@ -37,5 +37,64 @@ void main() {
 
       expect(ConflictAlgorithm.abort, isNotNull);
     });
+
+    test('firstIntValue', () {
+      expect(
+          Sqflite.firstIntValue([
+            <String, dynamic>{'test': 1}
+          ]),
+          1);
+      expect(
+          Sqflite.firstIntValue([
+            <String, dynamic>{'test': 1},
+            <String, dynamic>{'test': 1}
+          ]),
+          1);
+      expect(
+          Sqflite.firstIntValue([
+            <String, dynamic>{'test': null}
+          ]),
+          null);
+      expect(Sqflite.firstIntValue([<String, dynamic>{}]), null);
+      expect(Sqflite.firstIntValue(<Map<String, dynamic>>[]), null);
+    });
+
+    test('hex', () {
+      expect(
+          Sqflite.hex([
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            255
+          ]),
+          '000102030405060708090A0B0C0D0E0F1011FF');
+      expect(Sqflite.hex([]), '');
+      expect(Sqflite.hex([32]), '20');
+
+      try {
+        Sqflite.hex([-1]);
+        fail('should fail');
+      } on FormatException catch (_) {}
+
+      try {
+        Sqflite.hex([256]);
+        fail('should fail');
+      } on FormatException catch (_) {}
+    });
   });
 }

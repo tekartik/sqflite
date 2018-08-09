@@ -125,7 +125,7 @@ class TypeTestPage extends TestPage {
     });
 
     test("blob", () async {
-      //await Sqflite.devSetDebugModeOn(true);
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("type_blob.db");
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
@@ -140,19 +140,43 @@ class TypeTestPage extends TestPage {
         // UInt8List - default
         ByteData byteData = new ByteData(1);
         byteData.setInt8(0, 1);
-        id = await insertValue(byteData.buffer.asUint8List());
+        var blob = byteData.buffer.asUint8List();
+        id = await insertValue(blob);
         //print(await getValue(id));
-        expect(await getValue(id), [1]);
+        var result = (await getValue(id));
+        print(result.runtimeType);
+        expect(result is Uint8List, true);
+        expect(result.length, 1);
+        expect(result, [1]);
 
         // empty array not supported
         //id = await insertValue([]);
         //print(await getValue(id));
         //assert(eq.equals(await getValue(id), []));
 
-        id = await insertValue([1, 2, 3, 4]);
-        //print(await getValue(id));
-        expect(await getValue(id), [1, 2, 3, 4],
+        final blob1234 = [1, 2, 3, 4];
+        id = await insertValue(blob1234);
+        print(await getValue(id));
+        print('${(await getValue(id)).length}');
+        expect(await getValue(id), blob1234,
             reason: "${await getValue(id)}");
+
+        // test hex feature on sqlite
+        var hexResult = await data.db.rawQuery('SELECT hex(value) FROM Test WHERE _id = ?', [id]);
+        expect(hexResult[0].values.first, "01020304");
+
+        // try blob lookup - does work
+        var rows = await data.db
+            .rawQuery('SELECT * FROM Test WHERE value = ?', [blob1234]);
+        expect(rows.length, 0);
+
+        // try blob lookup using hex
+        rows =
+            await data.db.rawQuery('SELECT * FROM Test WHERE hex(value) = ?', [
+          Sqflite.hex(blob1234)
+        ]);
+        expect(rows.length, 1);
+        expect(rows[0]['_id'], 3);
       } finally {
         await data.db.close();
       }

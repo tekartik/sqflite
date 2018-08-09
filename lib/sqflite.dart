@@ -80,6 +80,10 @@ class Sqflite {
     return null;
   }
 
+  /// Utility to encode a blob to allow blow query using
+  /// "hex(blob_field) = ?", Sqlite.hex([1,2,3])
+  static String hex(List<int> bytes) => impl.hex(bytes);
+
   /// Sqlite has a dead lock warning feature that will print some text
   /// after 10s, you can override the default behavior
   static void setLockWarningInfo({Duration duration, void callback()}) {

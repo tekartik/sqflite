@@ -195,3 +195,16 @@ void setLockWarningInfo({Duration duration, void callback()}) {
   lockWarningDuration = duration ?? lockWarningDuration;
   lockWarningCallback = callback ?? lockWarningCallback;
 }
+
+/// Utility to encode a blob to allow blow query using
+/// "hex(blob_field) = ?", Sqlite.hex([1,2,3])
+String hex(List<int> bytes) {
+  var buffer = new StringBuffer();
+  for (int part in bytes) {
+    if (part & 0xff != part) {
+      throw new FormatException("Non-byte integer detected");
+    }
+    buffer.write('${part < 16 ? '0' : ''}${part.toRadixString(16)}');
+  }
+  return buffer.toString().toUpperCase();
+}
