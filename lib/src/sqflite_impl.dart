@@ -202,7 +202,7 @@ String hex(List<int> bytes) {
   var buffer = new StringBuffer();
   for (int part in bytes) {
     if (part & 0xff != part) {
-      throw new FormatException("Non-byte integer detected");
+      throw new FormatException("$part is not a byte integer");
     }
     buffer.write('${part < 16 ? '0' : ''}${part.toRadixString(16)}');
   }

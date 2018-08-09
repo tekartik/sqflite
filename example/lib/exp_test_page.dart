@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -360,6 +361,36 @@ class ExpTestPage extends TestPage {
       expect(result.length, 2);
 
       await db.close();
+    });
+
+    test('sql dump file', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+
+      // try to import an sql dump file (not working)
+      String path = await initDeleteDb("sql_file.db");
+      var db = await openDatabase(path);
+      try {
+        var table = "test";
+        var sql = '''
+CREATE TABLE test (value INTEGER);
+INSERT INTO test (value) VALUES (1);
+INSERT INTO test (value) VALUES (10);
+''';
+        await db.execute(sql);
+
+        // that should be the expected result
+        // var expectedResult = [
+        //   {"value": 1},
+        //   {"value": 10}
+        // ];
+        var result = await db.rawQuery("SELECT * FROM $table");
+        // However (at least on Android)
+        // result is empty, only the first statement is executed
+        print(json.encode(result));
+        expect(result, []);
+      } finally {
+        await db.close();
+      }
     });
   }
 }

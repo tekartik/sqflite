@@ -75,7 +75,10 @@ class Sqflite {
   /// Useful for COUNT(*) queries
   static int firstIntValue(List<Map> list) {
     if (list != null && list.length > 0) {
-      return parseInt(list.first?.values?.first);
+      var firstRow = list.first;
+      if (firstRow.length > 0) {
+        return parseInt(firstRow.values?.first);
+      }
     }
     return null;
   }

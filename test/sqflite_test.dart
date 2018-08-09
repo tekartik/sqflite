@@ -55,8 +55,9 @@ void main() {
             <String, dynamic>{'test': null}
           ]),
           null);
-      expect(Sqflite.firstIntValue([<String, dynamic>{}]), null);
-      expect(Sqflite.firstIntValue(<Map<String, dynamic>>[]), null);
+      expect(Sqflite.firstIntValue([<String, dynamic>{}]), isNull);
+      expect(Sqflite.firstIntValue(<Map<String, dynamic>>[]), isNull);
+      expect(Sqflite.firstIntValue([<String, dynamic>{}]), isNull);
     });
 
     test('hex', () {
