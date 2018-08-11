@@ -505,6 +505,39 @@ class OpenTestPage extends TestPage {
         );
         await db.close();
       }
+
+      // asset (use existing copy if any
+      {
+        // Check if we have an existing copy first
+        var databasesPath = await getDatabasesPath();
+        String path = join(databasesPath, "demo_asset_example.db");
+
+        // try opening (will work if it exists)
+        Database db;
+        try {
+          db = await openDatabase(path, readOnly: true);
+        } catch (e) {
+          print("Error $e");
+        }
+
+        if (db == null) {
+          // Should happen only the first time you launch your application
+          print("Creating new copy from asset");
+
+          // Copy from asset
+          ByteData data = await rootBundle.load(join("assets", "example.db"));
+          List<int> bytes =
+              data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+          await new File(path).writeAsBytes(bytes);
+
+          // open the database
+          db = await openDatabase(path, readOnly: true);
+        } else {
+          print("Opening existing database");
+        }
+
+        await db.close();
+      }
     });
 
     test('Database locked (doc)', () async {
