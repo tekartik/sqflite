@@ -105,8 +105,11 @@ class Todo {
   String title;
   bool done;
 
-  Map toMap() {
-    Map map = {columnTitle: title, columnDone: done == true ? 1 : 0};
+  Map<String, dynamic> toMap() {
+    var map = <String, dynamic>{
+      columnTitle: title,
+      columnDone: done == true ? 1 : 0
+    };
     if (id != null) {
       map[columnId] = id;
     }
@@ -115,7 +118,7 @@ class Todo {
 
   Todo();
 
-  Todo.fromMap(Map map) {
+  Todo.fromMap(Map<String, dynamic> map) {
     id = map[columnId];
     title = map[columnTitle];
     done = map[columnDone] == 1;
