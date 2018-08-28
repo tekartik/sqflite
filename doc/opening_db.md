@@ -11,7 +11,7 @@ var path = join(databasesPath, dbName);
 
 // Make sure the directory exists
 try {
-  await documentsDirectory.create(recursive: true);
+  await Directory(databasesPath).create(recursive: true);
 } catch (_) {}
 ```
 
@@ -160,3 +160,11 @@ class Helper {
   }
 }
 ```
+
+## Solving exceptions
+
+If you get exception when opening a database:
+- check the [troubleshooting](troubleshooting.md) section
+- Make sure the directory where you create the database exists
+- Make sure the database path points to an existing database (or nothing) and
+  not to a file which is not a sqlite database
