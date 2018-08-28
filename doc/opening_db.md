@@ -168,3 +168,4 @@ If you get exception when opening a database:
 - Make sure the directory where you create the database exists
 - Make sure the database path points to an existing database (or nothing) and
   not to a file which is not a sqlite database
+- Handle any expected exception in the open callbacks (onCreate/onUpdate/onConfigure/onOpen)
