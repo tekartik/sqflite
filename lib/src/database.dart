@@ -154,7 +154,6 @@ class SqfliteDatabaseOpenHelper {
 
   SqfliteDatabase newDatabase(String path) => factory.newDatabase(this, path);
 
-  @override
   bool get isOpen => sqfliteDatabase != null;
 
   // Future<SqfliteDatabase> get databaseReady => _completer.future;
@@ -201,6 +200,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   @override
   SqfliteDatabase get db => this;
 
+  @override
   bool get isOpen => openHelper.isOpen;
 
   @override
