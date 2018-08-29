@@ -249,9 +249,12 @@ db.query("table", columns: ["group"], where: '"group" = ?', whereArgs: ["my_gro
 
 ## Supported SQLite types
 
-No validity check is done on values yet so please avoid non supported types. DateTime is not
-a supported SQL type (https://www.sqlite.org/datatype3.html). Personally I store them as 
+No validity check is done on values yet so please avoid non supported types [https://www.sqlite.org/datatype3.html](https://www.sqlite.org/datatype3.html)
+
+`DateTime` is not a supported SQLite type. Personally I store them as 
 int (millisSinceEpoch) or string (iso8601)
+
+`bool` is not a supported SQLite type. Use `INTEGER` and 0 and 1 values.
 
 ### INTEGER
 
