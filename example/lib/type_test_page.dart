@@ -158,11 +158,11 @@ class TypeTestPage extends TestPage {
         id = await insertValue(blob1234);
         print(await getValue(id));
         print('${(await getValue(id)).length}');
-        expect(await getValue(id), blob1234,
-            reason: "${await getValue(id)}");
+        expect(await getValue(id), blob1234, reason: "${await getValue(id)}");
 
         // test hex feature on sqlite
-        var hexResult = await data.db.rawQuery('SELECT hex(value) FROM Test WHERE _id = ?', [id]);
+        var hexResult = await data.db
+            .rawQuery('SELECT hex(value) FROM Test WHERE _id = ?', [id]);
         expect(hexResult[0].values.first, "01020304");
 
         // try blob lookup - does work
@@ -171,10 +171,8 @@ class TypeTestPage extends TestPage {
         expect(rows.length, 0);
 
         // try blob lookup using hex
-        rows =
-            await data.db.rawQuery('SELECT * FROM Test WHERE hex(value) = ?', [
-          Sqflite.hex(blob1234)
-        ]);
+        rows = await data.db.rawQuery(
+            'SELECT * FROM Test WHERE hex(value) = ?', [Sqflite.hex(blob1234)]);
         expect(rows.length, 1);
         expect(rows[0]['_id'], 3);
       } finally {

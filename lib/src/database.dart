@@ -154,15 +154,16 @@ class SqfliteDatabaseOpenHelper {
 
   SqfliteDatabase newDatabase(String path) => factory.newDatabase(this, path);
 
-  bool get isOpened => sqfliteDatabase != null;
+  @override
+  bool get isOpen => sqfliteDatabase != null;
 
   // Future<SqfliteDatabase> get databaseReady => _completer.future;
 
   // open or return the one opened
   Future<SqfliteDatabase> openDatabase() async {
-    if (!isOpened) {
+    if (!isOpen) {
       return await lock.synchronized(() async {
-        if (!isOpened) {
+        if (!isOpen) {
           SqfliteDatabase database = newDatabase(path);
           await database.doOpen(options);
           this.sqfliteDatabase = database;
@@ -174,9 +175,9 @@ class SqfliteDatabaseOpenHelper {
   }
 
   Future closeDatabase(SqfliteDatabase sqfliteDatabase) async {
-    if (isOpened) {
+    if (isOpen) {
       await lock.synchronized(() async {
-        if (!isOpened) {
+        if (!isOpen) {
           return;
         } else {
           await sqfliteDatabase.doClose();
@@ -200,7 +201,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   @override
   SqfliteDatabase get db => this;
 
-  bool get isOpened => openHelper.isOpened;
+  bool get isOpen => openHelper.isOpen;
 
   @override
   String get path => _path;

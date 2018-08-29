@@ -224,6 +224,9 @@ abstract class Database implements DatabaseExecutor {
   ///
   Future<int> getVersion();
 
+  /// Tell if the database is open, returns false once close has been called
+  bool get isOpen;
+
   ///
   /// Set the database inner version
   /// Used internally for open helpers and automatic versioning

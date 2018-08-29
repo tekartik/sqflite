@@ -1,3 +1,7 @@
+## 0.12.2
+
+* add `Database.isOpen` which becomes false once the database is closed
+
 ## 0.11.1
 
 * add `Sqlflite.hex` to allow querying on blob fields

@@ -111,6 +111,17 @@ void main() {
         expect(db.methods, ['openDatabase', 'closeDatabase']);
         expect(db.argumentsLists.first, {'path': null, 'readOnly': true});
       });
+      test('isOpen', () async {
+        // var db = mockDatabaseFactory.newEmptyDatabase();
+        var db = await mockDatabaseFactory.openDatabase(null,
+            options: new SqfliteOpenDatabaseOptions(readOnly: true));
+        expect(db.isOpen, true);
+        var closeFuture = db.close();
+        // it is not closed right away
+        expect(db.isOpen, true);
+        await closeFuture;
+        expect(db.isOpen, false);
+      });
     });
     group('openTransaction', () {
       test('onCreate', () async {

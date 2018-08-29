@@ -118,6 +118,17 @@ class OpenTestPage extends TestPage {
       await db.close();
     });
 
+    test("isOpen", () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("is_open.db");
+      expect((await new File(path).exists()), false);
+      Database db = await openDatabase(path);
+      expect(db.isOpen, true);
+      verify(await new File(path).exists());
+      await db.close();
+      expect(db.isOpen, false);
+    });
+
     test("Open no version onCreate", () async {
       // should fail
       String path = await initDeleteDb("open_no_version_on_create.db");
