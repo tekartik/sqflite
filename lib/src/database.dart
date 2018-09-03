@@ -8,6 +8,7 @@ import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/sqflite_impl.dart' as impl;
 import 'package:sqflite/src/sql_builder.dart';
+import 'package:sqflite/src/sql_parser.dart';
 import 'package:sqflite/src/transaction.dart';
 import 'package:sqflite/src/utils.dart';
 import 'package:synchronized/synchronized.dart';
@@ -593,5 +594,50 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       // clean up open transaction
       openTransaction = null;
     }
+  }
+
+  @override
+  Future<String> sqlExport() async {
+
+    var statements = <String>[];
+    await transaction((Transaction txn) async {
+      var tableRows = await txn.rawQuery('SELECT sql FROM sqlite_master');
+      for (var tableRow in tableRows) {
+        var sql = tableRow.values.first as String;
+        var table = extractTableName(sql);
+        if (table != null && !isSystemTable(unescapeText(table))) {
+          statements.add(fixStatement(sql));
+
+
+          var contentRows = await txn.rawQuery('SELECT * from $table');
+          for (var contentRow in contentRows) {
+            var values = <String>[];
+            for (var value in contentRow.values) {
+              if (value == null) {
+                values.add('NULL');
+              } else if (value is num) {
+                values.add(value.toString());
+              } else if (value is List<int>) {
+                values.add("x'${hex(value)}'");
+              } else {
+                values.add("'${sanitizeText(value.toString())}'");
+              }
+            }
+            statements.add('INSERT INTO $table VALUES (${values.join(",")});');
+          }
+        }
+      }
+    });
+    return statements.join('\n');
+  }
+
+  @override
+  Future sqlImport(String sqlStatements) async {
+    var statements = sqlStatements.split(';\n');
+    var batch = this.batch();
+    for (var statement in statements) {
+      batch.execute(statement);
+    }
+    await batch.commit(noResult: true);
   }
 }

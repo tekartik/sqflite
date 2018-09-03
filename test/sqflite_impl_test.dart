@@ -71,5 +71,10 @@ void main() {
     });
 
     test('lockWarning', () {});
+
+    test('extract_table_name', () {
+      expect(extractTableName('CREATE TABLE IF NOT EXISTS "artists" (value TEXT)'), '"artists"');
+      expect(extractTableName('CREATE TABLE "albums"'), '"albums"');
+    });
   });
 }

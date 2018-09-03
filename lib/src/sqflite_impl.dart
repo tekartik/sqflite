@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:core';
 
 import 'package:flutter/src/services/platform_channel.dart';
+import 'package:sqflite/src/sql_parser.dart';
 import 'package:sqflite/src/utils.dart';
 
 import 'constant.dart' as constant;
@@ -207,4 +208,19 @@ String hex(List<int> bytes) {
     buffer.write('${part < 16 ? '0' : ''}${part.toRadixString(16)}');
   }
   return buffer.toString().toUpperCase();
+}
+
+
+bool isSystemTable(String table) {
+  return table.startsWith('sqlite_') || table == 'android_metadata';
+}
+
+String extractTableName(String sqlTableStatement) {
+  var parser = SqlParser(sqlTableStatement);
+  if (parser.parseTokens(['create', 'table'])) {
+    // optional
+    parser.parseTokens(['if', 'not', 'exists']);
+    return parser.getNextToken();
+  }
+  return null;
 }

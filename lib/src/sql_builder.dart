@@ -304,6 +304,16 @@ bool isEscapedName(String name) {
 // We use double quote, although backtick could be used too
 String _doEscape(String name) => '"$name"';
 
+String fixStatement(String sql) {
+  if (!sql.endsWith(';')) {
+    return '$sql;';
+  }
+  return sql;
+}
+String sanitizeText(String text) {
+  return text.replaceAll("'", "''");
+}
+
 // Escape a table or column name if necessary
 // i.e. if it is an identified it will be surrounded by " (double-quote)
 // Only some name belonging to keywords can be escaped

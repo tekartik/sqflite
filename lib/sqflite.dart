@@ -233,6 +233,13 @@ abstract class Database implements DatabaseExecutor {
   ///
   Future setVersion(int version);
 
+
+  /// Export the database in SQL format (similar to sqlite3 command line sql dump)
+  Future<String> sqlExport();
+
+  /// Import the database from an SQL dump
+  Future sqlImport(String sqlStatements);
+
   /// testing only
   @deprecated
   Future<T> devInvokeMethod<T>(String method, [dynamic arguments]);
