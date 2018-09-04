@@ -15,37 +15,6 @@ final String columnDone = "done";
 class ExpTestPage extends TestPage {
   ExpTestPage() : super("Exp Tests") {
 
-    test('export_import', () async {
-      String path = await initDeleteDb("export.db");
-      Database db = await openDatabase(path);
-      try {
-
-        String table = "test";
-        await db
-            .execute("CREATE TABLE $table (column_1 INTEGER, column_2 TEXT)");
-        // inserted in a wrong order to check ASC/DESC
-        await db
-            .execute("INSERT INTO $table (column_1, column_2) VALUES (11, ?)",
-            ['Some \' test \n']);
-        var sql = await db.sqlExport();
-        expect(sql, '''
-CREATE TABLE test (column_1 INTEGER, column_2 TEXT);
-INSERT INTO test VALUES (11,'Some '' test 
-');''');
-
-        await db.close();
-        path = await initDeleteDb("import.db");
-        db = await openDatabase(path);
-        await db.sqlImport(sql);
-        // re-export
-        var sql2 = await db.sqlExport();
-        expect(sql2, sql);
-
-      } finally {
-        await db.close();
-      }
-
-    });
     test("order_by", () async {
       //await Sqflite.setDebugModeOn(true);
       String path = await initDeleteDb("order_by_exp.db");
