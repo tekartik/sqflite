@@ -20,7 +20,7 @@ class ExceptionTestPage extends TestPage {
       bool hasFailed = false;
       try {
         await db.transaction((txn) async {
-          await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+          await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", <dynamic>["item"]);
           int afterCount = Sqflite.firstIntValue(
               await txn.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(afterCount, 1);
@@ -51,7 +51,7 @@ class ExceptionTestPage extends TestPage {
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
       var batch = db.batch();
-      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item"]);
+      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", <dynamic>["item"]);
       batch.execute("DUMMY CALL");
 
       bool hasFailed = true;
@@ -96,7 +96,7 @@ class ExceptionTestPage extends TestPage {
       }
 
       try {
-        await db.rawQuery("malformed query with args ?", [1]);
+        await db.rawQuery("malformed query with args ?", <dynamic>[1]);
         fail(); // should fail before
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());

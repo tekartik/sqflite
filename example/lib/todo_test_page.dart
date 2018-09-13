@@ -12,6 +12,15 @@ class Todo {
   String title;
   bool done;
 
+
+  Todo();
+
+  Todo.fromMap(Map map) {
+    id = map[columnId] as int;
+    title = map[columnTitle] as String;
+    done = map[columnDone] == 1;
+  }
+
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
       columnTitle: title,
@@ -23,13 +32,6 @@ class Todo {
     return map;
   }
 
-  Todo();
-
-  Todo.fromMap(Map map) {
-    id = map[columnId] as int;
-    title = map[columnTitle] as String;
-    done = map[columnDone] == 1;
-  }
 }
 
 class TodoProvider {

@@ -13,21 +13,6 @@ class _Data {
 class TypeTestPage extends TestPage {
   final _Data data = new _Data();
 
-  // Get the value field from a given
-  Future<dynamic> getValue(int id) async {
-    return ((await data.db.query("Test", where: "_id = $id")).first)["value"];
-  }
-
-  // insert the value field and return the id
-  Future<int> insertValue(dynamic value) async {
-    return await data.db.insert("Test", {"value": value});
-  }
-
-  // insert the value field and return the id
-  Future<int> updateValue(int id, dynamic value) async {
-    return await data.db.update("Test", {"value": value}, where: "_id = $id");
-  }
-
   TypeTestPage() : super("Type tests") {
     test("int", () async {
       //await Sqflite.devSetDebugModeOn(true);
@@ -225,4 +210,21 @@ class TypeTestPage extends TestPage {
       }
     });
   }
+
+
+  // Get the value field from a given
+  Future<dynamic> getValue(int id) async {
+    return ((await data.db.query("Test", where: "_id = $id")).first)["value"];
+  }
+
+  // insert the value field and return the id
+  Future<int> insertValue(dynamic value) async {
+    return await data.db.insert("Test", {"value": value});
+  }
+
+  // insert the value field and return the id
+  Future<int> updateValue(int id, dynamic value) async {
+    return await data.db.update("Test", {"value": value}, where: "_id = $id");
+  }
+
 }

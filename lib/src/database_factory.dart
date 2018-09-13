@@ -21,9 +21,15 @@ Future<Database> openReadOnlyDatabase(String path) async {
   return sqlfliteDatabaseFactory.openDatabase(path, options: options);
 }
 
+/// Basic databases operations
 abstract class DatabaseFactory {
+  /// Open a database at [path] with the given [options]
   Future<Database> openDatabase(String path, {OpenDatabaseOptions options});
+
+  /// Get the default databases location path
   Future<String> getDatabasesPath();
+
+  /// Delete a database if it exists
   Future deleteDatabase(String path);
 }
 
@@ -61,6 +67,17 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
   bool readOnly;
   @override
   bool singleInstance;
+
+  @override
+  String toString() {
+    var map = <String, dynamic>{};
+    if (version != null) {
+      map['version'] = version;
+    }
+    map['readOnly'] = readOnly;
+    map['singleInstance'] = singleInstance;
+    return map.toString();
+  }
 }
 
 class SqfliteDatabaseFactory implements DatabaseFactory {
@@ -120,8 +137,8 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
         }
       }
 
-      if (path != null && path != inMemoryDatabasePath) {
-        path = absolute(normalize(path));
+      if (path != null) {
+        path = await fixPath(path);
       }
       var databaseOpenHelper = getExistingDatabaseOpenHelper(path);
 
@@ -156,14 +173,34 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
     }
   }
 
+  String _databasesPath;
+
   @override
   Future<String> getDatabasesPath() async {
-    var path = await wrapDatabaseException<String>(() {
-      return invokeMethod<String>(methodGetDatabasesPath);
-    });
+    if (_databasesPath == null) {
+      var path = await wrapDatabaseException<String>(() {
+        return invokeMethod<String>(methodGetDatabasesPath);
+      });
+      if (path == null) {
+        throw new SqfliteDatabaseException("getDatabasesPath is null", null);
+      }
+      _databasesPath = path;
+    }
+    return _databasesPath;
+  }
+
+  Future<String> fixPath(String path) async {
     if (path == null) {
-      throw new SqfliteDatabaseException("getDatabasesPath is null", null);
+      path = await getDatabasesPath();
+    } else if (path == inMemoryDatabasePath) {
+      // nothing
+    } else {
+      if (isRelative(path)) {
+        path = join(await getDatabasesPath(), path);
+      }
+      path = absolute(normalize(path));
     }
     return path;
   }
+
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
@@ -113,13 +115,13 @@ class _MyHomePageState extends State<MyHomePage> {
   int get _itemCount => widget.items.length;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     initPlatformState();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
-  initPlatformState() async {
+  Future initPlatformState() async {
     String platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {

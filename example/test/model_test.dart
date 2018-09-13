@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_example/model/test.dart';
 
-main() {
+void main() {
   group("model", () {
     test("test_sync", () async {
       bool ran = false;

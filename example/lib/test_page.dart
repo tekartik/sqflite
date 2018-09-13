@@ -13,7 +13,9 @@ class TestPage extends StatefulWidget {
   final String title;
   final List<Test> tests = [];
 
-  test(String name, FutureOr fn()) {
+  TestPage(this.title);
+
+  void test(String name, FutureOr fn()) {
     tests.add(new Test(name, fn));
   }
 
@@ -28,17 +30,16 @@ class TestPage extends StatefulWidget {
   }
 
   // Thrown an exception
-  fail([String message]) {
+  void fail([String message]) {
     throw new Exception(message ?? "should fail");
   }
 
-  TestPage(this.title) {}
 
   @override
   _TestPageState createState() => new _TestPageState();
 }
 
-expect(dynamic value, dynamic expected, {String reason}) {
+void expect(dynamic value, dynamic expected, {String reason}) {
   if (value != expected) {
     if (value is List || value is Map) {
       if (!const DeepCollectionEquality().equals(value, expected)) {
@@ -50,14 +51,18 @@ expect(dynamic value, dynamic expected, {String reason}) {
   }
 }
 
+
 bool verify(bool condition, [String message]) {
   message ??= "verify failed";
+  expect(condition, true, reason: message);
+  /*
   if (condition == null) {
     throw new Exception('"$message" null condition');
   }
   if (!condition) {
     throw new Exception('"$message"');
   }
+  */
   return condition;
 }
 
@@ -89,7 +94,7 @@ class _TestPageState extends State<TestPage> with Group {
 
   List<Item> items = [];
 
-  _run() async {
+  Future _run() async {
     if (!mounted) {
       return null;
     }
@@ -128,7 +133,7 @@ class _TestPageState extends State<TestPage> with Group {
     }
   }
 
-  _runTest(int index) async {
+  Future _runTest(int index) async {
     if (!mounted) {
       return null;
     }
@@ -166,7 +171,7 @@ class _TestPageState extends State<TestPage> with Group {
   }
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     /*
     setState(() {

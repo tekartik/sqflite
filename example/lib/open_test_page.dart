@@ -15,13 +15,6 @@ class OpenCallbacks {
   bool onDowngradeCalled;
   bool onUpgradeCalled;
 
-  void reset() {
-    onConfigureCalled = false;
-    onOpenCalled = false;
-    onCreateCalled = false;
-    onDowngradeCalled = false;
-    onUpgradeCalled = false;
-  }
 
   OnDatabaseCreateFn onCreate;
   OnDatabaseConfigureFn onConfigure;
@@ -67,6 +60,15 @@ class OpenCallbacks {
 
     reset();
   }
+
+  void reset() {
+    onConfigureCalled = false;
+    onOpenCalled = false;
+    onCreateCalled = false;
+    onDowngradeCalled = false;
+    onUpgradeCalled = false;
+  }
+
 
   Future<Database> open(String path, {int version}) async {
     reset();
@@ -474,7 +476,7 @@ class OpenTestPage extends TestPage {
       String path = await initDeleteDb("open_read_only.db");
 
       {
-        _onConfigure(Database db) async {
+        Future _onConfigure(Database db) async {
           // Add support for cascade delete
           await db.execute("PRAGMA foreign_keys = ON");
         }
@@ -484,13 +486,13 @@ class OpenTestPage extends TestPage {
       }
 
       {
-        _onCreate(Database db, int version) async {
+        Future _onCreate(Database db, int version) async {
           // Database is created, delete the table
           await db.execute(
               "CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)");
         }
 
-        _onUpgrade(Database db, int oldVersion, int newVersion) async {
+        Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
           // Database version is updated, alter the table
           await db.execute("ALTER TABLE Test ADD name TEXT");
         }
@@ -505,7 +507,7 @@ class OpenTestPage extends TestPage {
       }
 
       {
-        _onOpen(Database db) async {
+        Future _onOpen(Database db) async {
           // Database is open, print its version
           print('db version ${await db.getVersion()}');
         }

@@ -76,7 +76,7 @@ class SimpleTestPage extends TestPage {
       Database db = await openDatabase(path);
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
-      _test(int i) async {
+      Future _test(int i) async {
         await db.transaction((txn) async {
           int count = Sqflite.firstIntValue(
               await txn.rawQuery("SELECT COUNT(*) FROM Test"));
