@@ -192,6 +192,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   // save the open helper for proper closing
   final SqfliteDatabaseOpenHelper openHelper;
   OpenDatabaseOptions options;
+  SqfliteDatabaseFactory get factory => openHelper.factory;
 
   SqfliteDatabase(this.openHelper, this._path, {this.options});
 
@@ -236,7 +237,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   }
 
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
-      impl.invokeMethod(method, arguments);
+      factory.invokeMethod(method, arguments);
 
   @override
   Future<T> devInvokeMethod<T>(String method, [dynamic arguments]) {
