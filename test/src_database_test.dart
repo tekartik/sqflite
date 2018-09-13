@@ -59,6 +59,32 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
   MockDatabase newDatabase(SqfliteDatabaseOpenHelper openHelper, String path) {
     return new MockDatabase(openHelper, path);
   }
+
+  @override
+  Future<String> getDatabasesPath() async {
+    return join('.dart_tool', 'sqlite', 'test', 'mock');
+  }
+}
+
+class MockDatabaseFactoryBase extends SqfliteDatabaseFactory {
+  List<String> methods = [];
+
+  @override
+  Future<T> invokeMethod<T>(String method, [dynamic arguments]) {
+    methods.add(method);
+    return null;
+  }
+
+  MockDatabase newEmptyDatabase() {
+    SqfliteDatabaseOpenHelper helper =
+    new SqfliteDatabaseOpenHelper(this, null, new OpenDatabaseOptions());
+    return helper.newDatabase(null) as MockDatabase;
+  }
+
+  @override
+  MockDatabase newDatabase(SqfliteDatabaseOpenHelper openHelper, String path) {
+    return new MockDatabase(openHelper, path);
+  }
 }
 
 final MockDatabaseFactory mockDatabaseFactory = new MockDatabaseFactory();
@@ -66,7 +92,7 @@ final MockDatabaseFactory mockDatabaseFactory = new MockDatabaseFactory();
 void main() {
   group('database_factory', () {
     test('getDatabasesPath', () async {
-      var factory = new MockDatabaseFactory();
+      var factory = new MockDatabaseFactoryBase();
       try {
         await factory.getDatabasesPath();
         fail("should fail");
