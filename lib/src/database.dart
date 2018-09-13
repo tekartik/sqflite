@@ -6,7 +6,6 @@ import 'package:sqflite/src/constant.dart' hide lockWarningDuration;
 import 'package:sqflite/src/database_factory.dart';
 import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
-import 'package:sqflite/src/sqflite_impl.dart' as impl;
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/transaction.dart';
 import 'package:sqflite/src/utils.dart';
@@ -192,9 +191,10 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   // save the open helper for proper closing
   final SqfliteDatabaseOpenHelper openHelper;
   OpenDatabaseOptions options;
-  SqfliteDatabaseFactory get factory => openHelper.factory;
 
   SqfliteDatabase(this.openHelper, this._path, {this.options});
+
+  SqfliteDatabaseFactory get factory => openHelper.factory;
 
   bool get readOnly => openHelper?.options?.readOnly == true;
 
