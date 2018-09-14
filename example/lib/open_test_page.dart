@@ -15,7 +15,6 @@ class OpenCallbacks {
   bool onDowngradeCalled;
   bool onUpgradeCalled;
 
-
   OnDatabaseCreateFn onCreate;
   OnDatabaseConfigureFn onConfigure;
   OnDatabaseVersionChangeFn onDowngrade;
@@ -69,7 +68,6 @@ class OpenCallbacks {
     onUpgradeCalled = false;
   }
 
-
   Future<Database> open(String path, {int version}) async {
     reset();
     return await databaseFactory.openDatabase(path,
@@ -85,6 +83,8 @@ class OpenCallbacks {
 
 class OpenTestPage extends TestPage {
   OpenTestPage() : super("Open tests") {
+    var factory = databaseFactory;
+
     test('Databases path', () async {
       // await Sqflite.devSetDebugModeOn(false);
       var databasesPath = await getDatabasesPath();
@@ -639,6 +639,35 @@ class OpenTestPage extends TestPage {
         {"id": 1}
       ]);
       await db.close();
+    });
+
+    test('open in sub directory', () async {
+      var databasesPath = await factory.getDatabasesPath();
+      String path = join(databasesPath, 'sub_that_should_not_exists');
+      try {
+        await new Directory(path).delete(recursive: true);
+      } catch (_) {}
+      var dbPath = join(path, 'open.db');
+      var db = await factory.openDatabase(dbPath);
+      try {} finally {
+        await db.close();
+      }
+    });
+
+    test('open in sub sub directory', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var databasesPath = await factory.getDatabasesPath();
+      String path =
+          join(databasesPath, 'sub2_that_should_not_exists', 'sub_sub');
+      try {
+        await new Directory(path).delete(recursive: true);
+      } catch (_) {}
+      expect(await new Directory(path).exists(), false);
+      var dbPath = join(path, 'open.db');
+      var db = await factory.openDatabase(dbPath);
+      try {} finally {
+        await db.close();
+      }
     });
   }
 }
