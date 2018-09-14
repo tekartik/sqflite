@@ -463,12 +463,15 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
     return "${id} $path";
   }
 
-  Future<int> _openDatabase() {
+  Future<int> openDatabase() async {
     var params = <String, dynamic>{paramPath: path};
     if (readOnly == true) {
       params[paramReadOnly] = true;
+    } else {
+      // create the folder if needed (needed for iOS)
+      await factory.createParentDirectory(path);
     }
-    return wrapDatabaseException<int>(() {
+    return await wrapDatabaseException<int>(() {
       return invokeMethod<int>(methodOpenDatabase, params);
     });
   }
@@ -501,7 +504,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
             "onDowngrade must be null if no version is specified");
       }
     }
-    int databaseId = await _openDatabase();
+    int databaseId = await openDatabase();
     this.options = options;
 
     try {
@@ -518,7 +521,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
           await deleteDatabase(db.path);
 
           // get a new database id after open
-          db.id = databaseId = await _openDatabase();
+          db.id = databaseId = await openDatabase();
 
           try {
             // Since we deleted the database re-run the needed first steps:

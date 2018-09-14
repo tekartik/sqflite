@@ -87,7 +87,7 @@ class OpenTestPage extends TestPage {
 
     test('Databases path', () async {
       // await Sqflite.devSetDebugModeOn(false);
-      var databasesPath = await getDatabasesPath();
+      var databasesPath = await factory.getDatabasesPath();
       // On Android we know it is current a "databases" folder in the package folder
       print("databasesPath: " + databasesPath);
       if (Platform.isAndroid) {
@@ -96,8 +96,8 @@ class OpenTestPage extends TestPage {
         expect(basename(databasesPath), "Documents");
       }
       String path = join(databasesPath, "in_default_directory.db");
-      await deleteDatabase(path);
-      Database db = await openDatabase(path);
+      await factory.deleteDatabase(path);
+      Database db = await factory.openDatabase(path);
       await db.close();
     });
     test("Delete database", () async {

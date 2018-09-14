@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/exception.dart';
+import 'package:sqflite/src/utils.dart';
 import 'package:synchronized/synchronized.dart';
 import 'sqflite_impl.dart' as impl;
 
@@ -189,6 +190,20 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
     return _databasesPath;
   }
 
+  Future createParentDirectory(String path) async {
+    // needed on iOS
+    if (Platform.isIOS) {
+      path = await fixPath(path);
+      if (isPath(path)) {
+        try {
+          path = dirname(path);
+          // devPrint('createParentDirectory: $path');
+          await Directory(path).create(recursive: true);
+        } catch (_) {}
+      }
+    }
+  }
+
   Future<String> fixPath(String path) async {
     if (path == null) {
       path = await getDatabasesPath();
@@ -201,6 +216,10 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
       path = absolute(normalize(path));
     }
     return path;
+  }
+
+  bool isPath(String path) {
+    return (path != null) && (path != inMemoryDatabasePath);
   }
 
 }
