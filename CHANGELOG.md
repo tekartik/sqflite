@@ -1,4 +1,9 @@
-## 0.12.2
+## 0.12.0
+
+* iOS objective C prefix added to prevent conflict
+* on iOS create the directory of the database if it does not exist
+
+## 0.11.2
 
 * add `Database.isOpen` which becomes false once the database is closed
 
@@ -10,7 +15,7 @@
 
 * add `getDatabasesPath` to use as the base location to create a database
 * Warning: database are now single instance by default (based on `path`), to use the 
-  old behavior use `singleInstance = false` when opening a database
+  old behavior use `singleInstance = kfalse` when opening a database
 * dart2 stable support
   
 ## 0.10.0
