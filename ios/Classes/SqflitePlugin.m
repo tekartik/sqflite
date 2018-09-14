@@ -1,45 +1,48 @@
 #import "SqflitePlugin.h"
 #import "FMDB.h"
 #import <sqlite3.h>
-#import "Operation.h"
+#import "SqfliteOperation.h"
 
-NSString *const _channelName = @"com.tekartik.sqflite";
+static NSString *const _channelName = @"com.tekartik.sqflite";
 
-NSString *const _methodGetPlatformVersion = @"getPlatformVersion";
-NSString *const _methodGetDatabasesPath = @"getDatabasesPath";
-NSString *const _methodDebugMode = @"debugMode";
-NSString *const _methodOptions = @"options";
-NSString *const _methodOpenDatabase = @"openDatabase";
-NSString *const _methodCloseDatabase = @"closeDatabase";
-NSString *const _methodExecute = @"execute";
-NSString *const _methodInsert = @"insert";
-NSString *const _methodUpdate = @"update";
-NSString *const _methodQuery = @"query";
-NSString *const _methodBatch = @"batch";
+static NSString *const _methodGetPlatformVersion = @"getPlatformVersion";
+static NSString *const _methodGetDatabasesPath = @"getDatabasesPath";
+static NSString *const _methodDebugMode = @"debugMode";
+static NSString *const _methodOptions = @"options";
+static NSString *const _methodOpenDatabase = @"openDatabase";
+static NSString *const _methodCloseDatabase = @"closeDatabase";
+static NSString *const _methodExecute = @"execute";
+static NSString *const _methodInsert = @"insert";
+static NSString *const _methodUpdate = @"update";
+static NSString *const _methodQuery = @"query";
+static NSString *const _methodBatch = @"batch";
 
 // For open
-NSString *const _paramReadOnly = @"readOnly";
+static NSString *const _paramReadOnly = @"readOnly";
 // For batch
-NSString *const _paramOperations = @"operations";
-NSString *const _paramNoResult = @"noResult";
+static NSString *const _paramOperations = @"operations";
 // For each batch operation
-NSString *const _paramMethod = @"method";
-NSString *const _paramPath = @"path";
-NSString *const _paramId = @"id";
-NSString *const _paramSql = @"sql";
-NSString *const _paramSqlArguments = @"arguments";
-NSString *const _paramTable = @"table";
-NSString *const _paramValues = @"values";
+static NSString *const _paramPath = @"path";
+static NSString *const _paramId = @"id";
+static NSString *const _paramTable = @"table";
+static NSString *const _paramValues = @"values";
 
-NSString *const _sqliteErrorCode = @"sqlite_error";
-NSString *const _errorBadParam = @"bad_param"; // internal only
-NSString *const _errorOpenFailed = @"open_failed";
-NSString *const _errorDatabaseClosed = @"database_closed";
+static NSString *const _sqliteErrorCode = @"sqlite_error";
+static NSString *const _errorBadParam = @"bad_param"; // internal only
+static NSString *const _errorOpenFailed = @"open_failed";
+static NSString *const _errorDatabaseClosed = @"database_closed";
 
 // options
-NSString *const _paramQueryAsMapList = @"queryAsMapList";
+static NSString *const _paramQueryAsMapList = @"queryAsMapList";
 
-@interface Database : NSObject
+// Shared
+NSString *const SqfliteParamSql = @"sql";
+NSString *const SqfliteParamSqlArguments = @"arguments";
+NSString *const SqfliteParamNoResult = @"noResult";
+NSString *const SqfliteParamMethod = @"method";
+
+
+@interface SqfliteDatabase : NSObject
 
 @property (atomic, retain) FMDatabaseQueue *fmDatabaseQueue;
 @property (atomic, retain) NSNumber *databaseId;
@@ -49,13 +52,13 @@ NSString *const _paramQueryAsMapList = @"queryAsMapList";
 
 @interface SqflitePlugin ()
 
-@property (atomic, retain) NSMutableDictionary<NSNumber*, Database*>* databaseMap; // = [NSMutableDictionary new];
+@property (atomic, retain) NSMutableDictionary<NSNumber*, SqfliteDatabase*>* databaseMap; // = [NSMutableDictionary new];
 @property (atomic, retain) NSObject* mapLock;
 @property (atomic, retain) NSOperationQueue *operationQueue;
 
 @end
 
-@implementation Database
+@implementation SqfliteDatabase
 
 @synthesize databaseId;
 @synthesize fmDatabaseQueue;
@@ -68,14 +71,14 @@ NSString *const _paramQueryAsMapList = @"queryAsMapList";
 @synthesize mapLock;
 @synthesize operationQueue;
 
-bool _queryAsMapList = false;
-BOOL _log = false;
-BOOL _extra_log = false;
+static bool _queryAsMapList = false;
+static BOOL _log = false;
+static BOOL _extra_log = false;
 
-BOOL __extra_log = false; // to set to true for type debugging
+static BOOL __extra_log = false; // to set to true for type debugging
 
-NSInteger _lastDatabaseId = 0;
-NSInteger _databaseOpenCount = 0;
+static NSInteger _lastDatabaseId = 0;
+static NSInteger _databaseOpenCount = 0;
 
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -95,9 +98,9 @@ NSInteger _databaseOpenCount = 0;
     return self;
 }
 
-- (Database *)getDatabaseOrError:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (SqfliteDatabase *)getDatabaseOrError:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSNumber* databaseId = call.arguments[_paramId];
-    Database* database = self.databaseMap[databaseId];
+    SqfliteDatabase* database = self.databaseMap[databaseId];
     if (database == nil) {
         NSLog(@"db not found.");
         result([FlutterError errorWithCode:_sqliteErrorCode
@@ -119,17 +122,17 @@ NSInteger _databaseOpenCount = 0;
     return NO;
 }
 
-- (BOOL)handleError:(FMDatabase*)db operation:(Operation*)operation {
+- (BOOL)handleError:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     // handle error
     if ([db hadError]) {
         NSMutableDictionary* details = nil;
         NSString* sql = [operation getSql];
         if (sql != nil) {
             details = [NSMutableDictionary new];
-            [details setObject:sql forKey:_paramSql];
+            [details setObject:sql forKey:SqfliteParamSql];
             NSArray* sqlArguments = [operation getSqlArguments];
             if (sqlArguments != nil) {
-                [details setObject:sqlArguments forKey:_paramSqlArguments];
+                [details setObject:sqlArguments forKey:SqfliteParamSqlArguments];
             }
         }
         
@@ -202,8 +205,8 @@ NSInteger _databaseOpenCount = 0;
 }
 
 - (bool)executeOrError:(FMDatabase*)db call:(FlutterMethodCall*)call result:(FlutterResult)result {
-    NSString* sql = call.arguments[_paramSql];
-    NSArray* arguments = call.arguments[_paramSqlArguments];
+    NSString* sql = call.arguments[SqfliteParamSql];
+    NSArray* arguments = call.arguments[SqfliteParamSqlArguments];
     NSArray* sqlArguments = [SqflitePlugin toSqlArguments:arguments];
     BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:arguments];
     if (_log) {
@@ -224,7 +227,7 @@ NSInteger _databaseOpenCount = 0;
     return true;
 }
 
-- (bool)executeOrError:(FMDatabase*)db operation:(Operation*)operation {
+- (bool)executeOrError:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
@@ -249,7 +252,7 @@ NSInteger _databaseOpenCount = 0;
 //
 // query
 //
-- (bool)query:(FMDatabase*)db operation:(Operation*)operation {
+- (bool)query:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
@@ -311,13 +314,13 @@ NSInteger _databaseOpenCount = 0;
 }
 
 - (void)handleQueryCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    Database* database = [self getDatabaseOrError:call result:result];
+    SqfliteDatabase* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
         return;
     }
     [self.operationQueue addOperationWithBlock:^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-            MethodCallOperation* operation = [MethodCallOperation newWithCall:call result:result];
+            SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
             [self query:db operation:operation];
         }];
     }];
@@ -326,7 +329,7 @@ NSInteger _databaseOpenCount = 0;
 //
 // insert
 //
-- (bool)insert:(FMDatabase*)db operation:(Operation*)operation {
+- (bool)insert:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     if (![self executeOrError:db operation:operation]) {
         return false;
     }
@@ -344,13 +347,13 @@ NSInteger _databaseOpenCount = 0;
 
 - (void)handleInsertCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     
-    Database* database = [self getDatabaseOrError:call result:result];
+    SqfliteDatabase* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
         return;
     }
     [self.operationQueue addOperationWithBlock:^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-            MethodCallOperation* operation = [MethodCallOperation newWithCall:call result:result];
+            SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
             [self insert:db operation:operation];
         }];
     }];
@@ -359,7 +362,7 @@ NSInteger _databaseOpenCount = 0;
 //
 // update
 //
-- (bool)update:(FMDatabase*)db operation:(Operation*)operation {
+- (bool)update:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     if (![self executeOrError:db operation:operation]) {
         return false;
     }
@@ -376,13 +379,13 @@ NSInteger _databaseOpenCount = 0;
 }
 
 - (void)handleUpdateCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    Database* database = [self getDatabaseOrError:call result:result];
+    SqfliteDatabase* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
         return;
     }
     [self.operationQueue addOperationWithBlock:^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-            MethodCallOperation* operation = [MethodCallOperation newWithCall:call result:result];
+            SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
             [self update:db operation:operation];
         }];
     }];
@@ -391,7 +394,7 @@ NSInteger _databaseOpenCount = 0;
 //
 // execute
 //
-- (bool)execute:(FMDatabase*)db operation:(Operation*)operation {
+- (bool)execute:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     if (![self executeOrError:db operation:operation]) {
         return false;
     }
@@ -400,13 +403,13 @@ NSInteger _databaseOpenCount = 0;
 }
 
 - (void)handleExecuteCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    Database* database = [self getDatabaseOrError:call result:result];
+    SqfliteDatabase* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
         return;
     }
     [self.operationQueue addOperationWithBlock:^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-            MethodCallOperation* operation = [MethodCallOperation newWithCall:call result:result];
+            SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
             [self execute:db operation:operation];
         }];
     }];
@@ -416,14 +419,14 @@ NSInteger _databaseOpenCount = 0;
 // batch
 //
 - (void)handleBatchCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    Database* database = [self getDatabaseOrError:call result:result];
+    SqfliteDatabase* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
         return;
     }
     [self.operationQueue addOperationWithBlock:^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
             
-            MethodCallOperation* mainOperation = [MethodCallOperation newWithCall:call result:result];
+            SqfliteMethodCallOperation* mainOperation = [SqfliteMethodCallOperation newWithCall:call result:result];
             bool noResult = [mainOperation getNoResult];
             
             NSArray* operations = call.arguments[_paramOperations];
@@ -431,7 +434,7 @@ NSInteger _databaseOpenCount = 0;
             for (NSDictionary* dictionary in operations) {
                 // do something with object
                 
-                BatchOperation* operation = [BatchOperation new];
+                SqfliteBatchOperation* operation = [SqfliteBatchOperation new];
                 operation.dictionary = dictionary;
                 operation.noResult = noResult;
                 
@@ -507,7 +510,7 @@ NSInteger _databaseOpenCount = 0;
     
     NSNumber* databaseId;
     @synchronized (self.mapLock) {
-        Database* database = [Database new];
+        SqfliteDatabase* database = [SqfliteDatabase new];
         databaseId = [NSNumber numberWithInteger:++_lastDatabaseId];
         database.fmDatabaseQueue = queue;
         database.databaseId = databaseId;
@@ -529,7 +532,7 @@ NSInteger _databaseOpenCount = 0;
 // close
 //
 - (void)handleCloseDatabaseCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    Database* database = [self getDatabaseOrError:call result:result];
+    SqfliteDatabase* database = [self getDatabaseOrError:call result:result];
     if (database == nil) {
         return;
     }

@@ -6,11 +6,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Operation.h"
+#import "SqfliteOperation.h"
 #import "SqflitePlugin.h"
 
 // Abstract
-@implementation Operation
+@implementation SqfliteOperation
 
 - (NSString*)getMethod {
     return  nil;
@@ -30,20 +30,20 @@
 
 @end
 
-@implementation BatchOperation
+@implementation SqfliteBatchOperation
 
 @synthesize dictionary, results, error, noResult;
 
 - (NSString*)getMethod {
-    return [dictionary objectForKey:_paramMethod];
+    return [dictionary objectForKey:SqfliteParamMethod];
 }
 
 - (NSString*)getSql {
-    return [dictionary objectForKey:_paramSql];
+    return [dictionary objectForKey:SqfliteParamSql];
 }
 
 - (NSArray*)getSqlArguments {
-    NSArray* arguments = [dictionary objectForKey:_paramSqlArguments];
+    NSArray* arguments = [dictionary objectForKey:SqfliteParamSqlArguments];
     return [SqflitePlugin toSqlArguments:arguments];
 }
 
@@ -69,13 +69,13 @@
 
 @end
 
-@implementation MethodCallOperation
+@implementation SqfliteMethodCallOperation
 
 @synthesize flutterMethodCall;
 @synthesize flutterResult;
 
-+ (MethodCallOperation*)newWithCall:(FlutterMethodCall*)flutterMethodCall result:(FlutterResult)flutterResult {
-    MethodCallOperation* operation = [MethodCallOperation new];
++ (SqfliteMethodCallOperation*)newWithCall:(FlutterMethodCall*)flutterMethodCall result:(FlutterResult)flutterResult {
+    SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation new];
     operation.flutterMethodCall = flutterMethodCall;
     operation.flutterResult = flutterResult;
     return operation;
@@ -86,16 +86,16 @@
 }
 
 - (NSString*)getSql {
-    return flutterMethodCall.arguments[_paramSql];
+    return flutterMethodCall.arguments[SqfliteParamSql];
 }
 
 - (bool)getNoResult {
-    NSNumber* noResult = flutterMethodCall.arguments[_paramNoResult];
+    NSNumber* noResult = flutterMethodCall.arguments[SqfliteParamNoResult];
     return [noResult boolValue];
 }
 
 - (NSArray*)getSqlArguments {
-    NSArray* arguments = flutterMethodCall.arguments[_paramSqlArguments];
+    NSArray* arguments = flutterMethodCall.arguments[SqfliteParamSqlArguments];
     return [SqflitePlugin toSqlArguments:arguments];
 }
 

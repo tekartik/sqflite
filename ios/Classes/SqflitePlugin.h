@@ -6,7 +6,7 @@
 
 @end
 
-extern NSString *const _paramMethod;
-extern NSString *const _paramSql;
-extern NSString *const _paramSqlArguments;
-extern NSString *const _paramNoResult;
+extern NSString *const SqfliteParamMethod;
+extern NSString *const SqfliteParamSql;
+extern NSString *const SqfliteParamSqlArguments;
+extern NSString *const SqfliteParamNoResult;
