@@ -15,14 +15,14 @@ import 'type_test_page.dart';
 import 'todo_test_page.dart';
 
 void main() {
-  runApp(new MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
   // This widget is the root of your application.
 
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 const String testRawRoute = "/test/simple";
@@ -36,21 +36,21 @@ const String testDeprecatedRoute = "/test/deprecated";
 
 class _MyAppState extends State<MyApp> {
   var routes = <String, WidgetBuilder>{
-    '/test': (BuildContext context) => new MyHomePage(),
-    testRawRoute: (BuildContext context) => new SimpleTestPage(),
-    testOpenRoute: (BuildContext context) => new OpenTestPage(),
-    testSlowRoute: (BuildContext context) => new SlowTestPage(),
-    testTodoRoute: (BuildContext context) => new TodoTestPage(),
-    testThreadRoute: (BuildContext context) => new TypeTestPage(),
-    testExceptionRoute: (BuildContext context) => new ExceptionTestPage(),
-    testExpRoute: (BuildContext context) => new ExpTestPage(),
-    testDeprecatedRoute: (BuildContext context) => new DeprecatedTestPage(),
+    '/test': (BuildContext context) => MyHomePage(),
+    testRawRoute: (BuildContext context) => SimpleTestPage(),
+    testOpenRoute: (BuildContext context) => OpenTestPage(),
+    testSlowRoute: (BuildContext context) => SlowTestPage(),
+    testTodoRoute: (BuildContext context) => TodoTestPage(),
+    testThreadRoute: (BuildContext context) => TypeTestPage(),
+    testExceptionRoute: (BuildContext context) => ExceptionTestPage(),
+    testExpRoute: (BuildContext context) => ExpTestPage(),
+    testDeprecatedRoute: (BuildContext context) => DeprecatedTestPage(),
   };
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
         title: 'Sqflite Demo',
-        theme: new ThemeData(
+        theme: ThemeData(
           // This is the theme of your application.
           //
           // Try running your application with "flutter run". You'll see
@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
           // is not restarted.
           primarySwatch: Colors.blue,
         ),
-        home: new MyHomePage(title: 'Sqflite Demo Home Page'),
+        home: MyHomePage(title: 'Sqflite Demo Home Page'),
         routes: routes);
   }
 }
@@ -71,22 +71,22 @@ class MyHomePage extends StatefulWidget {
   final List<MainItem> items = [];
 
   MyHomePage({Key key, this.title}) : super(key: key) {
-    items.add(new MainItem("Raw tests", "Raw SQLite operations",
-        route: testRawRoute));
-    items.add(new MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
+    items.add(
+        MainItem("Raw tests", "Raw SQLite operations", route: testRawRoute));
+    items.add(MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
         route: testOpenRoute));
     items.add(
-        new MainItem("Type tests", "Test value types", route: testThreadRoute));
+        MainItem("Type tests", "Test value types", route: testThreadRoute));
     items.add(
-        new MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
-    items.add(new MainItem(
+        MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
+    items.add(MainItem(
         "Todo database example", "Simple Todo-like database usage example",
         route: testTodoRoute));
-    items.add(new MainItem("Exp tests", "Experimental and various tests",
+    items.add(MainItem("Exp tests", "Experimental and various tests",
         route: testExpRoute));
-    items.add(new MainItem("Exception tests", "Tests that trigger exceptions",
+    items.add(MainItem("Exception tests", "Tests that trigger exceptions",
         route: testExceptionRoute));
-    items.add(new MainItem("Deprecated test",
+    items.add(MainItem("Deprecated test",
         "Keeping some old tests for deprecated functionalities",
         route: testDeprecatedRoute));
 
@@ -106,7 +106,7 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -144,19 +144,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-        appBar: new AppBar(
-          title: new Center(
-              child: new Text('Sqflite demo', textAlign: TextAlign.center)),
+    return Scaffold(
+        appBar: AppBar(
+          title:
+              Center(child: Text('Sqflite demo', textAlign: TextAlign.center)),
         ),
-        body: new ListView.builder(
-            itemBuilder: _itemBuilder, itemCount: _itemCount));
+        body:
+            ListView.builder(itemBuilder: _itemBuilder, itemCount: _itemCount));
   }
 
   //new Center(child: new Text('Running on: $_platformVersion\n')),
 
   Widget _itemBuilder(BuildContext context, int index) {
-    return new MainItemWidget(widget.items[index], (MainItem item) {
+    return MainItemWidget(widget.items[index], (MainItem item) {
       Navigator.of(context).pushNamed(item.route);
     });
   }

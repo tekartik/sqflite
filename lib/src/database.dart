@@ -31,7 +31,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
   @override
   Future<int> insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
-    SqlBuilder builder = new SqlBuilder.insert(table, values,
+    SqlBuilder builder = SqlBuilder.insert(table, values,
         nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
   }
@@ -73,7 +73,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
       String orderBy,
       int limit,
       int offset}) {
-    SqlBuilder builder = new SqlBuilder.query(table,
+    SqlBuilder builder = SqlBuilder.query(table,
         distinct: distinct,
         columns: columns,
         where: where,
@@ -110,7 +110,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
   @override
   Future<int> update(String table, Map<String, dynamic> values,
       {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm}) {
-    SqlBuilder builder = new SqlBuilder.update(table, values,
+    SqlBuilder builder = SqlBuilder.update(table, values,
         where: where,
         whereArgs: whereArgs,
         conflictAlgorithm: conflictAlgorithm);
@@ -137,7 +137,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
   @override
   Future<int> delete(String table, {String where, List whereArgs}) {
     SqlBuilder builder =
-        new SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
+        SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
     return rawDelete(builder.sql, builder.arguments);
   }
 }
@@ -145,7 +145,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
 class SqfliteDatabaseOpenHelper {
   final SqfliteDatabaseFactory factory;
   final OpenDatabaseOptions options;
-  final lock = new Lock();
+  final lock = Lock();
   final String path;
   SqfliteDatabase sqfliteDatabase;
 
@@ -219,7 +219,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   SqfliteTransaction get txn => openTransaction;
 
   // non-reentrant lock
-  final rawLock = new Lock();
+  final rawLock = Lock();
 
   // Its internal id
   int id;
@@ -233,7 +233,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
 
   @override
   Batch batch() {
-    return new SqfliteDatabaseBatch(this);
+    return SqfliteDatabaseBatch(this);
   }
 
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
@@ -268,7 +268,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
           (lockWarningDuration != null && lockWarningCallback != null);
       Completer timeoutCompleter;
       if (handleTimeoutWarning) {
-        timeoutCompleter = new Completer<dynamic>();
+        timeoutCompleter = Completer<dynamic>();
       }
 
       // Grab the lock
@@ -367,7 +367,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
           return null;
         }
         // dart2 - wrap if we need to support more results than just int
-        return new BatchResults.from(results);
+        return BatchResults.from(results);
       });
     });
   }
@@ -382,7 +382,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   }
 
   Future<SqfliteTransaction> beginTransaction({bool exclusive}) async {
-    SqfliteTransaction txn = new SqfliteTransaction(this);
+    SqfliteTransaction txn = SqfliteTransaction(this);
     // never create transaction in read-only mode
     if (readOnly != true) {
       if (exclusive == true) {
@@ -488,19 +488,18 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
   Future<SqfliteDatabase> doOpen(OpenDatabaseOptions options) async {
     if (options.version != null) {
       if (options.version == 0) {
-        throw new ArgumentError("version cannot be set to 0 in openDatabase");
+        throw ArgumentError("version cannot be set to 0 in openDatabase");
       }
     } else {
       if (options.onCreate != null) {
-        throw new ArgumentError(
-            "onCreate must be null if no version is specified");
+        throw ArgumentError("onCreate must be null if no version is specified");
       }
       if (options.onUpgrade != null) {
-        throw new ArgumentError(
+        throw ArgumentError(
             "onUpgrade must be null if no version is specified");
       }
       if (options.onDowngrade != null) {
-        throw new ArgumentError(
+        throw ArgumentError(
             "onDowngrade must be null if no version is specified");
       }
     }
@@ -552,7 +551,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       id = databaseId;
 
       // create dummy open transaction
-      openTransaction = new SqfliteTransaction(this);
+      openTransaction = SqfliteTransaction(this);
 
       // first configure it
       if (options.onConfigure != null) {

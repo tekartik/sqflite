@@ -252,8 +252,7 @@ typedef FutureOr OnDatabaseConfigureFn(Database db);
 /// Downgrading will always fail
 Future onDatabaseVersionChangeError(
     Database db, int oldVersion, int newVersion) async {
-  throw new ArgumentError(
-      "can't change version from $oldVersion to $newVersion");
+  throw ArgumentError("can't change version from $oldVersion to $newVersion");
 }
 
 Future __onDatabaseDowngradeDelete(
@@ -278,7 +277,7 @@ abstract class OpenDatabaseOptions {
       OnDatabaseOpenFn onOpen,
       bool readOnly = false,
       bool singleInstance = true}) {
-    return new impl.SqfliteOpenDatabaseOptions(
+    return impl.SqfliteOpenDatabaseOptions(
         version: version,
         onConfigure: onConfigure,
         onCreate: onCreate,
@@ -326,7 +325,7 @@ Future<Database> openDatabase(String path,
     OnDatabaseOpenFn onOpen,
     bool readOnly = false,
     bool singleInstance = true}) {
-  var options = new OpenDatabaseOptions(
+  var options = OpenDatabaseOptions(
       version: version,
       onConfigure: onConfigure,
       onCreate: onCreate,

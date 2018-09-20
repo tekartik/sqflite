@@ -51,13 +51,13 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
 
   MockDatabase newEmptyDatabase() {
     SqfliteDatabaseOpenHelper helper =
-        new SqfliteDatabaseOpenHelper(this, null, new OpenDatabaseOptions());
+        SqfliteDatabaseOpenHelper(this, null, OpenDatabaseOptions());
     return helper.newDatabase(null) as MockDatabase;
   }
 
   @override
   MockDatabase newDatabase(SqfliteDatabaseOpenHelper openHelper, String path) {
-    return new MockDatabase(openHelper, path);
+    return MockDatabase(openHelper, path);
   }
 
   @override
@@ -77,22 +77,22 @@ class MockDatabaseFactoryBase extends SqfliteDatabaseFactory {
 
   MockDatabase newEmptyDatabase() {
     SqfliteDatabaseOpenHelper helper =
-    new SqfliteDatabaseOpenHelper(this, null, new OpenDatabaseOptions());
+        SqfliteDatabaseOpenHelper(this, null, OpenDatabaseOptions());
     return helper.newDatabase(null) as MockDatabase;
   }
 
   @override
   MockDatabase newDatabase(SqfliteDatabaseOpenHelper openHelper, String path) {
-    return new MockDatabase(openHelper, path);
+    return MockDatabase(openHelper, path);
   }
 }
 
-final MockDatabaseFactory mockDatabaseFactory = new MockDatabaseFactory();
+final MockDatabaseFactory mockDatabaseFactory = MockDatabaseFactory();
 
 void main() {
   group('database_factory', () {
     test('getDatabasesPath', () async {
-      var factory = new MockDatabaseFactoryBase();
+      var factory = MockDatabaseFactoryBase();
       try {
         await factory.getDatabasesPath();
         fail("should fail");
@@ -131,7 +131,7 @@ void main() {
       test('read-only', () async {
         // var db = mockDatabaseFactory.newEmptyDatabase();
         var db = await mockDatabaseFactory.openDatabase(null,
-                options: new SqfliteOpenDatabaseOptions(readOnly: true))
+                options: SqfliteOpenDatabaseOptions(readOnly: true))
             as MockDatabase;
         await db.close();
         expect(db.methods, ['openDatabase', 'closeDatabase']);
@@ -140,7 +140,7 @@ void main() {
       test('isOpen', () async {
         // var db = mockDatabaseFactory.newEmptyDatabase();
         var db = await mockDatabaseFactory.openDatabase(null,
-            options: new SqfliteOpenDatabaseOptions(readOnly: true));
+            options: SqfliteOpenDatabaseOptions(readOnly: true));
         expect(db.isOpen, true);
         var closeFuture = db.close();
         // it is not closed right away
@@ -152,7 +152,7 @@ void main() {
     group('openTransaction', () {
       test('onCreate', () async {
         var db = await mockDatabaseFactory.openDatabase(null,
-            options: new SqfliteOpenDatabaseOptions(
+            options: SqfliteOpenDatabaseOptions(
                 version: 1,
                 onCreate: (db, version) async {
                   await db.execute("test1");
@@ -186,7 +186,7 @@ void main() {
 
       test('onConfigure', () async {
         var db = await mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions(
+            options: OpenDatabaseOptions(
                 version: 1,
                 onConfigure: (db) async {
                   await db.execute("test1");
@@ -212,7 +212,7 @@ void main() {
 
       test('onOpen', () async {
         var db = await mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions(
+            options: OpenDatabaseOptions(
                 version: 1,
                 onOpen: (db) async {
                   await db.execute("test1");
@@ -238,7 +238,7 @@ void main() {
 
       test('batch', () async {
         var db = await mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions(
+            options: OpenDatabaseOptions(
                 version: 1,
                 onConfigure: (db) async {
                   var batch = db.batch();
@@ -278,9 +278,9 @@ void main() {
     group('concurrency', () {
       test('concurrent 1', () async {
         var db = mockDatabaseFactory.newEmptyDatabase();
-        var step1 = new Completer<dynamic>();
-        var step2 = new Completer<dynamic>();
-        var step3 = new Completer<dynamic>();
+        var step1 = Completer<dynamic>();
+        var step2 = Completer<dynamic>();
+        var step3 = Completer<dynamic>();
 
         Future action1() async {
           await db.execute("test");
@@ -288,9 +288,8 @@ void main() {
 
           await step2.future;
           try {
-            dynamic map = await db
-                .execute("test")
-                .timeout(new Duration(milliseconds: 100));
+            dynamic map =
+                await db.execute("test").timeout(Duration(milliseconds: 100));
             throw "should fail ($map)";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -323,9 +322,9 @@ void main() {
 
       test('concurrent 2', () async {
         var db = mockDatabaseFactory.newEmptyDatabase();
-        var step1 = new Completer<dynamic>();
-        var step2 = new Completer<dynamic>();
-        var step3 = new Completer<dynamic>();
+        var step1 = Completer<dynamic>();
+        var step2 = Completer<dynamic>();
+        var step3 = Completer<dynamic>();
 
         Future action1() async {
           await db.execute("test");
@@ -333,9 +332,8 @@ void main() {
 
           await step2.future;
           try {
-            dynamic map = await db
-                .execute("test")
-                .timeout(new Duration(milliseconds: 100));
+            dynamic map =
+                await db.execute("test").timeout(Duration(milliseconds: 100));
             throw "should fail ($map)";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -367,9 +365,9 @@ void main() {
     group('compatibility 1', () {
       test('concurrent 1', () async {
         var db = mockDatabaseFactory.newEmptyDatabase();
-        var step1 = new Completer<dynamic>();
-        var step2 = new Completer<dynamic>();
-        var step3 = new Completer<dynamic>();
+        var step1 = Completer<dynamic>();
+        var step2 = Completer<dynamic>();
+        var step3 = Completer<dynamic>();
 
         Future action1() async {
           await db.execute("test");
@@ -377,9 +375,8 @@ void main() {
 
           await step2.future;
           try {
-            dynamic map = await db
-                .execute("test")
-                .timeout(new Duration(milliseconds: 100));
+            dynamic map =
+                await db.execute("test").timeout(Duration(milliseconds: 100));
             throw "should fail ($map)";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -412,16 +409,15 @@ void main() {
 
       test('concurrent 2', () async {
         var db = mockDatabaseFactory.newEmptyDatabase();
-        var step1 = new Completer<dynamic>();
-        var step2 = new Completer<dynamic>();
-        var step3 = new Completer<dynamic>();
+        var step1 = Completer<dynamic>();
+        var step2 = Completer<dynamic>();
+        var step3 = Completer<dynamic>();
 
         Future action1() async {
           await step1.future;
           try {
-            dynamic map = await db
-                .execute("test")
-                .timeout(new Duration(milliseconds: 100));
+            dynamic map =
+                await db.execute("test").timeout(Duration(milliseconds: 100));
             throw "should fail ($map)";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -429,9 +425,8 @@ void main() {
 
           await step2.future;
           try {
-            dynamic map = await db
-                .execute("test")
-                .timeout(new Duration(milliseconds: 100));
+            dynamic map =
+                await db.execute("test").timeout(Duration(milliseconds: 100));
             throw "should fail ($map)";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -520,7 +515,7 @@ void main() {
       test('wrong database', () async {
         var db2 = mockDatabaseFactory.newEmptyDatabase();
         var db = await mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions()) as MockDatabase;
+            options: OpenDatabaseOptions()) as MockDatabase;
 
         var batch = db2.batch();
 
@@ -541,22 +536,22 @@ void main() {
     group('instances', () {
       test('singleInstance same', () async {
         var futureDb1 = mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions(singleInstance: true));
+            options: OpenDatabaseOptions(singleInstance: true));
         var db2 = await mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions(singleInstance: true));
+            options: OpenDatabaseOptions(singleInstance: true));
         var db1 = await futureDb1;
         expect(db1, db2);
       });
       test('singleInstance', () async {
         var futureDb1 = mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions(singleInstance: true));
+            options: OpenDatabaseOptions(singleInstance: true));
         var db2 = await mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions(singleInstance: true));
+            options: OpenDatabaseOptions(singleInstance: true));
         var db1 = await futureDb1;
         var db3 = await mockDatabaseFactory.openDatabase("other",
-            options: new OpenDatabaseOptions(singleInstance: true));
+            options: OpenDatabaseOptions(singleInstance: true));
         var db4 = await mockDatabaseFactory.openDatabase(join(".", "other"),
-            options: new OpenDatabaseOptions(singleInstance: true));
+            options: OpenDatabaseOptions(singleInstance: true));
         //expect(db1, db2);
         expect(db1, isNot(db3));
         expect(db3, db4);
@@ -567,9 +562,9 @@ void main() {
 
       test('multiInstances', () async {
         var futureDb1 = mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions(singleInstance: false));
+            options: OpenDatabaseOptions(singleInstance: false));
         var db2 = await mockDatabaseFactory.openDatabase(null,
-            options: new OpenDatabaseOptions(singleInstance: false));
+            options: OpenDatabaseOptions(singleInstance: false));
         var db1 = await futureDb1;
         expect(db1, isNot(db2));
         await db1.close();
@@ -582,7 +577,7 @@ void main() {
       bool hasTimedOut = false;
       int callbackCount = 0;
       setLockWarningInfo(
-          duration: new Duration(milliseconds: 200),
+          duration: Duration(milliseconds: 200),
           callback: () {
             callbackCount++;
           });
@@ -590,7 +585,7 @@ void main() {
         await db.transaction((txn) async {
           await db.execute('test');
           fail("should fail");
-        }).timeout(new Duration(milliseconds: 500));
+        }).timeout(Duration(milliseconds: 500));
       } on TimeoutException catch (_) {
         hasTimedOut = true;
       }

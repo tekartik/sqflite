@@ -4,7 +4,7 @@ import 'package:sqflite/src/sqflite_impl.dart';
 
 void main() {
   group("sqflite", () {
-    const MethodChannel channel = const MethodChannel('com.tekartik.sqflite');
+    const MethodChannel channel = MethodChannel('com.tekartik.sqflite');
 
     final List<MethodCall> log = <MethodCall>[];
     String response;
@@ -26,7 +26,7 @@ void main() {
       var raw = <dynamic>[
         <dynamic, dynamic>{'col': 1}
       ];
-      var rows = new Rows.from(raw);
+      var rows = Rows.from(raw);
       var row = rows.first;
       expect(rows, raw);
       expect(row, {"col": 1});
@@ -39,7 +39,7 @@ void main() {
           [1]
         ]
       };
-      var queryResultSet = new QueryResultSet(<dynamic>[
+      var queryResultSet = QueryResultSet(<dynamic>[
         "column"
       ], <dynamic>[
         [1]

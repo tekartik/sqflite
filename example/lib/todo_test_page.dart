@@ -12,7 +12,6 @@ class Todo {
   String title;
   bool done;
 
-
   Todo();
 
   Todo.fromMap(Map map) {
@@ -31,7 +30,6 @@ class Todo {
     }
     return map;
   }
-
 }
 
 class TodoProvider {
@@ -60,7 +58,7 @@ create table $tableTodo (
         where: "$columnId = ?",
         whereArgs: [id]);
     if (maps.length > 0) {
-      return new Todo.fromMap(maps.first);
+      return Todo.fromMap(maps.first);
     }
     return null;
   }
@@ -82,7 +80,7 @@ class TodoTestPage extends TestPage {
     test("open", () async {
       // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("simple_todo_open.db");
-      TodoProvider todoProvider = new TodoProvider();
+      TodoProvider todoProvider = TodoProvider();
       await todoProvider.open(path);
 
       await todoProvider.close();
@@ -92,10 +90,10 @@ class TodoTestPage extends TestPage {
     test("insert/query/update/delete", () async {
       // await Sqflite.devSetDebugModeOn();
       String path = await initDeleteDb("simple_todo.db");
-      TodoProvider todoProvider = new TodoProvider();
+      TodoProvider todoProvider = TodoProvider();
       await todoProvider.open(path);
 
-      Todo todo = new Todo()..title = "test";
+      Todo todo = Todo()..title = "test";
       await todoProvider.insert(todo);
       expect(todo.id, 1);
 

@@ -34,7 +34,7 @@ void main() {
     test('wrong database', () async {
       var db2 = mockDatabaseFactory.newEmptyDatabase();
       var db = await mockDatabaseFactory.openDatabase(null,
-          options: new OpenDatabaseOptions()) as MockDatabase;
+          options: OpenDatabaseOptions()) as MockDatabase;
 
       var batch = db2.batch();
 

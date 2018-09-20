@@ -16,41 +16,39 @@ class TestPage extends StatefulWidget {
   TestPage(this.title);
 
   void test(String name, FutureOr fn()) {
-    tests.add(new Test(name, fn));
+    tests.add(Test(name, fn));
   }
 
   @Deprecated("SOLO_TEST - On purpose to remove before checkin")
   void solo_test(String name, FutureOr fn()) {
-    tests.add(new Test(name, fn, solo: true));
+    tests.add(Test(name, fn, solo: true));
   }
 
   @Deprecated("SKIP_TEST - On purpose to remove before checkin")
   void skip_test(String name, FutureOr fn()) {
-    tests.add(new Test(name, fn, skip: true));
+    tests.add(Test(name, fn, skip: true));
   }
 
   // Thrown an exception
   void fail([String message]) {
-    throw new Exception(message ?? "should fail");
+    throw Exception(message ?? "should fail");
   }
 
-
   @override
-  _TestPageState createState() => new _TestPageState();
+  _TestPageState createState() => _TestPageState();
 }
 
 void expect(dynamic value, dynamic expected, {String reason}) {
   if (value != expected) {
     if (value is List || value is Map) {
       if (!const DeepCollectionEquality().equals(value, expected)) {
-        throw new Exception("collection $value != $expected ${reason ?? ""}");
+        throw Exception("collection $value != $expected ${reason ?? ""}");
       }
       return;
     }
-    throw new Exception("$value != $expected ${reason ?? ""}");
+    throw Exception("$value != $expected ${reason ?? ""}");
   }
 }
-
 
 bool verify(bool condition, [String message]) {
   message ??= "verify failed";
@@ -107,7 +105,7 @@ class _TestPageState extends State<TestPage> with Group {
       add(test);
     }
     for (Test test in _tests) {
-      Item item = new Item("${test.name}");
+      Item item = Item("${test.name}");
 
       int position;
       setState(() {
@@ -117,10 +115,10 @@ class _TestPageState extends State<TestPage> with Group {
       try {
         await test.fn();
 
-        item = new Item("${test.name}")..state = ItemState.success;
+        item = Item("${test.name}")..state = ItemState.success;
       } catch (e) {
         print(e);
-        item = new Item("${test.name}")..state = ItemState.failure;
+        item = Item("${test.name}")..state = ItemState.failure;
       }
 
       if (!mounted) {
@@ -149,7 +147,7 @@ class _TestPageState extends State<TestPage> with Group {
       await test.fn();
       print("TEST Done ${test.name}");
 
-      item = new Item("${test.name}")..state = ItemState.success;
+      item = Item("${test.name}")..state = ItemState.success;
     } catch (e, st) {
       print("TEST Error $e running ${test.name}");
       try {
@@ -158,7 +156,7 @@ class _TestPageState extends State<TestPage> with Group {
           print(st);
         }
       } catch (_) {}
-      item = new Item("${test.name}")..state = ItemState.failure;
+      item = Item("${test.name}")..state = ItemState.failure;
     }
 
     if (!mounted) {
@@ -183,21 +181,21 @@ class _TestPageState extends State<TestPage> with Group {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-        appBar: new AppBar(title: new Text(widget.title), actions: <Widget>[
-          new IconButton(
-            icon: new Icon(Icons.refresh),
+    return Scaffold(
+        appBar: AppBar(title: Text(widget.title), actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.refresh),
             tooltip: 'Run again',
             onPressed: _run,
           ),
         ]),
-        body: new ListView.builder(
-            itemBuilder: _itemBuilder, itemCount: _itemCount));
+        body:
+            ListView.builder(itemBuilder: _itemBuilder, itemCount: _itemCount));
   }
 
   Widget _itemBuilder(BuildContext context, int index) {
     Item item = getItem(index);
-    return new ItemWidget(item, (Item item) {
+    return ItemWidget(item, (Item item) {
       //Navigator.of(context).pushNamed(item.route);
       _runTest(index);
     });

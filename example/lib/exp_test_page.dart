@@ -14,7 +14,6 @@ final String columnDone = "done";
 
 class ExpTestPage extends TestPage {
   ExpTestPage() : super("Exp Tests") {
-
     test("order_by", () async {
       //await Sqflite.setDebugModeOn(true);
       String path = await initDeleteDb("order_by_exp.db");
@@ -333,7 +332,7 @@ class ExpTestPage extends TestPage {
       var data = await rootBundle.load(join("assets", "issue_64.db"));
       var bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      await new File(path).writeAsBytes(bytes);
+      await File(path).writeAsBytes(bytes);
 
       // open the database
       Database db = await openDatabase(path);

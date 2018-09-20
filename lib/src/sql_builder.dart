@@ -69,7 +69,7 @@ class SqlBuilder {
   ///            will be replaced by the values from whereArgs. The values
   ///            will be bound as Strings.
   SqlBuilder.delete(String table, {String where, List whereArgs}) {
-    StringBuffer delete = new StringBuffer();
+    StringBuffer delete = StringBuffer();
     delete.write("DELETE FROM ");
     delete.write(_escapeName(table));
     _writeClause(delete, " WHERE ", where);
@@ -111,11 +111,11 @@ class SqlBuilder {
       int limit,
       int offset}) {
     if (groupBy == null && having != null) {
-      throw new ArgumentError(
+      throw ArgumentError(
           "HAVING clauses are only permitted when using a groupBy clause");
     }
 
-    StringBuffer query = new StringBuffer();
+    StringBuffer query = StringBuffer();
 
     query.write("SELECT ");
     if (distinct == true) {
@@ -151,7 +151,7 @@ class SqlBuilder {
 
   SqlBuilder.insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
-    StringBuffer insert = new StringBuffer();
+    StringBuffer insert = StringBuffer();
     insert.write("INSERT");
     if (conflictAlgorithm != null) {
       insert.write(_conflictValues[conflictAlgorithm.index]);
@@ -164,7 +164,7 @@ class SqlBuilder {
     int size = (values != null) ? values.length : 0;
 
     if (size > 0) {
-      StringBuffer sbValues = new StringBuffer(") VALUES (");
+      StringBuffer sbValues = StringBuffer(") VALUES (");
 
       bindArgs = <dynamic>[];
       int i = 0;
@@ -185,8 +185,7 @@ class SqlBuilder {
       insert.write(sbValues);
     } else {
       if (nullColumnHack == null) {
-        throw new ArgumentError(
-            "nullColumnHack required when inserting no data");
+        throw ArgumentError("nullColumnHack required when inserting no data");
       }
       insert.write(nullColumnHack + ") VALUES (NULL");
     }
@@ -211,10 +210,10 @@ class SqlBuilder {
   SqlBuilder.update(String table, Map<String, dynamic> values,
       {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm}) {
     if (values == null || values.isEmpty) {
-      throw new ArgumentError("Empty values");
+      throw ArgumentError("Empty values");
     }
 
-    StringBuffer update = new StringBuffer();
+    StringBuffer update = StringBuffer();
     update.write("UPDATE ");
     if (conflictAlgorithm != null) {
       update.write(_conflictValues[conflictAlgorithm.index]);
@@ -327,7 +326,7 @@ String unescapeName(String name) {
 
 // This list was built from the whole set of keywords
 // ([allKeywords] kept here for reference
-Set<String> escapeNames = new Set.from(<String>[
+Set<String> escapeNames = Set.from(<String>[
   "add",
   "all",
   "alter",

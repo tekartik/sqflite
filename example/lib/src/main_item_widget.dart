@@ -8,15 +8,15 @@ class MainItemWidget extends StatefulWidget {
   MainItemWidget(this.item, this.onTap);
 
   @override
-  _MainItemWidgetState createState() => new _MainItemWidgetState();
+  _MainItemWidgetState createState() => _MainItemWidgetState();
 }
 
 class _MainItemWidgetState extends State<MainItemWidget> {
   @override
   Widget build(BuildContext context) {
-    return new ListTile(
-        title: new Text(widget.item.title),
-        subtitle: new Text(widget.item.description),
+    return ListTile(
+        title: Text(widget.item.title),
+        subtitle: Text(widget.item.description),
         onTap: _onTap);
   }
 

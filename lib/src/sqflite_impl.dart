@@ -15,7 +15,7 @@ void Function() lockWarningCallback = () {
       'Make sure you always use the transaction object for database operations during a transaction');
 };
 
-const MethodChannel channel = const MethodChannel(channelName);
+const MethodChannel channel = MethodChannel(channelName);
 
 // Temp flag to test concurrent reads
 final bool supportsConcurrency = false;
@@ -47,7 +47,7 @@ Map<String, dynamic> newQueryResultSetMap(
 }
 
 QueryResultSet queryResultSetFromMap(Map queryResultSetMap) {
-  return new QueryResultSet(
+  return QueryResultSet(
       queryResultSetMap["columns"] as List, queryResultSetMap["rows"] as List);
 }
 
@@ -66,7 +66,7 @@ List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
   }
   // dart2 support <= 0.7.0 - this is a list
   // to remove once done on iOS and Android
-  Rows rows = new Rows.from(queryResult as List);
+  Rows rows = Rows.from(queryResult as List);
   return rows;
 }
 
@@ -92,17 +92,17 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
 
   @override
   Map<String, dynamic> operator [](int index) {
-    return new QueryRow(this, _rows[index]);
+    return QueryRow(this, _rows[index]);
   }
 
   @override
   void operator []=(int index, Map<String, dynamic> value) {
-    throw new UnsupportedError("read-only");
+    throw UnsupportedError("read-only");
   }
 
   @override
   set length(int newLength) {
-    throw new UnsupportedError("read-only");
+    throw UnsupportedError("read-only");
   }
 
   int columnIndex(String name) {
@@ -127,12 +127,12 @@ class QueryRow extends MapBase<String, dynamic> {
 
   @override
   void operator []=(String key, dynamic value) {
-    throw new UnsupportedError("read-only");
+    throw UnsupportedError("read-only");
   }
 
   @override
   void clear() {
-    throw new UnsupportedError("read-only");
+    throw UnsupportedError("read-only");
   }
 
   @override
@@ -140,7 +140,7 @@ class QueryRow extends MapBase<String, dynamic> {
 
   @override
   dynamic remove(Object key) {
-    throw new UnsupportedError("read-only");
+    throw UnsupportedError("read-only");
   }
 }
 
@@ -182,12 +182,12 @@ abstract class PluginList<T> extends ListBase<T> {
 
   @override
   set length(int newLength) {
-    throw new UnsupportedError("read-only");
+    throw UnsupportedError("read-only");
   }
 
   @override
   void operator []=(int index, T value) {
-    throw new UnsupportedError("read-only");
+    throw UnsupportedError("read-only");
   }
 }
 
@@ -199,10 +199,10 @@ void setLockWarningInfo({Duration duration, void callback()}) {
 /// Utility to encode a blob to allow blow query using
 /// "hex(blob_field) = ?", Sqlite.hex([1,2,3])
 String hex(List<int> bytes) {
-  var buffer = new StringBuffer();
+  var buffer = StringBuffer();
   for (int part in bytes) {
     if (part & 0xff != part) {
-      throw new FormatException("$part is not a byte integer");
+      throw FormatException("$part is not a byte integer");
     }
     buffer.write('${part < 16 ? '0' : ''}${part.toRadixString(16)}');
   }

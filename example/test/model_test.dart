@@ -5,7 +5,7 @@ void main() {
   group("model", () {
     test("test_sync", () async {
       bool ran = false;
-      Test test = new Test("test", () {
+      Test test = Test("test", () {
         ran = true;
       });
       await test.fn();
@@ -14,7 +14,7 @@ void main() {
 
     test("test_async", () async {
       bool ran = false;
-      Test test = new Test("test", () async {
+      Test test = Test("test", () async {
         ran = true;
       });
       await test.fn();

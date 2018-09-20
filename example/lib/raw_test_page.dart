@@ -23,7 +23,7 @@ class SimpleTestPage extends TestPage {
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 2"]);
       await batch.commit();
 
-      var sqfliteOptions = new SqfliteOptions()..queryAsMapList = true;
+      var sqfliteOptions = SqfliteOptions()..queryAsMapList = true;
       // ignore: deprecated_member_use
       await Sqflite.devSetOptions(sqfliteOptions);
       String sql = "SELECT id, name FROM Test";
@@ -44,7 +44,7 @@ class SimpleTestPage extends TestPage {
       print("result as map list $result");
       expect(result, expected);
 
-      sqfliteOptions = new SqfliteOptions()..queryAsMapList = false;
+      sqfliteOptions = SqfliteOptions()..queryAsMapList = false;
       // ignore: deprecated_member_use
       await Sqflite.devSetOptions(sqfliteOptions);
 
@@ -80,7 +80,7 @@ class SimpleTestPage extends TestPage {
         await db.transaction((txn) async {
           int count = Sqflite.firstIntValue(
               await txn.rawQuery("SELECT COUNT(*) FROM Test"));
-          await new Future.delayed(new Duration(milliseconds: 40));
+          await Future.delayed(Duration(milliseconds: 40));
           await txn
               .rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
           //print(await db.query("SELECT COUNT(*) FROM Test"));
@@ -102,9 +102,9 @@ class SimpleTestPage extends TestPage {
       // Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("simple_concurrency_1.db");
       Database db = await openDatabase(path);
-      var step1 = new Completer();
-      var step2 = new Completer();
-      var step3 = new Completer();
+      var step1 = Completer();
+      var step2 = Completer();
+      var step3 = Completer();
 
       Future action1() async {
         await db
@@ -115,7 +115,7 @@ class SimpleTestPage extends TestPage {
         try {
           await db
               .rawQuery("SELECT COUNT(*) FROM Test")
-              .timeout(new Duration(seconds: 1));
+              .timeout(Duration(seconds: 1));
           throw "should fail";
         } catch (e) {
           expect(e is TimeoutException, true);
@@ -155,9 +155,9 @@ class SimpleTestPage extends TestPage {
       // Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("simple_concurrency_1.db");
       Database db = await openDatabase(path);
-      var step1 = new Completer();
-      var step2 = new Completer();
-      var step3 = new Completer();
+      var step1 = Completer();
+      var step2 = Completer();
+      var step3 = Completer();
 
       Future action1() async {
         await db
@@ -168,7 +168,7 @@ class SimpleTestPage extends TestPage {
         try {
           await db
               .rawQuery("SELECT COUNT(*) FROM Test")
-              .timeout(new Duration(seconds: 1));
+              .timeout(Duration(seconds: 1));
           throw "should fail";
         } catch (e) {
           expect(e is TimeoutException, true);
@@ -340,7 +340,7 @@ class SimpleTestPage extends TestPage {
 
       // Make sure the directory exists
       try {
-        await new Directory(databasesPath).create(recursive: true);
+        await Directory(databasesPath).create(recursive: true);
       } catch (_) {}
 
       String path = join(databasesPath, "demo.db");

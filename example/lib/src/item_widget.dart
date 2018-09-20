@@ -7,7 +7,7 @@ class ItemWidget extends StatefulWidget {
   final Function onTap; // = Function(MainItem item);
   ItemWidget(this.item, this.onTap);
   @override
-  _ItemWidgetState createState() => new _ItemWidgetState();
+  _ItemWidgetState createState() => _ItemWidgetState();
 }
 
 class _ItemWidgetState extends State<ItemWidget> {
@@ -29,13 +29,13 @@ class _ItemWidgetState extends State<ItemWidget> {
         color = Colors.red;
         break;
     }
-    return new ListTile(
-        leading: new IconButton(
-          icon: new Icon(icon, color: color),
+    return ListTile(
+        leading: IconButton(
+          icon: Icon(icon, color: color),
 
           onPressed: null, // null disables the button
         ),
-        title: new Text(widget.item.name),
+        title: Text(widget.item.name),
         onTap: _onTap);
   }
 

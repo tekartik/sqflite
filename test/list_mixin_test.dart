@@ -59,7 +59,7 @@ void main() {
       var raw = [
         {'col': 1}
       ];
-      var rows = new MyList1.from(raw);
+      var rows = MyList1.from(raw);
       expect(rows, raw);
     });
 
@@ -67,7 +67,7 @@ void main() {
       var raw = [
         {'col': 1}
       ];
-      var rows = new MyList2.from(raw);
+      var rows = MyList2.from(raw);
       expect(rows, raw);
     });
   });

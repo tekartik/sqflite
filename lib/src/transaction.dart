@@ -23,7 +23,7 @@ class SqfliteTransaction extends SqfliteDatabaseExecutor
     if (batch is SqfliteDatabaseBatch) {
       SqfliteDatabaseBatch sqfliteDatabaseBatch = batch;
       if (sqfliteDatabaseBatch.database != database) {
-        throw new ArgumentError("database different in batch and transaction");
+        throw ArgumentError("database different in batch and transaction");
       }
     }
 
@@ -32,5 +32,5 @@ class SqfliteTransaction extends SqfliteDatabaseExecutor
   }
 
   @override
-  Batch batch() => new SqfliteTransactionBatch(this);
+  Batch batch() => SqfliteTransactionBatch(this);
 }

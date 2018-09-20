@@ -28,7 +28,7 @@ abstract class SqfliteBatch implements Batch {
   @override
   void insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
-    SqlBuilder builder = new SqlBuilder.insert(table, values,
+    SqlBuilder builder = SqlBuilder.insert(table, values,
         nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
   }
@@ -49,7 +49,7 @@ abstract class SqfliteBatch implements Batch {
       String orderBy,
       int limit,
       int offset}) {
-    SqlBuilder builder = new SqlBuilder.query(table,
+    SqlBuilder builder = SqlBuilder.query(table,
         distinct: distinct,
         columns: columns,
         where: where,
@@ -70,7 +70,7 @@ abstract class SqfliteBatch implements Batch {
   @override
   void update(String table, Map<String, dynamic> values,
       {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm}) {
-    SqlBuilder builder = new SqlBuilder.update(table, values,
+    SqlBuilder builder = SqlBuilder.update(table, values,
         where: where,
         whereArgs: whereArgs,
         conflictAlgorithm: conflictAlgorithm);
@@ -80,7 +80,7 @@ abstract class SqfliteBatch implements Batch {
   @override
   void delete(String table, {String where, List whereArgs}) {
     SqlBuilder builder =
-        new SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
+        SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
     return rawDelete(builder.sql, builder.arguments);
   }
 
@@ -121,7 +121,7 @@ class SqfliteTransactionBatch extends SqfliteBatch {
   @override
   Future<List> commit({bool exclusive, bool noResult}) {
     if (exclusive != null) {
-      throw new ArgumentError.value(exclusive, "exclusive",
+      throw ArgumentError.value(exclusive, "exclusive",
           "must not be set when commiting a batch in a transaction");
     }
     return transaction.database

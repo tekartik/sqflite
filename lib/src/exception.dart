@@ -122,7 +122,7 @@ Future<T> wrapDatabaseException<T>(Future<T> action()) async {
     return result;
   } on PlatformException catch (e) {
     if (e.code == sqliteErrorCode) {
-      throw new SqfliteDatabaseException(e.message, e.details);
+      throw SqfliteDatabaseException(e.message, e.details);
       //rethrow;
     } else {
       rethrow;

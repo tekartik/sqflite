@@ -71,7 +71,7 @@ class OpenCallbacks {
   Future<Database> open(String path, {int version}) async {
     reset();
     return await databaseFactory.openDatabase(path,
-        options: new OpenDatabaseOptions(
+        options: OpenDatabaseOptions(
             version: version,
             onCreate: onCreate,
             onConfigure: onConfigure,
@@ -105,28 +105,28 @@ class OpenTestPage extends TestPage {
       String path = await initDeleteDb("delete_database.db");
       Database db = await openDatabase(path);
       await db.close();
-      expect((await new File(path).exists()), true);
+      expect((await File(path).exists()), true);
       print("Deleting database $path");
       await deleteDatabase(path);
-      expect((await new File(path).exists()), false);
+      expect((await File(path).exists()), false);
     });
 
     test("Open no version", () async {
       //await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_no_version.db");
-      expect((await new File(path).exists()), false);
+      expect((await File(path).exists()), false);
       Database db = await openDatabase(path);
-      verify(await new File(path).exists());
+      verify(await File(path).exists());
       await db.close();
     });
 
     test("isOpen", () async {
       //await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("is_open.db");
-      expect((await new File(path).exists()), false);
+      expect((await File(path).exists()), false);
       Database db = await openDatabase(path);
       expect(db.isOpen, true);
-      verify(await new File(path).exists());
+      verify(await File(path).exists());
       await db.close();
       expect(db.isOpen, false);
     });
@@ -134,7 +134,7 @@ class OpenTestPage extends TestPage {
     test("Open no version onCreate", () async {
       // should fail
       String path = await initDeleteDb("open_no_version_on_create.db");
-      verify(!(await new File(path).exists()));
+      verify(!(await File(path).exists()));
       Database db;
       try {
         db = await openDatabase(path, onCreate: (Database db, int version) {
@@ -143,7 +143,7 @@ class OpenTestPage extends TestPage {
         });
         verify(false);
       } on ArgumentError catch (_) {}
-      verify(!await new File(path).exists());
+      verify(!await File(path).exists());
       expect(db, null);
     });
 
@@ -252,7 +252,7 @@ class OpenTestPage extends TestPage {
       ByteData data = await rootBundle.load(join("assets", "example.db"));
       List<int> bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      await new File(path).writeAsBytes(bytes);
+      await File(path).writeAsBytes(bytes);
 
       // open the database
       Database db = await openDatabase(path);
@@ -347,7 +347,7 @@ class OpenTestPage extends TestPage {
       String path = await initDeleteDb("open_all_callbacks.db");
 
       int step = 1;
-      OpenCallbacks openCallbacks = new OpenCallbacks();
+      OpenCallbacks openCallbacks = OpenCallbacks();
       var db = await openCallbacks.open(path, version: 1);
       verify(openCallbacks.onConfigureCalled, "onConfiguredCalled $step");
       verify(openCallbacks.onCreateCalled, "onCreateCalled $step");
@@ -541,7 +541,7 @@ class OpenTestPage extends TestPage {
           ByteData data = await rootBundle.load(join("assets", "example.db"));
           List<int> bytes =
               data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-          await new File(path).writeAsBytes(bytes);
+          await File(path).writeAsBytes(bytes);
 
           // open the database
           db = await openDatabase(path, readOnly: true);
@@ -556,7 +556,7 @@ class OpenTestPage extends TestPage {
     test('Database locked (doc)', () async {
       // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_locked.db");
-      var helper = new Helper(path);
+      var helper = Helper(path);
 
       // without the synchronized fix, this could faild
       for (int i = 0; i < 100; i++) {
@@ -570,11 +570,11 @@ class OpenTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("instances_test.db");
       var db1 = await databaseFactory.openDatabase(path,
-          options: new OpenDatabaseOptions(singleInstance: false));
+          options: OpenDatabaseOptions(singleInstance: false));
       var db2 = await databaseFactory.openDatabase(path,
-          options: new OpenDatabaseOptions(singleInstance: true));
+          options: OpenDatabaseOptions(singleInstance: true));
       var db3 = await databaseFactory.openDatabase(path,
-          options: new OpenDatabaseOptions(singleInstance: true));
+          options: OpenDatabaseOptions(singleInstance: true));
       verify(db1 != db2);
       verify(db2 == db3);
       await db1.close();
@@ -645,7 +645,7 @@ class OpenTestPage extends TestPage {
       var databasesPath = await factory.getDatabasesPath();
       String path = join(databasesPath, 'sub_that_should_not_exists');
       try {
-        await new Directory(path).delete(recursive: true);
+        await Directory(path).delete(recursive: true);
       } catch (_) {}
       var dbPath = join(path, 'open.db');
       var db = await factory.openDatabase(dbPath);
@@ -660,9 +660,9 @@ class OpenTestPage extends TestPage {
       String path =
           join(databasesPath, 'sub2_that_should_not_exists', 'sub_sub');
       try {
-        await new Directory(path).delete(recursive: true);
+        await Directory(path).delete(recursive: true);
       } catch (_) {}
-      expect(await new Directory(path).exists(), false);
+      expect(await Directory(path).exists(), false);
       var dbPath = join(path, 'open.db');
       var db = await factory.openDatabase(dbPath);
       try {} finally {
@@ -676,7 +676,7 @@ class Helper {
   final String path;
   Helper(this.path);
   Database _db;
-  final _lock = new Lock();
+  final _lock = Lock();
 
   Future<Database> getDb() async {
     if (_db == null) {

@@ -20,7 +20,8 @@ class ExceptionTestPage extends TestPage {
       bool hasFailed = false;
       try {
         await db.transaction((txn) async {
-          await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", <dynamic>["item"]);
+          await txn.rawInsert(
+              "INSERT INTO Test (name) VALUES (?)", <dynamic>["item"]);
           int afterCount = Sqflite.firstIntValue(
               await txn.rawQuery("SELECT COUNT(*) FROM Test"));
           expect(afterCount, 1);
@@ -465,7 +466,7 @@ class ExceptionTestPage extends TestPage {
       bool hasTimedOut = false;
       int callbackCount = 0;
       Sqflite.setLockWarningInfo(
-          duration: new Duration(milliseconds: 200),
+          duration: Duration(milliseconds: 200),
           callback: () {
             callbackCount++;
           });
@@ -473,7 +474,7 @@ class ExceptionTestPage extends TestPage {
         await db.transaction((txn) async {
           await db.getVersion();
           fail("should fail");
-        }).timeout(new Duration(milliseconds: 1500));
+        }).timeout(Duration(milliseconds: 1500));
       } on TimeoutException catch (_) {
         hasTimedOut = true;
       }

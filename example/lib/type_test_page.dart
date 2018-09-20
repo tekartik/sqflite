@@ -11,7 +11,7 @@ class _Data {
 }
 
 class TypeTestPage extends TestPage {
-  final _Data data = new _Data();
+  final _Data data = _Data();
 
   TypeTestPage() : super("Type tests") {
     test("int", () async {
@@ -123,7 +123,7 @@ class TypeTestPage extends TestPage {
         expect(await getValue(id), "simple text");
 
         // UInt8List - default
-        ByteData byteData = new ByteData(1);
+        ByteData byteData = ByteData(1);
         byteData.setInt8(0, 1);
         var blob = byteData.buffer.asUint8List();
         id = await insertValue(blob);
@@ -199,8 +199,7 @@ class TypeTestPage extends TestPage {
       try {
         bool failed = false;
         try {
-          await insertValue(
-              new DateTime.fromMillisecondsSinceEpoch(1234567890));
+          await insertValue(DateTime.fromMillisecondsSinceEpoch(1234567890));
         } on ArgumentError catch (_) {
           failed = true;
         }
@@ -210,7 +209,6 @@ class TypeTestPage extends TestPage {
       }
     });
   }
-
 
   // Get the value field from a given
   Future<dynamic> getValue(int id) async {
@@ -226,5 +224,4 @@ class TypeTestPage extends TestPage {
   Future<int> updateValue(int id, dynamic value) async {
     return await data.db.update("Test", {"value": value}, where: "_id = $id");
   }
-
 }

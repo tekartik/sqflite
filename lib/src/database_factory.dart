@@ -15,10 +15,10 @@ SqfliteDatabaseFactory _databaseFactory;
 DatabaseFactory get databaseFactory => sqlfliteDatabaseFactory;
 
 SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
-    _databaseFactory ??= new SqfliteDatabaseFactory();
+    _databaseFactory ??= SqfliteDatabaseFactory();
 
 Future<Database> openReadOnlyDatabase(String path) async {
-  var options = new SqfliteOpenDatabaseOptions(readOnly: true);
+  var options = SqfliteOpenDatabaseOptions(readOnly: true);
   return sqlfliteDatabaseFactory.openDatabase(path, options: options);
 }
 
@@ -91,11 +91,11 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
       impl.invokeMethod(method, arguments);
 
   // open lock mechanism
-  var lock = new Lock();
+  var lock = Lock();
 
   SqfliteDatabase newDatabase(
           SqfliteDatabaseOpenHelper openHelper, String path) =>
-      new SqfliteDatabase(openHelper, path);
+      SqfliteDatabase(openHelper, path);
 
   // internal close
   void doCloseDatabase(SqfliteDatabase database) {
@@ -115,7 +115,7 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
   @override
   Future<Database> openDatabase(String path,
       {OpenDatabaseOptions options}) async {
-    options ??= new SqfliteOpenDatabaseOptions();
+    options ??= SqfliteOpenDatabaseOptions();
 
     if (options?.singleInstance == true) {
       SqfliteDatabaseOpenHelper getExistingDatabaseOpenHelper(String path) {
@@ -145,7 +145,7 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
 
       bool firstOpen = databaseOpenHelper == null;
       if (firstOpen) {
-        databaseOpenHelper = new SqfliteDatabaseOpenHelper(this, path, options);
+        databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options);
         setDatabaseOpenHelper(databaseOpenHelper);
       }
       try {
@@ -158,8 +158,7 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
         rethrow;
       }
     } else {
-      var databaseOpenHelper =
-          new SqfliteDatabaseOpenHelper(this, path, options);
+      var databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options);
       return await databaseOpenHelper.openDatabase();
     }
   }
@@ -167,7 +166,7 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
   @override
   Future deleteDatabase(String path) async {
     try {
-      await new File(path).delete(recursive: true);
+      await File(path).delete(recursive: true);
     } catch (_e) {
       // 0.8.4
       // print(e);
@@ -183,7 +182,7 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
         return invokeMethod<String>(methodGetDatabasesPath);
       });
       if (path == null) {
-        throw new SqfliteDatabaseException("getDatabasesPath is null", null);
+        throw SqfliteDatabaseException("getDatabasesPath is null", null);
       }
       _databasesPath = path;
     }
@@ -221,5 +220,4 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
   bool isPath(String path) {
     return (path != null) && (path != inMemoryDatabasePath);
   }
-
 }
