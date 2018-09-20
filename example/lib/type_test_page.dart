@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -150,10 +151,14 @@ class TypeTestPage extends TestPage {
             .rawQuery('SELECT hex(value) FROM Test WHERE _id = ?', [id]);
         expect(hexResult[0].values.first, "01020304");
 
-        // try blob lookup - does work
+        // try blob lookup - does work on iOS only
         var rows = await data.db
             .rawQuery('SELECT * FROM Test WHERE value = ?', [blob1234]);
-        expect(rows.length, 0);
+        if (Platform.isIOS) {
+          expect(rows.length, 1);
+        } else {
+          expect(rows.length, 0);
+        }
 
         // try blob lookup using hex
         rows = await data.db.rawQuery(
