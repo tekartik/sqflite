@@ -32,14 +32,14 @@ abstract class DatabaseException implements Exception {
 
   bool isOpenFailedError() {
     if (_message != null) {
-      return _message.startsWith("open_failed");
+      return _message.contains("open_failed");
     }
     return false;
   }
 
   bool isDatabaseClosedError() {
     if (_message != null) {
-      return _message.startsWith("database_closed");
+      return _message.contains("database_closed");
     }
     return false;
   }
