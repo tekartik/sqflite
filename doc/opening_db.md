@@ -60,11 +60,15 @@ var db = await openDatabase(path,
 ```
 ### Migration
 
-`onCreate`, `onUpdate`, `onDowngrade` is called if a `version` is specified. If the database does 
-not exist, `onCreate` is called. If the new version requested is higher, `onUpdate` is called, otherwise
-(try to avoid this by always incrementing the database version), `onDowngrade` is called. For this
-later case, a special `onDowngradeDatabaseDelete` callback exist that will simply delete the database
-and call `onCreate` to create it.
+`onCreate`, `onUpgrade`, and `onDowngrade` are called when a `version` is
+specified. If the database does not exist, `onCreate` is called. If `onCreate`
+is not defined, `onUpgrade` is called instead with `oldVersion` having value 0.
+If the database exists and the new version is higher than the current version,
+`onUpgrade` is called. Inversely, if the new version is lower than the current
+version, `onDowngrade` is called. Try to avoid this by always incrementing the
+database version. For the downgrade case, a special `onDowngradeDatabaseDelete`
+callback exist that will simply delete the database and call `onCreate` to
+create it.
 
 These 3 callbacks are called within a transaction just before the version is set on the database.
 
@@ -168,4 +172,4 @@ If you get exception when opening a database:
 - Make sure the directory where you create the database exists
 - Make sure the database path points to an existing database (or nothing) and
   not to a file which is not a sqlite database
-- Handle any expected exception in the open callbacks (onCreate/onUpdate/onConfigure/onOpen)
+- Handle any expected exception in the open callbacks (onCreate/onUpgrade/onConfigure/onOpen)
