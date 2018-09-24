@@ -352,7 +352,7 @@ class OpenTestPage extends TestPage {
       verify(openCallbacks.onConfigureCalled, "onConfiguredCalled $step");
       verify(openCallbacks.onCreateCalled, "onCreateCalled $step");
       verify(openCallbacks.onOpenCalled, "onOpenCalled $step");
-      verify(!openCallbacks.onUpgradeCalled, "onUpdateCalled $step");
+      verify(!openCallbacks.onUpgradeCalled, "onUpgradeCalled $step");
       verify(!openCallbacks.onDowngradeCalled, "onDowngradCalled $step");
       await db.close();
 
@@ -361,7 +361,7 @@ class OpenTestPage extends TestPage {
       verify(openCallbacks.onConfigureCalled, "onConfiguredCalled $step");
       verify(!openCallbacks.onCreateCalled, "onCreateCalled $step");
       verify(openCallbacks.onOpenCalled, "onOpenCalled $step");
-      verify(openCallbacks.onUpgradeCalled, "onUpdateCalled $step");
+      verify(openCallbacks.onUpgradeCalled, "onUpgradeCalled $step");
       verify(!openCallbacks.onDowngradeCalled, "onDowngradCalled $step");
       await db.close();
 
@@ -370,7 +370,7 @@ class OpenTestPage extends TestPage {
       verify(openCallbacks.onConfigureCalled, "onConfiguredCalled $step");
       verify(!openCallbacks.onCreateCalled, "onCreateCalled $step");
       verify(openCallbacks.onOpenCalled, "onOpenCalled $step");
-      verify(!openCallbacks.onUpgradeCalled, "onUpdateCalled $step");
+      verify(!openCallbacks.onUpgradeCalled, "onUpgradeCalled $step");
       verify(openCallbacks.onDowngradeCalled, "onDowngradCalled $step");
       await db.close();
 
@@ -393,7 +393,7 @@ class OpenTestPage extends TestPage {
       verify(configureCount == 2, "onConfigure count");
       verify(openCallbacks.onCreateCalled, "onCreateCalled $step");
       verify(openCallbacks.onOpenCalled, "onOpenCalled $step");
-      verify(!openCallbacks.onUpgradeCalled, "onUpdateCalled $step");
+      verify(!openCallbacks.onUpgradeCalled, "onUpgradeCalled $step");
       verify(!openCallbacks.onDowngradeCalled, "onDowngradCalled $step");
       */
       await db.close();
