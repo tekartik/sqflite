@@ -121,7 +121,7 @@ class SqlBuilder {
     if (distinct == true) {
       query.write("DISTINCT ");
     }
-    if (columns != null && columns.length != 0) {
+    if (columns != null && columns.isNotEmpty) {
       _writeColumns(query, columns);
     } else {
       query.write("* ");
