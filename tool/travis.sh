@@ -10,10 +10,8 @@ flutter packages get
 
 flutter analyze
 flutter analyze --no-current-package lib test
-# flutter analyze --no-current-package --preview-dart-2 lib test
 
 flutter test
-# flutter test --preview-dart-2
 
 # example
 pushd example
@@ -25,6 +23,3 @@ flutter analyze --no-current-package lib test
 # flutter analyze --no-current-package --preview-dart-2 lib test
 
 flutter test
-# flutter test --preview-dart-2
-
-# dartdoc
