@@ -8,10 +8,6 @@ final String columnTitle = "title";
 final String columnDone = "done";
 
 class Todo {
-  int id;
-  String title;
-  bool done;
-
   Todo();
 
   Todo.fromMap(Map map) {
@@ -19,6 +15,10 @@ class Todo {
     title = map[columnTitle] as String;
     done = map[columnDone] == 1;
   }
+
+  int id;
+  String title;
+  bool done;
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{

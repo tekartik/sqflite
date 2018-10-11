@@ -11,8 +11,8 @@ addons:
       - libstdc++6
       - fonts-droid
 before_script:
-  - git clone https://github.com/flutter/flutter.git --depth 1
-  - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
+  - git clone https://github.com/flutter/flutter.git --depth 1 ~/.tekartik
+  - export PATH=~/.tekartik/flutter/bin:~/.tekartik/flutter/bin/cache/dart-sdk/bin:$PATH
   - flutter doctor
 script:
   - tool/travis.sh

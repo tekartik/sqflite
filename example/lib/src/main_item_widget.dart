@@ -3,9 +3,10 @@ import 'package:flutter/widgets.dart';
 import '../model/main_item.dart';
 
 class MainItemWidget extends StatefulWidget {
+  MainItemWidget(this.item, this.onTap);
+
   final MainItem item;
   final Function onTap; // = Function(MainItem item);
-  MainItemWidget(this.item, this.onTap);
 
   @override
   _MainItemWidgetState createState() => _MainItemWidgetState();

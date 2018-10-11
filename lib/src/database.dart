@@ -143,13 +143,13 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
 }
 
 class SqfliteDatabaseOpenHelper {
+  SqfliteDatabaseOpenHelper(this.factory, this.path, this.options);
+
   final SqfliteDatabaseFactory factory;
   final OpenDatabaseOptions options;
   final lock = Lock();
   final String path;
   SqfliteDatabase sqfliteDatabase;
-
-  SqfliteDatabaseOpenHelper(this.factory, this.path, this.options);
 
   SqfliteDatabase newDatabase(String path) => factory.newDatabase(this, path);
 
@@ -188,11 +188,11 @@ class SqfliteDatabaseOpenHelper {
 }
 
 class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
+  SqfliteDatabase(this.openHelper, this._path, {this.options});
+
   // save the open helper for proper closing
   final SqfliteDatabaseOpenHelper openHelper;
   OpenDatabaseOptions options;
-
-  SqfliteDatabase(this.openHelper, this._path, {this.options});
 
   SqfliteDatabaseFactory get factory => openHelper.factory;
 

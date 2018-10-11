@@ -6,9 +6,9 @@ import 'package:sqflite/src/database.dart';
 
 class SqfliteTransaction extends SqfliteDatabaseExecutor
     implements Transaction {
-  final SqfliteDatabase database;
-
   SqfliteTransaction(this.database);
+
+  final SqfliteDatabase database;
 
   @override
   SqfliteDatabase get db => database;

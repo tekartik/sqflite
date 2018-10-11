@@ -9,12 +9,13 @@ import 'package:sqflite/src/sqflite_impl.dart' as impl;
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/database_factory.dart' show databaseFactory;
 
-import 'src/utils.dart';
+import 'package:sqflite/src/utils.dart';
 
-export 'sql.dart' show ConflictAlgorithm;
-export 'src/exception.dart' show DatabaseException;
-export 'src/database_factory.dart' show DatabaseFactory, databaseFactory;
-export 'src/constant.dart' show inMemoryDatabasePath;
+export 'package:sqflite/sql.dart' show ConflictAlgorithm;
+export 'package:sqflite/src/exception.dart' show DatabaseException;
+export 'package:sqflite/src/database_factory.dart'
+    show DatabaseFactory, databaseFactory;
+export 'package:sqflite/src/constant.dart' show inMemoryDatabasePath;
 
 ///
 /// internal options

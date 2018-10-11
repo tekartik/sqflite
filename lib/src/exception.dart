@@ -5,9 +5,9 @@ import 'package:sqflite/src/constant.dart';
 
 // Wrap sqlite native exception
 abstract class DatabaseException implements Exception {
-  String _message;
-
   DatabaseException(this._message);
+
+  String _message;
 
   @override
   String toString() => "DatabaseException($_message)";
@@ -64,9 +64,9 @@ abstract class DatabaseException implements Exception {
 }
 
 class SqfliteDatabaseException extends DatabaseException {
-  dynamic result;
-
   SqfliteDatabaseException(String message, this.result) : super(message);
+
+  dynamic result;
 
   @override
   String toString() {

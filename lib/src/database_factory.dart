@@ -8,7 +8,7 @@ import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/utils.dart';
 import 'package:synchronized/synchronized.dart';
-import 'sqflite_impl.dart' as impl;
+import 'package:sqflite/src/sqflite_impl.dart' as impl;
 
 SqfliteDatabaseFactory _databaseFactory;
 

@@ -1,7 +1,8 @@
 enum ItemState { running, success, failure }
 
 class Item {
-  ItemState state = ItemState.running;
   Item(this.name);
+
+  ItemState state = ItemState.running;
   String name;
 }

@@ -10,10 +10,10 @@ import 'src/item_widget.dart';
 export 'package:sqflite_example/database/database.dart';
 
 class TestPage extends StatefulWidget {
+  TestPage(this.title);
+
   final String title;
   final List<Test> tests = [];
-
-  TestPage(this.title);
 
   void test(String name, FutureOr fn()) {
     tests.add(Test(name, fn));

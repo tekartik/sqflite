@@ -9,18 +9,6 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart';
 
 class OpenCallbacks {
-  bool onConfigureCalled;
-  bool onOpenCalled;
-  bool onCreateCalled;
-  bool onDowngradeCalled;
-  bool onUpgradeCalled;
-
-  OnDatabaseCreateFn onCreate;
-  OnDatabaseConfigureFn onConfigure;
-  OnDatabaseVersionChangeFn onDowngrade;
-  OnDatabaseVersionChangeFn onUpgrade;
-  OnDatabaseOpenFn onOpen;
-
   OpenCallbacks() {
     onConfigure = (Database db) {
       //print("onConfigure");
@@ -59,6 +47,18 @@ class OpenCallbacks {
 
     reset();
   }
+
+  bool onConfigureCalled;
+  bool onOpenCalled;
+  bool onCreateCalled;
+  bool onDowngradeCalled;
+  bool onUpgradeCalled;
+
+  OnDatabaseCreateFn onCreate;
+  OnDatabaseConfigureFn onConfigure;
+  OnDatabaseVersionChangeFn onDowngrade;
+  OnDatabaseVersionChangeFn onUpgrade;
+  OnDatabaseOpenFn onOpen;
 
   void reset() {
     onConfigureCalled = false;
@@ -673,8 +673,9 @@ class OpenTestPage extends TestPage {
 }
 
 class Helper {
-  final String path;
   Helper(this.path);
+
+  final String path;
   Database _db;
   final _lock = Lock();
 

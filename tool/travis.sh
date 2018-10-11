@@ -8,6 +8,7 @@ flutter --version
 
 flutter packages get
 
+flutter analyze
 flutter analyze --no-current-package lib test
 # flutter analyze --no-current-package --preview-dart-2 lib test
 
@@ -19,6 +20,7 @@ pushd example
 
 flutter packages get
 
+flutter analyze
 flutter analyze --no-current-package lib test
 # flutter analyze --no-current-package --preview-dart-2 lib test
 

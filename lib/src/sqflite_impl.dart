@@ -5,7 +5,7 @@ import 'dart:core';
 import 'package:flutter/src/services/platform_channel.dart';
 import 'package:sqflite/src/utils.dart';
 
-import 'constant.dart' as constant;
+import 'package:sqflite/src/constant.dart' as constant;
 
 const String channelName = 'com.tekartik.sqflite';
 
@@ -71,10 +71,6 @@ List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
 }
 
 class QueryResultSet extends ListBase<Map<String, dynamic>> {
-  List<List<dynamic>> _rows;
-  List<String> _columns;
-  Map<String, int> _columnIndexMap;
-
   QueryResultSet(List rawColumns, List rawRows) {
     _columns = rawColumns?.cast<String>();
     _rows = rawRows?.cast<List>();
@@ -86,6 +82,10 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
       }
     }
   }
+
+  List<List<dynamic>> _rows;
+  List<String> _columns;
+  Map<String, int> _columnIndexMap;
 
   @override
   int get length => _rows?.length ?? 0;
@@ -111,10 +111,10 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
 }
 
 class QueryRow extends MapBase<String, dynamic> {
+  QueryRow(this.queryResultSet, this.row);
+
   final QueryResultSet queryResultSet;
   final List row;
-
-  QueryRow(this.queryResultSet, this.row);
 
   @override
   dynamic operator [](Object key) {
@@ -145,9 +145,8 @@ class QueryRow extends MapBase<String, dynamic> {
 }
 
 class BatchResult {
-  final dynamic result;
-
   BatchResult(this.result);
+  final dynamic result;
 }
 
 class BatchResults extends PluginList<dynamic> {
@@ -169,9 +168,9 @@ class BatchResults extends PluginList<dynamic> {
 }
 
 abstract class PluginList<T> extends ListBase<T> {
-  final List _list;
-
   PluginList.from(List list) : _list = list;
+
+  final List _list;
 
   List get rawList => _list;
 

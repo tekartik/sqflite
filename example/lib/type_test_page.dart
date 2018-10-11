@@ -12,8 +12,6 @@ class _Data {
 }
 
 class TypeTestPage extends TestPage {
-  final _Data data = _Data();
-
   TypeTestPage() : super("Type tests") {
     test("int", () async {
       //await Sqflite.devSetDebugModeOn(true);
@@ -214,6 +212,8 @@ class TypeTestPage extends TestPage {
       }
     });
   }
+
+  final _Data data = _Data();
 
   // Get the value field from a given
   Future<dynamic> getValue(int id) async {

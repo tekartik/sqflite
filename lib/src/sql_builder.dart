@@ -54,12 +54,6 @@ final List<String> _conflictValues = [
 //final RegExp _sLimitPattern = new RegExp("\s*\d+\s*(,\s*\d+\s*)?");
 
 class SqlBuilder {
-  String sql;
-  List arguments;
-
-  // during build
-  bool hasEscape = false;
-
   /// Convenience method for deleting rows in the database.
   ///
   /// @param table the table to delete from
@@ -245,6 +239,12 @@ class SqlBuilder {
     sql = update.toString();
     arguments = bindArgs;
   }
+
+  String sql;
+  List arguments;
+
+  // during build
+  bool hasEscape = false;
 
   String _escapeName(String name) {
     if (name == null) {

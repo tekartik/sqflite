@@ -114,9 +114,9 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
 }
 
 class SqfliteTransactionBatch extends SqfliteBatch {
-  final SqfliteTransaction transaction;
-
   SqfliteTransactionBatch(this.transaction);
+
+  final SqfliteTransaction transaction;
 
   @override
   Future<List> commit({bool exclusive, bool noResult}) {

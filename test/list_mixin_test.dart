@@ -3,9 +3,9 @@ import 'dart:collection';
 import 'package:flutter_test/flutter_test.dart';
 
 class MyList1 extends Object with ListMixin<Map<String, dynamic>> {
-  final List _list;
-
   MyList1.from(this._list);
+
+  final List _list;
 
   @override
   Map<String, dynamic> operator [](int index) {
@@ -28,9 +28,9 @@ class MyList1 extends Object with ListMixin<Map<String, dynamic>> {
 }
 
 class MyList2 extends ListBase<Map<String, dynamic>> {
-  final List _list;
-
   MyList2.from(this._list);
+
+  final List _list;
 
   @override
   Map<String, dynamic> operator [](int index) {
