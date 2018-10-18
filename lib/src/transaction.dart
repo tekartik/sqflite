@@ -19,16 +19,15 @@ class SqfliteTransaction extends SqfliteDatabaseExecutor
   SqfliteTransaction get txn => this;
 
   @override
-  Future<List> applyBatch(Batch batch, {bool noResult}) {
+  Future<List<dynamic>> applyBatch(Batch batch, {bool noResult}) {
     if (batch is SqfliteDatabaseBatch) {
-      SqfliteDatabaseBatch sqfliteDatabaseBatch = batch;
+      final SqfliteDatabaseBatch sqfliteDatabaseBatch = batch;
       if (sqfliteDatabaseBatch.database != database) {
         throw ArgumentError("database different in batch and transaction");
       }
     }
-
-    return database.txnApplyBatch(txn, batch as SqfliteBatch,
-        noResult: noResult);
+    final SqfliteBatch sqfliteBatch = batch;
+    return database.txnApplyBatch(txn, sqfliteBatch, noResult: noResult);
   }
 
   @override

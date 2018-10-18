@@ -43,7 +43,7 @@ enum ConflictAlgorithm {
   replace,
 }
 
-final List<String> _conflictValues = [
+final List<String> _conflictValues = <String>[
   " OR ROLLBACK ",
   " OR ABORT ",
   " OR FAIL ",
@@ -62,13 +62,13 @@ class SqlBuilder {
   /// @param whereArgs You may include ?s in the where clause, which
   ///            will be replaced by the values from whereArgs. The values
   ///            will be bound as Strings.
-  SqlBuilder.delete(String table, {String where, List whereArgs}) {
-    StringBuffer delete = StringBuffer();
+  SqlBuilder.delete(String table, {String where, List<dynamic> whereArgs}) {
+    final StringBuffer delete = StringBuffer();
     delete.write("DELETE FROM ");
     delete.write(_escapeName(table));
     _writeClause(delete, " WHERE ", where);
     sql = delete.toString();
-    arguments = whereArgs;
+    arguments = whereArgs != null ? List<dynamic>.from(whereArgs) : null;
   }
 
   /// Build an SQL query string from the given clauses.
@@ -98,7 +98,7 @@ class SqlBuilder {
       {bool distinct,
       List<String> columns,
       String where,
-      List whereArgs,
+      List<dynamic> whereArgs,
       String groupBy,
       String having,
       String orderBy,
@@ -109,7 +109,7 @@ class SqlBuilder {
           "HAVING clauses are only permitted when using a groupBy clause");
     }
 
-    StringBuffer query = StringBuffer();
+    final StringBuffer query = StringBuffer();
 
     query.write("SELECT ");
     if (distinct == true) {
@@ -134,7 +134,7 @@ class SqlBuilder {
     }
 
     sql = query.toString();
-    arguments = whereArgs;
+    arguments = whereArgs != null ? List<dynamic>.from(whereArgs) : null;
   }
 
   /// Convenience method for inserting a row into the database.
@@ -145,7 +145,7 @@ class SqlBuilder {
 
   SqlBuilder.insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
-    StringBuffer insert = StringBuffer();
+    final StringBuffer insert = StringBuffer();
     insert.write("INSERT");
     if (conflictAlgorithm != null) {
       insert.write(_conflictValues[conflictAlgorithm.index]);
@@ -154,11 +154,11 @@ class SqlBuilder {
     insert.write(_escapeName(table));
     insert.write(' (');
 
-    List bindArgs;
-    int size = (values != null) ? values.length : 0;
+    List<dynamic> bindArgs;
+    final int size = (values != null) ? values.length : 0;
 
     if (size > 0) {
-      StringBuffer sbValues = StringBuffer(") VALUES (");
+      final StringBuffer sbValues = StringBuffer(") VALUES (");
 
       bindArgs = <dynamic>[];
       int i = 0;
@@ -202,12 +202,14 @@ class SqlBuilder {
   /// @param conflictAlgorithm for update conflict resolver
 
   SqlBuilder.update(String table, Map<String, dynamic> values,
-      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm}) {
+      {String where,
+      List<dynamic> whereArgs,
+      ConflictAlgorithm conflictAlgorithm}) {
     if (values == null || values.isEmpty) {
       throw ArgumentError("Empty values");
     }
 
-    StringBuffer update = StringBuffer();
+    final StringBuffer update = StringBuffer();
     update.write("UPDATE ");
     if (conflictAlgorithm != null) {
       update.write(_conflictValues[conflictAlgorithm.index]);
@@ -215,13 +217,13 @@ class SqlBuilder {
     update.write(_escapeName(table));
     update.write(" SET ");
 
-    var bindArgs = <dynamic>[];
+    final List<dynamic> bindArgs = <dynamic>[];
     int i = 0;
 
-    values.keys.forEach((colName) {
+    values.keys.forEach((String colName) {
       update.write((i++ > 0) ? ", " : "");
       update.write(_escapeName(colName));
-      dynamic value = values[colName];
+      final dynamic value = values[colName];
       if (value != null) {
         bindArgs.add(values[colName]);
         update.write(" = ?");
@@ -241,7 +243,7 @@ class SqlBuilder {
   }
 
   String sql;
-  List arguments;
+  List<dynamic> arguments;
 
   // during build
   bool hasEscape = false;
@@ -267,10 +269,10 @@ class SqlBuilder {
   /// Add the names that are non-null in columns to s, separating
   /// them with commas.
   void _writeColumns(StringBuffer s, List<String> columns) {
-    int n = columns.length;
+    final int n = columns.length;
 
     for (int i = 0; i < n; i++) {
-      String column = columns[i];
+      final String column = columns[i];
 
       if (column != null) {
         if (i > 0) {
@@ -285,8 +287,8 @@ class SqlBuilder {
 
 bool isEscapedName(String name) {
   if (name != null && name.length >= 2) {
-    String first = name[0];
-    String last = name[name.length - 1];
+    final String first = name[0];
+    final String last = name[name.length - 1];
     if (first == last) {
       switch (first) {
         case '"':
@@ -326,7 +328,7 @@ String unescapeName(String name) {
 
 // This list was built from the whole set of keywords
 // ([allKeywords] kept here for reference
-Set<String> escapeNames = Set.from(<String>[
+final Set<String> escapeNames = Set<String>.from(<String>[
   "add",
   "all",
   "alter",

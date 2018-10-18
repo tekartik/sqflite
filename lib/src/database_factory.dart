@@ -18,7 +18,8 @@ SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
     _databaseFactory ??= SqfliteDatabaseFactory();
 
 Future<Database> openReadOnlyDatabase(String path) async {
-  var options = SqfliteOpenDatabaseOptions(readOnly: true);
+  final SqfliteOpenDatabaseOptions options =
+      SqfliteOpenDatabaseOptions(readOnly: true);
   return sqlfliteDatabaseFactory.openDatabase(path, options: options);
 }
 
@@ -31,7 +32,7 @@ abstract class DatabaseFactory {
   Future<String> getDatabasesPath();
 
   /// Delete a database if it exists
-  Future deleteDatabase(String path);
+  Future<void> deleteDatabase(String path);
 }
 
 ///
@@ -71,7 +72,7 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
 
   @override
   String toString() {
-    var map = <String, dynamic>{};
+    final Map<String, dynamic> map = <String, dynamic>{};
     if (version != null) {
       map['version'] = version;
     }
@@ -83,7 +84,8 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
 
 class SqfliteDatabaseFactory implements DatabaseFactory {
   // for single instances only
-  Map<String, SqfliteDatabaseOpenHelper> databaseOpenHelpers = {};
+  Map<String, SqfliteDatabaseOpenHelper> databaseOpenHelpers =
+      <String, SqfliteDatabaseOpenHelper>{};
   SqfliteDatabaseOpenHelper nullDatabaseOpenHelper;
 
   // to allow mock overriding
@@ -91,7 +93,7 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
       impl.invokeMethod(method, arguments);
 
   // open lock mechanism
-  var lock = Lock();
+  final Lock lock = Lock();
 
   SqfliteDatabase newDatabase(
           SqfliteDatabaseOpenHelper openHelper, String path) =>
@@ -141,9 +143,10 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
       if (path != null) {
         path = await fixPath(path);
       }
-      var databaseOpenHelper = getExistingDatabaseOpenHelper(path);
+      SqfliteDatabaseOpenHelper databaseOpenHelper =
+          getExistingDatabaseOpenHelper(path);
 
-      bool firstOpen = databaseOpenHelper == null;
+      final bool firstOpen = databaseOpenHelper == null;
       if (firstOpen) {
         databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options);
         setDatabaseOpenHelper(databaseOpenHelper);
@@ -158,13 +161,14 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
         rethrow;
       }
     } else {
-      var databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options);
+      final SqfliteDatabaseOpenHelper databaseOpenHelper =
+          SqfliteDatabaseOpenHelper(this, path, options);
       return await databaseOpenHelper.openDatabase();
     }
   }
 
   @override
-  Future deleteDatabase(String path) async {
+  Future<void> deleteDatabase(String path) async {
     try {
       await File(path).delete(recursive: true);
     } catch (_e) {
@@ -178,7 +182,7 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
   @override
   Future<String> getDatabasesPath() async {
     if (_databasesPath == null) {
-      var path = await wrapDatabaseException<String>(() {
+      final String path = await wrapDatabaseException<String>(() {
         return invokeMethod<String>(methodGetDatabasesPath);
       });
       if (path == null) {
@@ -189,7 +193,7 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
     return _databasesPath;
   }
 
-  Future createParentDirectory(String path) async {
+  Future<void> createParentDirectory(String path) async {
     // needed on iOS
     if (Platform.isIOS) {
       path = await fixPath(path);

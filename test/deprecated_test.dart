@@ -6,14 +6,14 @@ import 'src_database_test.dart';
 void main() {
   group("deprecated", () {
     test("transaction", () async {
-      var db = mockDatabaseFactory.newEmptyDatabase();
+      final MockDatabase db = mockDatabaseFactory.newEmptyDatabase();
       await db.execute("test");
       await db.insert("test", <String, dynamic>{'test': 1});
       await db.update("test", <String, dynamic>{'test': 1});
       await db.delete("test");
       await db.query("test");
 
-      await db.transaction((txn) async {
+      await db.transaction((Transaction txn) async {
         await txn.execute("test");
         await txn.insert("test", <String, dynamic>{'test': 1});
         await txn.update("test", <String, dynamic>{'test': 1});
@@ -21,7 +21,7 @@ void main() {
         await txn.query("test");
       });
 
-      Batch batch = db.batch();
+      final Batch batch = db.batch();
       batch.execute("test");
       batch.insert("test", <String, dynamic>{'test': 1});
       batch.update("test", <String, dynamic>{'test': 1});
@@ -32,13 +32,13 @@ void main() {
     });
 
     test('wrong database', () async {
-      var db2 = mockDatabaseFactory.newEmptyDatabase();
-      var db = await mockDatabaseFactory.openDatabase(null,
-          options: OpenDatabaseOptions()) as MockDatabase;
+      final MockDatabase db2 = mockDatabaseFactory.newEmptyDatabase();
+      final MockDatabase db = await mockDatabaseFactory.openDatabase(null,
+          options: OpenDatabaseOptions());
 
-      var batch = db2.batch();
+      final Batch batch = db2.batch();
 
-      await db.transaction((txn) async {
+      await db.transaction((Transaction txn) async {
         try {
           // ignore: deprecated_member_use
           await txn.applyBatch(batch);
@@ -46,22 +46,22 @@ void main() {
         } on ArgumentError catch (_) {}
       });
       await db.close();
-      expect(
-          db.methods, ['openDatabase', 'execute', 'execute', 'closeDatabase']);
-      expect(db.sqls, [null, 'BEGIN IMMEDIATE', 'COMMIT', null]);
+      expect(db.methods,
+          <String>['openDatabase', 'execute', 'execute', 'closeDatabase']);
+      expect(db.sqls, <String>[null, 'BEGIN IMMEDIATE', 'COMMIT', null]);
     });
   });
   test('simple', () async {
-    var db = await mockDatabaseFactory.openDatabase(null) as MockDatabase;
+    final MockDatabase db = await mockDatabaseFactory.openDatabase(null);
 
-    var batch = db.batch();
+    final Batch batch = db.batch();
     batch.execute("test");
     // ignore: deprecated_member_use
     await batch.apply();
     // ignore: deprecated_member_use
     await batch.apply();
     await db.close();
-    expect(db.methods, [
+    expect(db.methods, <String>[
       'openDatabase',
       'execute',
       'batch',
@@ -71,7 +71,7 @@ void main() {
       'execute',
       'closeDatabase'
     ]);
-    expect(db.sqls, [
+    expect(db.sqls, <String>[
       null,
       'BEGIN IMMEDIATE',
       'test',
@@ -84,11 +84,11 @@ void main() {
   });
 
   test('in_transaction', () async {
-    var db = await mockDatabaseFactory.openDatabase(null) as MockDatabase;
+    final MockDatabase db = await mockDatabaseFactory.openDatabase(null);
 
-    var batch = db.batch();
+    final Batch batch = db.batch();
 
-    await db.transaction((txn) async {
+    await db.transaction((Transaction txn) async {
       batch.execute("test");
 
       // ignore: deprecated_member_use
@@ -97,7 +97,7 @@ void main() {
       await txn.applyBatch(batch);
     });
     await db.close();
-    expect(db.methods, [
+    expect(db.methods, <String>[
       'openDatabase',
       'execute',
       'batch',
@@ -105,6 +105,7 @@ void main() {
       'execute',
       'closeDatabase'
     ]);
-    expect(db.sqls, [null, 'BEGIN IMMEDIATE', 'test', 'test', 'COMMIT', null]);
+    expect(db.sqls,
+        <String>[null, 'BEGIN IMMEDIATE', 'test', 'test', 'COMMIT', null]);
   });
 }

@@ -5,11 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 class MyList1 extends Object with ListMixin<Map<String, dynamic>> {
   MyList1.from(this._list);
 
-  final List _list;
+  final List<dynamic> _list;
 
   @override
   Map<String, dynamic> operator [](int index) {
-    Map value = _list[index];
+    final Map<dynamic, dynamic> value = _list[index];
     return value.cast<String, dynamic>();
   }
 
@@ -30,11 +30,11 @@ class MyList1 extends Object with ListMixin<Map<String, dynamic>> {
 class MyList2 extends ListBase<Map<String, dynamic>> {
   MyList2.from(this._list);
 
-  final List _list;
+  final List<dynamic> _list;
 
   @override
   Map<String, dynamic> operator [](int index) {
-    Map value = _list[index];
+    final Map<dynamic, dynamic> value = _list[index];
     return value.cast<String, dynamic>();
   }
 
@@ -56,18 +56,18 @@ void main() {
   group("mixin", () {
     // This fails on beta 1, should work now
     test('ListMixin', () {
-      var raw = [
-        {'col': 1}
+      final List<dynamic> raw = <dynamic>[
+        <dynamic, dynamic>{'col': 1}
       ];
-      var rows = MyList1.from(raw);
+      final MyList1 rows = MyList1.from(raw);
       expect(rows, raw);
     });
 
     test('ListBase', () {
-      var raw = [
-        {'col': 1}
+      final List<dynamic> raw = <dynamic>[
+        <dynamic, dynamic>{'col': 1}
       ];
-      var rows = MyList2.from(raw);
+      final MyList2 rows = MyList2.from(raw);
       expect(rows, raw);
     });
   });

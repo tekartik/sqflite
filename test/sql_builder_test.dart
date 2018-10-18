@@ -8,7 +8,7 @@ void main() {
       SqlBuilder builder = SqlBuilder.delete("test",
           where: "value = ?", whereArgs: <dynamic>[1]);
       expect(builder.sql, "DELETE FROM test WHERE value = ?");
-      expect(builder.arguments, [1]);
+      expect(builder.arguments, <int>[1]);
 
       builder = SqlBuilder.delete("test");
       expect(builder.sql, "DELETE FROM test");
@@ -22,7 +22,7 @@ void main() {
 
       builder = SqlBuilder.query("test",
           distinct: true,
-          columns: ["value"],
+          columns: <String>["value"],
           where: "value = ?",
           whereArgs: <dynamic>[1],
           groupBy: "group_value",
@@ -32,7 +32,7 @@ void main() {
           offset: 3);
       expect(builder.sql,
           "SELECT DISTINCT value FROM test WHERE value = ? GROUP BY group_value HAVING value > 0 ORDER BY other_value LIMIT 2 OFFSET 3");
-      expect(builder.arguments, [1]);
+      expect(builder.arguments, <int>[1]);
     });
 
     test("insert", () {
@@ -48,13 +48,13 @@ void main() {
 
       builder = SqlBuilder.insert("test", <String, dynamic>{"value": 1});
       expect(builder.sql, "INSERT INTO test (value) VALUES (?)");
-      expect(builder.arguments, [1]);
+      expect(builder.arguments, <int>[1]);
 
       builder = SqlBuilder.insert(
           "test", <String, dynamic>{"value": 1, "other_value": null});
       expect(builder.sql,
           "INSERT INTO test (value, other_value) VALUES (?, NULL)");
-      expect(builder.arguments, [1]);
+      expect(builder.arguments, <int>[1]);
     });
 
     test("update", () {
@@ -66,17 +66,17 @@ void main() {
       SqlBuilder builder =
           SqlBuilder.update("test", <String, dynamic>{"value": 1});
       expect(builder.sql, "UPDATE test SET value = ?");
-      expect(builder.arguments, [1]);
+      expect(builder.arguments, <dynamic>[1]);
 
       builder = SqlBuilder.update(
           "test", <String, dynamic>{"value": 1, "other_value": null});
       expect(builder.sql, "UPDATE test SET value = ?, other_value = NULL");
-      expect(builder.arguments, [1]);
+      expect(builder.arguments, <dynamic>[1]);
 
       // testing where
       builder = SqlBuilder.update('test', <String, dynamic>{"value": 1},
           where: "a = ? AND b = ?", whereArgs: <dynamic>['some_test', 1]);
-      expect(builder.arguments, [1, "some_test", 1]);
+      expect(builder.arguments, <dynamic>[1, "some_test", 1]);
     });
 
     test("query", () {
@@ -93,7 +93,7 @@ void main() {
       // testing where
       builder = SqlBuilder.query('test',
           where: "a = ? AND b = ?", whereArgs: <dynamic>['some_test', 1]);
-      expect(builder.arguments, ["some_test", 1]);
+      expect(builder.arguments, <dynamic>["some_test", 1]);
     });
 
     test("isEscapedName", () {
@@ -112,7 +112,7 @@ void main() {
       expect(escapeName("dummy"), "dummy");
 
       for (String name in escapeNames) {
-        expect(escapeName(name), '"${name}"');
+        expect(escapeName(name), '"$name"');
       }
     });
 

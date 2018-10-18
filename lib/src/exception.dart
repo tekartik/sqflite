@@ -72,11 +72,11 @@ class SqfliteDatabaseException extends DatabaseException {
   String toString() {
     if (result is Map) {
       if (result[paramSql] != null) {
-        dynamic args = result[paramSqlArguments];
+        final dynamic args = result[paramSqlArguments];
         if (args == null) {
           return "DatabaseException($_message) sql '${result[paramSql]}'";
         } else {
-          return "DatabaseException($_message) sql '${result[paramSql]}' args ${args}}";
+          return "DatabaseException($_message) sql '${result[paramSql]}' args $args}";
         }
       }
     }
@@ -86,15 +86,15 @@ class SqfliteDatabaseException extends DatabaseException {
   /// Parse the sqlite native message to extract the code
   /// See https://www.sqlite.org/rescode.html for the list of result code
   int getResultCode() {
-    String message = _message.toLowerCase();
+    final String message = _message.toLowerCase();
     int findCode(String patternPrefix) {
-      int index = message.indexOf(patternPrefix);
+      final int index = message.indexOf(patternPrefix);
       if (index != -1) {
-        String code = message.substring(index + patternPrefix.length);
-        int endIndex = code.indexOf(")");
+        final String code = message.substring(index + patternPrefix.length);
+        final int endIndex = code.indexOf(")");
         if (endIndex != -1) {
           try {
-            int resultCode = int.parse(code.substring(0, endIndex));
+            final int resultCode = int.parse(code.substring(0, endIndex));
             if (resultCode != null) {
               return resultCode;
             }
@@ -118,7 +118,7 @@ class SqfliteDatabaseException extends DatabaseException {
 
 Future<T> wrapDatabaseException<T>(Future<T> action()) async {
   try {
-    T result = await action();
+    final T result = await action();
     return result;
   } on PlatformException catch (e) {
     if (e.code == sqliteErrorCode) {

@@ -40,29 +40,31 @@ void main() {
 
     test('firstIntValue', () {
       expect(
-          Sqflite.firstIntValue([
+          Sqflite.firstIntValue(<Map<String, dynamic>>[
             <String, dynamic>{'test': 1}
           ]),
           1);
       expect(
-          Sqflite.firstIntValue([
+          Sqflite.firstIntValue(<Map<String, dynamic>>[
             <String, dynamic>{'test': 1},
             <String, dynamic>{'test': 1}
           ]),
           1);
       expect(
-          Sqflite.firstIntValue([
+          Sqflite.firstIntValue(<Map<String, dynamic>>[
             <String, dynamic>{'test': null}
           ]),
           null);
-      expect(Sqflite.firstIntValue([<String, dynamic>{}]), isNull);
+      expect(Sqflite.firstIntValue(<Map<String, dynamic>>[<String, dynamic>{}]),
+          isNull);
       expect(Sqflite.firstIntValue(<Map<String, dynamic>>[]), isNull);
-      expect(Sqflite.firstIntValue([<String, dynamic>{}]), isNull);
+      expect(Sqflite.firstIntValue(<Map<String, dynamic>>[<String, dynamic>{}]),
+          isNull);
     });
 
     test('hex', () {
       expect(
-          Sqflite.hex([
+          Sqflite.hex(<int>[
             0,
             1,
             2,
@@ -84,16 +86,16 @@ void main() {
             255
           ]),
           '000102030405060708090A0B0C0D0E0F1011FF');
-      expect(Sqflite.hex([]), '');
-      expect(Sqflite.hex([32]), '20');
+      expect(Sqflite.hex(<int>[]), '');
+      expect(Sqflite.hex(<int>[32]), '20');
 
       try {
-        Sqflite.hex([-1]);
+        Sqflite.hex(<int>[-1]);
         fail('should fail');
       } on FormatException catch (_) {}
 
       try {
-        Sqflite.hex([256]);
+        Sqflite.hex(<int>[256]);
         fail('should fail');
       } on FormatException catch (_) {}
     });

@@ -23,48 +23,48 @@ void main() {
     });
 
     test('Rows', () {
-      var raw = <dynamic>[
+      final List<dynamic> raw = <dynamic>[
         <dynamic, dynamic>{'col': 1}
       ];
-      var rows = Rows.from(raw);
-      var row = rows.first;
+      final Rows rows = Rows.from(raw);
+      final Map<String, dynamic> row = rows.first;
       expect(rows, raw);
-      expect(row, {"col": 1});
+      expect(row, <String, dynamic>{"col": 1});
     });
 
     test('ResultSet', () {
-      var raw = {
-        "columns": ["column"],
-        "rows": [
-          [1]
+      final Map<dynamic, dynamic> raw = <dynamic, dynamic>{
+        "columns": <dynamic>["column"],
+        "rows": <dynamic>[
+          <int>[1]
         ]
       };
-      var queryResultSet = QueryResultSet(<dynamic>[
+      final QueryResultSet queryResultSet = QueryResultSet(<dynamic>[
         "column"
       ], <dynamic>[
-        [1]
+        <dynamic>[1]
       ]);
       expect(queryResultSet.columnIndex("dummy"), isNull);
       expect(queryResultSet.columnIndex("column"), 0);
-      var row = queryResultSet.first;
+      final Map<String, dynamic> row = queryResultSet.first;
       //expect(rows, raw);
-      expect(row, {"column": 1});
+      expect(row, <String, dynamic>{"column": 1});
 
-      var queryResultSetMap = {
-        "columns": ["id", "name"],
-        "rows": [
-          [1, "item 1"],
-          [2, "item 2"]
+      final Map<dynamic, dynamic> queryResultSetMap = <dynamic, dynamic>{
+        "columns": <dynamic>["id", "name"],
+        "rows": <List<dynamic>>[
+          <dynamic>[1, "item 1"],
+          <dynamic>[2, "item 2"]
         ]
       };
-      var expected = [
-        {'id': 1, 'name': 'item 1'},
-        {'id': 2, 'name': 'item 2'}
+      final List<Map<String, dynamic>> expected = <Map<String, dynamic>>[
+        <String, dynamic>{'id': 1, 'name': 'item 1'},
+        <String, dynamic>{'id': 2, 'name': 'item 2'}
       ];
       expect(queryResultToList(queryResultSetMap), expected);
       expect(queryResultToList(expected), expected);
-      expect(queryResultToList(raw), [
-        {'column': 1}
+      expect(queryResultToList(raw), <Map<String, dynamic>>[
+        <String, dynamic>{'column': 1}
       ]);
 
       expect(queryResultToList(<String, dynamic>{}), <dynamic>[]);

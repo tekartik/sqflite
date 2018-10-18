@@ -6,13 +6,13 @@ import 'package:sqflite/src/transaction.dart';
 import 'package:sqflite/src/utils.dart';
 
 abstract class SqfliteBatch implements Batch {
-  final List<Map<String, dynamic>> operations = [];
+  final List<Map<String, dynamic>> operations = <Map<String, dynamic>>[];
 
   @override
   Future<List<dynamic>> commit({bool exclusive, bool noResult}) =>
       apply(exclusive: exclusive, noResult: noResult);
 
-  void _add(String method, String sql, List arguments) {
+  void _add(String method, String sql, List<dynamic> arguments) {
     operations.add(<String, dynamic>{
       paramMethod: method,
       paramSql: sql,
@@ -21,20 +21,20 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  void rawInsert(String sql, [List arguments]) {
+  void rawInsert(String sql, [List<dynamic> arguments]) {
     _add(methodInsert, sql, arguments);
   }
 
   @override
   void insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
-    SqlBuilder builder = SqlBuilder.insert(table, values,
+    final SqlBuilder builder = SqlBuilder.insert(table, values,
         nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
   }
 
   @override
-  void rawQuery(String sql, [List arguments]) {
+  void rawQuery(String sql, [List<dynamic> arguments]) {
     _add(methodQuery, sql, arguments);
   }
 
@@ -43,13 +43,13 @@ abstract class SqfliteBatch implements Batch {
       {bool distinct,
       List<String> columns,
       String where,
-      List whereArgs,
+      List<dynamic> whereArgs,
       String groupBy,
       String having,
       String orderBy,
       int limit,
       int offset}) {
-    SqlBuilder builder = SqlBuilder.query(table,
+    final SqlBuilder builder = SqlBuilder.query(table,
         distinct: distinct,
         columns: columns,
         where: where,
@@ -63,14 +63,16 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  void rawUpdate(String sql, [List arguments]) {
+  void rawUpdate(String sql, [List<dynamic> arguments]) {
     _add(methodUpdate, sql, arguments);
   }
 
   @override
   void update(String table, Map<String, dynamic> values,
-      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm}) {
-    SqlBuilder builder = SqlBuilder.update(table, values,
+      {String where,
+      List<dynamic> whereArgs,
+      ConflictAlgorithm conflictAlgorithm}) {
+    final SqlBuilder builder = SqlBuilder.update(table, values,
         where: where,
         whereArgs: whereArgs,
         conflictAlgorithm: conflictAlgorithm);
@@ -78,24 +80,24 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  void delete(String table, {String where, List whereArgs}) {
-    SqlBuilder builder =
+  void delete(String table, {String where, List<dynamic> whereArgs}) {
+    final SqlBuilder builder =
         SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
     return rawDelete(builder.sql, builder.arguments);
   }
 
   @override
-  void rawDelete(String sql, [List arguments]) {
+  void rawDelete(String sql, [List<dynamic> arguments]) {
     rawUpdate(sql, arguments);
   }
 
   @override
-  void execute(String sql, [List arguments]) {
+  void execute(String sql, [List<dynamic> arguments]) {
     _add(methodExecute, sql, arguments);
   }
 
   @override
-  Future<List> apply({bool exclusive, bool noResult}) =>
+  Future<List<dynamic>> apply({bool exclusive, bool noResult}) =>
       commit(exclusive: exclusive, noResult: noResult);
 }
 
@@ -105,9 +107,10 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   final SqfliteDatabase database;
 
   @override
-  Future<List> commit({bool exclusive, bool noResult}) {
-    return database.transaction<List>((txn) {
-      return database.txnApplyBatch(txn as SqfliteTransaction, this,
+  Future<List<dynamic>> commit({bool exclusive, bool noResult}) {
+    return database.transaction<List<dynamic>>((Transaction txn) {
+      final SqfliteTransaction sqfliteTransaction = txn;
+      return database.txnApplyBatch(sqfliteTransaction, this,
           noResult: noResult);
     }, exclusive: exclusive);
   }
@@ -119,7 +122,7 @@ class SqfliteTransactionBatch extends SqfliteBatch {
   final SqfliteTransaction transaction;
 
   @override
-  Future<List> commit({bool exclusive, bool noResult}) {
+  Future<List<dynamic>> commit({bool exclusive, bool noResult}) {
     if (exclusive != null) {
       throw ArgumentError.value(exclusive, "exclusive",
           "must not be set when commiting a batch in a transaction");

@@ -29,7 +29,8 @@ class SqfliteOptions {
   }
 
   void fromMap(Map<String, dynamic> map) {
-    queryAsMapList = map['queryAsMapList'] as bool;
+    final bool queryAsMapList = map['queryAsMapList'];
+    this.queryAsMapList = queryAsMapList;
   }
 }
 
@@ -45,7 +46,7 @@ class Sqflite {
 
   /// turn on debug mode if you want to see the SQL query
   /// executed natively
-  static Future setDebugModeOn([bool on = true]) async {
+  static Future<void> setDebugModeOn([bool on = true]) async {
     await invokeMethod<dynamic>(methodSetDebugModeOn, on);
   }
 
@@ -55,29 +56,30 @@ class Sqflite {
 
   // To use in code when you want to remove it later
   @deprecated
-  static Future devSetDebugModeOn([bool on = true]) {
+  static Future<void> devSetDebugModeOn([bool on = true]) {
     _debugModeOn = on;
     return setDebugModeOn(on);
   }
 
   // Testing only
   @deprecated
-  static Future devSetOptions(SqfliteOptions options) async {
+  static Future<void> devSetOptions(SqfliteOptions options) async {
     await invokeMethod<dynamic>(methodOptions, options.toMap());
   }
 
   // Testing only
   @deprecated
-  static Future devInvokeMethod(String method, [dynamic arguments]) async {
+  static Future<void> devInvokeMethod(String method,
+      [dynamic arguments]) async {
     await invokeMethod<dynamic>(method, arguments);
   }
 
   /// helper to get the first int value in a query
   /// Useful for COUNT(*) queries
-  static int firstIntValue(List<Map> list) {
-    if (list != null && list.length > 0) {
-      var firstRow = list.first;
-      if (firstRow.length > 0) {
+  static int firstIntValue(List<Map<String, dynamic>> list) {
+    if (list != null && list.isNotEmpty) {
+      final Map<String, dynamic> firstRow = list.first;
+      if (firstRow.isNotEmpty) {
         return parseInt(firstRow.values?.first);
       }
     }
@@ -100,11 +102,11 @@ class Sqflite {
 ///
 abstract class DatabaseExecutor {
   /// for sql without return values
-  Future execute(String sql, [List arguments]);
+  Future<dynamic> execute(String sql, [List<dynamic> arguments]);
 
   /// for INSERT sql query
   /// returns the last inserted record id
-  Future<int> rawInsert(String sql, [List arguments]);
+  Future<int> rawInsert(String sql, [List<dynamic> arguments]);
 
   // INSERT helper
   Future<int> insert(String table, Map<String, dynamic> values,
@@ -139,7 +141,7 @@ abstract class DatabaseExecutor {
       {bool distinct,
       List<String> columns,
       String where,
-      List whereArgs,
+      List<dynamic> whereArgs,
       String groupBy,
       String having,
       String orderBy,
@@ -147,11 +149,12 @@ abstract class DatabaseExecutor {
       int offset});
 
   /// for SELECT sql query
-  Future<List<Map<String, dynamic>>> rawQuery(String sql, [List arguments]);
+  Future<List<Map<String, dynamic>>> rawQuery(String sql,
+      [List<dynamic> arguments]);
 
   /// for UPDATE sql query
   /// return the number of changes made
-  Future<int> rawUpdate(String sql, [List arguments]);
+  Future<int> rawUpdate(String sql, [List<dynamic> arguments]);
 
   /// Convenience method for updating rows in the database.
   ///
@@ -164,11 +167,13 @@ abstract class DatabaseExecutor {
   /// optional [conflictAlgorithm] for update conflict resolver
   /// return the number of rows affected
   Future<int> update(String table, Map<String, dynamic> values,
-      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm});
+      {String where,
+      List<dynamic> whereArgs,
+      ConflictAlgorithm conflictAlgorithm});
 
   /// for DELETE sql query
   /// return the number of changes made
-  Future<int> rawDelete(String sql, [List arguments]);
+  Future<int> rawDelete(String sql, [List<dynamic> arguments]);
 
   /// Convenience method for deleting rows in the database.
   ///
@@ -181,7 +186,7 @@ abstract class DatabaseExecutor {
   /// return the number of rows affected if a whereClause is passed in, 0
   ///         otherwise. To remove all rows and get a count pass "1" as the
   ///         whereClause.
-  Future<int> delete(String table, {String where, List whereArgs});
+  Future<int> delete(String table, {String where, List<dynamic> whereArgs});
 
   /// Execute all batch operation
   /// The result is a list of the result of each operation in the same order
@@ -214,7 +219,7 @@ abstract class Database implements DatabaseExecutor {
   String get path;
 
   /// Close the database. Cannot be access anymore
-  Future close();
+  Future<void> close();
 
   /// Calls in action must only be done using the transaction object
   /// using the database will trigger a dead-lock
@@ -232,7 +237,7 @@ abstract class Database implements DatabaseExecutor {
   /// Set the database inner version
   /// Used internally for open helpers and automatic versioning
   ///
-  Future setVersion(int version);
+  Future<void> setVersion(int version);
 
   /// testing only
   @deprecated
@@ -240,23 +245,24 @@ abstract class Database implements DatabaseExecutor {
 
   /// testing only
   @deprecated
-  Future<T> devInvokeSqlMethod<T>(String method, String sql, [List arguments]);
+  Future<T> devInvokeSqlMethod<T>(String method, String sql,
+      [List<dynamic> arguments]);
 }
 
-typedef FutureOr OnDatabaseVersionChangeFn(
+typedef FutureOr<void> OnDatabaseVersionChangeFn(
     Database db, int oldVersion, int newVersion);
-typedef FutureOr OnDatabaseCreateFn(Database db, int version);
-typedef FutureOr OnDatabaseOpenFn(Database db);
-typedef FutureOr OnDatabaseConfigureFn(Database db);
+typedef FutureOr<void> OnDatabaseCreateFn(Database db, int version);
+typedef FutureOr<void> OnDatabaseOpenFn(Database db);
+typedef FutureOr<void> OnDatabaseConfigureFn(Database db);
 
 /// to specify during [openDatabase] for [onDowngrade]
 /// Downgrading will always fail
-Future onDatabaseVersionChangeError(
+Future<void> onDatabaseVersionChangeError(
     Database db, int oldVersion, int newVersion) async {
   throw ArgumentError("can't change version from $oldVersion to $newVersion");
 }
 
-Future __onDatabaseDowngradeDelete(
+Future<void> __onDatabaseDowngradeDelete(
     Database db, int oldVersion, int newVersion) async {
   // Implementation is hidden implemented in openDatabase._onDatabaseDowngradeDelete
 }
@@ -326,7 +332,7 @@ Future<Database> openDatabase(String path,
     OnDatabaseOpenFn onOpen,
     bool readOnly = false,
     bool singleInstance = true}) {
-  var options = OpenDatabaseOptions(
+  final OpenDatabaseOptions options = OpenDatabaseOptions(
       version: version,
       onConfigure: onConfigure,
       onCreate: onCreate,
@@ -355,7 +361,8 @@ Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();
 ///
 /// delete the database at the given path
 ///
-Future deleteDatabase(String path) => databaseFactory.deleteDatabase(path);
+Future<void> deleteDatabase(String path) =>
+    databaseFactory.deleteDatabase(path);
 
 ///
 /// A batch is used to perform multiple operation as a single atomic unit.
@@ -380,34 +387,36 @@ abstract class Batch {
   Future<List<dynamic>> apply({bool exclusive, bool noResult});
 
   /// See [Database.rawInsert]
-  void rawInsert(String sql, [List arguments]);
+  void rawInsert(String sql, [List<dynamic> arguments]);
 
   /// See [Database.insert]
   void insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm});
 
   /// See [Database.rawUpdate]
-  void rawUpdate(String sql, [List arguments]);
+  void rawUpdate(String sql, [List<dynamic> arguments]);
 
   /// See [Database.update]
   void update(String table, Map<String, dynamic> values,
-      {String where, List whereArgs, ConflictAlgorithm conflictAlgorithm});
+      {String where,
+      List<dynamic> whereArgs,
+      ConflictAlgorithm conflictAlgorithm});
 
   /// See [Database.rawDelete]
-  void rawDelete(String sql, [List arguments]);
+  void rawDelete(String sql, [List<dynamic> arguments]);
 
   /// See [Database.delete]
-  void delete(String table, {String where, List whereArgs});
+  void delete(String table, {String where, List<dynamic> whereArgs});
 
   /// See [Database.execute];
-  void execute(String sql, [List arguments]);
+  void execute(String sql, [List<dynamic> arguments]);
 
   /// See [Database.query];
   void query(String table,
       {bool distinct,
       List<String> columns,
       String where,
-      List whereArgs,
+      List<dynamic> whereArgs,
       String groupBy,
       String having,
       String orderBy,
@@ -415,5 +424,5 @@ abstract class Batch {
       int offset});
 
   /// See [Database.query];
-  void rawQuery(String sql, [List arguments]);
+  void rawQuery(String sql, [List<dynamic> arguments]);
 }

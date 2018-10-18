@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:core';
 
-import 'package:flutter/src/services/platform_channel.dart';
+import 'package:flutter/services.dart';
 import 'package:sqflite/src/utils.dart';
 
 import 'package:sqflite/src/constant.dart' as constant;
@@ -11,7 +11,7 @@ const String channelName = 'com.tekartik.sqflite';
 
 Duration lockWarningDuration = constant.lockWarningDuration;
 void Function() lockWarningCallback = () {
-  print('Warning database has been locked for ${lockWarningDuration}. '
+  print('Warning database has been locked for $lockWarningDuration. '
       'Make sure you always use the transaction object for database operations during a transaction');
 };
 
@@ -22,33 +22,34 @@ final bool supportsConcurrency = false;
 
 // Make it async safe for dart 2.0.0-dev28+ preview dart 2
 Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
-  T result = await channel.invokeMethod(method, arguments);
+  final T result = await channel.invokeMethod(method, arguments);
   return result;
 }
 
 // Starting Dart preview 2, wrap the result
 class Rows extends PluginList<Map<String, dynamic>> {
-  Rows.from(List list) : super.from(list);
+  Rows.from(List<dynamic> list) : super.from(list);
 
   @override
   Map<String, dynamic> operator [](int index) {
-    Map item = rawList[index];
-    if (item is Map<String, dynamic>) {
-      return item;
-    }
+    final Map<dynamic, dynamic> item = rawList[index];
     return item.cast<String, dynamic>();
   }
 }
 
 Map<String, dynamic> newQueryResultSetMap(
     List<String> columns, List<List<dynamic>> rows) {
-  var map = <String, dynamic>{"columns": columns, "rows": rows};
+  final Map<String, dynamic> map = <String, dynamic>{
+    "columns": columns,
+    "rows": rows
+  };
   return map;
 }
 
-QueryResultSet queryResultSetFromMap(Map queryResultSetMap) {
-  return QueryResultSet(
-      queryResultSetMap["columns"] as List, queryResultSetMap["rows"] as List);
+QueryResultSet queryResultSetFromMap(Map<dynamic, dynamic> queryResultSetMap) {
+  final List<dynamic> columns = queryResultSetMap["columns"];
+  final List<dynamic> rows = queryResultSetMap["rows"];
+  return QueryResultSet(columns, rows);
 }
 
 List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
@@ -61,19 +62,20 @@ List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
     return queryResultSetFromMap(queryResult);
   }
   // dart1
-  if (queryResult is List<Map<String, dynamic>>) {
-    return queryResult;
-  }
   // dart2 support <= 0.7.0 - this is a list
   // to remove once done on iOS and Android
-  Rows rows = Rows.from(queryResult as List);
-  return rows;
+  if (queryResult is List) {
+    final Rows rows = Rows.from(queryResult);
+    return rows;
+  }
+
+  throw 'Unsupported queryResult type $queryResult';
 }
 
 class QueryResultSet extends ListBase<Map<String, dynamic>> {
-  QueryResultSet(List rawColumns, List rawRows) {
+  QueryResultSet(List<dynamic> rawColumns, List<dynamic> rawRows) {
     _columns = rawColumns?.cast<String>();
-    _rows = rawRows?.cast<List>();
+    _rows = rawRows?.cast<List<dynamic>>();
     if (_columns != null) {
       _columnIndexMap = <String, int>{};
 
@@ -114,11 +116,12 @@ class QueryRow extends MapBase<String, dynamic> {
   QueryRow(this.queryResultSet, this.row);
 
   final QueryResultSet queryResultSet;
-  final List row;
+  final List<dynamic> row;
 
   @override
   dynamic operator [](Object key) {
-    int columnIndex = queryResultSet.columnIndex(key as String);
+    final String stringKey = key;
+    final int columnIndex = queryResultSet.columnIndex(stringKey);
     if (columnIndex != null) {
       return row[columnIndex];
     }
@@ -150,11 +153,11 @@ class BatchResult {
 }
 
 class BatchResults extends PluginList<dynamic> {
-  BatchResults.from(List list) : super.from(list);
+  BatchResults.from(List<dynamic> list) : super.from(list);
 
   @override
   dynamic operator [](int index) {
-    dynamic result = _list[index];
+    final dynamic result = _list[index];
 
     // list or map, this is a result
     if (result is Map) {
@@ -168,11 +171,11 @@ class BatchResults extends PluginList<dynamic> {
 }
 
 abstract class PluginList<T> extends ListBase<T> {
-  PluginList.from(List list) : _list = list;
+  PluginList.from(List<dynamic> list) : _list = list;
 
-  final List _list;
+  final List<dynamic> _list;
 
-  List get rawList => _list;
+  List<dynamic> get rawList => _list;
 
   dynamic rawElementAt(int index) => _list[index];
 
@@ -198,7 +201,7 @@ void setLockWarningInfo({Duration duration, void callback()}) {
 /// Utility to encode a blob to allow blow query using
 /// "hex(blob_field) = ?", Sqlite.hex([1,2,3])
 String hex(List<int> bytes) {
-  var buffer = StringBuffer();
+  final StringBuffer buffer = StringBuffer();
   for (int part in bytes) {
     if (part & 0xff != part) {
       throw FormatException("$part is not a byte integer");
