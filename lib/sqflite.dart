@@ -102,7 +102,7 @@ class Sqflite {
 ///
 abstract class DatabaseExecutor {
   /// for sql without return values
-  Future<dynamic> execute(String sql, [List<dynamic> arguments]);
+  Future<void> execute(String sql, [List<dynamic> arguments]);
 
   /// for INSERT sql query
   /// returns the last inserted record id

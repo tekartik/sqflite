@@ -18,7 +18,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
 
   /// for sql without return values
   @override
-  Future<dynamic> execute(String sql, [List<dynamic> arguments]) =>
+  Future<void> execute(String sql, [List<dynamic> arguments]) =>
       db.txnExecute<dynamic>(txn, sql, arguments);
 
   /// for INSERT sql query

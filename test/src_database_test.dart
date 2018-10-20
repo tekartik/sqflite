@@ -335,9 +335,8 @@ void main() {
 
           await step2.future;
           try {
-            final dynamic map =
-                await db.execute("test").timeout(Duration(milliseconds: 100));
-            throw "should fail ($map)";
+            await db.execute("test").timeout(Duration(milliseconds: 100));
+            throw "should fail";
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -378,9 +377,8 @@ void main() {
 
           await step2.future;
           try {
-            final dynamic result =
-                await db.execute("test").timeout(Duration(milliseconds: 100));
-            throw "should fail ($result)";
+            await db.execute("test").timeout(Duration(milliseconds: 100));
+            throw "should fail";
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -419,18 +417,16 @@ void main() {
         Future<void> action1() async {
           await step1.future;
           try {
-            final dynamic result =
-                await db.execute("test").timeout(Duration(milliseconds: 100));
-            throw "should fail ($result)";
+            await db.execute("test").timeout(Duration(milliseconds: 100));
+            throw "should fail";
           } catch (e) {
             expect(e is TimeoutException, true);
           }
 
           await step2.future;
           try {
-            final dynamic result =
-                await db.execute("test").timeout(Duration(milliseconds: 100));
-            throw "should fail ($result)";
+            await db.execute("test").timeout(Duration(milliseconds: 100));
+            throw "should fail";
           } catch (e) {
             expect(e is TimeoutException, true);
           }
