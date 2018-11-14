@@ -33,6 +33,9 @@ abstract class DatabaseFactory {
 
   /// Delete a database if it exists
   Future<void> deleteDatabase(String path);
+
+  /// Check if a database exists
+  Future<bool> databaseExists(String path);
 }
 
 ///
@@ -79,6 +82,27 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     map['readOnly'] = readOnly;
     map['singleInstance'] = singleInstance;
     return map.toString();
+  }
+}
+
+class SqfliteDatabaseFactoryIo extends SqfliteDatabaseFactory {
+  @override
+  Future<void> deleteDatabase(String path) async {
+    try {
+      await File(path).delete(recursive: true);
+    } catch (_) {
+      // 0.8.4
+      // print(_);
+    }
+  }
+
+  @override
+  Future<bool> databaseExists(String path) async {
+    try {
+      // avoid slow async method
+      return File(path).existsSync();
+    } catch (_) {}
+    return false;
   }
 }
 
@@ -169,12 +193,16 @@ class SqfliteDatabaseFactory implements DatabaseFactory {
 
   @override
   Future<void> deleteDatabase(String path) async {
-    try {
-      await File(path).delete(recursive: true);
-    } catch (_e) {
-      // 0.8.4
-      // print(e);
-    }
+    return wrapDatabaseException(() {
+      return invokeMethod<bool>(methodDeleteDatabase);
+    });
+  }
+
+  @override
+  Future<bool> databaseExists(String path) async {
+    return wrapDatabaseException(() {
+      return invokeMethod<bool>(methodDatabaseExists);
+    });
   }
 
   String _databasesPath;

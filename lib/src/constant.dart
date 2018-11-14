@@ -10,6 +10,8 @@ const String methodUpdate = "update";
 const String methodQuery = "query";
 const String methodGetPlatformVersion = "getPlatformVersion";
 const String methodGetDatabasesPath = "getDatabasesPath";
+const String methodDatabaseExists = "databaseExists";
+const String methodDeleteDatabase = "deleteDatabase";
 
 // For batch
 const String paramOperations = "operations";

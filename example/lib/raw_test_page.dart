@@ -340,7 +340,9 @@ class SimpleTestPage extends TestPage {
 
       // Make sure the directory exists
       try {
-        await Directory(databasesPath).create(recursive: true);
+        if (!await Directory(databasesPath).exists()) {
+          await Directory(databasesPath).create(recursive: true);
+        }
       } catch (_) {}
 
       String path = join(databasesPath, "demo.db");
