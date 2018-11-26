@@ -5,6 +5,7 @@
 * Solve you [build and runtime issues](troubleshooting.md)
 * Some personal [usage recommendations](usage_recommendations.md)
 * Some [dev tips](dev_tips.md)
+* [External](external.md) documentation and tutorials
 
 ## Development guide
 
