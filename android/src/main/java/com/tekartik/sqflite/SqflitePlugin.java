@@ -323,9 +323,10 @@ public class SqflitePlugin implements MethodCallHandler {
 
                 MethodCallOperation mainOperation = new MethodCallOperation(call, bgResult);
                 boolean noResult = mainOperation.getNoResult();
+                boolean continueOnError = mainOperation.getContinueOnError();
 
                 List<Map<String, Object>> operations = call.argument(PARAM_OPERATIONS);
-                List<Object> results = new ArrayList<>();
+                List<Map<String, Object>> results = new ArrayList<>();
 
                 //devLog(TAG, "operations " + operations);
                 for (Map<String, Object> map : operations) {
@@ -337,6 +338,8 @@ public class SqflitePlugin implements MethodCallHandler {
                             if (execute(database, operation)) {
                                 //devLog(TAG, "results: " + operation.getBatchResults());
                                 operation.handleSuccess(results);
+                            } else if (continueOnError) {
+                                operation.handleErrorContinue(results);
                             } else {
                                 // we stop at the first error
                                 operation.handleError(bgResult);
@@ -347,6 +350,8 @@ public class SqflitePlugin implements MethodCallHandler {
                             if (insert(database, operation)) {
                                 //devLog(TAG, "results: " + operation.getBatchResults());
                                 operation.handleSuccess(results);
+                            } else if (continueOnError) {
+                                operation.handleErrorContinue(results);
                             } else {
                                 // we stop at the first error
                                 operation.handleError(bgResult);
@@ -357,6 +362,8 @@ public class SqflitePlugin implements MethodCallHandler {
                             if (query(database, operation)) {
                                 //devLog(TAG, "results: " + operation.getBatchResults());
                                 operation.handleSuccess(results);
+                            } else if (continueOnError) {
+                                operation.handleErrorContinue(results);
                             } else {
                                 // we stop at the first error
                                 operation.handleError(bgResult);
@@ -367,6 +374,8 @@ public class SqflitePlugin implements MethodCallHandler {
                             if (update(database, operation)) {
                                 //devLog(TAG, "results: " + operation.getBatchResults());
                                 operation.handleSuccess(results);
+                            } else if (continueOnError) {
+                                operation.handleErrorContinue(results);
                             } else {
                                 // we stop at the first error
                                 operation.handleError(bgResult);

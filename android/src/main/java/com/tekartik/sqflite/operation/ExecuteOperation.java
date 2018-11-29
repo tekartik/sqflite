@@ -22,7 +22,7 @@ public class ExecuteOperation extends BaseReadOperation {
     }
 
     @Override
-    protected OperationResult getResult() {
+    protected OperationResult getOperationResult() {
         return null;
     }
 
@@ -43,7 +43,7 @@ public class ExecuteOperation extends BaseReadOperation {
     }
 
     @Override
-    public void success(Object results) {
-        result.success(results);
+    public void success(Object result) {
+        this.result.success(result);
     }
 }

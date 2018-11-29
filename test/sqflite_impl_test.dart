@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
 
 void main() {
@@ -32,6 +33,31 @@ void main() {
       expect(row, <String, dynamic>{"col": 1});
     });
 
+    test('fromRawOperationResult', () async {
+      expect(fromRawOperationResult(<String, dynamic>{'result': 1}), 1);
+      expect(
+          fromRawOperationResult(<String, dynamic>{
+            'result': <dynamic, dynamic>{
+              "columns": <dynamic>["column"],
+              "rows": <dynamic>[
+                <int>[1]
+              ]
+            }
+          }),
+          <Map<String, dynamic>>[
+            <String, dynamic>{'column': 1}
+          ]);
+      final SqfliteDatabaseException exception =
+          fromRawOperationResult(<dynamic, dynamic>{
+        'error': <dynamic, dynamic>{
+          'code': 1234,
+          'message': 'hello',
+          'data': <dynamic, dynamic>{'some': 'data'}
+        }
+      });
+      expect(exception.message, 'hello');
+      expect(exception.result, <dynamic, dynamic>{'some': 'data'});
+    });
     test('ResultSet', () {
       final Map<dynamic, dynamic> raw = <dynamic, dynamic>{
         "columns": <dynamic>["column"],

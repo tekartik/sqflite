@@ -358,7 +358,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
 
   Future<List<dynamic>> txnApplyBatch(
       SqfliteTransaction txn, SqfliteBatch batch,
-      {bool noResult}) {
+      {bool noResult, bool continueOnError}) {
     return txnWriteSynchronized(txn, (_) {
       return wrapDatabaseException<List<dynamic>>(() async {
         final Map<String, dynamic> arguments = <String, dynamic>{
@@ -366,6 +366,9 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
         }..addAll(baseDatabaseMethodArguments);
         if (noResult == true) {
           arguments[paramNoResult] = noResult;
+        }
+        if (continueOnError == true) {
+          arguments[paramContinueOnError] = continueOnError;
         }
         final List<dynamic> results =
             await invokeMethod(methodBatch, arguments);

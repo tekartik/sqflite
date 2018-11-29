@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_example/batch_test_page.dart';
 import 'package:sqflite_example/exp_test_page.dart';
 import 'package:sqflite_example/deprecated_test_page.dart';
 import 'model/main_item.dart';
@@ -28,7 +29,8 @@ class MyApp extends StatefulWidget {
 const String testRawRoute = "/test/simple";
 const String testOpenRoute = "/test/open";
 const String testSlowRoute = "/test/slow";
-const String testThreadRoute = "/test/thread";
+const String testTypeRoute = "/test/type";
+const String testBatchRoute = "/test/batch";
 const String testTodoRoute = "/test/todo";
 const String testExceptionRoute = "/test/exception";
 const String testExpRoute = "/test/exp";
@@ -37,11 +39,12 @@ const String testDeprecatedRoute = "/test/deprecated";
 class _MyAppState extends State<MyApp> {
   var routes = <String, WidgetBuilder>{
     '/test': (BuildContext context) => MyHomePage(),
-    testRawRoute: (BuildContext context) => SimpleTestPage(),
+    testRawRoute: (BuildContext context) => RawTestPage(),
     testOpenRoute: (BuildContext context) => OpenTestPage(),
     testSlowRoute: (BuildContext context) => SlowTestPage(),
     testTodoRoute: (BuildContext context) => TodoTestPage(),
-    testThreadRoute: (BuildContext context) => TypeTestPage(),
+    testTypeRoute: (BuildContext context) => TypeTestPage(),
+    testBatchRoute: (BuildContext context) => BatchTestPage(),
     testExceptionRoute: (BuildContext context) => ExceptionTestPage(),
     testExpRoute: (BuildContext context) => ExpTestPage(),
     testDeprecatedRoute: (BuildContext context) => DeprecatedTestPage(),
@@ -73,8 +76,9 @@ class MyHomePage extends StatefulWidget {
         MainItem("Raw tests", "Raw SQLite operations", route: testRawRoute));
     items.add(MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
         route: testOpenRoute));
-    items.add(
-        MainItem("Type tests", "Test value types", route: testThreadRoute));
+    items.add(MainItem("Type tests", "Test value types", route: testTypeRoute));
+    items.add(MainItem("Batch tests", "Test batch operations",
+        route: testBatchRoute));
     items.add(
         MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
     items.add(MainItem(

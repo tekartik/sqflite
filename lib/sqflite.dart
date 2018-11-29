@@ -374,17 +374,24 @@ abstract class Batch {
   /// Commits all of the operations in this batch as a single atomic unit
   /// The result is a list of the result of each operation in the same order
   /// if [noResult] is true, the result list is empty (i.e. the id inserted
-  /// the count of item changed is not returned
+  /// the count of item changed is not returned.
+  ///
+  /// The batch is stopped if any operation failed
+  /// If [continueOnError] is true, all the operations in the batch are executed
+  /// and the failure are ignored (i.e. the result for the given operation will
+  /// be a DatabaseException)
   ///
   /// During [Database.onCreate], [Database.onUpgrade], [Database.onDowngrade]
   /// (we are already in a transaction) or if the batch was created in a
   /// transaction it will only be commited when
   /// the transaction is commited ([exclusive] is not used then)
-  Future<List<dynamic>> commit({bool exclusive, bool noResult});
+  Future<List<dynamic>> commit(
+      {bool exclusive, bool noResult, bool continueOnError});
 
   /// See [Batch.commit], kept for compatibility...
   @Deprecated("Use Batch.commit instead")
-  Future<List<dynamic>> apply({bool exclusive, bool noResult});
+  Future<List<dynamic>> apply(
+      {bool exclusive, bool noResult, bool continueOnError});
 
   /// See [Database.rawInsert]
   void rawInsert(String sql, [List<dynamic> arguments]);

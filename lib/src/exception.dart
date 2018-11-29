@@ -66,6 +66,7 @@ abstract class DatabaseException implements Exception {
 class SqfliteDatabaseException extends DatabaseException {
   SqfliteDatabaseException(String message, this.result) : super(message);
 
+  String get message => _message;
   dynamic result;
 
   @override

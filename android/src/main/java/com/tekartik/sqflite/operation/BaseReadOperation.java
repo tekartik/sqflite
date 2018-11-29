@@ -4,6 +4,7 @@ import com.tekartik.sqflite.SqlCommand;
 
 import java.util.List;
 
+import static com.tekartik.sqflite.Constant.PARAM_CONTINUE_OR_ERROR;
 import static com.tekartik.sqflite.Constant.PARAM_NO_RESULT;
 import static com.tekartik.sqflite.Constant.PARAM_SQL;
 import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
@@ -30,7 +31,13 @@ public abstract class BaseReadOperation implements Operation {
         return Boolean.TRUE.equals(getArgument(PARAM_NO_RESULT));
     }
 
+    @Override
+    public boolean getContinueOnError() {
+        return Boolean.TRUE.equals(getArgument(PARAM_CONTINUE_OR_ERROR));
+    }
+
+
     // We actually have an inner object that does the implementation
-    protected abstract OperationResult getResult();
+    protected abstract OperationResult getOperationResult();
 
 }
