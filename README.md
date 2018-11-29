@@ -221,6 +221,13 @@ await database.transaction((txn) async {
 });
 ```
 
+By default a batch stops as soon as it encounters an error (which typically reverts the uncommited changes). You 
+can ignore errors so that every successfull operation is ran and committed even if one operation fails:
+
+```dart
+await batch.commit(continueOnError: true);
+```
+
 ## Table and column names
 
 In general it is better to avoid using SQLite keywords for entity names. If any of the following
