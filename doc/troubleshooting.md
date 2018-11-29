@@ -47,3 +47,45 @@ await Sqflite.devSetDebugModeOn(true);
 ```
 
 This call is on purpose deprecated to force removing it once the SQL issues has been resolved.
+
+## iOS build issue
+
+I'm not an expert on iOS so it is hard for me reply to issues you encounter especially when you integrate
+into your app. Good if you can validate that you have no issue with other plugin such as `path_provider` and that
+the example app work with your setup.
+
+I test mainly with the beta channel. Good if you can try if the example work with your setup
+
+```bash
+# Switch to beta
+flutter channel beta
+flutter upgrade
+
+# Get the project and build/run the example
+git clone https://github.com/tekartik/sqflite.git
+cd sqflite/example
+
+flutter packages get
+# build for iOS
+flutter build ios
+# run!
+flutter run
+```
+
+If you want to use master, please try the following to see if it works with your setup
+
+```bash
+# Switch to master
+flutter channel master
+flutter upgrade
+
+# Get the project and build/run the example
+git clone https://github.com/tekartik/sqflite.git
+cd sqflite/example
+
+flutter packages get
+# build for iOS
+flutter build ios
+# run!
+flutter run
+```
