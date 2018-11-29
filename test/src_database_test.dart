@@ -44,10 +44,12 @@ class MockDatabase extends SqfliteDatabase {
 
 class MockDatabaseFactory extends SqfliteDatabaseFactory {
   final List<String> methods = <String>[];
+  final List<dynamic> argumentsList = <dynamic>[];
 
   @override
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) {
     methods.add(method);
+    argumentsList.add(arguments);
     return null;
   }
 
@@ -252,12 +254,12 @@ void main() {
                 onCreate: (Database db, _) async {
                   final Batch batch = db.batch();
                   batch.execute("test2");
-                  await batch.commit();
+                  await batch.commit(noResult: true);
                 },
                 onOpen: (Database db) async {
                   final Batch batch = db.batch();
                   batch.execute("test3");
-                  await batch.commit();
+                  await batch.commit(continueOnError: true);
                 }));
 
         await db.close();
@@ -275,6 +277,70 @@ void main() {
           'test3',
           'COMMIT',
           null
+        ]);
+        expect(db.argumentsLists, <dynamic>[
+          <String, dynamic>{'path': null},
+          <String, dynamic>{
+            'sql': 'BEGIN IMMEDIATE',
+            'arguments': null,
+            'id': null
+          },
+          <String, dynamic>{
+            'operations': <dynamic>[
+              <String, dynamic>{
+                'method': 'execute',
+                'sql': 'test1',
+                'arguments': null
+              }
+            ],
+            'id': null
+          },
+          <String, dynamic>{'sql': 'COMMIT', 'arguments': null, 'id': null},
+          <String, dynamic>{
+            'sql': 'BEGIN EXCLUSIVE',
+            'arguments': null,
+            'id': null
+          },
+          <String, dynamic>{
+            'sql': 'PRAGMA user_version;',
+            'arguments': null,
+            'id': null
+          },
+          <String, dynamic>{
+            'operations': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'method': 'execute',
+                'sql': 'test2',
+                'arguments': null
+              }
+            ],
+            'id': null,
+            'noResult': true
+          },
+          <String, dynamic>{
+            'sql': 'PRAGMA user_version = 1;',
+            'arguments': null,
+            'id': null
+          },
+          <String, dynamic>{'sql': 'COMMIT', 'arguments': null, 'id': null},
+          <String, dynamic>{
+            'sql': 'BEGIN IMMEDIATE',
+            'arguments': null,
+            'id': null
+          },
+          <String, dynamic>{
+            'operations': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'method': 'execute',
+                'sql': 'test3',
+                'arguments': null
+              }
+            ],
+            'id': null,
+            'continueOnError': true
+          },
+          <String, dynamic>{'sql': 'COMMIT', 'arguments': null, 'id': null},
+          <String, dynamic>{'id': null}
         ]);
       });
     });

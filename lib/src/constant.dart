@@ -17,6 +17,9 @@ const String methodDeleteDatabase = "deleteDatabase";
 const String paramOperations = "operations";
 // if true the result of each batch operation is not filled
 const String paramNoResult = "noResult";
+// if true all the operation in the batch are executed even if on failed
+const String paramContinueOnError = "continueOnError";
+
 // For each operation
 const String paramMethod = "method";
 

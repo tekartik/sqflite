@@ -8,10 +8,6 @@ import 'package:sqflite/src/utils.dart';
 abstract class SqfliteBatch implements Batch {
   final List<Map<String, dynamic>> operations = <Map<String, dynamic>>[];
 
-  @override
-  Future<List<dynamic>> commit({bool exclusive, bool noResult}) =>
-      apply(exclusive: exclusive, noResult: noResult);
-
   void _add(String method, String sql, List<dynamic> arguments) {
     operations.add(<String, dynamic>{
       paramMethod: method,
@@ -97,8 +93,12 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  Future<List<dynamic>> apply({bool exclusive, bool noResult}) =>
-      commit(exclusive: exclusive, noResult: noResult);
+  Future<List<dynamic>> apply(
+          {bool exclusive, bool noResult, bool continueOnError}) =>
+      commit(
+          exclusive: exclusive,
+          noResult: noResult,
+          continueOnError: continueOnError);
 }
 
 class SqfliteDatabaseBatch extends SqfliteBatch {
@@ -107,11 +107,12 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   final SqfliteDatabase database;
 
   @override
-  Future<List<dynamic>> commit({bool exclusive, bool noResult}) {
+  Future<List<dynamic>> commit(
+      {bool exclusive, bool noResult, bool continueOnError}) {
     return database.transaction<List<dynamic>>((Transaction txn) {
       final SqfliteTransaction sqfliteTransaction = txn;
       return database.txnApplyBatch(sqfliteTransaction, this,
-          noResult: noResult);
+          noResult: noResult, continueOnError: continueOnError);
     }, exclusive: exclusive);
   }
 }
@@ -122,12 +123,13 @@ class SqfliteTransactionBatch extends SqfliteBatch {
   final SqfliteTransaction transaction;
 
   @override
-  Future<List<dynamic>> commit({bool exclusive, bool noResult}) {
+  Future<List<dynamic>> commit(
+      {bool exclusive, bool noResult, bool continueOnError}) {
     if (exclusive != null) {
       throw ArgumentError.value(exclusive, "exclusive",
           "must not be set when commiting a batch in a transaction");
     }
-    return transaction.database
-        .txnApplyBatch(transaction, this, noResult: noResult);
+    return transaction.database.txnApplyBatch(transaction, this,
+        noResult: noResult, continueOnError: continueOnError);
   }
 }
