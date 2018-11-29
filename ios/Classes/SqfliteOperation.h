@@ -15,8 +15,9 @@
 - (NSString*)getSql;
 - (NSArray*)getSqlArguments;
 - (void)success:(NSObject*)results;
-- (void)error:(NSObject*)error;
+- (void)error:(FlutterError*)error;
 - (bool)getNoResult;
+- (bool)getContinueOnError;
 
 @end
 
@@ -24,10 +25,12 @@
 
 @property (atomic, retain) NSDictionary* dictionary;
 @property (atomic, retain) NSObject* results;
-@property (atomic, retain) NSObject* error;
+@property (atomic, retain) FlutterError* error;
 @property (atomic, assign) bool noResult;
+@property (atomic, assign) bool continueOnError;
 
 - (void)handleSuccess:(NSMutableArray*)results;
+- (void)handleErrorContinue:(NSMutableArray*)results;
 - (void)handleError:(FlutterResult)result;
 
 @end

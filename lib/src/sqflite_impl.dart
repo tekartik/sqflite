@@ -187,25 +187,10 @@ class BatchResults extends PluginList<dynamic> {
 
   @override
   dynamic operator [](int index) {
-    if (Platform.isAndroid) {
-      // New in 0.12.3
-      // It is always a Map and can be either a result or an error
-      final Map<dynamic, dynamic> rawMap = _list[index];
-      return fromRawOperationResult(rawMap);
-    } else {
-      // old behavior (iOS only for now
-      // to remove once continueOnError is implemented
-      final dynamic result = _list[index];
-
-      // list or map, this is a result
-      if (result is Map) {
-        return queryResultToList(result);
-      } else if (result is List) {
-        return queryResultToList(result);
-      }
-
-      return result;
-    }
+    // New in 0.13
+    // It is always a Map and can be either a result or an error
+    final Map<dynamic, dynamic> rawMap = _list[index];
+    return fromRawOperationResult(rawMap);
   }
 }
 

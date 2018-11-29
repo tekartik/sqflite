@@ -24,6 +24,9 @@
 - (bool)getNoResult {
     return false;
 }
+- (bool)getContinueOnError {
+    return false;
+}
 - (void)success:(NSObject*)results {}
 
 - (void)error:(NSObject*)error {}
@@ -32,7 +35,7 @@
 
 @implementation SqfliteBatchOperation
 
-@synthesize dictionary, results, error, noResult;
+@synthesize dictionary, results, error, noResult, continueOnError;
 
 - (NSString*)getMethod {
     return [dictionary objectForKey:SqfliteParamMethod];
@@ -51,18 +54,43 @@
     return noResult;
 }
 
+- (bool)getContinueOnError {
+    return continueOnError;
+}
+
 - (void)success:(NSObject*)results {
     self.results = results;
 }
-- (void)error:(NSObject*)error {
+
+- (void)error:(FlutterError*)error {
     self.error = error;
 }
 
 - (void)handleSuccess:(NSMutableArray*)results {
     if (![self getNoResult]) {
-        [results addObject:((self.results == nil) ? [NSNull null] : self.results)];
+        // We wrap the result in 'result' map
+        [results addObject:[NSDictionary dictionaryWithObject:((self.results == nil) ? [NSNull null] : self.results)
+                                                       forKey:SqfliteParamResult]];
     }
 }
+
+// Encore the flutter error in a map
+- (void)handleErrorContinue:(NSMutableArray*)results {
+    if (![self getNoResult]) {
+        // We wrap the error in an 'error' map
+        NSMutableDictionary* error = [NSMutableDictionary new];
+        error[SqfliteParamErrorCode] = self.error.code;
+        if (self.error.message != nil) {
+            error[SqfliteParamErrorMessage] = self.error.message;
+        }
+        if (self.error.details != nil) {
+            error[SqfliteParamErrorData] = self.error.details;
+        }
+        [results addObject:[NSDictionary dictionaryWithObject:error
+                                                       forKey:SqfliteParamError]];
+    }
+}
+
 - (void)handleError:(FlutterResult)result {
     result(error);
 }
@@ -91,6 +119,11 @@
 
 - (bool)getNoResult {
     NSNumber* noResult = flutterMethodCall.arguments[SqfliteParamNoResult];
+    return [noResult boolValue];
+}
+
+- (bool)getContinueOnError {
+    NSNumber* noResult = flutterMethodCall.arguments[SqfliteParamContinueOnError];
     return [noResult boolValue];
 }
 

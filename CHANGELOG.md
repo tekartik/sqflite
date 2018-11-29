@@ -1,3 +1,6 @@
+## 0.13.0
+
+* Add support for `continueOrError` for batches
 ## 0.12.0
 
 * iOS objective C prefix added to prevent conflict

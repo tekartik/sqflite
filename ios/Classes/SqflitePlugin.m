@@ -39,7 +39,14 @@ static NSString *const _paramQueryAsMapList = @"queryAsMapList";
 NSString *const SqfliteParamSql = @"sql";
 NSString *const SqfliteParamSqlArguments = @"arguments";
 NSString *const SqfliteParamNoResult = @"noResult";
+NSString *const SqfliteParamContinueOnError = @"continueOnError";
 NSString *const SqfliteParamMethod = @"method";
+// For each operation in a batch, we have either a result or an error
+NSString *const SqfliteParamResult = @"result";
+NSString *const SqfliteParamError = @"error";
+NSString *const SqfliteParamErrorCode = @"code";
+NSString *const SqfliteParamErrorMessage = @"message";
+NSString *const SqfliteParamErrorData = @"data";
 
 
 @interface SqfliteDatabase : NSObject
@@ -428,9 +435,10 @@ static NSInteger _databaseOpenCount = 0;
             
             SqfliteMethodCallOperation* mainOperation = [SqfliteMethodCallOperation newWithCall:call result:result];
             bool noResult = [mainOperation getNoResult];
+            bool continueOnError = [mainOperation getContinueOnError];
             
             NSArray* operations = call.arguments[_paramOperations];
-            NSMutableArray* results = [NSMutableArray new];
+            NSMutableArray* operationResults = [NSMutableArray new];
             for (NSDictionary* dictionary in operations) {
                 // do something with object
                 
@@ -441,28 +449,36 @@ static NSInteger _databaseOpenCount = 0;
                 NSString* method = [operation getMethod];
                 if ([_methodInsert isEqualToString:method]) {
                     if ([self insert:db operation:operation]) {
-                        [operation handleSuccess:results];
+                        [operation handleSuccess:operationResults];
+                    } else if (continueOnError) {
+                        [operation handleErrorContinue:operationResults];
                     } else {
                         [operation handleError:result];
                         return;
                     }
                 } else if ([_methodUpdate isEqualToString:method]) {
                     if ([self update:db operation:operation]) {
-                        [operation handleSuccess:results];
+                        [operation handleSuccess:operationResults];
+                    } else if (continueOnError) {
+                        [operation handleErrorContinue:operationResults];
                     } else {
                         [operation handleError:result];
                         return;
                     }
                 } else if ([_methodExecute isEqualToString:method]) {
                     if ([self execute:db operation:operation]) {
-                        [operation handleSuccess:results];
+                        [operation handleSuccess:operationResults];
+                    } else if (continueOnError) {
+                        [operation handleErrorContinue:operationResults];
                     } else {
                         [operation handleError:result];
                         return;
                     }
                 } else if ([_methodQuery isEqualToString:method]) {
                     if ([self query:db operation:operation]) {
-                        [operation handleSuccess:results];
+                        [operation handleSuccess:operationResults];
+                    } else if (continueOnError) {
+                        [operation handleErrorContinue:operationResults];
                     } else {
                         [operation handleError:result];
                         return;
@@ -478,7 +494,7 @@ static NSInteger _databaseOpenCount = 0;
             if (noResult) {
                 result(nil);
             } else {
-                result(results);
+                result(operationResults);
             }
             
         }];
