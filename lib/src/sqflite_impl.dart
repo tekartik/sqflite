@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:core';
-import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:sqflite/src/constant.dart';
