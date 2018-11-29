@@ -22,6 +22,12 @@ const String paramContinueOnError = "continueOnError";
 
 // For each operation
 const String paramMethod = "method";
+// For each operation reponse
+const String paramResult = "result";
+const String paramError = "error";
+const String paramErrorCode = "code";
+const String paramErrorMessage = "message";
+const String paramErrorData = "data";
 
 // The database path (string)
 const String paramPath = "path";

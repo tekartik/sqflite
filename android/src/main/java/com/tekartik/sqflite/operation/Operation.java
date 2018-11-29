@@ -15,4 +15,7 @@ public interface Operation extends OperationResult {
     SqlCommand getSqlCommand();
 
     boolean getNoResult();
+
+    // In batch, means ignoring the error
+    boolean getContinueOnError();
 }

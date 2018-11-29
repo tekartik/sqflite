@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:core';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:sqflite/src/constant.dart';
+import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/utils.dart';
 
 import 'package:sqflite/src/constant.dart' as constant;
@@ -50,6 +53,33 @@ QueryResultSet queryResultSetFromMap(Map<dynamic, dynamic> queryResultSetMap) {
   final List<dynamic> columns = queryResultSetMap["columns"];
   final List<dynamic> rows = queryResultSetMap["rows"];
   return QueryResultSet(columns, rows);
+}
+
+DatabaseException databaseExceptionFromOperationError(
+    Map<dynamic, dynamic> errorMap) {
+  final String message = errorMap[paramErrorMessage];
+  return SqfliteDatabaseException(message, errorMap[paramErrorData]);
+}
+
+/// A batch operation result is either
+/// {'result':...}
+/// or
+/// {'error':...}
+dynamic fromRawOperationResult(Map<dynamic, dynamic> rawOperationResultMap) {
+  final Map<dynamic, dynamic> errorMap =
+      rawOperationResultMap[constant.paramError];
+  if (errorMap != null) {
+    return databaseExceptionFromOperationError(errorMap);
+  }
+  final dynamic successResult = rawOperationResultMap[constant.paramResult];
+  if (successResult is Map) {
+    return queryResultToList(successResult);
+  } else if (successResult is List) {
+    return queryResultToList(successResult);
+  }
+
+  // This could be just an int (insert)
+  return successResult;
 }
 
 List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
@@ -157,16 +187,25 @@ class BatchResults extends PluginList<dynamic> {
 
   @override
   dynamic operator [](int index) {
-    final dynamic result = _list[index];
+    if (Platform.isAndroid) {
+      // New in 0.12.3
+      // It is always a Map and can be either a result or an error
+      final Map<dynamic, dynamic> rawMap = _list[index];
+      return fromRawOperationResult(rawMap);
+    } else {
+      // old behavior (iOS only for now
+      // to remove once continueOnError is implemented
+      final dynamic result = _list[index];
 
-    // list or map, this is a result
-    if (result is Map) {
-      return queryResultToList(result);
-    } else if (result is List) {
-      return queryResultToList(result);
+      // list or map, this is a result
+      if (result is Map) {
+        return queryResultToList(result);
+      } else if (result is List) {
+        return queryResultToList(result);
+      }
+
+      return result;
     }
-
-    return result;
   }
 }
 

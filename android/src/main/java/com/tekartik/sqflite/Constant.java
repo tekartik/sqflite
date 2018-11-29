@@ -28,11 +28,19 @@ public class Constant {
     public static final String PARAM_SQL = "sql";
     public static final String PARAM_SQL_ARGUMENTS = "arguments";
     public static final String PARAM_NO_RESULT = "noResult";
+    public static final String PARAM_CONTINUE_OR_ERROR = "continueOnError";
 
     // in batch
     static final String PARAM_OPERATIONS = "operations";
     // in each operation
     public static final String PARAM_METHOD = "method";
+
+    // Batch operation results
+    public static final String PARAM_RESULT = "result";
+    public static final String PARAM_ERROR = "error"; // map with code/message/data
+    public static final String PARAM_ERROR_CODE = "code";
+    public static final String PARAM_ERROR_MESSAGE = "message";
+    public static final String PARAM_ERROR_DATA = "data";
 
     static final String SQLITE_ERROR = "sqlite_error"; // code
     static final String ERROR_BAD_PARAM = "bad_param"; // internal only

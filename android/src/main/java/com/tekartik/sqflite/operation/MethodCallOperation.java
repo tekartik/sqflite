@@ -20,8 +20,8 @@ public class MethodCallOperation extends BaseOperation {
         }
 
         @Override
-        public void success(Object results) {
-            result.success(results);
+        public void success(Object result) {
+            this.result.success(result);
         }
 
         @Override
@@ -47,7 +47,7 @@ public class MethodCallOperation extends BaseOperation {
     }
 
     @Override
-    public OperationResult getResult() {
+    public OperationResult getOperationResult() {
         return result;
     }
 

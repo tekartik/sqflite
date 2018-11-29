@@ -1,11 +1,17 @@
 package com.tekartik.sqflite.operation;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import io.flutter.plugin.common.MethodChannel;
 
+import static com.tekartik.sqflite.Constant.PARAM_ERROR;
+import static com.tekartik.sqflite.Constant.PARAM_ERROR_CODE;
+import static com.tekartik.sqflite.Constant.PARAM_ERROR_DATA;
+import static com.tekartik.sqflite.Constant.PARAM_ERROR_MESSAGE;
 import static com.tekartik.sqflite.Constant.PARAM_METHOD;
+import static com.tekartik.sqflite.Constant.PARAM_RESULT;
 
 /**
  * Created by alex on 09/01/18.
@@ -13,28 +19,28 @@ import static com.tekartik.sqflite.Constant.PARAM_METHOD;
 
 public class BatchOperation extends BaseOperation {
     final Map<String, Object> map;
-    final BatchOperationResult result = new BatchOperationResult();
+    final BatchOperationResult operationResult = new BatchOperationResult();
     final boolean noResult;
 
-    class BatchOperationResult implements OperationResult {
+    public class BatchOperationResult implements OperationResult {
         // success
-        Object results;
+        Object result;
 
         // error
         String errorCode;
         String errorMessage;
-        Object data;
+        Object errorData;
 
         @Override
-        public void success(Object results) {
-            this.results = results;
+        public void success(Object result) {
+            this.result = result;
         }
 
         @Override
         public void error(String errorCode, String errorMessage, Object data) {
             this.errorCode = errorCode;
             this.errorMessage = errorMessage;
-            this.data = data;
+            this.errorData = data;
         }
     }
 
@@ -55,16 +61,28 @@ public class BatchOperation extends BaseOperation {
     }
 
     @Override
-    public OperationResult getResult() {
-        return result;
+    public OperationResult getOperationResult() {
+        return operationResult;
     }
 
-    public Object getBatchResults() {
-        return result.results;
+    public Map<String, Object> getOperationSuccessResult() {
+        Map<String, Object> results = new HashMap<>();
+        results.put(PARAM_RESULT, operationResult.result);
+        return results;
+    }
+
+    public Map<String, Object> getOperationError() {
+        Map<String, Object> error = new HashMap<>();
+        Map<String, Object> errorDetail = new HashMap<>();
+        errorDetail.put(PARAM_ERROR_CODE, operationResult.errorCode);
+        errorDetail.put(PARAM_ERROR_MESSAGE, operationResult.errorMessage);
+        errorDetail.put(PARAM_ERROR_DATA, operationResult.errorData);
+        error.put(PARAM_ERROR, errorDetail);
+        return error;
     }
 
     public void handleError(MethodChannel.Result result) {
-        result.error(this.result.errorCode, this.result.errorMessage, this.result.data);
+        result.error(this.operationResult.errorCode, this.operationResult.errorMessage, this.operationResult.errorData);
     }
 
     @Override
@@ -72,9 +90,15 @@ public class BatchOperation extends BaseOperation {
         return noResult;
     }
 
-    public void handleSuccess(List<Object> results) {
+    public void handleSuccess(List<Map<String, Object>> results) {
         if (!getNoResult()) {
-            results.add(getBatchResults());
+            results.add(getOperationSuccessResult());
+        }
+    }
+
+    public void handleErrorContinue(List<Map<String, Object>> results) {
+        if (!getNoResult()) {
+            results.add(getOperationError());
         }
     }
 

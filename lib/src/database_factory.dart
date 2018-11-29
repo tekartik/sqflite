@@ -15,7 +15,7 @@ SqfliteDatabaseFactory _databaseFactory;
 DatabaseFactory get databaseFactory => sqlfliteDatabaseFactory;
 
 SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
-    _databaseFactory ??= SqfliteDatabaseFactory();
+    _databaseFactory ??= SqfliteDatabaseFactoryIo();
 
 Future<Database> openReadOnlyDatabase(String path) async {
   final SqfliteOpenDatabaseOptions options =
@@ -106,7 +106,7 @@ class SqfliteDatabaseFactoryIo extends SqfliteDatabaseFactory {
   }
 }
 
-class SqfliteDatabaseFactory implements DatabaseFactory {
+abstract class SqfliteDatabaseFactory implements DatabaseFactory {
   // for single instances only
   Map<String, SqfliteDatabaseOpenHelper> databaseOpenHelpers =
       <String, SqfliteDatabaseOpenHelper>{};
