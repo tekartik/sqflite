@@ -18,10 +18,10 @@
 ## 0.11.0
 
 * add `getDatabasesPath` to use as the base location to create a database
-* Warning: database are now single instance by default (based on `path`), to use the 
-  old behavior use `singleInstance = kfalse` when opening a database
+* Warning: database are now single instance by default (based on `path`), to use the
+  old behavior use `singleInstance = false` when opening a database
 * dart2 stable support
-  
+
 ## 0.10.0
 
 * Preparing for 1.0
@@ -61,7 +61,7 @@
 ## 0.8.2
 
 * Although already in a transaction, allow creating nested transactions during open
- 
+
 ## 0.8.1
 
 * New `Transaction` mechanism not using Zone (old one still supported for now)
@@ -92,7 +92,7 @@
 ## 0.6.0
 
 * add support for `onConfigure` to allow for database configuration
- 
+
 ## 0.5.0
 
 * Escape table and column name when needed in insert/update/query/delete
@@ -107,14 +107,14 @@
 * Remove temp concurrency experiment
 
 ## 0.3.0
- 
+
 2018/01/04
 
 * **Breaking change**. Upgraded to Gradle 4.1 and Android Studio Gradle plugin
   3.0.1. Older Flutter projects need to upgrade their Gradle setup as well in
   order to use this version of the plugin. Instructions can be found
   [here](https://github.com/flutter/flutter/wiki/Updating-Flutter-projects-to-Gradle-4.1-and-Android-Studio-Gradle-plugin-3.0.1).
-  
+
 ## 0.2.4
 
 * Dependency on synchronized updated to >=1.1.0
