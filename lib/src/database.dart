@@ -90,7 +90,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
 
   /// Execute a raw SQL SELECT query
   ///
-  /// Returns a future list of rows that were found
+  /// Returns a list of rows that were found
   @override
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
           [List<dynamic> arguments]) =>
