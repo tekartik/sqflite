@@ -16,18 +16,20 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
 
   SqfliteDatabase get db;
 
-  /// for sql without return values
+  /// Execute an SQL query with no return value
   @override
   Future<void> execute(String sql, [List<dynamic> arguments]) =>
       db.txnExecute<dynamic>(txn, sql, arguments);
 
-  /// for INSERT sql query
-  /// returns the last inserted record id
+  /// Execute a raw SQL INSERT query
+  ///
+  /// Returns the last inserted record id
   @override
   Future<int> rawInsert(String sql, [List<dynamic> arguments]) =>
       db.txnRawInsert(txn, sql, arguments);
 
-  /// INSERT helper
+  /// Insert a row into a table, where the keys of [values] correspond to
+  /// column names
   @override
   Future<int> insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
@@ -86,28 +88,34 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
     return rawQuery(builder.sql, builder.arguments);
   }
 
-  /// for SELECT sql query
+  /// Execute a raw SQL SELECT query
+  ///
+  /// Returns a future list of rows that were found
   @override
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
           [List<dynamic> arguments]) =>
       db.txnRawQuery(txn, sql, arguments);
 
-  /// for UPDATE sql query
-  /// return the number of changes made
+  /// Execute a raw SQL UPDATE query
+  ///
+  /// Returns the number of changes made
   @override
   Future<int> rawUpdate(String sql, [List<dynamic> arguments]) =>
       db.txnRawUpdate(txn, sql, arguments);
 
   /// Convenience method for updating rows in the database.
   ///
-  /// update into table [table] with the [values], a map from column names
-  /// to new column values. null is a valid value that will be translated to NULL.
+  /// Update [table] with [values], a map from column names to new column
+  /// values. null is a valid value that will be translated to NULL.
+  ///
   /// [where] is the optional WHERE clause to apply when updating.
-  ///            Passing null will update all rows.
-  /// You may include ?s in the where clause, which
-  ///            will be replaced by the values from [whereArgs]
-  /// optional [conflictAlgorithm] for update conflict resolver
-  /// return the number of rows affected
+  /// Passing null will update all rows.
+  ///
+  /// You may include ?s in the where clause, which will be replaced by the
+  /// values from [whereArgs]
+  ///
+  /// [conflictAlgorithm] (optional) specifies algorithm to use in case of a
+  /// conflict. See [ConflictResolver] docs for more details
   @override
   Future<int> update(String table, Map<String, dynamic> values,
       {String where,
@@ -120,23 +128,29 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
     return rawUpdate(builder.sql, builder.arguments);
   }
 
-  /// for DELETE sql query
-  /// return the number of changes made
+  /// Executes a raw SQL DELETE query
+  ///
+  /// Returns the number of changes made
   @override
   Future<int> rawDelete(String sql, [List<dynamic> arguments]) =>
       rawUpdate(sql, arguments);
 
   /// Convenience method for deleting rows in the database.
   ///
-  /// delete from [table]
-  /// [where] is the optional WHERE clause to apply when updating.
-  ///            Passing null will update all rows.
-  /// You may include ?s in the where clause, which
-  ///            will be replaced by the values from [whereArgs]
-  /// optional [conflictAlgorithm] for update conflict resolver
-  /// return the number of rows affected if a whereClause is passed in, 0
-  ///         otherwise. To remove all rows and get a count pass "1" as the
-  ///         whereClause.
+  /// Delete from [table]
+  ///
+  /// [where] is the optional WHERE clause to apply when updating. Passing null
+  /// will update all rows.
+  ///
+  /// You may include ?s in the where clause, which will be replaced by the
+  /// values from [whereArgs]
+  ///
+  /// [conflictAlgorithm] (optional) specifies algorithm to use in case of a
+  /// conflict. See [ConflictResolver] docs for more details
+  ///
+  /// Returns the number of rows affected if a whereClause is passed in, 0
+  /// otherwise. To remove all rows and get a count pass "1" as the
+  /// whereClause.
   @override
   Future<int> delete(String table, {String where, List<dynamic> whereArgs}) {
     final SqlBuilder builder =
