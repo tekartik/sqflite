@@ -542,8 +542,8 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
         Future<void> _onDatabaseDowngradeDelete(
             Database _db, int oldVersion, int newVersion) async {
           final SqfliteDatabase db = _db;
-          // This is tricky as we are in a middel of opening a database
-          // need to close what is being done and retart
+          // This is tricky as we are in the middle of opening a database
+          // need to close what is being done and restart
           await db.execute("ROLLBACK;");
           await db.doClose();
           await deleteDatabase(db.path);
