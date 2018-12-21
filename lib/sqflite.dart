@@ -44,8 +44,8 @@ class Sqflite {
   static Future<String> get platformVersion =>
       invokeMethod<String>(methodGetPlatformVersion);
 
-  /// turn on debug mode if you want to see the SQL query
-  /// executed natively
+  /// Turns on debug mode if you want to see the SQL query
+  /// executed natively.
   static Future<void> setDebugModeOn([bool on = true]) async {
     await invokeMethod<dynamic>(methodSetDebugModeOn, on);
   }
@@ -101,11 +101,12 @@ class Sqflite {
 /// Common API for [Database] and [Transaction] to execute SQL commands
 ///
 abstract class DatabaseExecutor {
-  /// for sql without return values
+  /// Execute an SQL query with no return value
   Future<void> execute(String sql, [List<dynamic> arguments]);
 
-  /// for INSERT sql query
-  /// returns the last inserted record id
+  /// Execute a raw SQL INSERT query
+  ///
+  /// Returns the last inserted record id
   Future<int> rawInsert(String sql, [List<dynamic> arguments]);
 
   // INSERT helper
@@ -148,44 +149,56 @@ abstract class DatabaseExecutor {
       int limit,
       int offset});
 
-  /// for SELECT sql query
+  /// Execute a raw SQL SELECT query
+  ///
+  /// Returns a list of rows that were found
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
       [List<dynamic> arguments]);
 
-  /// for UPDATE sql query
-  /// return the number of changes made
+  /// Execute a raw SQL UPDATE query
+  ///
+  /// Returns the number of changes made
   Future<int> rawUpdate(String sql, [List<dynamic> arguments]);
 
   /// Convenience method for updating rows in the database.
   ///
-  /// update into table [table] with the [values], a map from column names
-  /// to new column values. null is a valid value that will be translated to NULL.
+  /// Update [table] with [values], a map from column names to new column
+  /// values. null is a valid value that will be translated to NULL.
+  ///
   /// [where] is the optional WHERE clause to apply when updating.
-  ///            Passing null will update all rows.
-  /// You may include ?s in the where clause, which
-  ///            will be replaced by the values from [whereArgs]
-  /// optional [conflictAlgorithm] for update conflict resolver
-  /// return the number of rows affected
+  /// Passing null will update all rows.
+  ///
+  /// You may include ?s in the where clause, which will be replaced by the
+  /// values from [whereArgs]
+  ///
+  /// [conflictAlgorithm] (optional) specifies algorithm to use in case of a
+  /// conflict. See [ConflictResolver] docs for more details
   Future<int> update(String table, Map<String, dynamic> values,
       {String where,
       List<dynamic> whereArgs,
       ConflictAlgorithm conflictAlgorithm});
 
-  /// for DELETE sql query
-  /// return the number of changes made
+  /// Executes a raw SQL DELETE query
+  ///
+  /// Returns the number of changes made
   Future<int> rawDelete(String sql, [List<dynamic> arguments]);
 
   /// Convenience method for deleting rows in the database.
   ///
-  /// delete from [table]
-  /// [where] is the optional WHERE clause to apply when updating.
-  ///            Passing null will update all rows.
-  /// You may include ?s in the where clause, which
-  ///            will be replaced by the values from [whereArgs]
-  /// optional [conflictAlgorithm] for update conflict resolver
-  /// return the number of rows affected if a whereClause is passed in, 0
-  ///         otherwise. To remove all rows and get a count pass "1" as the
-  ///         whereClause.
+  /// Delete from [table]
+  ///
+  /// [where] is the optional WHERE clause to apply when updating. Passing null
+  /// will update all rows.
+  ///
+  /// You may include ?s in the where clause, which will be replaced by the
+  /// values from [whereArgs]
+  ///
+  /// [conflictAlgorithm] (optional) specifies algorithm to use in case of a
+  /// conflict. See [ConflictResolver] docs for more details
+  ///
+  /// Returns the number of rows affected if a whereClause is passed in, 0
+  /// otherwise. To remove all rows and get a count pass "1" as the
+  /// whereClause.
   Future<int> delete(String table, {String where, List<dynamic> whereArgs});
 
   /// Execute all batch operation
@@ -218,7 +231,7 @@ abstract class Database implements DatabaseExecutor {
   /// The path of the database
   String get path;
 
-  /// Close the database. Cannot be access anymore
+  /// Close the database. Cannot be accessed anymore
   Future<void> close();
 
   /// Calls in action must only be done using the transaction object
