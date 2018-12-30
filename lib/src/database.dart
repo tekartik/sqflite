@@ -213,6 +213,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
 
   SqfliteDatabaseFactory get factory => openHelper.factory;
 
+  @override
   bool get readOnly => openHelper?.options?.readOnly == true;
 
   @override

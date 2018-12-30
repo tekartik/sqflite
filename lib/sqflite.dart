@@ -243,6 +243,9 @@ abstract class Database implements DatabaseExecutor {
   ///
   Future<int> getVersion();
 
+  /// Returns true if the database is opened as read only.
+  bool get readOnly;
+
   /// Tell if the database is open, returns false once close has been called
   bool get isOpen;
 
