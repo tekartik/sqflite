@@ -185,7 +185,7 @@ await database.transaction((txn) async {
 });
 ```
 
-A transaction is commited if the callback does not throw an error. If an error is thrown,
+A transaction is committed if the callback does not throw an error. If an error is thrown,
 the transaction is cancelled. So to rollback a  transaction one way is to throw an exception.
 
 
@@ -209,7 +209,7 @@ If you don't care about the result and worry about performance in big batches, y
 await batch.commit(noResult: true);
 ```
 
-Warning, during a transaction, the batch won't be commited until the transaction is commited
+Warning, during a transaction, the batch won't be committed until the transaction is committed
 
 ```dart
 await database.transaction((txn) async {
@@ -217,7 +217,7 @@ await database.transaction((txn) async {
   
   // ...
   
-  // commit but the actual commit will happen when the transaction is commited
+  // commit but the actual commit will happen when the transaction is committed
   // however the data is available in this transaction
   await batch.commit();
   
@@ -225,7 +225,7 @@ await database.transaction((txn) async {
 });
 ```
 
-By default a batch stops as soon as it encounters an error (which typically reverts the uncommited changes). You 
+By default a batch stops as soon as it encounters an error (which typically reverts the uncommitted changes). You 
 can ignore errors so that every successfull operation is ran and committed even if one operation fails:
 
 ```dart
