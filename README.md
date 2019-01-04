@@ -185,6 +185,10 @@ await database.transaction((txn) async {
 });
 ```
 
+A transaction is commited if the callback does not throw an error. If an error is thrown,
+the transaction is cancelled. So to rollback a  transaction one way is to throw an exception.
+
+
 ### Batch support
 
 To avoid ping-pong between dart and native code, you can use `Batch`:
