@@ -358,7 +358,7 @@ void main() {
 
           await step2.future;
           try {
-            await db.execute("test").timeout(Duration(milliseconds: 100));
+            await db.execute("test").timeout(const Duration(milliseconds: 100));
             throw "should fail";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -401,7 +401,7 @@ void main() {
 
           await step2.future;
           try {
-            await db.execute("test").timeout(Duration(milliseconds: 100));
+            await db.execute("test").timeout(const Duration(milliseconds: 100));
             throw "should fail";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -443,7 +443,7 @@ void main() {
 
           await step2.future;
           try {
-            await db.execute("test").timeout(Duration(milliseconds: 100));
+            await db.execute("test").timeout(const Duration(milliseconds: 100));
             throw "should fail";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -483,7 +483,7 @@ void main() {
         Future<void> action1() async {
           await step1.future;
           try {
-            await db.execute("test").timeout(Duration(milliseconds: 100));
+            await db.execute("test").timeout(const Duration(milliseconds: 100));
             throw "should fail";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -491,7 +491,7 @@ void main() {
 
           await step2.future;
           try {
-            await db.execute("test").timeout(Duration(milliseconds: 100));
+            await db.execute("test").timeout(const Duration(milliseconds: 100));
             throw "should fail";
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -646,7 +646,7 @@ void main() {
       bool hasTimedOut = false;
       int callbackCount = 0;
       setLockWarningInfo(
-          duration: Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 200),
           callback: () {
             callbackCount++;
           });
@@ -654,7 +654,7 @@ void main() {
         await db.transaction((Transaction txn) async {
           await db.execute('test');
           fail("should fail");
-        }).timeout(Duration(milliseconds: 500));
+        }).timeout(const Duration(milliseconds: 500));
       } on TimeoutException catch (_) {
         hasTimedOut = true;
       }

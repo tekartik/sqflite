@@ -1,7 +1,7 @@
-analyzer:
-  strong-mode:
-    implicit-casts: false
-#    implicit-dynamic: false
+# analyzer:
+  # strong-mode:
+    # implicit-casts: false
+    # implicit-dynamic: false
 
 linter:
   rules:
@@ -19,7 +19,6 @@ linter:
   - always_declare_return_types
   - camel_case_types
   - empty_constructor_bodies
-  - annotate_overrides
   - avoid_init_to_null
   - constant_identifier_names
   - one_member_abstracts
