@@ -76,6 +76,15 @@ void main() {
       //expect(rows, raw);
       expect(row, <String, dynamic>{"column": 1});
 
+      // read only
+      try {
+        row['column'] = 2;
+        fail('should have failed');
+      } on UnsupportedError catch (_) {}
+      final map = Map<String, dynamic>.from(row);
+      // now can modify
+      map['column'] = 2;
+
       final Map<dynamic, dynamic> queryResultSetMap = <dynamic, dynamic>{
         "columns": <dynamic>["id", "name"],
         "rows": <List<dynamic>>[
