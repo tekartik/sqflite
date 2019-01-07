@@ -182,12 +182,12 @@ Resulting map items are read-only
 ```dart
 // get the first record
 Map<String, dynamic> mapRead = records.first;
-// Update it in memory...this will thrown an excaption
+// Update it in memory...this will throw an exception
 mapRead['my_column'] = 1;
 // Crash... `mapRead` is read-only
 ```
 
-You need to create a new map if you want to modify it in memory
+You need to create a new map if you want to modify it in memory:
 
 ```dart
 // get the first record
