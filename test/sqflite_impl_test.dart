@@ -81,7 +81,7 @@ void main() {
         row['column'] = 2;
         fail('should have failed');
       } on UnsupportedError catch (_) {}
-      final map = Map<String, dynamic>.from(row);
+      final Map<String, dynamic> map = Map<String, dynamic>.from(row);
       // now can modify
       map['column'] = 2;
 
