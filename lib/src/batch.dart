@@ -91,14 +91,6 @@ abstract class SqfliteBatch implements Batch {
   void execute(String sql, [List<dynamic> arguments]) {
     _add(methodExecute, sql, arguments);
   }
-
-  @override
-  Future<List<dynamic>> apply(
-          {bool exclusive, bool noResult, bool continueOnError}) =>
-      commit(
-          exclusive: exclusive,
-          noResult: noResult,
-          continueOnError: continueOnError);
 }
 
 class SqfliteDatabaseBatch extends SqfliteBatch {

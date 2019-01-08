@@ -201,15 +201,6 @@ abstract class DatabaseExecutor {
   /// whereClause.
   Future<int> delete(String table, {String where, List<dynamic> whereArgs});
 
-  /// Execute all batch operation
-  /// The result is a list of the result of each operation in the same order
-  /// if [noResult] is true, the result list is empty (i.e. the id inserted
-  /// the count of item changed is not returned
-  ///
-  /// If called on a database a transaction is created
-  @Deprecated("User batch.commit() instead")
-  Future<List<dynamic>> applyBatch(Batch batch, {bool noResult});
-
   /// Creates a batch, used for performing multiple operation
   /// in a single atomic operation.
   ///
@@ -434,11 +425,6 @@ abstract class Batch {
   /// transaction it will only be commited when
   /// the transaction is commited ([exclusive] is not used then)
   Future<List<dynamic>> commit(
-      {bool exclusive, bool noResult, bool continueOnError});
-
-  /// See [Batch.commit], kept for compatibility...
-  @Deprecated("Use Batch.commit instead")
-  Future<List<dynamic>> apply(
       {bool exclusive, bool noResult, bool continueOnError});
 
   /// See [Database.rawInsert]

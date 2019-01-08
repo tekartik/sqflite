@@ -1,3 +1,9 @@
+
+## 1.0.0
+
+* Upgrade 0.13.0 version as 1.0.0
+* Remove deprecated API (applyBatch, apply)
+
 ## 0.13.0
 
 * Add support for `continueOrError` for batches

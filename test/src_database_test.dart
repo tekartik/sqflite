@@ -576,26 +576,6 @@ void main() {
         expect(db.sqls,
             <String>[null, 'BEGIN IMMEDIATE', 'test', 'test', 'COMMIT', null]);
       });
-
-      test('wrong database', () async {
-        final MockDatabase db2 = mockDatabaseFactory.newEmptyDatabase();
-        final MockDatabase db = await mockDatabaseFactory.openDatabase(null,
-            options: OpenDatabaseOptions());
-
-        final Batch batch = db2.batch();
-
-        await db.transaction((Transaction txn) async {
-          try {
-            // ignore: deprecated_member_use
-            await txn.applyBatch(batch);
-            fail("should fail");
-          } on ArgumentError catch (_) {}
-        });
-        await db.close();
-        expect(db.methods,
-            <String>['openDatabase', 'execute', 'execute', 'closeDatabase']);
-        expect(db.sqls, <String>[null, 'BEGIN IMMEDIATE', 'COMMIT', null]);
-      });
     });
 
     group('instances', () {
