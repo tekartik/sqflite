@@ -15,7 +15,7 @@ In your flutter project add the dependency:
 ```yml
 dependencies:
   ...
-  sqflite: any
+  sqflite: ^1.0.0
 ```
 
 For help getting started with Flutter, view the online
