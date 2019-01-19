@@ -88,7 +88,9 @@ List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
     return null;
   }
   if (queryResult is Map) {
-    return queryResultSetFromMap(queryResult);
+    if (queryResult.keys.toList().isNotEmpty)
+      return queryResultSetFromMap(queryResult);
+    return null;
   }
   // dart1
   // dart2 support <= 0.7.0 - this is a list
