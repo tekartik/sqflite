@@ -12,7 +12,7 @@ addons:
       - fonts-droid
 before_script:
   - mkdir -p ~/.tekartik
-  - git clone https://github.com/flutter/flutter.git --depth 1 ~/.tekartik/flutter
+  - git clone https://github.com/flutter/flutter.git --depth 1 ~/.tekartik/flutter -b dev
   - export PATH=~/.tekartik/flutter/bin:~/.tekartik/flutter/bin/cache/dart-sdk/bin:$PATH
   - flutter doctor
 script:
