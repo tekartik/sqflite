@@ -51,5 +51,5 @@ public class Constant {
     static final String MEMORY_DATABASE_PATH = ":memory:";
 
     // android log tag
-    static public String TAG = "Sqflite";
+    static final public String TAG = "Sqflite";
 }

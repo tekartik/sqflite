@@ -603,17 +603,15 @@ public class SqflitePlugin implements MethodCallHandler {
         });
     }
 
-    private boolean handleException(Exception exception, Operation operation, Database database) {
+    private void handleException(Exception exception, Operation operation, Database database) {
         if (exception instanceof SQLiteCantOpenDatabaseException) {
             operation.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + database.path, null);
-            return true;
+            return;
         } else if (exception instanceof SQLException) {
             operation.error(Constant.SQLITE_ERROR, exception.getMessage(), SqlErrorInfo.getMap(operation));
-            return true;
+            return;
         }
         operation.error(Constant.SQLITE_ERROR, exception.getMessage(), SqlErrorInfo.getMap(operation));
-        return true;
-
     }
 
     static boolean isInMemoryPath(String path) {
@@ -654,10 +652,8 @@ public class SqflitePlugin implements MethodCallHandler {
             }
         } catch (Exception e) {
             MethodCallOperation operation = new MethodCallOperation(call, result);
-            if (handleException(e, operation, database)) {
-                return;
-            }
-            throw e;
+            handleException(e, operation, database);
+            return;
         }
 
         //SQLiteDatabase sqLiteDatabase = SQLiteDatabase.openDatabase(path, null, 0);
