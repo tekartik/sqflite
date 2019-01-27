@@ -113,7 +113,7 @@ public class SqflitePlugin implements MethodCallHandler {
     @SuppressLint("UseSparseArrays")
     private Map<Integer, Database> databaseMap = new HashMap<>();
 
-    private SqflitePlugin(Context context) {
+    SqflitePlugin(Context context) {
         this.context = context;
     }
 

@@ -1,3 +1,13 @@
+## 1.1.0
+
+* **Breaking change**. Migrate from the deprecated original Android Support
+    Library to AndroidX. This shouldn't result in any functional changes, but it
+    requires any Android apps using this plugin to [also
+    migrate](https://developer.android.com/jetpack/androidx/migrate) if they're
+    using the original support library.
+    
+    You might say thay version should be bumped to 2.0.0, however it is just a tooling issue, code is not changed.
+    This is a copy of the changes made in the flutter plugins
 
 ## 1.0.0
 
