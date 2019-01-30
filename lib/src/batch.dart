@@ -102,7 +102,7 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   Future<List<dynamic>> commit(
       {bool exclusive, bool noResult, bool continueOnError}) {
     return database.transaction<List<dynamic>>((Transaction txn) {
-      final SqfliteTransaction sqfliteTransaction = txn;
+      final SqfliteTransaction sqfliteTransaction = txn as SqfliteTransaction;
       return database.txnApplyBatch(sqfliteTransaction, this,
           noResult: noResult, continueOnError: continueOnError);
     }, exclusive: exclusive);

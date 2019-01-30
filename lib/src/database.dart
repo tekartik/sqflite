@@ -434,7 +434,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       successfull = true;
     } finally {
       if (--transactionRefCount == 0) {
-        final SqfliteTransaction sqfliteTransaction = txn;
+        final SqfliteTransaction sqfliteTransaction = txn as SqfliteTransaction;
         sqfliteTransaction.successfull = successfull;
         await endTransaction(sqfliteTransaction);
       }
@@ -530,7 +530,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
         // Downgrading will delete the database and open it again
         Future<void> _onDatabaseDowngradeDelete(
             Database _db, int oldVersion, int newVersion) async {
-          final SqfliteDatabase db = _db;
+          final SqfliteDatabase db = _db as SqfliteDatabase;
           // This is tricky as we are in the middle of opening a database
           // need to close what is being done and restart
           await db.execute("ROLLBACK;");
@@ -580,7 +580,8 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
         await transaction((Transaction txn) async {
           // Set the current transaction as the open one
           // to allow direct database call during open
-          final SqfliteTransaction sqfliteTransaction = txn;
+          final SqfliteTransaction sqfliteTransaction =
+              txn as SqfliteTransaction;
           openTransaction = sqfliteTransaction;
 
           final int oldVersion = await getVersion();

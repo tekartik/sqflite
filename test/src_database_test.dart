@@ -24,13 +24,13 @@ class MockDatabase extends SqfliteDatabase {
       argumentsLists.add(arguments.cast<String, dynamic>());
       if (arguments[paramOperations] != null) {
         final List<Map<String, dynamic>> operations =
-            arguments[paramOperations];
+            arguments[paramOperations] as List<Map<String, dynamic>>;
         for (Map<String, dynamic> operation in operations) {
-          final String sql = operation[paramSql];
+          final String sql = operation[paramSql] as String;
           sqls.add(sql);
         }
       } else {
-        final String sql = arguments[paramSql];
+        final String sql = arguments[paramSql] as String;
         sqls.add(sql);
       }
     } else {
@@ -56,7 +56,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
   MockDatabase newEmptyDatabase() {
     final SqfliteDatabaseOpenHelper helper =
         SqfliteDatabaseOpenHelper(this, null, OpenDatabaseOptions());
-    final MockDatabase db = helper.newDatabase(null);
+    final MockDatabase db = helper.newDatabase(null) as MockDatabase;
     return db;
   }
 
@@ -83,7 +83,7 @@ class MockDatabaseFactoryBase extends SqfliteDatabaseFactory {
   MockDatabase newEmptyDatabase() {
     final SqfliteDatabaseOpenHelper helper =
         SqfliteDatabaseOpenHelper(this, null, OpenDatabaseOptions());
-    final MockDatabase db = helper.newDatabase(null);
+    final MockDatabase db = helper.newDatabase(null) as MockDatabase;
     return db;
   }
 
@@ -137,7 +137,8 @@ void main() {
       test('read-only', () async {
         // var db = mockDatabaseFactory.newEmptyDatabase();
         final MockDatabase db = await mockDatabaseFactory.openDatabase(null,
-            options: SqfliteOpenDatabaseOptions(readOnly: true));
+                options: SqfliteOpenDatabaseOptions(readOnly: true))
+            as MockDatabase;
         await db.close();
         expect(db.methods, <String>['openDatabase', 'closeDatabase']);
         expect(db.argumentsLists.first,
@@ -146,7 +147,8 @@ void main() {
       test('isOpen', () async {
         // var db = mockDatabaseFactory.newEmptyDatabase();
         final MockDatabase db = await mockDatabaseFactory.openDatabase(null,
-            options: SqfliteOpenDatabaseOptions(readOnly: true));
+                options: SqfliteOpenDatabaseOptions(readOnly: true))
+            as MockDatabase;
         expect(db.isOpen, true);
         final Future<void> closeFuture = db.close();
         // it is not closed right away
@@ -165,7 +167,7 @@ void main() {
                   await db.transaction((Transaction txn) async {
                     await txn.execute("test2");
                   });
-                }));
+                })) as MockDatabase;
 
         await db.close();
         expect(db.methods, <String>[
@@ -199,7 +201,7 @@ void main() {
                   await db.transaction((Transaction txn) async {
                     await txn.execute("test2");
                   });
-                }));
+                })) as MockDatabase;
 
         await db.close();
         expect(db.sqls, <String>[
@@ -225,7 +227,7 @@ void main() {
                   await db.transaction((Transaction txn) async {
                     await txn.execute("test2");
                   });
-                }));
+                })) as MockDatabase;
 
         await db.close();
         expect(db.sqls, <String>[
@@ -260,7 +262,7 @@ void main() {
                   final Batch batch = db.batch();
                   batch.execute("test3");
                   await batch.commit(continueOnError: true);
-                }));
+                })) as MockDatabase;
 
         await db.close();
         expect(db.sqls, <String>[
@@ -525,7 +527,8 @@ void main() {
 
     group('batch', () {
       test('simple', () async {
-        final MockDatabase db = await mockDatabaseFactory.openDatabase(null);
+        final MockDatabase db =
+            await mockDatabaseFactory.openDatabase(null) as MockDatabase;
 
         final Batch batch = db.batch();
         batch.execute("test");
@@ -555,7 +558,8 @@ void main() {
       });
 
       test('in_transaction', () async {
-        final MockDatabase db = await mockDatabaseFactory.openDatabase(null);
+        final MockDatabase db =
+            await mockDatabaseFactory.openDatabase(null) as MockDatabase;
 
         await db.transaction((Transaction txn) async {
           final Batch batch = txn.batch();
@@ -584,8 +588,8 @@ void main() {
             null,
             options: OpenDatabaseOptions(singleInstance: true));
         final MockDatabase db2 = await mockDatabaseFactory.openDatabase(null,
-            options: OpenDatabaseOptions(singleInstance: true));
-        final MockDatabase db1 = await futureDb1;
+            options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
+        final MockDatabase db1 = await futureDb1 as MockDatabase;
         expect(db1, db2);
       });
       test('singleInstance', () async {
@@ -593,13 +597,13 @@ void main() {
             null,
             options: OpenDatabaseOptions(singleInstance: true));
         final MockDatabase db2 = await mockDatabaseFactory.openDatabase(null,
-            options: OpenDatabaseOptions(singleInstance: true));
-        final MockDatabase db1 = await futureDb1;
+            options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
+        final MockDatabase db1 = await futureDb1 as MockDatabase;
         final MockDatabase db3 = await mockDatabaseFactory.openDatabase("other",
-            options: OpenDatabaseOptions(singleInstance: true));
+            options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
         final MockDatabase db4 = await mockDatabaseFactory.openDatabase(
             join(".", "other"),
-            options: OpenDatabaseOptions(singleInstance: true));
+            options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
         //expect(db1, db2);
         expect(db1, isNot(db3));
         expect(db3, db4);
@@ -613,8 +617,9 @@ void main() {
             null,
             options: OpenDatabaseOptions(singleInstance: false));
         final MockDatabase db2 = await mockDatabaseFactory.openDatabase(null,
-            options: OpenDatabaseOptions(singleInstance: false));
-        final MockDatabase db1 = await futureDb1;
+                options: OpenDatabaseOptions(singleInstance: false))
+            as MockDatabase;
+        final MockDatabase db1 = await futureDb1 as MockDatabase;
         expect(db1, isNot(db2));
         await db1.close();
         await db2.close();

@@ -97,8 +97,7 @@ class SlowTestPage extends TestPage {
 
         sw = new Stopwatch()..start();
         var result = await db.query('Test');
-        print(
-            "sw ${sw.elapsed} SELECT * From Test : ${result.length} items");
+        print("sw ${sw.elapsed} SELECT * From Test : ${result.length} items");
 
         sw = new Stopwatch()..start();
         result =

@@ -29,7 +29,7 @@ class SqfliteOptions {
   }
 
   void fromMap(Map<String, dynamic> map) {
-    final bool queryAsMapList = map['queryAsMapList'];
+    final bool queryAsMapList = map['queryAsMapList'] as bool;
     this.queryAsMapList = queryAsMapList;
   }
 }

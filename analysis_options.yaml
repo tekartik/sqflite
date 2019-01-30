@@ -1,6 +1,6 @@
 analyzer:
   strong-mode:
-    # implicit-casts: false
+    implicit-casts: false
     implicit-dynamic: false
 
 linter:
@@ -36,7 +36,7 @@ linter:
   - always_specify_types
   - annotate_overrides
   # - avoid_annotating_with_dynamic # not yet tested
-  - avoid_as
+  # - avoid_as # 2019-01-30 removed for no-implicit-casts
   # - avoid_catches_without_on_clauses # not yet tested
   # - avoid_catching_errors # not yet tested
   # - avoid_classes_with_only_static_members # not yet tested

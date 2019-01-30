@@ -54,7 +54,7 @@ void main() {
           'message': 'hello',
           'data': <dynamic, dynamic>{'some': 'data'}
         }
-      });
+      }) as SqfliteDatabaseException;
       expect(exception.message, 'hello');
       expect(exception.result, <dynamic, dynamic>{'some': 'data'});
     });
