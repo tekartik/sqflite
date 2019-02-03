@@ -298,6 +298,7 @@ class SqfliteDatabase extends SqfliteDatabaseExecutor implements Database {
       });
       // Simply warn the developer as this could likely be a deadlock
       if (handleTimeoutWarning) {
+        // ignore: unawaited_futures
         timeoutCompleter.future.timeout(lockWarningDuration, onTimeout: () {
           lockWarningCallback();
         });

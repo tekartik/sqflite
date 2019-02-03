@@ -560,6 +560,7 @@ class OpenTestPage extends TestPage {
 
       // without the synchronized fix, this could faild
       for (int i = 0; i < 100; i++) {
+        // ignore: unawaited_futures
         helper.getDb();
       }
       var db = await helper.getDb();

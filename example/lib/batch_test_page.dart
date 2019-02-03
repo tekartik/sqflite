@@ -150,7 +150,7 @@ class BatchTestPage extends TestPage {
         List<dynamic> results = await batch.commit(continueOnError: true);
         // devPrint(results);
         // First result is an exception
-        DatabaseException exception = results[0];
+        DatabaseException exception = results[0] as DatabaseException;
         expect(exception.isNoSuchTableError(), true);
         // Second result is null (create table)
         expect(results[1], null);

@@ -57,7 +57,7 @@ create table $tableTodo (
         columns: [columnId, columnDone, columnTitle],
         where: "$columnId = ?",
         whereArgs: [id]);
-    if (maps.length > 0) {
+    if (maps.isNotEmpty) {
       return Todo.fromMap(maps.first);
     }
     return null;

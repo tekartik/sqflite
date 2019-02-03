@@ -36,7 +36,5 @@ flutter:
     - assets/example.db
     - assets/issue_64.db
 
-# dev only
-# dependency_overrides:
-#  synchronized:
-#    path: ../../synchronized.dart
+dependency_overrides:
+  pedantic: '>=1.4.0 <3.0.0'
