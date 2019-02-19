@@ -417,11 +417,41 @@ public class SqflitePlugin implements MethodCallHandler {
             operation.success(null);
             return true;
         }
-        String sql = "SELECT last_insert_rowid()";
-        //if (LOGV) {
-        //    Log.d(TAG, sql);
-        //}
+
         Cursor cursor = null;
+        String sql = "SELECT changes()";
+
+        // Handle ON CONFLICT but ignore error, issue #164
+        // Read the number of changes before getting the inserted id
+        try {
+            SQLiteDatabase db = database.getWritableDatabase();
+
+            cursor = db.rawQuery("SELECT changes()", null);
+            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                final int changed = cursor.getInt(0);
+                if (Debug.LOGV) {
+                    Log.d(Constant.TAG, "changed " + changed);
+                }
+                // If the change count is 0, assume the insert failed
+                // and return null
+                if (changed == 0) {
+                    operation.success(null);
+                    return true;
+                }
+            } else {
+                Log.e(Constant.TAG, "fail to read changes for Insert");
+            }
+        } catch (Exception e) {
+            // Ignore error
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        // Get the inserted record id
+        sql = "SELECT last_insert_rowid()";
+        cursor = null;
         try {
             cursor = database.getWritableDatabase().rawQuery(sql, null);
             if (cursor.moveToFirst()) {

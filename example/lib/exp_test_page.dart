@@ -392,5 +392,38 @@ INSERT INTO test (value) VALUES (10);
         await db.close();
       }
     });
+
+    test("Issue#164", () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("issue_164.db");
+
+      Database db = await openDatabase(path);
+      try {
+        await db.execute('''
+CREATE TABLE test (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	label TEXT NOT NULL,
+	UNIQUE (label) ON CONFLICT IGNORE
+);
+''');
+        // inserted in a wrong order to check ASC/DESC
+        int id = await db.rawInsert('''
+        INSERT INTO test (label) VALUES(?)
+        ''', ['label-1']);
+        expect(id, 1);
+
+        id = await db.rawInsert('''
+        INSERT INTO test (label) VALUES(?)
+        ''', ['label-2']);
+        expect(id, 2);
+
+        id = await db.rawInsert('''
+        INSERT INTO test (label) VALUES(?)
+        ''', ['label-1']);
+        expect(id, null);
+      } finally {
+        await db.close();
+      }
+    });
   }
 }
