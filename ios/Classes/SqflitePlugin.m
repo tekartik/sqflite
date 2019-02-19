@@ -344,6 +344,16 @@ static NSInteger _databaseOpenCount = 0;
         [operation success:[NSNull null]];
         return true;
     }
+    // handle ON CONFLICT IGNORE (issue #164) by checking the number of changes
+    // before
+    int changes = [db changes];
+    if (changes == 0) {
+        if (_log) {
+            NSLog(@"no changes");
+        }
+        [operation success:[NSNull null]];
+        return true;
+    }
     sqlite_int64 insertedId = [db lastInsertRowId];
     if (_log) {
         NSLog(@"inserted %@", @(insertedId));
