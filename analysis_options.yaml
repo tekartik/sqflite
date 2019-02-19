@@ -8,6 +8,17 @@ analyzer:
     implicit-casts: false
     # implicit-dynamic: false
 
+  errors:
+    # treat missing required parameters as a warning (not a hint)
+    missing_required_param: warning
+    # treat missing returns as a warning (not a hint)
+    missing_return: warning
+    # allow having TODOs in the code
+    todo: ignore
+    # Ignore errors like
+    # 'super_goes_last' is a deprecated lint rule and should not be used • included_file_warning
+    included_file_warning: ignore
+
 linter:
   rules:
   # these rules are documented on and in the same order as
@@ -94,7 +105,7 @@ linter:
   - slash_for_doc_comments
   - sort_constructors_first
   - sort_unnamed_constructors_first
-  - super_goes_last
+  # - super_goes_last
   # - type_annotate_public_apis # subset of always_specify_types
   - type_init_formals
   # - unawaited_futures # https://github.com/flutter/flutter/issues/5793
