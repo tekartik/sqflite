@@ -419,50 +419,36 @@ public class SqflitePlugin implements MethodCallHandler {
         }
 
         Cursor cursor = null;
-        String sql = "SELECT changes()";
+        // Read both the changes and last insert row id in on sql call
+        String sql = "SELECT changes(), last_insert_rowid()";
 
         // Handle ON CONFLICT but ignore error, issue #164
         // Read the number of changes before getting the inserted id
         try {
             SQLiteDatabase db = database.getWritableDatabase();
 
-            cursor = db.rawQuery("SELECT changes()", null);
+            cursor = db.rawQuery(sql, null);
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 final int changed = cursor.getInt(0);
-                if (Debug.LOGV) {
-                    Log.d(Constant.TAG, "changed " + changed);
-                }
+
                 // If the change count is 0, assume the insert failed
                 // and return null
                 if (changed == 0) {
+                    if (Debug.LOGV) {
+                        Log.d(Constant.TAG, "no changes");
+                    }
                     operation.success(null);
+                    return true;
+                } else {
+                    final long id = cursor.getLong(1);
+                    if (Debug.LOGV) {
+                        Log.d(Constant.TAG, "inserted " + id);
+                    }
+                    operation.success(id);
                     return true;
                 }
             } else {
                 Log.e(Constant.TAG, "fail to read changes for Insert");
-            }
-        } catch (Exception e) {
-            // Ignore error
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-
-        // Get the inserted record id
-        sql = "SELECT last_insert_rowid()";
-        cursor = null;
-        try {
-            cursor = database.getWritableDatabase().rawQuery(sql, null);
-            if (cursor.moveToFirst()) {
-                long id = cursor.getLong(0);
-                if (Debug.LOGV) {
-                    Log.d(Constant.TAG, "inserted " + id);
-                }
-                operation.success(id);
-                return true;
-            } else {
-                Log.e(Constant.TAG, "Fail to read inserted it");
             }
             operation.success(null);
             return true;
