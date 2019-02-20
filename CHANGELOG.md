@@ -1,3 +1,8 @@
+## 1.1.1
+
+* Use mixin and extract non flutter code into `sqlite_api.dart`
+* Deprecate `SqfliteOptions` which is only used internally
+
 ## 1.1.0
 
 * **Breaking change**. Migrate from the deprecated original Android Support
