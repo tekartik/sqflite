@@ -2,135 +2,51 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
+import 'package:sqflite/src/database_mixin.dart';
 import 'package:sqflite/src/exception.dart';
-import 'package:sqflite/src/utils.dart';
+import 'package:sqflite/src/factory.dart';
+import 'package:sqflite/src/open_options.dart';
 import 'package:synchronized/synchronized.dart';
-import 'package:sqflite/src/sqflite_impl.dart' as impl;
 
-SqfliteDatabaseFactory _databaseFactory;
+abstract class SqfliteDatabaseFactoryBase with SqfliteDatabaseFactoryMixin {}
 
-DatabaseFactory get databaseFactory => sqlfliteDatabaseFactory;
-
-SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
-    _databaseFactory ??= SqfliteDatabaseFactoryIo();
-
-Future<Database> openReadOnlyDatabase(String path) async {
-  final SqfliteOpenDatabaseOptions options =
-      SqfliteOpenDatabaseOptions(readOnly: true);
-  return sqlfliteDatabaseFactory.openDatabase(path, options: options);
-}
-
-/// Basic databases operations
-abstract class DatabaseFactory {
-  /// Open a database at [path] with the given [options]
-  Future<Database> openDatabase(String path, {OpenDatabaseOptions options});
-
-  /// Get the default databases location path
-  Future<String> getDatabasesPath();
-
-  /// Delete a database if it exists
-  Future<void> deleteDatabase(String path);
-
-  /// Check if a database exists
-  Future<bool> databaseExists(String path);
-}
-
-///
-/// Options to open a database
-/// See [openDatabase] for details
-///
-class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
-  SqfliteOpenDatabaseOptions({
-    this.version,
-    this.onConfigure,
-    this.onCreate,
-    this.onUpgrade,
-    this.onDowngrade,
-    this.onOpen,
-    this.readOnly = false,
-    this.singleInstance = true,
-  }) {
-    readOnly ??= false;
-    singleInstance ??= true;
-  }
+mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
+  /// To override to wrap wanted exception
   @override
-  int version;
-  @override
-  OnDatabaseConfigureFn onConfigure;
-  @override
-  OnDatabaseCreateFn onCreate;
-  @override
-  OnDatabaseVersionChangeFn onUpgrade;
-  @override
-  OnDatabaseVersionChangeFn onDowngrade;
-  @override
-  OnDatabaseOpenFn onOpen;
-  @override
-  bool readOnly;
-  @override
-  bool singleInstance;
+  Future<T> wrapDatabaseException<T>(Future<T> action()) => action();
 
-  @override
-  String toString() {
-    final Map<String, dynamic> map = <String, dynamic>{};
-    if (version != null) {
-      map['version'] = version;
-    }
-    map['readOnly'] = readOnly;
-    map['singleInstance'] = singleInstance;
-    return map.toString();
-  }
-}
+  Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]) =>
+      wrapDatabaseException(() => invokeMethod(method, arguments));
 
-class SqfliteDatabaseFactoryIo extends SqfliteDatabaseFactory {
-  @override
-  Future<void> deleteDatabase(String path) async {
-    try {
-      await File(path).delete(recursive: true);
-    } catch (_) {
-      // 0.8.4
-      // print(_);
-    }
-  }
-
-  @override
-  Future<bool> databaseExists(String path) async {
-    try {
-      // avoid slow async method
-      return File(path).existsSync();
-    } catch (_) {}
-    return false;
-  }
-}
-
-abstract class SqfliteDatabaseFactory implements DatabaseFactory {
   // for single instances only
   Map<String, SqfliteDatabaseOpenHelper> databaseOpenHelpers =
       <String, SqfliteDatabaseOpenHelper>{};
   SqfliteDatabaseOpenHelper nullDatabaseOpenHelper;
 
-  // to allow mock overriding
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
-      impl.invokeMethod(method, arguments);
-
   // open lock mechanism
+  @override
   final Lock lock = Lock();
 
+  @override
+  @override
   SqfliteDatabase newDatabase(
-          SqfliteDatabaseOpenHelper openHelper, String path) =>
-      SqfliteDatabase(openHelper, path);
+      SqfliteDatabaseOpenHelper openHelper, String path) {
+    return SqfliteDatabaseBase(openHelper, path);
+  }
 
   // internal close
+  @override
   void doCloseDatabase(SqfliteDatabase database) {
     if (database?.options?.singleInstance == true) {
-      _removeDatabaseOpenHelper(database.path);
+      removeDatabaseOpenHelper(database.path);
     }
   }
 
-  void _removeDatabaseOpenHelper(String path) {
+  @override
+  void removeDatabaseOpenHelper(String path) {
     if (path == null) {
       nullDatabaseOpenHelper = null;
     } else {
@@ -180,7 +96,7 @@ abstract class SqfliteDatabaseFactory implements DatabaseFactory {
       } catch (e) {
         // If first open fail remove the reference
         if (firstOpen) {
-          _removeDatabaseOpenHelper(path);
+          removeDatabaseOpenHelper(path);
         }
         rethrow;
       }
@@ -193,16 +109,12 @@ abstract class SqfliteDatabaseFactory implements DatabaseFactory {
 
   @override
   Future<void> deleteDatabase(String path) async {
-    return wrapDatabaseException(() {
-      return invokeMethod<bool>(methodDeleteDatabase);
-    });
+    return safeInvokeMethod<bool>(methodDeleteDatabase);
   }
 
   @override
   Future<bool> databaseExists(String path) async {
-    return wrapDatabaseException(() {
-      return invokeMethod<bool>(methodDatabaseExists);
-    });
+    return safeInvokeMethod<bool>(methodDatabaseExists);
   }
 
   String _databasesPath;
@@ -210,9 +122,9 @@ abstract class SqfliteDatabaseFactory implements DatabaseFactory {
   @override
   Future<String> getDatabasesPath() async {
     if (_databasesPath == null) {
-      final String path = await wrapDatabaseException<String>(() {
-        return invokeMethod<String>(methodGetDatabasesPath);
-      });
+      final String path =
+          await safeInvokeMethod<String>(methodGetDatabasesPath);
+
       if (path == null) {
         throw SqfliteDatabaseException("getDatabasesPath is null", null);
       }
@@ -221,6 +133,7 @@ abstract class SqfliteDatabaseFactory implements DatabaseFactory {
     return _databasesPath;
   }
 
+  @override
   Future<void> createParentDirectory(String path) async {
     // needed on iOS
     if (Platform.isIOS) {

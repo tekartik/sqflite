@@ -26,16 +26,25 @@ void main() {
 
     // Check that public api are exported
     test("exported", () {
-      Database db;
-
-      db?.batch();
-      db?.update(null, null);
-      db?.transaction<dynamic>((Transaction txt) => null);
-
-      Transaction transaction;
-      transaction?.execute(null, null);
-
-      expect(ConflictAlgorithm.abort, isNotNull);
+      <dynamic>[
+        // Not part of sqflite_api
+        openDatabase,
+        openReadOnlyDatabase,
+        getDatabasesPath,
+        deleteDatabase,
+        Sqflite,
+        // ignore: deprecated_member_use, deprecated_member_use_from_same_package
+        SqfliteOptions,
+        // sqflite_api
+        OpenDatabaseOptions,
+        DatabaseFactory,
+        Database,
+        Transaction,
+        Batch,
+        ConflictAlgorithm
+      ].forEach((dynamic value) {
+        expect(value, isNotNull);
+      });
     });
 
     test('firstIntValue', () {

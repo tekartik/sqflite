@@ -1,13 +1,15 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'dart:async';
+
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/src/constant.dart' hide lockWarningDuration;
 import 'package:sqflite/src/database.dart';
-import 'package:sqflite/src/database_factory.dart';
-import 'package:sqflite/src/sqflite_impl.dart';
-import 'package:sqflite/src/utils.dart';
+import 'package:sqflite/src/mixin.dart';
+import 'package:sqflite/src/open_options.dart';
+import 'package:sqflite/utils/utils.dart';
+import 'package:test_api/test_api.dart';
 
-class MockDatabase extends SqfliteDatabase {
+class MockDatabase extends SqfliteDatabaseBase {
   MockDatabase(SqfliteDatabaseOpenHelper openHelper, [String name])
       : super(openHelper, name);
 
@@ -42,7 +44,7 @@ class MockDatabase extends SqfliteDatabase {
   }
 }
 
-class MockDatabaseFactory extends SqfliteDatabaseFactory {
+class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   final List<String> methods = <String>[];
   final List<dynamic> argumentsList = <dynamic>[];
 
@@ -53,17 +55,17 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
     return null;
   }
 
-  MockDatabase newEmptyDatabase() {
+  SqfliteDatabase newEmptyDatabase() {
     final SqfliteDatabaseOpenHelper helper =
         SqfliteDatabaseOpenHelper(this, null, OpenDatabaseOptions());
-    final MockDatabase db = helper.newDatabase(null) as MockDatabase;
+    final SqfliteDatabase db = helper.newDatabase(null);
     return db;
   }
 
   @override
-  MockDatabase newDatabase(SqfliteDatabaseOpenHelper openHelper, String path) {
-    return MockDatabase(openHelper, path);
-  }
+  SqfliteDatabase newDatabase(
+          SqfliteDatabaseOpenHelper openHelper, String path) =>
+      MockDatabase(openHelper, path);
 
   @override
   Future<String> getDatabasesPath() async {
@@ -71,34 +73,21 @@ class MockDatabaseFactory extends SqfliteDatabaseFactory {
   }
 }
 
-class MockDatabaseFactoryBase extends SqfliteDatabaseFactory {
+class MockDatabaseFactoryEmpty extends SqfliteDatabaseFactoryBase {
   final List<String> methods = <String>[];
-
   @override
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) {
     methods.add(method);
     return null;
   }
-
-  MockDatabase newEmptyDatabase() {
-    final SqfliteDatabaseOpenHelper helper =
-        SqfliteDatabaseOpenHelper(this, null, OpenDatabaseOptions());
-    final MockDatabase db = helper.newDatabase(null) as MockDatabase;
-    return db;
-  }
-
-  @override
-  MockDatabase newDatabase(SqfliteDatabaseOpenHelper openHelper, String path) {
-    return MockDatabase(openHelper, path);
-  }
 }
 
 final MockDatabaseFactory mockDatabaseFactory = MockDatabaseFactory();
 
-void main() {
+void run() {
   group('database_factory', () {
     test('getDatabasesPath', () async {
-      final MockDatabaseFactoryBase factory = MockDatabaseFactoryBase();
+      final MockDatabaseFactoryEmpty factory = MockDatabaseFactoryEmpty();
       try {
         await factory.getDatabasesPath();
         fail("should fail");
@@ -109,7 +98,7 @@ void main() {
   });
   group("database", () {
     test("transaction", () async {
-      final MockDatabase db = mockDatabaseFactory.newEmptyDatabase();
+      final Database db = mockDatabaseFactory.newEmptyDatabase();
       await db.execute("test");
       await db.insert("test", <String, dynamic>{'test': 1});
       await db.update("test", <String, dynamic>{'test': 1});
@@ -349,7 +338,8 @@ void main() {
 
     group('concurrency', () {
       test('concurrent 1', () async {
-        final MockDatabase db = mockDatabaseFactory.newEmptyDatabase();
+        final MockDatabase db =
+            mockDatabaseFactory.newEmptyDatabase() as MockDatabase;
         final Completer<dynamic> step1 = Completer<dynamic>();
         final Completer<dynamic> step2 = Completer<dynamic>();
         final Completer<dynamic> step3 = Completer<dynamic>();
@@ -392,7 +382,8 @@ void main() {
       });
 
       test('concurrent 2', () async {
-        final MockDatabase db = mockDatabaseFactory.newEmptyDatabase();
+        final MockDatabase db =
+            mockDatabaseFactory.newEmptyDatabase() as MockDatabase;
         final Completer<dynamic> step1 = Completer<dynamic>();
         final Completer<dynamic> step2 = Completer<dynamic>();
         final Completer<dynamic> step3 = Completer<dynamic>();
@@ -434,7 +425,8 @@ void main() {
 
     group('compatibility 1', () {
       test('concurrent 1', () async {
-        final MockDatabase db = mockDatabaseFactory.newEmptyDatabase();
+        final MockDatabase db =
+            mockDatabaseFactory.newEmptyDatabase() as MockDatabase;
         final Completer<dynamic> step1 = Completer<dynamic>();
         final Completer<dynamic> step2 = Completer<dynamic>();
         final Completer<dynamic> step3 = Completer<dynamic>();
@@ -477,7 +469,8 @@ void main() {
       });
 
       test('concurrent 2', () async {
-        final MockDatabase db = mockDatabaseFactory.newEmptyDatabase();
+        final MockDatabase db =
+            mockDatabaseFactory.newEmptyDatabase() as MockDatabase;
         final Completer<dynamic> step1 = Completer<dynamic>();
         final Completer<dynamic> step2 = Completer<dynamic>();
         final Completer<dynamic> step3 = Completer<dynamic>();
@@ -627,7 +620,8 @@ void main() {
     });
 
     test('dead lock', () async {
-      final MockDatabase db = mockDatabaseFactory.newEmptyDatabase();
+      final MockDatabase db =
+          mockDatabaseFactory.newEmptyDatabase() as MockDatabase;
       bool hasTimedOut = false;
       int callbackCount = 0;
       setLockWarningInfo(

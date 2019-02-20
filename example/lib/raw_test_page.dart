@@ -23,6 +23,7 @@ class RawTestPage extends TestPage {
       batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 2"]);
       await batch.commit();
 
+      // ignore: deprecated_member_use, deprecated_member_use_from_same_package
       var sqfliteOptions = SqfliteOptions()..queryAsMapList = true;
       // ignore: deprecated_member_use
       await Sqflite.devSetOptions(sqfliteOptions);
@@ -44,6 +45,7 @@ class RawTestPage extends TestPage {
       print("result as map list $result");
       expect(result, expected);
 
+      // ignore: deprecated_member_use, deprecated_member_use_from_same_package
       sqfliteOptions = SqfliteOptions()..queryAsMapList = false;
       // ignore: deprecated_member_use
       await Sqflite.devSetOptions(sqfliteOptions);

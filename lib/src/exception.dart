@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:sqflite/src/constant.dart';
 
 // Wrap sqlite native exception
@@ -114,19 +111,5 @@ class SqfliteDatabaseException extends DatabaseException {
       return code;
     }
     return null;
-  }
-}
-
-Future<T> wrapDatabaseException<T>(Future<T> action()) async {
-  try {
-    final T result = await action();
-    return result;
-  } on PlatformException catch (e) {
-    if (e.code == sqliteErrorCode) {
-      throw SqfliteDatabaseException(e.message, e.details);
-      //rethrow;
-    } else {
-      rethrow;
-    }
   }
 }

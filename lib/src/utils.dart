@@ -1,5 +1,3 @@
-export 'dart:async';
-
 int parseInt(Object object) {
   if (object is int) {
     return object;
@@ -15,3 +13,5 @@ int parseInt(Object object) {
 void devPrint(Object object) {
   print(object);
 }
+
+bool debugModeOn = false;
