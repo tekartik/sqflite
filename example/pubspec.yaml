@@ -16,6 +16,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  pedantic: '>=1.4.0 <3.0.0'
+
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 
@@ -35,6 +37,3 @@ flutter:
   assets:
     - assets/example.db
     - assets/issue_64.db
-
-dependency_overrides:
-  pedantic: '>=1.4.0 <3.0.0'
