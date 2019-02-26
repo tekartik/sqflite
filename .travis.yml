@@ -1,19 +1,11 @@
-os:
-  - linux
-# Copied from https://github.com/flutter/plugins/blob/master/.travis.yml
-sudo: false
-addons:
-  apt:
-    # Flutter depends on /usr/lib/x86_64-linux-gnu/libstdc++.so.6 version GLIBCXX_3.4.18
-    sources:
-      - ubuntu-toolchain-r-test # if we don't specify this, the libstdc++6 we get is the wrong version
-    packages:
-      - libstdc++6
-      - fonts-droid
+language: dart
+sudo: required
+dist: trusty
+dart:
+  - stable
+  - dev
 before_script:
-  - mkdir -p ~/.tekartik
-  - git clone https://github.com/flutter/flutter.git --depth 1 ~/.tekartik/flutter -b dev
-  - export PATH=~/.tekartik/flutter/bin:~/.tekartik/flutter/bin/cache/dart-sdk/bin:$PATH
-  - flutter doctor
+  - pub run tekartik_travis_ci_flutter:install
+  - source $(pub run tekartik_travis_ci_flutter:env)
 script:
-  - tool/travis.sh
+  - dart tool/travis.dart

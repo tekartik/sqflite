@@ -1,0 +1,20 @@
+.DS_Store
+.dart_tool/
+/.idea/
+.atom/
+.idea
+.packages
+.pub/
+build/
+ios/.generated/
+packages
+pubspec.lock
+
+# Directory created by dartdoc
+doc/api/
+
+# Local folder
+.local/
+
+# local flutter install (travis)
+flutter

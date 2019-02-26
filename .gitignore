@@ -1,20 +1,21 @@
-.DS_Store
+# See https://www.dartlang.org/guides/libraries/private-files
+
+# Files and directories created by pub
 .dart_tool/
-/.idea/
-.atom/
-.idea
 .packages
 .pub/
 build/
-ios/.generated/
-packages
+# If you're building an application, you may want to check-in your pubspec.lock
 pubspec.lock
 
 # Directory created by dartdoc
-doc/api/
+/doc/api/
 
-# Local folder
-.local/
+# flutter root folder wrongly created
+/ios
+/android
 
-# local flutter install (travis)
-flutter
+# IDE
+.idea/
+*.iml
+.vscode/
