@@ -323,4 +323,4 @@ thread is blocked while in a transaction...
 
 ## More
 
-* [How to](https://github.com/tekartik/sqflite/blob/master/doc/how_to.md) guide
+* [How to](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/how_to.md) guide

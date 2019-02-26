@@ -5,7 +5,7 @@ Future main() async {
 
   await shell.run('flutter doctor');
 
-  for (var dir in ['sqflite', 'sqflite/example']) {
+  for (var dir in ['sqflite/example', 'sqflite', ]) {
     shell = shell.pushd(dir);
     await shell.run('dart tool/travis.dart');
     shell = shell.popd();

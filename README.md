@@ -8,4 +8,7 @@ Supports both iOS and Android.
 * Helpers for insert/query/update/delete queries
 * DB operation executed in a background thread on iOS and Android
 
-[Documentation](doc/README.md)
+## Documentation
+
+* [Documentation](https://github.com/tekartik/sqflite/blob/travis/sqflite/README.md)
+* [How to](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/how_to.md) guide
