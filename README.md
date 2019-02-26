@@ -10,5 +10,5 @@ Supports both iOS and Android.
 
 ## Documentation
 
-* [Documentation](https://github.com/tekartik/sqflite/blob/travis/sqflite/README.md)
+* [Documentation](https://github.com/tekartik/sqflite/blob/master/sqflite/README.md)
 * [How to](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/how_to.md) guide
