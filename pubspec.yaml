@@ -15,9 +15,5 @@ dev_dependencies:
       ref: dart2
     version: '>=0.1.0'
   process_run: '>=0.10.0'
-# include all from git so that it makes a dependency check
-#  sqflite:
-#    git:
-#      url: git://github.com/tekartik/sqflite
-#      path: sqflite
+
 

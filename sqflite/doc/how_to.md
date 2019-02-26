@@ -7,4 +7,3 @@
 * Some [dev tips](dev_tips.md)
 * [Sqflite development](sqflite_dev_guide.md) guide
 * [External](external.md) documentation and tutorials
-*
