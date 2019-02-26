@@ -24,6 +24,7 @@ public class Constant {
     static final String PARAM_READ_ONLY = "readOnly"; // boolean
 
     static final String PARAM_QUERY_AS_MAP_LIST = "queryAsMapList"; // boolean
+    static final String PARAM_THREAD_PRIORITY = "androidThreadPriority"; // int
 
     public static final String PARAM_SQL = "sql";
     public static final String PARAM_SQL_ARGUMENTS = "arguments";

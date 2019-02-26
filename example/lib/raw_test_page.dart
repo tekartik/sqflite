@@ -73,6 +73,71 @@ class RawTestPage extends TestPage {
 
       await db.close();
     });
+
+    test("Options", () async {
+      // Sqflite.devSetDebugModeOn(true);
+
+      String path = await initDeleteDb("raw_query_format.db");
+      Database db = await openDatabase(path);
+
+      Batch batch = db.batch();
+
+      batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 1"]);
+      batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item 2"]);
+      await batch.commit();
+
+      // ignore: deprecated_member_use, deprecated_member_use_from_same_package
+      var sqfliteOptions = SqfliteOptions()..queryAsMapList = true;
+      // ignore: deprecated_member_use
+      await Sqflite.devSetOptions(sqfliteOptions);
+      String sql = "SELECT id, name FROM Test";
+      // ignore: deprecated_member_use
+      var result = await db.devInvokeSqlMethod("query", sql);
+      List expected = [
+        {'id': 1, 'name': 'item 1'},
+        {'id': 2, 'name': 'item 2'}
+      ];
+      print("result as map list $result");
+      expect(result, expected);
+
+      // empty
+      sql = "SELECT id, name FROM Test WHERE id=1234";
+      // ignore: deprecated_member_use
+      result = await db.devInvokeSqlMethod("query", sql);
+      expected = [];
+      print("result as map list $result");
+      expect(result, expected);
+
+      // ignore: deprecated_member_use, deprecated_member_use_from_same_package
+      sqfliteOptions = SqfliteOptions()..queryAsMapList = false;
+      // ignore: deprecated_member_use
+      await Sqflite.devSetOptions(sqfliteOptions);
+
+      sql = "SELECT id, name FROM Test";
+      // ignore: deprecated_member_use
+      var resultSet = await db.devInvokeSqlMethod("query", sql);
+      var expectedResultSetMap = {
+        "columns": ["id", "name"],
+        "rows": [
+          [1, "item 1"],
+          [2, "item 2"]
+        ]
+      };
+      print("result as r/c $resultSet");
+      expect(resultSet, expectedResultSetMap);
+
+      // empty
+      sql = "SELECT id, name FROM Test WHERE id=1234";
+      // ignore: deprecated_member_use
+      resultSet = await db.devInvokeSqlMethod("query", sql);
+      expectedResultSetMap = {};
+      print("result as r/c $resultSet");
+      expect(resultSet, expectedResultSetMap);
+
+      await db.close();
+    });
+
     test("Transaction", () async {
       String path = await initDeleteDb("simple_transaction.db");
       Database db = await openDatabase(path);

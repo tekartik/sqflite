@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Process;
 import android.util.Log;
 
 import com.tekartik.sqflite.dev.Debug;
@@ -30,6 +31,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
 import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_BATCH;
@@ -56,6 +58,7 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
 public class SqflitePlugin implements MethodCallHandler {
 
     static private boolean QUERY_AS_MAP_LIST = false; // set by options
+    static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_BACKGROUND;
 
     private final Object databaseMapLocker = new Object();
     private Context context;
@@ -233,18 +236,6 @@ public class SqflitePlugin implements MethodCallHandler {
         } else {
             return value.toString();
         }
-    }
-
-
-    // Query only accept string arguments
-    private List<String> getStringQuerySqlArguments(List<Object> rawArguments) {
-        List<String> stringArguments = new ArrayList<>();
-        if (rawArguments != null) {
-            for (Object rawArgument : rawArguments) {
-                stringArguments.add(toString(rawArgument));
-            }
-        }
-        return stringArguments;
     }
 
     private SqlCommand getSqlCommand(MethodCall call) {
@@ -675,13 +666,13 @@ public class SqflitePlugin implements MethodCallHandler {
         //SQLiteDatabase sqLiteDatabase = SQLiteDatabase.openDatabase(path, null, 0);
         synchronized (databaseMapLocker) {
             if (databaseOpenCount++ == 0) {
-                handlerThread = new HandlerThread("Sqflite");
+                handlerThread = new HandlerThread("Sqflite", SqflitePlugin.THREAD_PRIORITY);
                 handlerThread.start();
                 //TEST UI  Handler
                 //handler = new Handler();
                 handler = new Handler(handlerThread.getLooper());
                 if (Debug.LOGV) {
-                    Log.d(Constant.TAG, "starting thread" + handlerThread);
+                    Log.d(Constant.TAG, "starting thread" + handlerThread + " priority " + SqflitePlugin.THREAD_PRIORITY);
                 }
             }
             databaseMap.put(databaseId, database);
@@ -812,8 +803,14 @@ public class SqflitePlugin implements MethodCallHandler {
     //private static class Database
 
     void onOptionsCall(final MethodCall call, Result result) {
-        Object on = call.argument(Constant.PARAM_QUERY_AS_MAP_LIST);
-        QUERY_AS_MAP_LIST = Boolean.TRUE.equals(on);
+        Object paramAsList = call.argument(Constant.PARAM_QUERY_AS_MAP_LIST);
+        if (paramAsList != null) {
+            QUERY_AS_MAP_LIST = Boolean.TRUE.equals(paramAsList);
+        }
+        Object threadPriority = call.argument(Constant.PARAM_THREAD_PRIORITY);
+        if (threadPriority != null) {
+            THREAD_PRIORITY = (Integer)threadPriority;
+        }
         result.success(null);
     }
 
