@@ -1,4 +1,4 @@
-package sqflite.android.src.main.java.com.tekartik.sqflite.operation;
+package com.tekartik.sqflite.operation;
 
 import com.tekartik.sqflite.SqlCommand;
 

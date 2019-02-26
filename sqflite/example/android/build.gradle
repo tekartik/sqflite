@@ -1,5 +1,3 @@
-package sqflite.example.android
-
 buildscript {
     repositories {
         google()

@@ -1,5 +1,3 @@
-package sqflite.example.android
-
 include ':app'
 
 def flutterProjectRoot = rootProject.projectDir.parentFile.toPath()

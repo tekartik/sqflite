@@ -1,4 +1,4 @@
-package sqflite.android.src.test.java.com.tekartik.sqflite;
+package com.tekartik.sqflite;
 
 import org.junit.Test;
 
