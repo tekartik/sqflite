@@ -3,6 +3,7 @@ description: Sqflite repo
 version: 0.1.0
 homepage: https://github.com/tekartik/sqflite
 author: alex <alex@tekartik.com>
+publish_to: none
 
 environment:
   sdk: '>=2.1.0-dev <3.0.0'
@@ -16,4 +17,6 @@ dev_dependencies:
     version: '>=0.1.0'
   process_run: '>=0.10.0'
 
+dependency_overrides:
+  pedantic: '>=1.4.0 <3.0.0'
 

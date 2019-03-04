@@ -6,7 +6,8 @@ description: Flutter plugin for SQLite, a self-contained, high-reliability,
 version: 1.1.2-dev
 
 environment:
-  sdk: ">=2.1.0-dev <3.0.0"
+  sdk: '>=2.1.0 <3.0.0'
+  flutter: ">=1.2.1 <2.0.0"
 
 flutter:
   plugin:
