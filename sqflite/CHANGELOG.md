@@ -1,3 +1,7 @@
+## 1.1.2
+
+* Sqflite now uses a thread handler with a background thread priority by default on Android
+
 ## 1.1.1
 
 * Use mixin and extract non flutter code into `sqlite_api.dart`
