@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_example/src/utils.dart';
+import 'package:sqflite_example/src/dev_utils.dart';
 import 'package:synchronized/synchronized.dart';
 import 'test_page.dart';
 import 'package:flutter/services.dart' show rootBundle;

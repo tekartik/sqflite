@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
@@ -425,5 +427,89 @@ CREATE TABLE test (
         await db.close();
       }
     });
+
+    /*
+    test('Isolate', () async {
+      // This test does not work yet
+      // Need background registration. I Kept the code for future reference
+      await Future.sync(() async {
+        // await Sqflite.devSetDebugModeOn(true);
+        final path = await initDeleteDb("isolate.db");
+
+        // Open the db in the main isolate
+        Database db =
+            await openDatabase(path, version: 1, onCreate: (db, version) {
+          db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+        });
+        try {
+          await insert(db, 1);
+          expect(await db.rawQuery("SELECT id, name FROM Test"), [
+            {'id': 1, 'name': 'item 1'}
+          ]);
+
+          // Keep it open and run the isolate
+          final receivePort = ReceivePort();
+          await Isolate.spawn(simpleInsertQueryIsolate, receivePort.sendPort);
+
+          int index = 0;
+          SendPort sendPort;
+          List<Map<String, dynamic>> results;
+          var completer = Completer();
+          var subscription = receivePort.listen((data) {
+            switch (index++) {
+              case 0:
+                // first is the port to send
+                sendPort = data as SendPort;
+                // Send path
+                sendPort.send(path);
+                break;
+              case 1:
+                // second is result
+                results = data as List<Map<String, dynamic>>;
+                completer.complete();
+                break;
+            }
+          });
+          await completer.future;
+          await subscription?.cancel();
+
+          print(results);
+          expect(results, {});
+
+          // Query again in main isolate
+          expect(await db.rawQuery("SELECT id, name FROM Test"), {});
+        } finally {
+          await db.close();
+        }
+      }).timeout(Duration(seconds: 3));
+    });
+    */
   }
+}
+
+Future insert(Database db, int id) async {
+  await db.insert('Test', {'id': id, 'name': 'item $id'});
+}
+
+Future simpleInsertQueryIsolate(SendPort sendPort) async {
+  final receivePort = ReceivePort();
+  // First share our receive port
+  sendPort.send(receivePort.sendPort);
+
+  // Get the path
+  final path = await receivePort.first as String;
+  Database db = await openDatabase(path, version: 1, onCreate: (db, version) {
+    db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+  });
+  List<Map<String, dynamic>> results;
+  try {
+    await insert(db, 2);
+    results = await db.rawQuery("SELECT id, name FROM Test");
+    print(results);
+  } finally {
+    await db.close();
+  }
+
+  // Done send the result
+  sendPort.send(results);
 }

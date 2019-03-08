@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/batch_test_page.dart';
 import 'package:sqflite_example/exp_test_page.dart';
 import 'package:sqflite_example/deprecated_test_page.dart';
+import 'package:sqflite_example/src/dev_utils.dart';
 import 'model/main_item.dart';
 import 'open_test_page.dart';
 import 'package:sqflite_example/exception_test_page.dart';
@@ -103,6 +104,8 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+bool debugAutoStart = false; // devWarning(true);
+
 class _MyHomePageState extends State<MyHomePage> {
   String _platformVersion = 'Unknown';
 
@@ -134,6 +137,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     print("running on: " + _platformVersion);
+
+    // Use it to auto start a test page
+    if (debugAutoStart) {
+      debugAutoStart = false;
+
+      await Navigator.of(context).pushNamed(testExpRoute);
+    }
   }
 
   @override

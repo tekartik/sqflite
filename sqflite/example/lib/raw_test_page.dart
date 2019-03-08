@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_example/src/utils.dart';
+import 'package:sqflite_example/src/dev_utils.dart';
 
 import 'test_page.dart';
 
