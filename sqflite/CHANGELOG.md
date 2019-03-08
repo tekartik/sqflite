@@ -1,3 +1,7 @@
+## 1.1.3
+
+* Fix deadlock issue on iOS when using isolates
+
 ## 1.1.2
 
 * Sqflite now uses a thread handler with a background thread priority by default on Android
