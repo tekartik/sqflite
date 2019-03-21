@@ -323,10 +323,12 @@ static NSInteger _databaseOpenCount = 0;
     if (database == nil) {
         return;
     }
-    [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-        SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
-        [self query:db operation:operation];
-    }];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
+            SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
+            [self query:db operation:operation];
+        }];
+    });
 }
 
 //
@@ -364,10 +366,12 @@ static NSInteger _databaseOpenCount = 0;
     if (database == nil) {
         return;
     }
-    [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-        SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
-        [self insert:db operation:operation];
-    }];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
+            SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
+            [self insert:db operation:operation];
+        }];
+    });
     
 }
 
@@ -395,12 +399,13 @@ static NSInteger _databaseOpenCount = 0;
     if (database == nil) {
         return;
     }
-    
-    [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-        SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
-        [self update:db operation:operation];
-    }];
-    
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
+            SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
+            [self update:db operation:operation];
+        }];
+    });
 }
 
 //
@@ -419,10 +424,12 @@ static NSInteger _databaseOpenCount = 0;
     if (database == nil) {
         return;
     }
-    [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-        SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
-        [self execute:db operation:operation];
-    }];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
+            SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
+            [self execute:db operation:operation];
+        }];
+    });
     
 }
 
@@ -434,73 +441,75 @@ static NSInteger _databaseOpenCount = 0;
     if (database == nil) {
         return;
     }
-    [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-        
-        SqfliteMethodCallOperation* mainOperation = [SqfliteMethodCallOperation newWithCall:call result:result];
-        bool noResult = [mainOperation getNoResult];
-        bool continueOnError = [mainOperation getContinueOnError];
-        
-        NSArray* operations = call.arguments[_paramOperations];
-        NSMutableArray* operationResults = [NSMutableArray new];
-        for (NSDictionary* dictionary in operations) {
-            // do something with object
-            
-            SqfliteBatchOperation* operation = [SqfliteBatchOperation new];
-            operation.dictionary = dictionary;
-            operation.noResult = noResult;
-            
-            NSString* method = [operation getMethod];
-            if ([_methodInsert isEqualToString:method]) {
-                if ([self insert:db operation:operation]) {
-                    [operation handleSuccess:operationResults];
-                } else if (continueOnError) {
-                    [operation handleErrorContinue:operationResults];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
+
+            SqfliteMethodCallOperation* mainOperation = [SqfliteMethodCallOperation newWithCall:call result:result];
+            bool noResult = [mainOperation getNoResult];
+            bool continueOnError = [mainOperation getContinueOnError];
+
+            NSArray* operations = call.arguments[_paramOperations];
+            NSMutableArray* operationResults = [NSMutableArray new];
+            for (NSDictionary* dictionary in operations) {
+                // do something with object
+
+                SqfliteBatchOperation* operation = [SqfliteBatchOperation new];
+                operation.dictionary = dictionary;
+                operation.noResult = noResult;
+
+                NSString* method = [operation getMethod];
+                if ([_methodInsert isEqualToString:method]) {
+                    if ([self insert:db operation:operation]) {
+                        [operation handleSuccess:operationResults];
+                    } else if (continueOnError) {
+                        [operation handleErrorContinue:operationResults];
+                    } else {
+                        [operation handleError:result];
+                        return;
+                    }
+                } else if ([_methodUpdate isEqualToString:method]) {
+                    if ([self update:db operation:operation]) {
+                        [operation handleSuccess:operationResults];
+                    } else if (continueOnError) {
+                        [operation handleErrorContinue:operationResults];
+                    } else {
+                        [operation handleError:result];
+                        return;
+                    }
+                } else if ([_methodExecute isEqualToString:method]) {
+                    if ([self execute:db operation:operation]) {
+                        [operation handleSuccess:operationResults];
+                    } else if (continueOnError) {
+                        [operation handleErrorContinue:operationResults];
+                    } else {
+                        [operation handleError:result];
+                        return;
+                    }
+                } else if ([_methodQuery isEqualToString:method]) {
+                    if ([self query:db operation:operation]) {
+                        [operation handleSuccess:operationResults];
+                    } else if (continueOnError) {
+                        [operation handleErrorContinue:operationResults];
+                    } else {
+                        [operation handleError:result];
+                        return;
+                    }
                 } else {
-                    [operation handleError:result];
+                    result([FlutterError errorWithCode:_errorBadParam
+                                               message:[NSString stringWithFormat:@"Batch method '%@' not supported", method]
+                                               details:nil]);
                     return;
                 }
-            } else if ([_methodUpdate isEqualToString:method]) {
-                if ([self update:db operation:operation]) {
-                    [operation handleSuccess:operationResults];
-                } else if (continueOnError) {
-                    [operation handleErrorContinue:operationResults];
-                } else {
-                    [operation handleError:result];
-                    return;
-                }
-            } else if ([_methodExecute isEqualToString:method]) {
-                if ([self execute:db operation:operation]) {
-                    [operation handleSuccess:operationResults];
-                } else if (continueOnError) {
-                    [operation handleErrorContinue:operationResults];
-                } else {
-                    [operation handleError:result];
-                    return;
-                }
-            } else if ([_methodQuery isEqualToString:method]) {
-                if ([self query:db operation:operation]) {
-                    [operation handleSuccess:operationResults];
-                } else if (continueOnError) {
-                    [operation handleErrorContinue:operationResults];
-                } else {
-                    [operation handleError:result];
-                    return;
-                }
-            } else {
-                result([FlutterError errorWithCode:_errorBadParam
-                                           message:[NSString stringWithFormat:@"Batch method '%@' not supported", method]
-                                           details:nil]);
-                return;
             }
-        }
-        
-        if (noResult) {
-            result(nil);
-        } else {
-            result(operationResults);
-        }
-        
-    }];
+
+            if (noResult) {
+                result(nil);
+            } else {
+                result(operationResults);
+            }
+
+        }];
+    });
     
     
 }
@@ -591,22 +600,28 @@ static NSInteger _databaseOpenCount = 0;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    FlutterResult wrappedResult = ^(id res) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            result(res);
+        });
+    };
+
     if ([_methodGetPlatformVersion isEqualToString:call.method]) {
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
     } else if ([_methodOpenDatabase isEqualToString:call.method]) {
-        [self handleOpenDatabaseCall:call result:result];
+        [self handleOpenDatabaseCall:call result:wrappedResult];
     } else if ([_methodInsert isEqualToString:call.method]) {
-        [self handleInsertCall:call result:result];
+        [self handleInsertCall:call result:wrappedResult];
     } else if ([_methodQuery isEqualToString:call.method]) {
-        [self handleQueryCall:call result:result];
+        [self handleQueryCall:call result:wrappedResult];
     } else if ([_methodUpdate isEqualToString:call.method]) {
-        [self handleUpdateCall:call result:result];
+        [self handleUpdateCall:call result:wrappedResult];
     } else if ([_methodExecute isEqualToString:call.method]) {
-        [self handleExecuteCall:call result:result];
+        [self handleExecuteCall:call result:wrappedResult];
     } else if ([_methodBatch isEqualToString:call.method]) {
-        [self handleBatchCall:call result:result];
+        [self handleBatchCall:call result:wrappedResult];
     } else if ([_methodCloseDatabase isEqualToString:call.method]) {
-        [self handleCloseDatabaseCall:call result:result];
+        [self handleCloseDatabaseCall:call result:wrappedResult];
     } else if ([_methodDebugMode isEqualToString:call.method]) {
         NSNumber* on = (NSNumber*)call.arguments;
         _log = [on boolValue];
