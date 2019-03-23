@@ -1,3 +1,7 @@
+## 1.1.4
+
+* Make all db operation happen in a separate thread on iOS
+
 ## 1.1.3
 
 * Fix deadlock issue on iOS when using isolates
