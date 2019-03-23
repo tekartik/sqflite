@@ -165,7 +165,7 @@ class RawTestPage extends TestPage {
 
     test("Concurrency 2", () async {
       // Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("simple_concurrency_1.db");
+      String path = await initDeleteDb("simple_concurrency_2.db");
       Database db = await openDatabase(path);
       try {
         var step1 = Completer();

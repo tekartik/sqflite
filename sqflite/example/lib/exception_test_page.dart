@@ -482,6 +482,38 @@ class ExceptionTestPage extends TestPage {
       expect(callbackCount, 1);
       await db.close();
     });
+
+    test('Thread dead lock', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb('thread_dead_lock.db');
+      Database db1 = await openDatabase(path, singleInstance: false);
+      Database db2 = await openDatabase(path, singleInstance: false);
+      try {
+        await db1.execute('BEGIN IMMEDIATE TRANSACTION');
+
+        try {
+          // this should block the main thread
+          await db2
+              .execute('BEGIN IMMEDIATE TRANSACTION')
+              .timeout(Duration(milliseconds: 500));
+          fail('should timeout');
+        } on TimeoutException catch (e) {
+          print('caught $e');
+        }
+
+        // Try to open another db to check that the main thread is free
+        var db = await openDatabase(inMemoryDatabasePath);
+        await db.close();
+
+        // clean up
+        await db1.execute('ROLLBACK');
+
+        await db2.execute('ROLLBACK');
+      } finally {
+        await db1?.close();
+        await db2?.close();
+      }
+    });
   }
 }
 
