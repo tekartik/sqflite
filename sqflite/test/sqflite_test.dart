@@ -110,11 +110,14 @@ void main() {
       } on FormatException catch (_) {}
     });
 
-    test('deleted/exists', () async {
-      final String path = 'test_exists.db';
-      await deleteDatabase(path);
-      final bool exists = await databaseExists(path);
-      expect(exists, isFalse);
+    test('open null', () async {
+      AssertionError exception;
+      try {
+        await openDatabase(null);
+      } on AssertionError catch (e) {
+        exception = e;
+      }
+      expect(exception, isNotNull);
     });
   });
 }
