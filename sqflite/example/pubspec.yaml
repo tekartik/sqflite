@@ -19,6 +19,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_driver:
+    sdk: flutter
+  test:
   pedantic: '>=1.4.0 <3.0.0'
   process_run: '>=0.10.0'
 
