@@ -1,7 +1,7 @@
 ## Migration example
 
 Here is a simple example of a database schema migration where:
-* a column in an existing table is added
+* a column is added to an existing table
 * a table is added
 
 ```dart
@@ -13,15 +13,15 @@ Database db;
 
 ## 1st version
 
-The first version create a `Company` table with a `name` column.
+The first version creates a `Company` table with a `name` column.
 
 ```dart
 /// Create tables
 void _createTableCompanyV1(Batch batch) {
   batch.execute('DROP TABLE IF EXISTS Company');
   batch.execute('''CREATE TABLE Company (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT
 )''');
 }
 
@@ -43,6 +43,9 @@ db = await factory.openDatabase(path,
 Let say we want to add a new table `Employee` with a reference to a `Company` entity.
 We also want to add a new column `description` in the `Company` entity.
 
+We handle the creation of a fresh database in `onCreate` and handle the schema migration in `onUpgrade`. Also since we
+want to use foreign key constraints, we configure our access in `onConfigure`.
+
 ```dart
 /// Let's use FOREIGN KEY constraints
 Future onConfigure(Database db) async {
@@ -53,9 +56,9 @@ Future onConfigure(Database db) async {
 void _createTableCompanyV2(Batch batch) {
   batch.execute('DROP TABLE IF EXISTS Company');
   batch.execute('''CREATE TABLE Company (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  description TEXT
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    description TEXT
 )''');
 }
 
@@ -68,11 +71,10 @@ void _updateTableCompanyV1toV2(Batch batch) {
 void _createTableEmployeeV2(Batch batch) {
   batch.execute('DROP TABLE IF EXISTS Employee');
   batch.execute('''CREATE TABLE Employee (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  companyId INTEGER,
-  FOREIGN KEY (companyId) REFERENCES Company(id) ON DELETE CASCADE
-  
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    companyId INTEGER,
+    FOREIGN KEY (companyId) REFERENCES Company(id) ON DELETE CASCADE
 )''');
 }
 
