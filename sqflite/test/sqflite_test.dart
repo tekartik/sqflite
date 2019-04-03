@@ -32,6 +32,7 @@ void main() {
         openReadOnlyDatabase,
         getDatabasesPath,
         deleteDatabase,
+        databaseExists,
         Sqflite,
         // ignore: deprecated_member_use, deprecated_member_use_from_same_package
         SqfliteOptions,
@@ -107,6 +108,13 @@ void main() {
         Sqflite.hex(<int>[256]);
         fail('should fail');
       } on FormatException catch (_) {}
+    });
+
+    test('deleted/exists', () async {
+      final String path = 'test_exists.db';
+      await deleteDatabase(path);
+      final bool exists = await databaseExists(path);
+      expect(exists, isFalse);
     });
   });
 }

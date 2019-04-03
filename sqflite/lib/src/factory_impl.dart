@@ -35,6 +35,7 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   /// Optimized but could be removed
   @override
   Future<void> deleteDatabase(String path) async {
+    path = await fixPath(path);
     try {
       await File(path).delete(recursive: true);
     } catch (_) {
@@ -46,6 +47,7 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   /// Optimized but could be removed
   @override
   Future<bool> databaseExists(String path) async {
+    path = await fixPath(path);
     try {
       // avoid slow async method
       return File(path).existsSync();

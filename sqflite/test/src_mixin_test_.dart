@@ -641,5 +641,20 @@ void run() {
       expect(callbackCount, 1);
       await db.close();
     });
+
+    test('deleted/exists', () async {
+      final String path = 'test_exists.db';
+      await mockDatabaseFactory.deleteDatabase(path);
+      final bool exists = await mockDatabaseFactory.databaseExists(path);
+      expect(exists, isNull);
+      final String expectedPath =
+          absolute(join(await mockDatabaseFactory.getDatabasesPath(), path));
+      expect(mockDatabaseFactory.methods,
+          <String>['deleteDatabase', 'databaseExists']);
+      expect(mockDatabaseFactory.argumentsList, <Map<String, dynamic>>[
+        <String, dynamic>{'path': expectedPath},
+        <String, dynamic>{'path': expectedPath}
+      ]);
+    });
   });
 }

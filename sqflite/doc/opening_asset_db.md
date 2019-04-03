@@ -33,15 +33,10 @@ always try to open the copy
 var databasesPath = await getDatabasesPath();
 var path = join(databasesPath, "demo_asset_example.db");
 
-// try opening (will work if it exists)
-Database db;
-try {
-  db = await openDatabase(path, readOnly: true);
-} catch (e) {
-  print("Error $e");
-}
+// Check if the database exists
+var exists = await databaseExists(path);
 
-if (db == null) {
+if (!exists) {
   // Should happen only the first time you launch your application
   print("Creating new copy from asset");
 
@@ -51,11 +46,11 @@ if (db == null) {
   data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   await new File(path).writeAsBytes(bytes);
 
-  // open the database
-  db = await openDatabase(path, readOnly: true);
 } else {
   print("Opening existing database");
 }
+// open the database
+db = await openDatabase(path, readOnly: true);
 
 ```
 

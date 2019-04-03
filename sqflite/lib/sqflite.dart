@@ -153,7 +153,7 @@ Future<Database> openReadOnlyDatabase(String path) =>
     openDatabase(path, readOnly: true);
 
 ///
-/// Get the default databases location
+/// Get the default databases location.
 ///
 /// On Android, it is typically data/data/<package_name>/databases
 ///
@@ -162,7 +162,13 @@ Future<Database> openReadOnlyDatabase(String path) =>
 Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();
 
 ///
-/// Delete the database at the given path
+/// Delete the database at the given path.
 ///
 Future<void> deleteDatabase(String path) =>
     databaseFactory.deleteDatabase(path);
+
+///
+/// Check if a database exists at a given path.
+///
+Future<bool> databaseExists(String path) =>
+    databaseFactory.databaseExists(path);
