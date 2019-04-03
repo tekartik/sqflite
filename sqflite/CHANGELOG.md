@@ -1,3 +1,8 @@
+## 1.1.5
+
+* Add `databaseExists` as a top level function
+* handle relative path in `databaseExists` and `deleteDatabase` 
+
 ## 1.1.4
 
 * Make all db operation happen in a separate thread on iOS

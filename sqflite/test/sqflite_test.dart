@@ -32,6 +32,7 @@ void main() {
         openReadOnlyDatabase,
         getDatabasesPath,
         deleteDatabase,
+        databaseExists,
         Sqflite,
         // ignore: deprecated_member_use, deprecated_member_use_from_same_package
         SqfliteOptions,
@@ -107,6 +108,16 @@ void main() {
         Sqflite.hex(<int>[256]);
         fail('should fail');
       } on FormatException catch (_) {}
+    });
+
+    test('open null', () async {
+      AssertionError exception;
+      try {
+        await openDatabase(null);
+      } on AssertionError catch (e) {
+        exception = e;
+      }
+      expect(exception, isNotNull);
     });
   });
 }

@@ -57,6 +57,7 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
   @override
   Future<Database> openDatabase(String path,
       {OpenDatabaseOptions options}) async {
+    path = await fixPath(path);
     options ??= SqfliteOpenDatabaseOptions();
 
     if (options?.singleInstance == true) {
@@ -80,9 +81,6 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
         }
       }
 
-      if (path != null) {
-        path = await fixPath(path);
-      }
       SqfliteDatabaseOpenHelper databaseOpenHelper =
           getExistingDatabaseOpenHelper(path);
 
@@ -109,12 +107,16 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
 
   @override
   Future<void> deleteDatabase(String path) async {
-    return safeInvokeMethod<bool>(methodDeleteDatabase);
+    path = await fixPath(path);
+    return safeInvokeMethod<void>(
+        methodDeleteDatabase, <String, dynamic>{paramPath: path});
   }
 
   @override
   Future<bool> databaseExists(String path) async {
-    return safeInvokeMethod<bool>(methodDatabaseExists);
+    path = await fixPath(path);
+    return safeInvokeMethod<bool>(
+        methodDatabaseExists, <String, dynamic>{paramPath: path});
   }
 
   String _databasesPath;
@@ -148,10 +150,10 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
     }
   }
 
+  /// path must be non null
   Future<String> fixPath(String path) async {
-    if (path == null) {
-      path = await getDatabasesPath();
-    } else if (path == inMemoryDatabasePath) {
+    assert(path != null, 'path cannot be null');
+    if (path == inMemoryDatabasePath) {
       // nothing
     } else {
       if (isRelative(path)) {
@@ -162,6 +164,7 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
     return path;
   }
 
+  /// True if it is a real path
   bool isPath(String path) {
     return (path != null) && (path != inMemoryDatabasePath);
   }
