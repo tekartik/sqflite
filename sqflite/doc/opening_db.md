@@ -93,6 +93,8 @@ var db = await openDatabase(path,
   onDowngrade: onDatabaseDowngradeDelete);
 ```
 
+See a complete migration example [here](migration_example.md)
+
 ### Post open callback
 
 For convenience, `onOpen` is called after the database version is set and before `openDatabase` returns.
