@@ -170,6 +170,7 @@ void run() {
           'execute',
           'execute',
           'execute',
+          'execute', // ROLLBACK
           'closeDatabase'
         ]);
         expect(db.sqls, <String>[
@@ -180,6 +181,7 @@ void run() {
           'test2',
           'PRAGMA user_version = 1;',
           'COMMIT',
+          'ROLLBACK',
           null
         ]);
       });
@@ -206,6 +208,7 @@ void run() {
           'PRAGMA user_version;',
           'PRAGMA user_version = 1;',
           'COMMIT',
+          'ROLLBACK',
           null
         ]);
       });
@@ -232,6 +235,7 @@ void run() {
           'BEGIN IMMEDIATE',
           'test2',
           'COMMIT',
+          'ROLLBACK',
           null
         ]);
       });
@@ -270,6 +274,7 @@ void run() {
           'BEGIN IMMEDIATE',
           'test3',
           'COMMIT',
+          'ROLLBACK',
           null
         ]);
         expect(db.argumentsLists, <dynamic>[
@@ -337,6 +342,7 @@ void run() {
             'continueOnError': true
           },
           <String, dynamic>{'sql': 'COMMIT', 'arguments': null, 'id': null},
+          <String, dynamic>{'sql': 'ROLLBACK', 'arguments': null, 'id': null},
           <String, dynamic>{'id': null}
         ]);
       });
@@ -542,6 +548,7 @@ void run() {
           'execute',
           'batch',
           'execute',
+          'execute', // ROLLBACK
           'closeDatabase'
         ]);
         expect(db.sqls, <String>[
@@ -552,6 +559,7 @@ void run() {
           'BEGIN IMMEDIATE',
           'test',
           'COMMIT',
+          'ROLLBACK',
           null
         ]);
       });
@@ -574,10 +582,18 @@ void run() {
           'batch',
           'batch',
           'execute',
+          'execute', // ROLLBACK
           'closeDatabase'
         ]);
-        expect(db.sqls,
-            <String>[null, 'BEGIN IMMEDIATE', 'test', 'test', 'COMMIT', null]);
+        expect(db.sqls, <String>[
+          null,
+          'BEGIN IMMEDIATE',
+          'test',
+          'test',
+          'COMMIT',
+          'ROLLBACK',
+          null
+        ]);
       });
     });
 

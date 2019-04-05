@@ -1,7 +1,8 @@
 ## 1.1.5
 
 * Add `databaseExists` as a top level function
-* handle relative path in `databaseExists` and `deleteDatabase` 
+* handle relative path in `databaseExists` and `deleteDatabase`
+* Execute `ROLLBACK` before closing to prevent `SQLITE_BUSY` error
 
 ## 1.1.4
 
