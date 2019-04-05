@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/src/common_import.dart';
+import 'package:sqflite_example/src/expect.dart';
 import 'model/item.dart';
 import 'model/test.dart';
 import 'src/item_widget.dart';
 export 'package:sqflite_example/database/database.dart';
+export 'src/expect.dart' show expect, fail;
+export 'package:matcher/matcher.dart';
 
 class TestPage extends StatefulWidget {
   TestPage(this.title);
@@ -36,18 +39,6 @@ class TestPage extends StatefulWidget {
 
   @override
   _TestPageState createState() => _TestPageState();
-}
-
-void expect(dynamic value, dynamic expected, {String reason}) {
-  if (value != expected) {
-    if (value is List || value is Map) {
-      if (!const DeepCollectionEquality().equals(value, expected)) {
-        throw Exception("collection $value != $expected ${reason ?? ""}");
-      }
-      return;
-    }
-    throw Exception("$value != $expected ${reason ?? ""}");
-  }
 }
 
 bool verify(bool condition, [String message]) {
@@ -116,8 +107,9 @@ class _TestPageState extends State<TestPage> with Group {
         await test.fn();
 
         item = Item("${test.name}")..state = ItemState.success;
-      } catch (e) {
+      } catch (e, st) {
         print(e);
+        print(st);
         item = Item("${test.name}")..state = ItemState.failure;
       }
 

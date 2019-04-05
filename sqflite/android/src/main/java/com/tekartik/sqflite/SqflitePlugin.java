@@ -31,7 +31,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
 import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_BATCH;
@@ -49,6 +48,7 @@ import static com.tekartik.sqflite.Constant.PARAM_ID;
 import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
 import static com.tekartik.sqflite.Constant.PARAM_PATH;
 import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
+import static com.tekartik.sqflite.Constant.PARAM_SINGLE_INSTANCE;
 import static com.tekartik.sqflite.Constant.PARAM_SQL;
 import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
 
@@ -57,62 +57,18 @@ import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
  */
 public class SqflitePlugin implements MethodCallHandler {
 
+    static Map<String, Integer> _singleInstancesByPath = new HashMap<>();
     static private boolean QUERY_AS_MAP_LIST = false; // set by options
     static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_BACKGROUND;
-
     private final Object databaseMapLocker = new Object();
+    // local cache
+    String databasesPath;
     private Context context;
     private int databaseOpenCount = 0;
     private int databaseId = 0; // incremental database id
-
     // Database thread execution
     private HandlerThread handlerThread;
     private Handler handler;
-
-    private Context getContext() {
-        return context;
-    }
-
-    private class BgResult implements MethodChannel.Result {
-        // Caller handler
-        final Handler handler = new Handler();
-        private final Result result;
-
-        private BgResult(Result result) {
-            this.result = result;
-        }
-
-        // make sure to respond in the caller thread
-        public void success(final Object results) {
-
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    result.success(results);
-                }
-            });
-        }
-
-        public void error(final String errorCode, final String errorMessage, final Object data) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    result.error(errorCode, errorMessage, data);
-                }
-            });
-        }
-
-        @Override
-        public void notImplemented() {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    result.notImplemented();
-                }
-            });
-        }
-    }
-
     @SuppressLint("UseSparseArrays")
     private Map<Integer, Database> databaseMap = new HashMap<>();
 
@@ -186,22 +142,6 @@ public class SqflitePlugin implements MethodCallHandler {
         return map;
     }
 
-    private Database getDatabase(int databaseId) {
-        return databaseMap.get(databaseId);
-    }
-
-    private Database getDatabaseOrError(MethodCall call, Result result) {
-        int databaseId = call.argument(PARAM_ID);
-        Database database = getDatabase(databaseId);
-
-        if (database != null) {
-            return database;
-        } else {
-            result.error(Constant.SQLITE_ERROR, Constant.ERROR_DATABASE_CLOSED + " " + databaseId, null);
-            return null;
-        }
-    }
-
     static private Map<String, Object> fixMap(Map<Object, Object> map) {
         Map<String, Object> newMap = new HashMap<>();
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
@@ -235,6 +175,30 @@ public class SqflitePlugin implements MethodCallHandler {
             return fixMap(mapValue).toString();
         } else {
             return value.toString();
+        }
+    }
+
+    static boolean isInMemoryPath(String path) {
+        return (path == null || path.equals(MEMORY_DATABASE_PATH));
+    }
+
+    private Context getContext() {
+        return context;
+    }
+
+    private Database getDatabase(int databaseId) {
+        return databaseMap.get(databaseId);
+    }
+
+    private Database getDatabaseOrError(MethodCall call, Result result) {
+        int databaseId = call.argument(PARAM_ID);
+        Database database = getDatabase(databaseId);
+
+        if (database != null) {
+            return database;
+        } else {
+            result.error(Constant.SQLITE_ERROR, Constant.ERROR_DATABASE_CLOSED + " " + databaseId, null);
+            return null;
         }
     }
 
@@ -296,7 +260,6 @@ public class SqflitePlugin implements MethodCallHandler {
             }
         });
     }
-
 
     //
     // Sqflite.batch
@@ -531,7 +494,6 @@ public class SqflitePlugin implements MethodCallHandler {
         });
     }
 
-
     //
     // Sqflite.execute
     //
@@ -621,18 +583,32 @@ public class SqflitePlugin implements MethodCallHandler {
         operation.error(Constant.SQLITE_ERROR, exception.getMessage(), SqlErrorInfo.getMap(operation));
     }
 
-    static boolean isInMemoryPath(String path) {
-        return (path == null || path.equals(MEMORY_DATABASE_PATH));
-    }
-
     //
     // Sqflite.open
     //
     private void onOpenDatabaseCall(MethodCall call, Result result) {
         String path = call.argument(PARAM_PATH);
         Boolean readOnly = call.argument(PARAM_READ_ONLY);
+        boolean inMemory = isInMemoryPath(path);
+        boolean singleInstance = !Boolean.FALSE.equals(call.argument(PARAM_SINGLE_INSTANCE)) && !inMemory;
         //int version = call.argument(PARAM_VERSION);
-        if (!isInMemoryPath(path)) {
+        if (singleInstance) {
+            // Look for in memory instance
+            synchronized (databaseMapLocker) {
+                if (Debug.EXTRA_LOGV) {
+                    Log.d(Constant.TAG, "Look for " + path + " in " + _singleInstancesByPath.keySet());
+                }
+                Integer databaseId = _singleInstancesByPath.get(path);
+                if (databaseId != null) {
+                    if (Debug.LOGV) {
+                        Log.d(Constant.TAG, "[" + Thread.currentThread() + "] re-opened single instance " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
+                    }
+                    result.success(databaseId);
+                    return;
+                }
+            }
+        }
+        if (!inMemory) {
             File file = new File(path);
             File directory = new File(file.getParent());
             if (!directory.exists()) {
@@ -649,7 +625,7 @@ public class SqflitePlugin implements MethodCallHandler {
         synchronized (databaseMapLocker) {
             databaseId = ++this.databaseId;
         }
-        Database database = new Database(context, path);
+        Database database = new Database(context, path, singleInstance);
         // force opening
         try {
             if (Boolean.TRUE.equals(readOnly)) {
@@ -675,6 +651,9 @@ public class SqflitePlugin implements MethodCallHandler {
                     Log.d(Constant.TAG, "starting thread" + handlerThread + " priority " + SqflitePlugin.THREAD_PRIORITY);
                 }
             }
+            if (singleInstance) {
+                _singleInstancesByPath.put(path, databaseId);
+            }
             databaseMap.put(databaseId, database);
             if (Debug.LOGV) {
                 Log.d(Constant.TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
@@ -695,6 +674,13 @@ public class SqflitePlugin implements MethodCallHandler {
         }
         if (Debug.LOGV) {
             Log.d(Constant.TAG, "[" + Thread.currentThread() + "] closing " + databaseId + " " + database.path + " total open count (" + databaseOpenCount + ")");
+        }
+        String path = database.path;
+        if (database.singleInstance) {
+            // Remove from single instance map
+            synchronized (databaseMapLocker) {
+                _singleInstancesByPath.remove(path);
+            }
         }
         database.close();
 
@@ -771,12 +757,37 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
+    void onOptionsCall(final MethodCall call, Result result) {
+        Object paramAsList = call.argument(Constant.PARAM_QUERY_AS_MAP_LIST);
+        if (paramAsList != null) {
+            QUERY_AS_MAP_LIST = Boolean.TRUE.equals(paramAsList);
+        }
+        Object threadPriority = call.argument(Constant.PARAM_THREAD_PRIORITY);
+        if (threadPriority != null) {
+            THREAD_PRIORITY = (Integer) threadPriority;
+        }
+        result.success(null);
+    }
+
+    //private static class Database
+
+    void onGetDatabasesPath(final MethodCall call, Result result) {
+        if (databasesPath == null) {
+            String dummyDatabaseName = "tekartik_sqflite.db";
+            File file = context.getDatabasePath(dummyDatabaseName);
+            databasesPath = file.getParent();
+        }
+        result.success(databasesPath);
+    }
+
     private static class Database {
+        final boolean singleInstance;
         String path;
         SQLiteDatabase sqliteDatabase;
 
-        private Database(Context context, String path) {
+        private Database(Context context, String path, boolean singleInstance) {
             this.path = path;
+            this.singleInstance = singleInstance;
         }
 
         private void open() {
@@ -800,29 +811,43 @@ public class SqflitePlugin implements MethodCallHandler {
         }
     }
 
-    //private static class Database
+    private class BgResult implements MethodChannel.Result {
+        // Caller handler
+        final Handler handler = new Handler();
+        private final Result result;
 
-    void onOptionsCall(final MethodCall call, Result result) {
-        Object paramAsList = call.argument(Constant.PARAM_QUERY_AS_MAP_LIST);
-        if (paramAsList != null) {
-            QUERY_AS_MAP_LIST = Boolean.TRUE.equals(paramAsList);
+        private BgResult(Result result) {
+            this.result = result;
         }
-        Object threadPriority = call.argument(Constant.PARAM_THREAD_PRIORITY);
-        if (threadPriority != null) {
-            THREAD_PRIORITY = (Integer)threadPriority;
-        }
-        result.success(null);
-    }
 
-    // local cache
-    String databasesPath;
+        // make sure to respond in the caller thread
+        public void success(final Object results) {
 
-    void onGetDatabasesPath(final MethodCall call, Result result) {
-        if (databasesPath == null) {
-            String dummyDatabaseName = "tekartik_sqflite.db";
-            File file = context.getDatabasePath(dummyDatabaseName);
-            databasesPath = file.getParent();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(results);
+                }
+            });
         }
-        result.success(databasesPath);
+
+        public void error(final String errorCode, final String errorMessage, final Object data) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    result.error(errorCode, errorMessage, data);
+                }
+            });
+        }
+
+        @Override
+        public void notImplemented() {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    result.notImplemented();
+                }
+            });
+        }
     }
 }

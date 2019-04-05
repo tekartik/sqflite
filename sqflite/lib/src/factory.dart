@@ -18,13 +18,13 @@ abstract class SqfliteDatabaseFactory implements DatabaseFactory {
   SqfliteDatabase newDatabase(
       SqfliteDatabaseOpenHelper openHelper, String path);
 
-  // internal close
-  void doCloseDatabase(SqfliteDatabase database);
-
   void removeDatabaseOpenHelper(String path);
 
   @override
   Future<Database> openDatabase(String path, {OpenDatabaseOptions options});
+
+  // db.close() calls this right await
+  Future<void> closeDatabase(SqfliteDatabase database);
 
   @override
   Future<void> deleteDatabase(String path);

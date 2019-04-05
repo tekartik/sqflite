@@ -1,7 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:pedantic/pedantic.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/src/database_mixin.dart' show SqfliteDatabaseMixin;
+import 'package:sqflite/src/factory_mixin.dart'
+    show SqfliteDatabaseFactoryMixin;
 import 'package:sqflite_example/src/dev_utils.dart';
 import 'package:synchronized/synchronized.dart';
 import 'test_page.dart';
@@ -573,17 +577,21 @@ class OpenTestPage extends TestPage {
     test('single/multi instance (using factory)', () async {
       // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("instances_test.db");
-      var db1 = await databaseFactory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: false));
-      var db2 = await databaseFactory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: true));
-      var db3 = await databaseFactory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: true));
-      verify(db1 != db2);
-      verify(db2 == db3);
-      await db1.close();
-      await db2.close();
-      await db3.close(); // safe to close the same instance
+      Database db1, db2, db3;
+      try {
+        db1 = await databaseFactory.openDatabase(path,
+            options: OpenDatabaseOptions(singleInstance: false));
+        db2 = await databaseFactory.openDatabase(path,
+            options: OpenDatabaseOptions(singleInstance: true));
+        db3 = await databaseFactory.openDatabase(path,
+            options: OpenDatabaseOptions(singleInstance: true));
+        expect(db1, isNot(db2));
+        expect(db2, db3);
+      } finally {
+        await db1.close();
+        await db2.close();
+        await db3.close(); // safe to close the same instance
+      }
     });
 
     test('single/multi instance', () async {
@@ -674,7 +682,48 @@ class OpenTestPage extends TestPage {
       }
     });
 
+    test('open_close_open_no_wait', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var path = 'open_close_open_no_wait.db';
+      var factory = databaseFactory;
+      await factory.deleteDatabase(path);
+      var db = await factory.openDatabase(path,
+          options: OpenDatabaseOptions(version: 1));
+      try {
+        expect(await db.getVersion(), 1);
+        // close no wait
+        unawaited(db.close());
+        var db2 = await factory.openDatabase(path,
+            options: OpenDatabaseOptions(version: 1));
+        print('$db, $db2');
+        verify(db != db2);
+        verify((db as SqfliteDatabaseMixin).id !=
+            (db2 as SqfliteDatabaseMixin).id);
+        expect(await db2.getVersion(), 1);
+      } finally {
+        await db.close();
+      }
+    });
     test('close in transaction', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var path = 'test_close_in_transaction.db';
+      var factory = databaseFactory;
+      await factory.deleteDatabase(path);
+      var db = await factory.openDatabase(path,
+          options: OpenDatabaseOptions(version: 1));
+      try {
+        //await db.getVersion();
+        await db.execute("BEGIN IMMEDIATE");
+        await db.close();
+
+        db = await factory.openDatabase(path,
+            options: OpenDatabaseOptions(version: 1));
+      } finally {
+        await db.close();
+      }
+    });
+
+    test('open in transaction', () async {
       // await Sqflite.devSetDebugModeOn(true);
       var path = 'test_close_in_transaction.db';
       var factory = databaseFactory;
@@ -683,15 +732,24 @@ class OpenTestPage extends TestPage {
           options: OpenDatabaseOptions(version: 1));
       try {
         //await db.getVersion();
-        print('before begin');
         await db.execute("BEGIN IMMEDIATE");
+        // Trick to make sure we don't reuse the same instance during open
+        (factory as SqfliteDatabaseFactoryMixin)
+            .databaseOpenHelpers
+            .remove(db.path);
+
+        var db2 = await factory.openDatabase(path,
+            options: OpenDatabaseOptions(version: 1));
+        print('after open');
+        verify(db != db2);
+        expect(
+            (db as SqfliteDatabaseMixin).id, (db2 as SqfliteDatabaseMixin).id);
         //await db.getVersion();
         //await db.execute("ROLLBACK");
-        print('before closing');
-        await db.close();
 
         db = await factory.openDatabase(path,
             options: OpenDatabaseOptions(version: 1));
+        expect(db, db2);
       } finally {
         await db.close();
       }

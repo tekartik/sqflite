@@ -104,7 +104,13 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-bool debugAutoStart = false; // devWarning(true);
+String _debugAutoStartRouteName;
+String get debugAutoStartRouteName => _debugAutoStartRouteName;
+
+/// Deprecated to avoid calls
+@deprecated
+set debugAutoStartRouteName(String routeName) =>
+    _debugAutoStartRouteName = routeName;
 
 class _MyHomePageState extends State<MyHomePage> {
   String _platformVersion = 'Unknown';
@@ -139,13 +145,16 @@ class _MyHomePageState extends State<MyHomePage> {
     print("running on: " + _platformVersion);
 
     // Use it to auto start a test page
-    if (debugAutoStart) {
-      debugAutoStart = false;
+    if (debugAutoStartRouteName != null) {
+      // only once
 
       // await Navigator.of(context).pushNamed(testExpRoute);
       // await Navigator.of(context).pushNamed(testRawRoute);
-      // await Navigator.of(context).pushNamed(testOpenRoute);
-      await Navigator.of(context).pushNamed(testExceptionRoute);
+      var future = Navigator.of(context).pushNamed(debugAutoStartRouteName);
+      // ignore: deprecated_member_use_from_same_package
+      debugAutoStartRouteName = null;
+      await future;
+      // await Navigator.of(context).pushNamed(testExceptionRoute);
     }
   }
 

@@ -4,7 +4,6 @@ import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/src/batch.dart';
 import 'package:sqflite/src/factory.dart';
 import 'package:sqflite/src/transaction.dart';
-import 'package:synchronized/synchronized.dart';
 
 abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
   SqfliteTransaction get txn;
@@ -17,7 +16,6 @@ class SqfliteDatabaseOpenHelper {
 
   final SqfliteDatabaseFactory factory;
   final OpenDatabaseOptions options;
-  final Lock lock = Lock();
   final String path;
   SqfliteDatabase sqfliteDatabase;
 
@@ -30,29 +28,21 @@ class SqfliteDatabaseOpenHelper {
   // open or return the one opened
   Future<SqfliteDatabase> openDatabase() async {
     if (!isOpen) {
-      return await lock.synchronized(() async {
-        if (!isOpen) {
-          final SqfliteDatabase database = newDatabase(path);
-          await database.doOpen(options);
-          sqfliteDatabase = database;
-        }
-        return sqfliteDatabase;
-      });
+      final SqfliteDatabase database = newDatabase(path);
+      await database.doOpen(options);
+      sqfliteDatabase = database;
     }
     return sqfliteDatabase;
   }
 
   Future<void> closeDatabase(SqfliteDatabase sqfliteDatabase) async {
     if (isOpen) {
-      await lock.synchronized(() async {
-        if (!isOpen) {
-          return;
-        } else {
-          await sqfliteDatabase.doClose();
-          factory.doCloseDatabase(sqfliteDatabase);
-          this.sqfliteDatabase = null;
-        }
-      });
+      if (!isOpen) {
+        return;
+      } else {
+        await sqfliteDatabase.doClose();
+        this.sqfliteDatabase = null;
+      }
     }
   }
 }

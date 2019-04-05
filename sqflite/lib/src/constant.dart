@@ -37,6 +37,8 @@ const String paramVersion = "version";
 const String paramId = "id";
 // When opening the database (bool)
 const String paramReadOnly = "readOnly";
+// When opening the database (bool)
+const String paramSingleInstance = "singleInstance";
 
 const String paramTable = "table";
 const String paramValues = "values";

@@ -133,7 +133,22 @@ void run() {
         expect(db.argumentsLists.first, <String, dynamic>{
           'path': absolute(
               join(await mockDatabaseFactory.getDatabasesPath(), 'test')),
-          'readOnly': true
+          'readOnly': true,
+          'singleInstance': true
+        });
+      });
+      test('not single_instance', () async {
+        // var db = mockDatabaseFactory.newEmptyDatabase();
+        final MockDatabase db = await mockDatabaseFactory.openDatabase('test',
+                options: SqfliteOpenDatabaseOptions(singleInstance: false))
+            as MockDatabase;
+        await db.close();
+        expect(
+            db.methods, <String>['openDatabase', 'execute', 'closeDatabase']);
+        expect(db.argumentsLists.first, <String, dynamic>{
+          'path': absolute(
+              join(await mockDatabaseFactory.getDatabasesPath(), 'test')),
+          'singleInstance': false
         });
       });
       test('isOpen', () async {
@@ -280,7 +295,8 @@ void run() {
         expect(db.argumentsLists, <dynamic>[
           <String, dynamic>{
             'path': absolute(
-                join(await mockDatabaseFactory.getDatabasesPath(), 'test'))
+                join(await mockDatabaseFactory.getDatabasesPath(), 'test')),
+            'singleInstance': true
           },
           <String, dynamic>{
             'sql': 'BEGIN IMMEDIATE',

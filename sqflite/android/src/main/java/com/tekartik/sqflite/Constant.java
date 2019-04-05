@@ -22,6 +22,7 @@ public class Constant {
     static final String PARAM_PATH = "path";
     // when opening a database
     static final String PARAM_READ_ONLY = "readOnly"; // boolean
+    static final String PARAM_SINGLE_INSTANCE = "singleInstance"; // boolean
 
     static final String PARAM_QUERY_AS_MAP_LIST = "queryAsMapList"; // boolean
     static final String PARAM_THREAD_PRIORITY = "androidThreadPriority"; // int

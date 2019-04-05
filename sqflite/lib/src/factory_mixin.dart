@@ -28,21 +28,13 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
 
   // open lock mechanism
   @override
-  final Lock lock = Lock();
+  final Lock lock = Lock(reentrant: true);
 
   @override
   @override
   SqfliteDatabase newDatabase(
       SqfliteDatabaseOpenHelper openHelper, String path) {
     return SqfliteDatabaseBase(openHelper, path);
-  }
-
-  // internal close
-  @override
-  void doCloseDatabase(SqfliteDatabase database) {
-    if (database?.options?.singleInstance == true) {
-      removeDatabaseOpenHelper(database.path);
-    }
   }
 
   @override
@@ -54,55 +46,71 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
     }
   }
 
+  // Close an instance of the database
   @override
-  Future<Database> openDatabase(String path,
-      {OpenDatabaseOptions options}) async {
-    path = await fixPath(path);
-    options ??= SqfliteOpenDatabaseOptions();
-
-    if (options?.singleInstance == true) {
-      SqfliteDatabaseOpenHelper getExistingDatabaseOpenHelper(String path) {
-        if (path != null) {
-          return databaseOpenHelpers[path];
-        } else {
-          return nullDatabaseOpenHelper;
-        }
+  Future<void> closeDatabase(SqfliteDatabase database) {
+    // Global factory lock during close
+    return lock.synchronized(() async {
+      await (database as SqfliteDatabaseMixin)
+          .openHelper
+          .closeDatabase(database);
+      if (database?.options?.singleInstance != false) {
+        removeDatabaseOpenHelper(database.path);
       }
+    });
+  }
 
-      void setDatabaseOpenHelper(SqfliteDatabaseOpenHelper helper) {
-        if (path == null) {
-          nullDatabaseOpenHelper = helper;
-        } else {
-          if (helper == null) {
-            databaseOpenHelpers.remove(path);
+  @override
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions options}) {
+    // Global factory lock during open
+    return lock.synchronized(() async {
+      path = await fixPath(path);
+      options ??= SqfliteOpenDatabaseOptions();
+
+      if (options?.singleInstance != false) {
+        SqfliteDatabaseOpenHelper getExistingDatabaseOpenHelper(String path) {
+          if (path != null) {
+            return databaseOpenHelpers[path];
           } else {
-            databaseOpenHelpers[path] = helper;
+            return nullDatabaseOpenHelper;
           }
         }
-      }
 
-      SqfliteDatabaseOpenHelper databaseOpenHelper =
-          getExistingDatabaseOpenHelper(path);
-
-      final bool firstOpen = databaseOpenHelper == null;
-      if (firstOpen) {
-        databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options);
-        setDatabaseOpenHelper(databaseOpenHelper);
-      }
-      try {
-        return await databaseOpenHelper.openDatabase();
-      } catch (e) {
-        // If first open fail remove the reference
-        if (firstOpen) {
-          removeDatabaseOpenHelper(path);
+        void setDatabaseOpenHelper(SqfliteDatabaseOpenHelper helper) {
+          if (path == null) {
+            nullDatabaseOpenHelper = helper;
+          } else {
+            if (helper == null) {
+              databaseOpenHelpers.remove(path);
+            } else {
+              databaseOpenHelpers[path] = helper;
+            }
+          }
         }
-        rethrow;
+
+        SqfliteDatabaseOpenHelper databaseOpenHelper =
+            getExistingDatabaseOpenHelper(path);
+
+        final bool firstOpen = databaseOpenHelper == null;
+        if (firstOpen) {
+          databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options);
+          setDatabaseOpenHelper(databaseOpenHelper);
+        }
+        try {
+          return await databaseOpenHelper.openDatabase();
+        } catch (e) {
+          // If first open fail remove the reference
+          if (firstOpen) {
+            removeDatabaseOpenHelper(path);
+          }
+          rethrow;
+        }
+      } else {
+        final SqfliteDatabaseOpenHelper databaseOpenHelper =
+            SqfliteDatabaseOpenHelper(this, path, options);
+        return await databaseOpenHelper.openDatabase();
       }
-    } else {
-      final SqfliteDatabaseOpenHelper databaseOpenHelper =
-          SqfliteDatabaseOpenHelper(this, path, options);
-      return await databaseOpenHelper.openDatabase();
-    }
+    });
   }
 
   @override

@@ -9,6 +9,7 @@ import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/factory.dart';
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/transaction.dart';
+import 'package:sqflite/src/utils.dart';
 import 'package:sqflite/utils/utils.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -236,7 +237,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   void checkNotClosed() {
     if (isClosed) {
-      throw SqfliteDatabaseException('database_closed', null);
+      throw SqfliteDatabaseException('error database_closed', null);
     }
   }
 
@@ -386,7 +387,18 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     // never create transaction in read-only mode
     if (readOnly != true) {
       if (exclusive == true) {
-        await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
+        try {
+          await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
+        } catch (e) {
+          print('BEGIN EXCLUSIVE failed $e, try rollback if single');
+          if (options.singleInstance != false) {
+            try {
+              await txnExecute<dynamic>(txn, "ROLLBACK");
+            } catch (_) {}
+          }
+          // Try again
+          await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
+        }
       } else {
         await txnExecute<dynamic>(txn, "BEGIN IMMEDIATE");
       }
@@ -457,7 +469,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   /// Close the database. Cannot be access anymore
   @override
-  Future<void> close() => openHelper.closeDatabase(this);
+  Future<void> close() => factory.closeDatabase(this);
 
   /// Close the database. Cannot be access anymore
   @override
@@ -476,6 +488,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       // create the folder if needed (needed for iOS)
       await factory.createParentDirectory(path);
     }
+    // Single instance?
+    params[paramSingleInstance] = options?.singleInstance != false;
 
     return safeInvokeMethod<int>(methodOpenDatabase, params);
   }
@@ -485,6 +499,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// rollback any pending transaction
   Future<void> _closeDatabase(int databaseId) async {
     await _closeLock.synchronized(() async {
+      devPrint('_closeDatabase closing $databaseId');
       if (!isClosed) {
         // Mark as closed now
         isClosed = true;
@@ -505,8 +520,13 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         }
 
         // close for good
-        return safeInvokeMethod<dynamic>(
-            methodCloseDatabase, <String, dynamic>{paramId: databaseId});
+        // Catch exception, close should never fail
+        try {
+          await safeInvokeMethod<dynamic>(
+              methodCloseDatabase, <String, dynamic>{paramId: databaseId});
+        } catch (e) {
+          print('error $e closing database $databaseId');
+        }
       }
     });
   }
@@ -532,8 +552,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
             "onDowngrade must be null if no version is specified");
       }
     }
-    int databaseId = await openDatabase();
     this.options = options;
+    int databaseId = await openDatabase();
 
     try {
       // Special on downgrade delete database
@@ -623,6 +643,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
       return this;
     } catch (e) {
+      print('error $e during open, closing...');
       await _closeDatabase(databaseId);
       rethrow;
     } finally {
