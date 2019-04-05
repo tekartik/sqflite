@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/src/batch.dart';
+import 'package:sqflite/src/collection_utils.dart';
 import 'package:sqflite/src/constant.dart' hide lockWarningDuration;
 import 'package:sqflite/src/database.dart';
+import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/factory.dart';
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/transaction.dart';
-import 'package:sqflite/src/collection_utils.dart';
 import 'package:sqflite/utils/utils.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -29,15 +30,19 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
 
   /// Execute an SQL query with no return value
   @override
-  Future<void> execute(String sql, [List<dynamic> arguments]) =>
-      db.txnExecute<dynamic>(txn, sql, arguments);
+  Future<void> execute(String sql, [List<dynamic> arguments]) {
+    db.checkNotClosed();
+    return db.txnExecute<dynamic>(txn, sql, arguments);
+  }
 
   /// Execute a raw SQL INSERT query
   ///
   /// Returns the last inserted record id
   @override
-  Future<int> rawInsert(String sql, [List<dynamic> arguments]) =>
-      db.txnRawInsert(txn, sql, arguments);
+  Future<int> rawInsert(String sql, [List<dynamic> arguments]) {
+    db.checkNotClosed();
+    return db.txnRawInsert(txn, sql, arguments);
+  }
 
   /// Insert a row into a table, where the keys of [values] correspond to
   /// column names
@@ -104,15 +109,19 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   /// Returns a list of rows that were found
   @override
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
-          [List<dynamic> arguments]) =>
-      db.txnRawQuery(txn, sql, arguments);
+      [List<dynamic> arguments]) {
+    db.checkNotClosed();
+    return db.txnRawQuery(txn, sql, arguments);
+  }
 
   /// Execute a raw SQL UPDATE query
   ///
   /// Returns the number of changes made
   @override
-  Future<int> rawUpdate(String sql, [List<dynamic> arguments]) =>
-      db.txnRawUpdate(txn, sql, arguments);
+  Future<int> rawUpdate(String sql, [List<dynamic> arguments]) {
+    db.checkNotClosed();
+    return db.txnRawUpdate(txn, sql, arguments);
+  }
 
   /// Convenience method for updating rows in the database.
   ///
@@ -185,6 +194,10 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   SqfliteDatabase get db => this;
 
+  /// True once the client called close. It should no longer invoke native
+  /// code
+  bool isClosed = false;
+
   @override
   bool get isOpen => openHelper.isOpen;
 
@@ -218,6 +231,13 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   Batch batch() {
     return SqfliteDatabaseBatch(this);
+  }
+
+  @override
+  void checkNotClosed() {
+    if (isClosed) {
+      throw SqfliteDatabaseException('database_closed', null);
+    }
   }
 
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
@@ -410,6 +430,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   Future<T> transaction<T>(Future<T> action(Transaction txn),
       {bool exclusive}) {
+    checkNotClosed();
     return txnWriteSynchronized<T>(txn, (Transaction txn) async {
       return _runTransaction(txn, action, exclusive: exclusive);
     });
@@ -459,9 +480,35 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     return safeInvokeMethod<int>(methodOpenDatabase, params);
   }
 
-  Future<void> _closeDatabase(int databaseId) {
-    return safeInvokeMethod<dynamic>(
-        methodCloseDatabase, <String, dynamic>{paramId: databaseId});
+  final Lock _closeLock = Lock();
+
+  /// rollback any pending transaction
+  Future<void> _closeDatabase(int databaseId) async {
+    await _closeLock.synchronized(() async {
+      if (!isClosed) {
+        // Mark as closed now
+        isClosed = true;
+
+        if (readOnly != true) {
+          // Grab lock to prevent future access
+          // At least we know no other request will be ran
+          try {
+            await txnWriteSynchronized(txn, (Transaction txn) async {
+              // Special trick to cancel any pending transaction
+              try {
+                await invokeExecute<dynamic>('ROLLBACK', null);
+              } catch (_) {
+                // devPrint('rollback error $_');
+              }
+            });
+          } catch (_) {}
+        }
+
+        // close for good
+        return safeInvokeMethod<dynamic>(
+            methodCloseDatabase, <String, dynamic>{paramId: databaseId});
+      }
+    });
   }
 
   // To call during open
@@ -497,8 +544,10 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           final SqfliteDatabase db = _db as SqfliteDatabase;
           // This is tricky as we are in the middle of opening a database
           // need to close what is being done and restart
-          await db.execute("ROLLBACK;");
           await db.doClose();
+          // But don't mark it as closed
+          isClosed = false;
+
           await factory.deleteDatabase(db.path);
 
           // get a new database id after open

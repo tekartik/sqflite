@@ -86,4 +86,6 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
 
   Future<int> txnRawUpdate(
       SqfliteTransaction txn, String sql, List<dynamic> arguments);
+
+  void checkNotClosed();
 }

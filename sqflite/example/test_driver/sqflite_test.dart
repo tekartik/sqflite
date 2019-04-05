@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 import 'package:sqflite/sqflite.dart';
 
 void main() {
@@ -22,6 +22,23 @@ void main() {
         expect(await databaseExists(path), isTrue);
       } finally {
         await db?.close();
+      }
+    });
+    test('close in transaction', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var path = 'test_close_in_transaction.db';
+      var factory = databaseFactory;
+      await deleteDatabase(path);
+      var db = await factory.openDatabase(path,
+          options: OpenDatabaseOptions(version: 1));
+      try {
+        await db.execute("BEGIN TRANSACTION");
+        await db.close();
+
+        db = await factory.openDatabase(path,
+            options: OpenDatabaseOptions(version: 1));
+      } finally {
+        await db.close();
       }
     });
   });

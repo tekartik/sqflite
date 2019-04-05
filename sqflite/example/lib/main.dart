@@ -143,7 +143,9 @@ class _MyHomePageState extends State<MyHomePage> {
       debugAutoStart = false;
 
       // await Navigator.of(context).pushNamed(testExpRoute);
-      await Navigator.of(context).pushNamed(testRawRoute);
+      // await Navigator.of(context).pushNamed(testRawRoute);
+      // await Navigator.of(context).pushNamed(testOpenRoute);
+      await Navigator.of(context).pushNamed(testExceptionRoute);
     }
   }
 

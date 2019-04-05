@@ -462,25 +462,29 @@ class ExceptionTestPage extends TestPage {
     test("Dead lock", () async {
       String path = await initDeleteDb("dead_lock.db");
       Database db = await openDatabase(path);
-
-      bool hasTimedOut = false;
-      int callbackCount = 0;
-      Sqflite.setLockWarningInfo(
-          duration: Duration(milliseconds: 200),
-          callback: () {
-            callbackCount++;
-          });
       try {
+        bool hasTimedOut = false;
+        int callbackCount = 0;
+        Sqflite.setLockWarningInfo(
+            duration: Duration(milliseconds: 200),
+            callback: () {
+              callbackCount++;
+            });
+
         await db.transaction((txn) async {
-          await db.getVersion();
-          fail("should fail");
-        }).timeout(Duration(milliseconds: 1500));
-      } on TimeoutException catch (_) {
-        hasTimedOut = true;
+          try {
+            await db.getVersion().timeout(Duration(milliseconds: 1500));
+            fail("should fail");
+          } on TimeoutException catch (_) {
+            hasTimedOut = true;
+          }
+        });
+
+        expect(hasTimedOut, true);
+        expect(callbackCount, 1);
+      } finally {
+        await db.close();
       }
-      expect(hasTimedOut, true);
-      expect(callbackCount, 1);
-      await db.close();
     });
 
     test('Thread dead lock', () async {
@@ -505,10 +509,14 @@ class ExceptionTestPage extends TestPage {
         var db = await openDatabase(inMemoryDatabasePath);
         await db.close();
 
-        // clean up
-        await db1.execute('ROLLBACK');
+        try {
+          // clean up
+          await db1.execute('ROLLBACK');
+        } catch (_) {}
 
-        await db2.execute('ROLLBACK');
+        try {
+          await db2.execute('ROLLBACK');
+        } catch (_) {}
       } finally {
         await db1?.close();
         await db2?.close();

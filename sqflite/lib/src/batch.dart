@@ -100,6 +100,7 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   @override
   Future<List<dynamic>> commit(
       {bool exclusive, bool noResult, bool continueOnError}) {
+    database.checkNotClosed();
     return database.transaction<List<dynamic>>((Transaction txn) {
       final SqfliteTransaction sqfliteTransaction = txn as SqfliteTransaction;
       return database.txnApplyBatch(sqfliteTransaction, this,

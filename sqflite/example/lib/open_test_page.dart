@@ -673,6 +673,29 @@ class OpenTestPage extends TestPage {
         await db.close();
       }
     });
+
+    test('close in transaction', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var path = 'test_close_in_transaction.db';
+      var factory = databaseFactory;
+      await deleteDatabase(path);
+      var db = await factory.openDatabase(path,
+          options: OpenDatabaseOptions(version: 1));
+      try {
+        //await db.getVersion();
+        print('before begin');
+        await db.execute("BEGIN IMMEDIATE");
+        //await db.getVersion();
+        //await db.execute("ROLLBACK");
+        print('before closing');
+        await db.close();
+
+        db = await factory.openDatabase(path,
+            options: OpenDatabaseOptions(version: 1));
+      } finally {
+        await db.close();
+      }
+    });
   }
 }
 
