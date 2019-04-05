@@ -387,12 +387,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     if (readOnly != true) {
       if (exclusive == true) {
         final bool singleInstance = options.singleInstance != false;
-        if (singleInstance) {
-          // Rollback pending changes
-          try {
-            await txnExecute<dynamic>(txn, "ROLLBACK");
-          } catch (_) {}
-        }
         try {
           await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
         } catch (e) {
