@@ -9,7 +9,6 @@ import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/factory.dart';
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/transaction.dart';
-import 'package:sqflite/src/utils.dart';
 import 'package:sqflite/utils/utils.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -387,11 +386,18 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     // never create transaction in read-only mode
     if (readOnly != true) {
       if (exclusive == true) {
+        final bool singleInstance = options.singleInstance != false;
+        if (singleInstance) {
+          // Rollback pending changes
+          try {
+            await txnExecute<dynamic>(txn, "ROLLBACK");
+          } catch (_) {}
+        }
         try {
           await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
         } catch (e) {
           print('BEGIN EXCLUSIVE failed $e, try rollback if single');
-          if (options.singleInstance != false) {
+          if (singleInstance) {
             try {
               await txnExecute<dynamic>(txn, "ROLLBACK");
             } catch (_) {}
@@ -499,7 +505,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// rollback any pending transaction
   Future<void> _closeDatabase(int databaseId) async {
     await _closeLock.synchronized(() async {
-      devPrint('_closeDatabase closing $databaseId');
+      // devPrint('_closeDatabase closing $databaseId');
       if (!isClosed) {
         // Mark as closed now
         isClosed = true;
