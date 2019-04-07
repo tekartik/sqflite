@@ -524,8 +524,12 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         }
       }
       return id;
+    } else {
+      if (openResult != null) {
+        throw 'unsupported result $openResult (${openResult?.runtimeType}';
+      }
+      return null;
     }
-    throw 'unsupported result $openResult (${openResult?.runtimeType}';
   }
 
   final Lock _closeLock = Lock();
