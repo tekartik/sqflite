@@ -10,6 +10,35 @@ import 'test_page.dart';
 
 class RawTestPage extends TestPage {
   RawTestPage() : super("Raw tests") {
+    test("Simple", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+
+      String path = await initDeleteDb("raw_simple.db");
+      Database db = await openDatabase(path);
+      try {
+        await db
+            .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+        expect(
+            await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ['test']),
+            1);
+
+        var result = await db.query("Test");
+        List expected = [
+          {'id': 1, 'name': 'test'}
+        ];
+        expect(result, expected);
+      } finally {
+        await db?.close();
+      }
+    });
+
+    test('Sqlite version', () async {
+      var db = await openDatabase(inMemoryDatabasePath);
+      var results = await db.rawQuery('select sqlite_version()');
+      print('sqlite version: ${results.first.values.first}');
+      await db.close();
+    });
+
     test("Options", () async {
       // Sqflite.devSetDebugModeOn(true);
 

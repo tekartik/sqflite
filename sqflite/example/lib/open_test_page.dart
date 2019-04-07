@@ -174,6 +174,30 @@ class OpenTestPage extends TestPage {
       await db.close();
     });
 
+    test("Simple onCreate", () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("open_simple_on_create.db");
+      Database db =
+          await openDatabase(path, version: 1, onCreate: (db, version) async {
+        Batch batch = db.batch();
+
+        batch.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, text NAME)");
+        await batch.commit();
+      });
+      try {
+        expect(
+            await db.rawInsert("INSERT INTO Test (text) VALUES (?)", ['test']),
+            1);
+        var result = await db.query("Test");
+        List expected = [
+          {'id': 1, 'text': 'test'}
+        ];
+        expect(result, expected);
+      } finally {
+        await db?.close();
+      }
+    });
+
     test("Open 2 databases", () async {
       //await Sqflite.devSetDebugModeOn(true);
       String path1 = await initDeleteDb("open_db_1.db");
@@ -185,6 +209,7 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open onUpgrade", () async {
+      // await Sqflite.devSetDebugModeOn(true);
       bool onUpgrade = false;
       String path = await initDeleteDb("open_on_upgrade.db");
       Database database = await openDatabase(path, version: 1,
@@ -208,11 +233,14 @@ class OpenTestPage extends TestPage {
       });
       verify(onUpgrade);
 
-      expect(
-          await await database
-              .insert("Test", <String, dynamic>{'id': 1, 'name': 'test'}),
-          1);
-      await database.close();
+      try {
+        expect(
+            await database
+                .insert("Test", <String, dynamic>{'id': 1, 'name': 'test'}),
+            1);
+      } finally {
+        await database.close();
+      }
     });
 
     test("Open onDowngrade", () async {

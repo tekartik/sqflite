@@ -29,6 +29,8 @@ const String paramErrorCode = "code";
 const String paramErrorMessage = "message";
 const String paramErrorData = "data";
 
+// Result for open if a single instance was recovered from the native world
+const String paramRecovered = "recovered";
 // The database path (string)
 const String paramPath = "path";
 // The database version (int)

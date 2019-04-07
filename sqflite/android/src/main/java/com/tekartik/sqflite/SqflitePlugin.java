@@ -48,6 +48,7 @@ import static com.tekartik.sqflite.Constant.PARAM_ID;
 import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
 import static com.tekartik.sqflite.Constant.PARAM_PATH;
 import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
+import static com.tekartik.sqflite.Constant.PARAM_RECOVERED;
 import static com.tekartik.sqflite.Constant.PARAM_SINGLE_INSTANCE;
 import static com.tekartik.sqflite.Constant.PARAM_SQL;
 import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
@@ -58,7 +59,7 @@ import static com.tekartik.sqflite.Constant.TAG;
  */
 public class SqflitePlugin implements MethodCallHandler {
 
-    static Map<String, Integer> _singleInstancesByPath = new HashMap<>();
+    static final Map<String, Integer> _singleInstancesByPath = new HashMap<>();
     static private boolean QUERY_AS_MAP_LIST = false; // set by options
     static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_BACKGROUND;
     private final Object databaseMapLocker = new Object();
@@ -71,7 +72,7 @@ public class SqflitePlugin implements MethodCallHandler {
     private HandlerThread handlerThread;
     private Handler handler;
     @SuppressLint("UseSparseArrays")
-    private Map<Integer, Database> databaseMap = new HashMap<>();
+    private final Map<Integer, Database> databaseMap = new HashMap<>();
 
     SqflitePlugin(Context context) {
         this.context = context;
@@ -217,7 +218,7 @@ public class SqflitePlugin implements MethodCallHandler {
     private boolean executeOrError(Database database, Operation operation) {
         SqlCommand command = operation.getSqlCommand();
         if (Debug.LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
+            Log.d(TAG, "[" + database.getThreadLogTag() + "] " + command);
         }
         try {
             database.getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
@@ -230,7 +231,7 @@ public class SqflitePlugin implements MethodCallHandler {
 
     private Database executeOrError(Database database, SqlCommand command, Result result) {
         if (Debug.LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
+            Log.d(TAG, "[" + database.getThreadLogTag() + "] " + command);
         }
         try {
             database.getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
@@ -390,7 +391,7 @@ public class SqflitePlugin implements MethodCallHandler {
                 // and return null
                 if (changed == 0) {
                     if (Debug.LOGV) {
-                        Log.d(TAG, "no changes");
+                        Log.d(TAG, "no changes (id was " + cursor.getLong(1) + ")");
                     }
                     operation.success(null);
                     return true;
@@ -584,6 +585,19 @@ public class SqflitePlugin implements MethodCallHandler {
         operation.error(Constant.SQLITE_ERROR, exception.getMessage(), SqlErrorInfo.getMap(operation));
     }
 
+    // {
+    // 'id': xxx
+    // 'recovered': true // if recovered only for single instance
+    // }
+    static Map makeOpenResult(int databaseId, boolean recovered) {
+        Map<String, Object> result = new HashMap<>();
+        result.put(PARAM_ID, databaseId);
+        if (recovered) {
+            result.put(PARAM_RECOVERED, true);
+        }
+        return result;
+    }
+
     //
     // Sqflite.open
     //
@@ -596,6 +610,7 @@ public class SqflitePlugin implements MethodCallHandler {
 
         // For single instance we create or reuse a thread right away
         // DO NOT TRY TO LOAD existing instance, the database has been closed
+
 
         if (singleInstance) {
             // Look for in memory instance
@@ -616,7 +631,7 @@ public class SqflitePlugin implements MethodCallHandler {
                             if (Debug.LOGV) {
                                 Log.d(Constant.TAG, "[" + Thread.currentThread() + "] re-opened single instance " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
                             }
-                            result.success(databaseId);
+                            result.success(makeOpenResult(databaseId, true));
                             return;
                         }
                     }
@@ -642,7 +657,7 @@ public class SqflitePlugin implements MethodCallHandler {
         synchronized (databaseMapLocker) {
             databaseId = ++this.databaseId;
         }
-        Database database = new Database(context, path, singleInstance);
+        Database database = new Database(context, path, databaseId, singleInstance);
         // force opening
         try {
             if (Boolean.TRUE.equals(readOnly)) {
@@ -677,7 +692,7 @@ public class SqflitePlugin implements MethodCallHandler {
             }
         }
 
-        result.success(databaseId);
+        result.success(makeOpenResult(databaseId, false));
     }
 
     //
@@ -799,17 +814,19 @@ public class SqflitePlugin implements MethodCallHandler {
 
     private static class Database {
         final boolean singleInstance;
-        String path;
+        final String path;
+        final int id;
         SQLiteDatabase sqliteDatabase;
 
-        private Database(Context context, String path, boolean singleInstance) {
+        private Database(Context context, String path, int id, boolean singleInstance) {
             this.path = path;
             this.singleInstance = singleInstance;
+            this.id = id;
         }
 
         private void open() {
             sqliteDatabase = SQLiteDatabase.openDatabase(path, null,
-                    SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
+                    SQLiteDatabase.CREATE_IF_NECESSARY);
         }
 
         private void openReadOnly() {
@@ -837,9 +854,15 @@ public class SqflitePlugin implements MethodCallHandler {
                 return false;
             }
         }
+
+        String getThreadLogTag() {
+            Thread thread = Thread.currentThread();
+
+            return "" + id + "," + thread.getName() + "(" + thread.getId() + ")";
+        }
     }
 
-    private class BgResult implements MethodChannel.Result {
+    private class BgResult implements Result {
         // Caller handler
         final Handler handler = new Handler();
         private final Result result;

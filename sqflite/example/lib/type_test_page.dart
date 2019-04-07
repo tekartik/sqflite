@@ -19,7 +19,7 @@ class TypeTestPage extends TestPage {
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db.execute(
-            "CREATE TABLE Test (_id INTEGER PRIMARY KEY, value INTEGER)");
+            "CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, value INTEGER)");
       });
       int id = await insertValue(-1);
       expect(await getValue(id), -1);
@@ -71,7 +71,7 @@ class TypeTestPage extends TestPage {
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db
-            .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value REAL)");
+            .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, value REAL)");
       });
       int id = await insertValue(-1.1);
       expect(await getValue(id), -1.1);
@@ -88,24 +88,26 @@ class TypeTestPage extends TestPage {
     });
 
     test("text", () async {
-      //await Sqflite.devSetDebugModeOn(true);
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("type_text.db");
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
-        await db
-            .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)");
+        await db.execute(
+            "CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT)");
       });
-      int id = await insertValue("simple text");
-      expect(await getValue(id), "simple text");
-      // null
-      id = await insertValue(null);
-      expect(await getValue(id), null);
+      try {
+        int id = await insertValue("simple text");
+        expect(await getValue(id), "simple text");
+        // null
+        id = await insertValue(null);
+        expect(await getValue(id), null);
 
-      // utf-8
-      id = await insertValue("àöé");
-      expect(await getValue(id), "àöé");
-
-      await data.db.close();
+        // utf-8
+        id = await insertValue("àöé");
+        expect(await getValue(id), "àöé");
+      } finally {
+        await data.db.close();
+      }
     });
 
     test("blob", () async {
@@ -114,7 +116,7 @@ class TypeTestPage extends TestPage {
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db
-            .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value BLOB)");
+            .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, value BLOB)");
       });
       try {
         // insert text in blob
@@ -146,7 +148,7 @@ class TypeTestPage extends TestPage {
 
         // test hex feature on sqlite
         var hexResult = await data.db
-            .rawQuery('SELECT hex(value) FROM Test WHERE _id = ?', [id]);
+            .rawQuery('SELECT hex(value) FROM Test WHERE id = ?', [id]);
         expect(hexResult[0].values.first, "01020304");
 
         // try blob lookup - does work on iOS only
@@ -162,7 +164,7 @@ class TypeTestPage extends TestPage {
         rows = await data.db.rawQuery(
             'SELECT * FROM Test WHERE hex(value) = ?', [Sqflite.hex(blob1234)]);
         expect(rows.length, 1);
-        expect(rows[0]['_id'], 3);
+        expect(rows[0]['id'], 3);
       } finally {
         await data.db.close();
       }
@@ -174,7 +176,7 @@ class TypeTestPage extends TestPage {
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db
-            .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)");
+            .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)");
       });
       try {
         int id = await insertValue(null);
@@ -197,7 +199,7 @@ class TypeTestPage extends TestPage {
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db
-            .execute("CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)");
+            .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)");
       });
       try {
         bool failed = false;
@@ -217,7 +219,7 @@ class TypeTestPage extends TestPage {
 
   // Get the value field from a given
   Future<dynamic> getValue(int id) async {
-    return ((await data.db.query("Test", where: "_id = $id")).first)["value"];
+    return ((await data.db.query("Test", where: "id = $id")).first)["value"];
   }
 
   // insert the value field and return the id
@@ -227,6 +229,6 @@ class TypeTestPage extends TestPage {
 
   // insert the value field and return the id
   Future<int> updateValue(int id, dynamic value) async {
-    return await data.db.update("Test", {"value": value}, where: "_id = $id");
+    return await data.db.update("Test", {"value": value}, where: "id = $id");
   }
 }

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/src/common_import.dart';
 import 'package:sqflite_example/src/expect.dart';
 import 'model/item.dart';
@@ -143,10 +142,7 @@ class _TestPageState extends State<TestPage> with Group {
     } catch (e, st) {
       print("TEST Error $e running ${test.name}");
       try {
-        //print(st);
-        if (await Sqflite.getDebugModeOn()) {
-          print(st);
-        }
+        print(st);
       } catch (_) {}
       item = Item("${test.name}")..state = ItemState.failure;
     }

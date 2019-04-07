@@ -3,7 +3,8 @@ import 'package:flutter/widgets.dart';
 import '../model/item.dart';
 
 class ItemWidget extends StatefulWidget {
-  ItemWidget(this.item, this.onTap);
+  ItemWidget(this.item, this.onTap, {this.summary});
+  final String summary;
 
   final Item item;
   final Function onTap; // = Function(MainItem item);
@@ -19,6 +20,9 @@ class _ItemWidgetState extends State<ItemWidget> {
     Color color;
 
     switch (widget.item.state) {
+      case ItemState.none:
+        icon = Icons.arrow_forward_ios;
+        break;
       case ItemState.running:
         icon = Icons.more_horiz;
         break;
@@ -32,12 +36,14 @@ class _ItemWidgetState extends State<ItemWidget> {
         break;
     }
     return ListTile(
+        isThreeLine: widget.summary != null,
         leading: IconButton(
           icon: Icon(icon, color: color),
 
           onPressed: null, // null disables the button
         ),
         title: Text(widget.item.name),
+        subtitle: widget.summary != null ? Text(widget.summary) : null,
         onTap: _onTap);
   }
 

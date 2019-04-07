@@ -191,6 +191,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   bool get readOnly => openHelper?.options?.readOnly == true;
 
+  // Set when parsing BEGIN and COMMIT/ROLLBACK
+  bool inTransaction = false;
+
   @override
   SqfliteDatabase get db => this;
 
@@ -221,12 +224,15 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   int id;
 
-  Map<String, dynamic> get baseDatabaseMethodArguments {
+  static Map<String, dynamic> getBaseDatabaseMethodArguments(int id) {
     final Map<String, dynamic> map = <String, dynamic>{
       paramId: id,
     };
     return map;
   }
+
+  Map<String, dynamic> get baseDatabaseMethodArguments =>
+      getBaseDatabaseMethodArguments(id);
 
   @override
   Batch batch() {
@@ -305,6 +311,15 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> txnExecute<T>(SqfliteTransaction txn, String sql,
       [List<dynamic> arguments]) {
     return txnWriteSynchronized<T>(txn, (_) {
+      if (sql != null) {
+        final String lowerSql = sql.trim().toLowerCase();
+        if (lowerSql.startsWith('begin')) {
+          inTransaction = true;
+        } else if (lowerSql.startsWith('commit') ||
+            lowerSql.startsWith('rollback')) {
+          inTransaction = false;
+        }
+      }
       return invokeExecute<T>(sql, arguments);
     });
   }
@@ -386,19 +401,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     // never create transaction in read-only mode
     if (readOnly != true) {
       if (exclusive == true) {
-        final bool singleInstance = options.singleInstance != false;
-        try {
-          await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
-        } catch (e) {
-          print('BEGIN EXCLUSIVE failed $e, try rollback if single');
-          if (singleInstance) {
-            try {
-              await txnExecute<dynamic>(txn, "ROLLBACK");
-            } catch (_) {}
-          }
-          // Try again
-          await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
-        }
+        await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
       } else {
         await txnExecute<dynamic>(txn, "BEGIN IMMEDIATE");
       }
@@ -491,12 +494,43 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     // Single instance?
     params[paramSingleInstance] = options?.singleInstance != false;
 
-    return safeInvokeMethod<int>(methodOpenDatabase, params);
+    // Version up to 1.1.5 returns an int
+    // Now it returns some database information
+    // the one being about being recovered from the native world
+    // where we are going to revert
+    // doing first on Android without breaking ios
+    final dynamic openResult =
+        await safeInvokeMethod(methodOpenDatabase, params);
+    if (openResult is int) {
+      return openResult;
+    } else if (openResult is Map) {
+      final int id = openResult[paramId] as int;
+      // Recover means we found an instance in the native world
+      final bool recovered = openResult[paramRecovered] == true;
+      // in this case, we are going to rollback any changes in case a transaction
+      // was in progress. This catches hot-restart scenario
+      if (recovered) {
+        // Don't do it for read-only
+        if (readOnly != true) {
+          // We are not yet open so invoke the plugin directly
+          try {
+            await safeInvokeMethod(
+                methodExecute,
+                <String, dynamic>{paramSql: 'ROLLBACK'}
+                  ..addAll(getBaseDatabaseMethodArguments(id)));
+          } catch (_) {
+            // devPrint('recovered database ROLLBACK failed $e');
+          }
+        }
+      }
+      return id;
+    }
+    throw 'unsupported result $openResult (${openResult?.runtimeType}';
   }
 
   final Lock _closeLock = Lock();
 
-  /// rollback any pending transaction
+  /// rollback any pending transaction if needed
   Future<void> _closeDatabase(int databaseId) async {
     await _closeLock.synchronized(() async {
       // devPrint('_closeDatabase closing $databaseId');
@@ -504,7 +538,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         // Mark as closed now
         isClosed = true;
 
-        if (readOnly != true) {
+        if (readOnly != true && inTransaction) {
           // Grab lock to prevent future access
           // At least we know no other request will be ran
           try {

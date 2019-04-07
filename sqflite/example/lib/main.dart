@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/batch_test_page.dart';
 import 'package:sqflite_example/exp_test_page.dart';
 import 'package:sqflite_example/deprecated_test_page.dart';
+import 'package:sqflite_example/manual_test_page.dart';
 import 'package:sqflite_example/src/dev_utils.dart';
 import 'model/main_item.dart';
 import 'open_test_page.dart';
@@ -34,6 +35,7 @@ const String testTypeRoute = "/test/type";
 const String testBatchRoute = "/test/batch";
 const String testTodoRoute = "/test/todo";
 const String testExceptionRoute = "/test/exception";
+const String testManualRoute = "/test/manual";
 const String testExpRoute = "/test/exp";
 const String testDeprecatedRoute = "/test/deprecated";
 
@@ -45,6 +47,7 @@ class _MyAppState extends State<MyApp> {
     testSlowRoute: (BuildContext context) => SlowTestPage(),
     testTodoRoute: (BuildContext context) => TodoTestPage(),
     testTypeRoute: (BuildContext context) => TypeTestPage(),
+    testManualRoute: (BuildContext context) => ManualTestPage(),
     testBatchRoute: (BuildContext context) => BatchTestPage(),
     testExceptionRoute: (BuildContext context) => ExceptionTestPage(),
     testExpRoute: (BuildContext context) => ExpTestPage(),
@@ -89,6 +92,8 @@ class MyHomePage extends StatefulWidget {
         route: testExpRoute));
     items.add(MainItem("Exception tests", "Tests that trigger exceptions",
         route: testExceptionRoute));
+    items.add(MainItem("Manual tests", "Tests that requires manual execution",
+        route: testManualRoute));
     items.add(MainItem("Deprecated test",
         "Keeping some old tests for deprecated functionalities",
         route: testDeprecatedRoute));
