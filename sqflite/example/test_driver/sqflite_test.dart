@@ -41,5 +41,41 @@ void main() {
         await db.close();
       }
     });
+    test('multiple database', () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      int count = 10;
+      var dbs = List<Database>(count);
+      for (int i = 0; i < count; i++) {
+        var path = 'test_multiple_$i.db';
+        await deleteDatabase(path);
+        dbs[i] =
+            await openDatabase(path, version: 1, onCreate: (db, version) async {
+          await db
+              .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+          expect(
+              await db
+                  .rawInsert("INSERT INTO Test (name) VALUES (?)", ['test_$i']),
+              1);
+        });
+      }
+
+      for (int i = 0; i < count; i++) {
+        var db = dbs[i];
+        try {
+          var name = (await db.query('Test', columns: ['name']))
+              .first
+              .values
+              .first as String;
+          expect(name, 'test_$i');
+        } finally {
+          await db.close();
+        }
+      }
+
+      for (int i = 0; i < count; i++) {
+        var db = dbs[i];
+        await db.close();
+      }
+    });
   });
 }

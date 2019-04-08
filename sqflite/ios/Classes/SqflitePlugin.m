@@ -4,6 +4,7 @@
 #import "SqfliteOperation.h"
 
 static NSString *const _channelName = @"com.tekartik.sqflite";
+static NSString *const _inMemoryPath = @":memory:";
 
 static NSString *const _methodGetPlatformVersion = @"getPlatformVersion";
 static NSString *const _methodGetDatabasesPath = @"getDatabasesPath";
@@ -19,6 +20,10 @@ static NSString *const _methodBatch = @"batch";
 
 // For open
 static NSString *const _paramReadOnly = @"readOnly";
+static NSString *const _paramSingleInstance = @"singleInstance";
+// Open result
+static NSString *const _paramRecovered = @"recovered";
+
 // For batch
 static NSString *const _paramOperations = @"operations";
 // For each batch operation
@@ -54,12 +59,14 @@ NSString *const SqfliteParamErrorData = @"data";
 @property (atomic, retain) FMDatabaseQueue *fmDatabaseQueue;
 @property (atomic, retain) NSNumber *databaseId;
 @property (atomic, retain) NSString* path;
+@property (nonatomic) bool singleInstance;
 
 @end
 
 @interface SqflitePlugin ()
 
-@property (atomic, retain) NSMutableDictionary<NSNumber*, SqfliteDatabase*>* databaseMap; // = [NSMutableDictionary new];
+@property (atomic, retain) NSMutableDictionary<NSNumber*, SqfliteDatabase*>* databaseMap;
+@property (atomic, retain) NSMutableDictionary<NSString*, SqfliteDatabase*>* singleInstanceDatabaseMap;
 @property (atomic, retain) NSObject* mapLock;
 
 @end
@@ -98,6 +105,7 @@ static NSInteger _databaseOpenCount = 0;
     self = [super init];
     if (self) {
         self.databaseMap = [NSMutableDictionary new];
+        self.singleInstanceDatabaseMap = [NSMutableDictionary new];
         self.mapLock = [NSObject new];
     }
     return self;
@@ -514,17 +522,54 @@ static NSInteger _databaseOpenCount = 0;
     
 }
 
++ (bool)isInMemoryPath:(NSString*)path {
+    if ([path isEqualToString:_inMemoryPath]) {
+        return true;
+    }
+    return false;
+}
+
++ (NSDictionary*)makeOpenResult:(NSNumber*)databaseId recovered:(bool)recovered {
+    NSMutableDictionary* result = [NSMutableDictionary new];
+    [result setObject:databaseId forKey:_paramId];
+    if (recovered) {
+        [result setObject:[NSNumber numberWithBool:recovered] forKey:_paramRecovered];
+    }
+    return result;
+}
+
 //
 // open
 //
 - (void)handleOpenDatabaseCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSString* path = call.arguments[_paramPath];
     NSNumber* readOnlyValue = call.arguments[_paramReadOnly];
-    bool readOnly = [readOnlyValue boolValue];
+    bool readOnly = [readOnlyValue boolValue] == true;
+    NSNumber* singleInstanceValue = call.arguments[_paramSingleInstance];
+    bool inMemoryPath = [SqflitePlugin isInMemoryPath:path];
+    // A single instance must be a regular database
+    bool singleInstance = [singleInstanceValue boolValue] != false && !inMemoryPath;
     
     if (_log) {
-        NSLog(@"opening %@ %d", path, (int)readOnly);
+        NSLog(@"opening %@ %@ %@", path, readOnly ? @" read-only" : @"", singleInstance ? @"" : @" new instance");
     }
+    
+    // Handle hot-restart for single instance
+    // The dart code is killed but the native code remains
+    if (singleInstance) {
+         @synchronized (self.mapLock) {
+             SqfliteDatabase* database = self.singleInstanceDatabaseMap[path];
+             if (database != nil) {
+                 // Check if openedŸ
+                 if (_log) {
+                     NSLog(@"re-opened singleInstance %@ id %@", path, database.databaseId);
+                 }
+                 result([SqflitePlugin makeOpenResult:database.databaseId recovered:true]);
+                 return;
+             }
+         }
+    }
+    
     FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:path flags:(readOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE))];
     bool success = queue != nil;
     
@@ -541,9 +586,14 @@ static NSInteger _databaseOpenCount = 0;
         SqfliteDatabase* database = [SqfliteDatabase new];
         databaseId = [NSNumber numberWithInteger:++_lastDatabaseId];
         database.fmDatabaseQueue = queue;
+        database.singleInstance = singleInstance;
         database.databaseId = databaseId;
         database.path = path;
         self.databaseMap[databaseId] = database;
+        // To handle hot-restart recovery
+        if (singleInstance) {
+            self.singleInstanceDatabaseMap[path] = database;
+        }
         if (_databaseOpenCount++ == 0) {
             if (_log) {
                 NSLog(@"Creating operation queue");
@@ -552,7 +602,7 @@ static NSInteger _databaseOpenCount = 0;
         
     }
     
-    result(databaseId);
+    result([SqflitePlugin makeOpenResult: databaseId recovered:false]);
 }
 
 //
@@ -571,6 +621,9 @@ static NSInteger _databaseOpenCount = 0;
     
     @synchronized (self.mapLock) {
         [self.databaseMap removeObjectForKey:database.databaseId];
+        if (database.singleInstance) {
+            [self.singleInstanceDatabaseMap removeObjectForKey:database.path];
+        }
         if (--_databaseOpenCount == 0) {
             if (_log) {
                 NSLog(@"No more databases open");
