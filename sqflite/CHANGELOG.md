@@ -2,7 +2,9 @@
 
 * Add `databaseExists` as a top level function
 * handle relative path in `databaseExists` and `deleteDatabase`
-* Execute `ROLLBACK` before closing to prevent `SQLITE_BUSY` error
+* Supports hot-restart while in a transaction on iOS and Android by recovering the database from the
+native world and executing `ROLLBACK` to prevent `SQLITE_BUSY` error
+* If in a transaction, execute `ROLLBACK` before closing to prevent `SQLITE_BUSY` error
 
 ## 1.1.4
 
