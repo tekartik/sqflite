@@ -1,3 +1,4 @@
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -74,6 +75,30 @@ void main() {
 
       for (int i = 0; i < count; i++) {
         var db = dbs[i];
+        await db.close();
+      }
+    });
+
+    test('version', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var path = 'test_version.db';
+      await deleteDatabase(path);
+      var db = await openDatabase(path, version: 1);
+      try {
+        expect(await db.getVersion(), 1);
+        unawaited(db.close());
+
+        db = await openDatabase(path, version: 2);
+        expect(await db.getVersion(), 2);
+        unawaited(db.close());
+
+        db = await openDatabase(path, version: 1);
+        expect(await db.getVersion(), 1);
+        unawaited(db.close());
+
+        db = await openDatabase(path, version: 1);
+        expect(await db.getVersion(), 1);
+      } finally {
         await db.close();
       }
     });

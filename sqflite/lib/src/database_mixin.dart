@@ -457,7 +457,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   Future<int> getVersion() async {
     final List<Map<String, dynamic>> rows =
-        await rawQuery("PRAGMA user_version;");
+        await rawQuery("PRAGMA user_version");
     return firstIntValue(rows);
   }
 
@@ -467,7 +467,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   ///
   @override
   Future<void> setVersion(int version) async {
-    await execute("PRAGMA user_version = $version;");
+    await execute("PRAGMA user_version = $version");
   }
 
   /// Close the database. Cannot be access anymore
@@ -671,7 +671,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
               await options.onDowngrade(this, oldVersion, options.version);
             }
           }
-          await setVersion(options.version);
+          if (oldVersion != options.version) {
+            await setVersion(options.version);
+          }
         }, exclusive: true);
       }
 

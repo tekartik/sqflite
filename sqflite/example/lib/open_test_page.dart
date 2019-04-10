@@ -124,6 +124,7 @@ class OpenTestPage extends TestPage {
       expect((await File(path).exists()), false);
       Database db = await openDatabase(path);
       verify(await File(path).exists());
+      expect(await db.getVersion(), 0);
       await db.close();
     });
 
@@ -171,6 +172,7 @@ class OpenTestPage extends TestPage {
       });
       verify(onCreate);
       expect(onCreateTransaction, true);
+      expect(await db.getVersion(), 1);
       await db.close();
     });
 
@@ -223,6 +225,7 @@ class OpenTestPage extends TestPage {
       } on DatabaseException catch (e) {
         print(e);
       }
+      expect(await database.getVersion(), 1);
       await database.close();
       database = await openDatabase(path, version: 2,
           onUpgrade: (Database db, int oldVersion, int newVersion) async {
@@ -232,7 +235,7 @@ class OpenTestPage extends TestPage {
         onUpgrade = true;
       });
       verify(onUpgrade);
-
+      expect(await database.getVersion(), 2);
       try {
         expect(
             await database
@@ -244,6 +247,7 @@ class OpenTestPage extends TestPage {
     });
 
     test("Open onDowngrade", () async {
+      // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_on_downgrade.db");
       Database database = await openDatabase(path, version: 2,
           onCreate: (Database db, int version) async {
@@ -251,6 +255,7 @@ class OpenTestPage extends TestPage {
       }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
         verify(false, "should not be called");
       });
+      expect(await database.getVersion(), 2);
       await database.close();
 
       bool onDowngrade = false;
@@ -262,6 +267,7 @@ class OpenTestPage extends TestPage {
         onDowngrade = true;
       });
       verify(onDowngrade);
+      expect(await database.getVersion(), 1);
 
       await database.close();
     });
