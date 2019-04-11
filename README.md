@@ -11,4 +11,5 @@ Supports both iOS and Android.
 ## Documentation
 
 * [Documentation](https://github.com/tekartik/sqflite/blob/master/sqflite/README.md)
+* [API reference](https://pub.dartlang.org/documentation/sqflite/latest/sqflite/sqflite-library.html)
 * [How to](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/how_to.md) guide
