@@ -761,7 +761,7 @@ class OpenTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn(true);
       var path = 'test_close_in_transaction.db';
       var factory = databaseFactory;
-      await deleteDatabase(path);
+      await factory.deleteDatabase(path);
       var db = await factory.openDatabase(path,
           options: OpenDatabaseOptions(version: 1));
       try {
@@ -787,6 +787,26 @@ class OpenTestPage extends TestPage {
       } finally {
         await db.close();
       }
+    });
+
+    test('Open non sqlite file', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var factory = databaseFactory;
+      var path =
+          join(await factory.getDatabasesPath(), 'test_non_sqlite_file.db');
+
+      await factory.deleteDatabase(path);
+      // Write dummy content
+      await File(path).writeAsString('dummy', flush: true);
+      // It is only 5 bytes
+      expect((await File(path).readAsBytes()).length, 5);
+
+      var db = await factory.openDatabase(path,
+          options: OpenDatabaseOptions(version: 1));
+      try {} finally {
+        await db?.close();
+      }
+      expect((await File(path).readAsBytes()).length, greaterThan(5));
     });
   }
 }
