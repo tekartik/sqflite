@@ -108,7 +108,15 @@ public class SqflitePlugin implements MethodCallHandler {
         for (int i = 0; i < length; i++) {
             Object value = cursorValue(cursor, i);
             if (Debug.EXTRA_LOGV) {
-                Log.d(TAG, "column " + i + " " + cursor.getType(i) + ": " + value);
+                String type = null;
+                if (value != null) {
+                    if (value.getClass().isArray()) {
+                        type = "array(" + value.getClass().getComponentType().getName() + ")";
+                    } else {
+                        type = value.getClass().getName();
+                    }
+                }
+                Log.d(TAG, "column " + i + " " + cursor.getType(i) + ": " + value + (type == null ? "" : " (" + type + ")"));
             }
             list.add(value);
         }
