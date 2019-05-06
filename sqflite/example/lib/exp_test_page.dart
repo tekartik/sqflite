@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
@@ -423,6 +424,33 @@ CREATE TABLE test (
         INSERT INTO test (label) VALUES(?)
         ''', ['label-1']);
         expect(id, null);
+      } finally {
+        await db.close();
+      }
+    });
+
+    test("Issue#164", () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      String path = await initDeleteDb("issue_164.db");
+
+      Database db = await openDatabase(path);
+      try {
+        var sqls = LineSplitter.split(
+            '''CREATE VIRTUAL TABLE Food using fts4(description TEXT)
+        INSERT Into Food (description) VALUES ('banana')
+        INSERT Into Food (description) VALUES ('apple')''');
+        var batch = db.batch();
+        sqls.forEach((sql) {
+          batch.execute(sql);
+        });
+        await batch.commit();
+
+        var results = await db.rawQuery(
+            'SELECT description, matchinfo(Food) as matchinfo FROM Food WHERE Food MATCH ?',
+            ['ban*']);
+        // print(results);
+        // matchinfo is currently returned as binary bloc
+        expect(results.first['matchinfo'], const TypeMatcher<Uint8List>());
       } finally {
         await db.close();
       }
