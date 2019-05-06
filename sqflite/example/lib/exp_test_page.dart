@@ -429,9 +429,9 @@ CREATE TABLE test (
       }
     });
 
-    test("Issue#164", () async {
+    test("Issue#206", () async {
       //await Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("issue_164.db");
+      String path = await initDeleteDb("issue_206.db");
 
       Database db = await openDatabase(path);
       try {
@@ -448,9 +448,23 @@ CREATE TABLE test (
         var results = await db.rawQuery(
             'SELECT description, matchinfo(Food) as matchinfo FROM Food WHERE Food MATCH ?',
             ['ban*']);
-        // print(results);
+        print(results);
         // matchinfo is currently returned as binary bloc
-        expect(results.first['matchinfo'], const TypeMatcher<Uint8List>());
+        expect(results.length, 1);
+        var map = results.first;
+        var matchInfo = map['matchinfo'] as Uint8List;
+
+        // Convert to Uint32List
+        var uint32ListLength = matchInfo.length ~/ 4;
+        var uint32List = Uint32List(uint32ListLength);
+        var data = ByteData.view(
+            matchInfo.buffer, matchInfo.offsetInBytes, matchInfo.length);
+        for (int i = 0; i < uint32ListLength; i++) {
+          uint32List[i] = data.getUint32(i * 4, Endian.host);
+        }
+        // print(uint32List);
+        expect(uint32List, [1, 1, 1, 1, 1]);
+        expect(map['matchinfo'], const TypeMatcher<Uint8List>());
       } finally {
         await db.close();
       }
