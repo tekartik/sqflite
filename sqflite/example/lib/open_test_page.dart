@@ -289,11 +289,17 @@ class OpenTestPage extends TestPage {
       // delete existing if any
       await deleteDatabase(path);
 
+      // Make sure the parent directory exists
+      try {
+        await Directory(dirname(path)).create(recursive: true);
+      } catch (_) {}
+
       // Copy from asset
       ByteData data = await rootBundle.load(join("assets", "example.db"));
       List<int> bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      await File(path).writeAsBytes(bytes);
+      // Write and flush the bytes written
+      await File(path).writeAsBytes(bytes, flush: true);
 
       // open the database
       Database db = await openDatabase(path);
