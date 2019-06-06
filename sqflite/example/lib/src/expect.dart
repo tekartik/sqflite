@@ -103,8 +103,9 @@ Future _expect(actual, matcher,
 
   var matchState = {};
   try {
-    if ((matcher as Matcher).matches(actual, matchState))
+    if ((matcher as Matcher).matches(actual, matchState)) {
       return Future.sync(() {});
+    }
   } catch (e, trace) {
     reason ??= '$e at $trace';
   }
