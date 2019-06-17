@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/src/constant.dart' hide lockWarningDuration;
@@ -7,7 +8,6 @@ import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/mixin.dart';
 import 'package:sqflite/src/open_options.dart';
 import 'package:sqflite/utils/utils.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('mixin_flutter', () {
@@ -103,6 +103,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
 
 class MockDatabaseFactoryEmpty extends SqfliteDatabaseFactoryBase {
   final List<String> methods = <String>[];
+
   @override
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) {
     methods.add(method);
