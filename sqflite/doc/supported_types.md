@@ -1,6 +1,6 @@
 # Supported types
 
-The API offers a way to save a record as map of type `Map<String, dynamic>`. The map cannot be an
+The API offers a way to save a record as map of type `Map<String, dynamic>`. This map cannot be an
 arbitrary map:
 - Keys are column in a table (declared when creating the table)
 - Values are field values in the record of type `num`, `String` or `Uint8List`
@@ -14,7 +14,7 @@ Nested content is not supported. For example, the following simple map is not su
 }
 ```
 
-It should be flatten. One solution is to modify the map structure:
+It should be flattened. One solution is to modify the map structure:
 
 ```sql
 CREATE TABLE Product (
@@ -52,7 +52,7 @@ CREATE TABLE Product (
 No validity check is done on values yet so please avoid non supported types [https://www.sqlite.org/datatype3.html](https://www.sqlite.org/datatype3.html)
 
 `DateTime` is not a supported SQLite type. Personally I store them as 
-int (millisSinceEpoch) or string (iso8601). `TIMESTAMP` SQLite requires using [date functions](https://www.sqlite.org/lang_datefunc.html). 
+int (millisSinceEpoch) or string (iso8601). SQLite `TIMESTAMP` type sometimes requires using [date functions](https://www.sqlite.org/lang_datefunc.html). 
 `TIMESTAMP` values are read as `String` that the application needs to parse.
 
 `bool` is not a supported SQLite type. Use `INTEGER` and 0 and 1 values.
