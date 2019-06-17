@@ -294,6 +294,8 @@ int (millisSinceEpoch) or string (iso8601)
 
 `bool` is not a supported SQLite type. Use `INTEGER` and 0 and 1 values.
 
+More information on supported types [here](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/supported_types.md).
+
 ### INTEGER
 
 * Dart type: `int`
