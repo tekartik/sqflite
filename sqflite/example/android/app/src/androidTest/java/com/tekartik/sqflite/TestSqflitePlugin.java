@@ -1,4 +1,4 @@
-package sqflite.example.android.app.src.androidTest.java.com.tekartik.sqflite;
+package com.tekartik.sqflite;
 
 import android.content.Context;
 
