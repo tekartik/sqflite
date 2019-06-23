@@ -14,7 +14,7 @@ public class LogLevelTest {
 
     @Test
     public void hasSqlLogLevel() {
-        assertTrue(LogLevel.hasSqlLovel(1));
-        assertFalse(LogLevel.hasSqlLovel(0));
+        assertTrue(LogLevel.hasSqlLevel(1));
+        assertFalse(LogLevel.hasSqlLevel(0));
     }
 }

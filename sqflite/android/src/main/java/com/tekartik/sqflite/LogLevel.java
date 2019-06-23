@@ -10,15 +10,11 @@ public class LogLevel {
     static final int sql = 1;
     static final int verbose = 2;
 
-    static int getLogLevel(MethodCall methodCall) {
-        Integer level =methodCall.argument(PARAM_LOG_LEVEL);
-        if (level == null) {
-            return none;
-        }
-        return level;
+    static Integer getLogLevel(MethodCall methodCall) {
+        return methodCall.argument(PARAM_LOG_LEVEL);
     }
 
-    static boolean hasSqlLovel(int level) {
+    static boolean hasSqlLevel(int level) {
         return level >= sql;
     }
 
