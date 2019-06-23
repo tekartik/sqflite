@@ -609,12 +609,12 @@ public class SqflitePlugin implements MethodCallHandler {
     //
     // Sqflite.open
     //
-    private void onOpenDatabaseCall(MethodCall call, Result result) {
-        String path = call.argument(PARAM_PATH);
-        Boolean readOnly = call.argument(PARAM_READ_ONLY);
+    private void onOpenDatabaseCall(final MethodCall call, final Result result) {
+        final String path = call.argument(PARAM_PATH);
+        final Boolean readOnly = call.argument(PARAM_READ_ONLY);
         boolean inMemory = isInMemoryPath(path);
 
-        boolean singleInstance = !Boolean.FALSE.equals(call.argument(PARAM_SINGLE_INSTANCE)) && !inMemory;
+        final boolean singleInstance = !Boolean.FALSE.equals(call.argument(PARAM_SINGLE_INSTANCE)) && !inMemory;
 
         // For single instance we create or reuse a thread right away
         // DO NOT TRY TO LOAD existing instance, the database has been closed
@@ -661,46 +661,56 @@ public class SqflitePlugin implements MethodCallHandler {
             }
         }
 
-        int databaseId;
-        synchronized (databaseMapLocker) {
-            databaseId = ++this.databaseId;
-        }
-        Database database = new Database(context, path, databaseId, singleInstance);
-        // force opening
-        try {
-            if (Boolean.TRUE.equals(readOnly)) {
-                database.openReadOnly();
-            } else {
-                database.open();
-            }
-        } catch (Exception e) {
-            MethodCallOperation operation = new MethodCallOperation(call, result);
-            handleException(e, operation, database);
-            return;
-        }
+        final Database database = new Database(context, path, databaseId, singleInstance);
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
 
-        //SQLiteDatabase sqLiteDatabase = SQLiteDatabase.openDatabase(path, null, 0);
-        synchronized (databaseMapLocker) {
-            if (databaseOpenCount++ == 0) {
-                handlerThread = new HandlerThread("Sqflite", SqflitePlugin.THREAD_PRIORITY);
-                handlerThread.start();
-                //TEST UI  Handler
-                //handler = new Handler();
-                handler = new Handler(handlerThread.getLooper());
-                if (Debug.LOGV) {
-                    Log.d(TAG, "starting thread" + handlerThread + " priority " + SqflitePlugin.THREAD_PRIORITY);
+                int databaseId;
+                synchronized (databaseMapLocker) {
+                    databaseId = ++SqflitePlugin.this.databaseId;
                 }
-            }
-            if (singleInstance) {
-                _singleInstancesByPath.put(path, databaseId);
-            }
-            databaseMap.put(databaseId, database);
-            if (Debug.LOGV) {
-                Log.d(TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
-            }
-        }
 
-        result.success(makeOpenResult(databaseId, false));
+                // force opening
+                try {
+                    if (Boolean.TRUE.equals(readOnly)) {
+                        database.openReadOnly();
+                    } else {
+                        database.open();
+                    }
+                } catch (Exception e) {
+                    MethodCallOperation operation = new MethodCallOperation(call, result);
+                    handleException(e, operation, database);
+                    return;
+                }
+
+
+                //SQLiteDatabase sqLiteDatabase = SQLiteDatabase.openDatabase(path, null, 0);
+                synchronized (databaseMapLocker) {
+                    if (databaseOpenCount++ == 0) {
+                        handlerThread = new HandlerThread("Sqflite", SqflitePlugin.THREAD_PRIORITY);
+                        handlerThread.start();
+                        //TEST UI  Handler
+                        //handler = new Handler();
+                        handler = new Handler(handlerThread.getLooper());
+                        if (Debug.LOGV) {
+                            Log.d(TAG, "starting thread" + handlerThread + " priority " + SqflitePlugin.THREAD_PRIORITY);
+                        }
+                    }
+                    if (singleInstance) {
+                        _singleInstancesByPath.put(path, databaseId);
+                    }
+                    databaseMap.put(databaseId, database);
+                    if (Debug.LOGV) {
+                        Log.d(TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
+                    }
+                }
+
+                result.success(makeOpenResult(databaseId, false));
+            }
+        }.start();
+
     }
 
     //
