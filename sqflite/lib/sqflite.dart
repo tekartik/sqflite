@@ -11,6 +11,8 @@ import 'sqlite_api.dart';
 
 export 'package:sqflite/sql.dart' show ConflictAlgorithm;
 export 'package:sqflite/src/compat.dart';
+export 'package:sqflite/src/constant.dart'
+    show sqfliteLogLevelNone, sqfliteLogLevelSql, sqfliteLogLevelVerbose;
 export 'package:sqflite/src/factory_impl.dart' show databaseFactory;
 
 export 'sqlite_api.dart';
@@ -30,6 +32,7 @@ class Sqflite {
     await invokeMethod<dynamic>(methodSetDebugModeOn, on);
   }
 
+  /// Planned Deprecated for 1.17
   static Future<bool> getDebugModeOn() async {
     return impl.debugModeOn;
   }
@@ -45,6 +48,7 @@ class Sqflite {
   }
 
   // Testing only
+  /// deprecated on purpose to remove from code.
   @deprecated
   static Future<void> devSetOptions(SqfliteOptions options) async {
     await invokeMethod<dynamic>(methodOptions, options.toMap());

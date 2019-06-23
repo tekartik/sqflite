@@ -1,7 +1,7 @@
 // Method to use
 const String methodInsert = "insert";
 const String methodBatch = "batch";
-const String methodSetDebugModeOn = "debugMode";
+const String methodDebug = "debug";
 const String methodOptions = "options";
 const String methodCloseDatabase = "closeDatabase";
 const String methodOpenDatabase = "openDatabase";
@@ -57,3 +57,16 @@ const String inMemoryDatabasePath = ":memory:";
 // Non final for changing it during testing
 // If a database called is delayed by this duration, a print will happen
 const Duration lockWarningDuration = Duration(seconds: 10);
+
+/// No logs
+final int sqfliteLogLevelNone = 0;
+
+/// Log native sql commands
+final int sqfliteLogLevelSql = 1;
+
+/// Log native verbose
+final int sqfliteLogLevelVerbose = 2;
+
+// deprecated since 1.17
+// @deprecated
+const String methodSetDebugModeOn = "debugMode";

@@ -176,4 +176,46 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
   bool isPath(String path) {
     return (path != null) && (path != inMemoryDatabasePath);
   }
+
+  Future<SqfliteDebugInfo> getDebugInfo() async {
+    final SqfliteDebugInfo info = SqfliteDebugInfo();
+    final dynamic map =
+        await safeInvokeMethod(methodDebug, <String, dynamic>{'cmd': 'get'});
+    final dynamic databasesMap = map['databases'];
+    if (databasesMap is Map) {
+      info.databases = databasesMap.map((dynamic id, dynamic info) {
+        final SqfliteDatabaseDebugInfo dbInfo = SqfliteDatabaseDebugInfo();
+        final String databaseId = id?.toString();
+
+        if (info is Map) {
+          dbInfo?.fromMap(info);
+        }
+        return MapEntry<String, SqfliteDatabaseDebugInfo>(databaseId, dbInfo);
+      });
+    }
+    info.logLevel = map[paramLogLevel] as int;
+    return info;
+  }
+}
+
+// When opening the database (bool)
+const String paramLogLevel = "logLevel";
+
+class SqfliteDatabaseDebugInfo {
+  String path;
+  bool singleInstance;
+  int logLevel;
+
+  void fromMap(Map<dynamic, dynamic> map) {
+    path = map[paramPath]?.toString();
+    singleInstance = map[paramSingleInstance] as bool;
+    logLevel = map[paramLogLevel] as int;
+  }
+}
+
+class SqfliteDebugInfo {
+  Map<String, SqfliteDatabaseDebugInfo> databases;
+
+  /// global log level (set for new opened databases)
+  int logLevel;
 }

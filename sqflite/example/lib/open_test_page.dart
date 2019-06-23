@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path/path.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/database_mixin.dart' show SqfliteDatabaseMixin;
@@ -8,9 +11,8 @@ import 'package:sqflite/src/factory_mixin.dart'
     show SqfliteDatabaseFactoryMixin;
 import 'package:sqflite_example/src/dev_utils.dart';
 import 'package:synchronized/synchronized.dart';
+
 import 'test_page.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:path/path.dart';
 
 class OpenCallbacks {
   OpenCallbacks() {

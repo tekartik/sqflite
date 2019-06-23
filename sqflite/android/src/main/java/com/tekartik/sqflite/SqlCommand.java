@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.tekartik.sqflite.Constant.TAG;
-import static com.tekartik.sqflite.dev.Debug.EXTRA_LOGV;
+import com.tekartik.sqflite.dev.Debug;
 
 public class SqlCommand {
     public String getSql() {
@@ -25,7 +25,7 @@ public class SqlCommand {
         if (value == null) {
             return null;
         } else {
-            if (EXTRA_LOGV) {
+            if (Debug.EXTRA_LOGV) {
                 Log.d(TAG, "arg " + value.getClass().getCanonicalName() + " " + toString(value));
             }
             // Assume a list is a blog
@@ -39,7 +39,7 @@ public class SqlCommand {
                 value = blob;
 
             }
-            if (EXTRA_LOGV) {
+            if (Debug.EXTRA_LOGV) {
                 Log.d(TAG, "arg " + value.getClass().getCanonicalName() + " " + toString(value));
             }
             return value;

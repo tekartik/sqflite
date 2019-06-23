@@ -1,5 +1,6 @@
-import 'package:sqflite/src/utils.dart';
 import 'package:sqflite/src/constant.dart' as constant;
+import 'package:sqflite/src/sqflite_impl.dart';
+import 'package:sqflite/src/utils.dart';
 
 /// helper to get the first int value in a query
 /// Useful for COUNT(*) queries

@@ -42,7 +42,12 @@ void main() {
         Database,
         Transaction,
         Batch,
-        ConflictAlgorithm
+        ConflictAlgorithm,
+        // ignore: deprecated_member_use, deprecated_member_use_from_same_package
+        Sqflite.devSetOptions,
+        sqfliteLogLevelNone,
+        sqfliteLogLevelSql,
+        sqfliteLogLevelVerbose
       ].forEach((dynamic value) {
         expect(value, isNotNull);
       });
