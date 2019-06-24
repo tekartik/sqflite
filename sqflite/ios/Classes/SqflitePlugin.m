@@ -234,10 +234,9 @@ static NSInteger _databaseOpenCount = 0;
 
 + (NSDictionary*)fromSqlDictionary:(NSDictionary*)sqlDictionary {
     NSMutableDictionary* dictionary = [NSMutableDictionary new];
-    for (NSString* key in sqlDictionary.keyEnumerator) {
-        NSObject* sqlValue = [sqlDictionary objectForKey:key];
-        [dictionary setObject:[SqflitePlugin fromSqlValue:sqlValue] forKey:key];
-    }
+    [sqlDictionary enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull value, BOOL * _Nonnull stop) {
+        [dictionary setObject:[SqflitePlugin fromSqlValue:value] forKey:key];
+    }];
     return dictionary;
 }
 
