@@ -94,6 +94,7 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
 
   List<List<dynamic>> _rows;
   List<String> _columns;
+  List<String> _keys;
   Map<String, int> _columnIndexMap;
 
   @override
@@ -117,6 +118,9 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
   int columnIndex(String name) {
     return _columnIndexMap[name];
   }
+
+  /// Remove duplicated
+  List<String> get keys => _keys ??= _columns.toSet().toList(growable: false);
 }
 
 class QueryRow extends MapBase<String, dynamic> {
@@ -146,7 +150,7 @@ class QueryRow extends MapBase<String, dynamic> {
   }
 
   @override
-  Iterable<String> get keys => queryResultSet._columns;
+  Iterable<String> get keys => queryResultSet.keys;
 
   @override
   dynamic remove(Object key) {
