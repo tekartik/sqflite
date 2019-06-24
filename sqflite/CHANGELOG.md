@@ -1,3 +1,7 @@
+## 1.1.6-dev.1
+
+* Open database in a background thread on Android
+
 ## 1.1.5
 
 * Add `databaseExists` as a top level function

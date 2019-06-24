@@ -176,4 +176,77 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
   bool isPath(String path) {
     return (path != null) && (path != inMemoryDatabasePath);
   }
+
+  Future<SqfliteDebugInfo> getDebugInfo() async {
+    final SqfliteDebugInfo info = SqfliteDebugInfo();
+    final dynamic map =
+        await safeInvokeMethod(methodDebug, <String, dynamic>{'cmd': 'get'});
+    final dynamic databasesMap = map[paramDatabases];
+    if (databasesMap is Map) {
+      info.databases = databasesMap.map((dynamic id, dynamic info) {
+        final SqfliteDatabaseDebugInfo dbInfo = SqfliteDatabaseDebugInfo();
+        final String databaseId = id?.toString();
+
+        if (info is Map) {
+          dbInfo?.fromMap(info);
+        }
+        return MapEntry<String, SqfliteDatabaseDebugInfo>(databaseId, dbInfo);
+      });
+    }
+    info.logLevel = map[paramLogLevel] as int;
+    return info;
+  }
+}
+
+// When opening the database (bool)
+const String paramLogLevel = 'logLevel';
+const String paramDatabases = 'databases';
+
+class SqfliteDatabaseDebugInfo {
+  String path;
+  bool singleInstance;
+  int logLevel;
+
+  void fromMap(Map<dynamic, dynamic> map) {
+    path = map[paramPath]?.toString();
+    singleInstance = map[paramSingleInstance] as bool;
+    logLevel = map[paramLogLevel] as int;
+  }
+
+  Map<String, dynamic> toDebugMap() {
+    final Map<String, dynamic> map = <String, dynamic>{
+      paramPath: path,
+      paramSingleInstance: singleInstance
+    };
+    if ((logLevel ?? sqfliteLogLevelNone) > sqfliteLogLevelNone) {
+      map[paramLogLevel] = logLevel;
+    }
+    return map;
+  }
+
+  @override
+  String toString() => toDebugMap().toString();
+}
+
+class SqfliteDebugInfo {
+  Map<String, SqfliteDatabaseDebugInfo> databases;
+
+  /// global log level (set for new opened databases)
+  int logLevel;
+
+  Map<String, dynamic> toDebugMap() {
+    final Map<String, dynamic> map = <String, dynamic>{};
+    if (databases != null) {
+      map[paramDatabases] = databases.map(
+          (String key, SqfliteDatabaseDebugInfo dbInfo) =>
+              MapEntry<String, Map<String, dynamic>>(key, dbInfo.toDebugMap()));
+    }
+    if ((logLevel ?? sqfliteLogLevelNone) > sqfliteLogLevelNone) {
+      map[paramLogLevel] = logLevel;
+    }
+    return map;
+  }
+
+  @override
+  String toString() => toDebugMap().toString();
 }

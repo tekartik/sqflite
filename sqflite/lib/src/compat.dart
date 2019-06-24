@@ -1,3 +1,5 @@
+import 'factory_mixin.dart';
+
 ///
 /// internal options.
 ///
@@ -7,9 +9,11 @@
 ///
 @deprecated
 class SqfliteOptions {
+  SqfliteOptions({this.logLevel});
   // true =<0.7.0
   bool queryAsMapList;
   int androidThreadPriority;
+  int logLevel;
 
   Map<String, dynamic> toMap() {
     final Map<String, dynamic> map = <String, dynamic>{};
@@ -18,6 +22,9 @@ class SqfliteOptions {
     }
     if (androidThreadPriority != null) {
       map['androidThreadPriority'] = androidThreadPriority;
+    }
+    if (logLevel != null) {
+      map[paramLogLevel] = logLevel;
     }
     return map;
   }
@@ -30,6 +37,10 @@ class SqfliteOptions {
     final dynamic androidThreadPriority = map['androidThreadPriority'];
     if (androidThreadPriority is int) {
       this.androidThreadPriority = androidThreadPriority;
+    }
+    final dynamic logLevel = map[paramLogLevel];
+    if (logLevel is int) {
+      this.logLevel = logLevel;
     }
   }
 }

@@ -9,6 +9,7 @@ static NSString *const _inMemoryPath = @":memory:";
 static NSString *const _methodGetPlatformVersion = @"getPlatformVersion";
 static NSString *const _methodGetDatabasesPath = @"getDatabasesPath";
 static NSString *const _methodDebugMode = @"debugMode";
+static NSString *const _methodDebug = @"debug";
 static NSString *const _methodOptions = @"options";
 static NSString *const _methodOpenDatabase = @"openDatabase";
 static NSString *const _methodCloseDatabase = @"closeDatabase";
@@ -40,6 +41,12 @@ static NSString *const _errorDatabaseClosed = @"database_closed";
 // options
 static NSString *const _paramQueryAsMapList = @"queryAsMapList";
 
+// debug
+static NSString *const _paramDatabases = @"databases";
+static NSString *const _paramLogLevel = @"logLevel";
+static NSString *const _paramCmd = @"cmd";
+static NSString *const _paramCmdGet = @"get";
+
 // Shared
 NSString *const SqfliteParamSql = @"sql";
 NSString *const SqfliteParamSqlArguments = @"arguments";
@@ -60,6 +67,7 @@ NSString *const SqfliteParamErrorData = @"data";
 @property (atomic, retain) NSNumber *databaseId;
 @property (atomic, retain) NSString* path;
 @property (nonatomic) bool singleInstance;
+@property (nonatomic) int logLevel;
 
 @end
 
@@ -84,7 +92,23 @@ NSString *const SqfliteParamErrorData = @"data";
 @synthesize mapLock;
 
 static bool _queryAsMapList = false;
-static BOOL _log = false;
+static const int logLevelNone = 0;
+static const int logLevelSql = 1;
+static const int logLevelVerbose = 2;
+
+static int logLevel = logLevelNone;
+
+// True for basic debugging (open/close and sql)
+static bool hasSqlLogLevel(int logLevel) {
+    return logLevel >= logLevelSql;
+}
+
+// True for verbose debugging
+static bool hasVerboseLogLevel(int logLevel) {
+    return logLevel >= logLevelVerbose;
+}
+
+// static BOOL _log = false;
 static BOOL _extra_log = false;
 
 static BOOL __extra_log = false; // to set to true for type debugging
@@ -210,19 +234,18 @@ static NSInteger _databaseOpenCount = 0;
 
 + (NSDictionary*)fromSqlDictionary:(NSDictionary*)sqlDictionary {
     NSMutableDictionary* dictionary = [NSMutableDictionary new];
-    for (NSString* key in sqlDictionary.keyEnumerator) {
-        NSObject* sqlValue = [sqlDictionary objectForKey:key];
-        [dictionary setObject:[SqflitePlugin fromSqlValue:sqlValue] forKey:key];
-    }
+    [sqlDictionary enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull value, BOOL * _Nonnull stop) {
+        [dictionary setObject:[SqflitePlugin fromSqlValue:value] forKey:key];
+    }];
     return dictionary;
 }
 
-- (bool)executeOrError:(FMDatabase*)db call:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (bool)executeOrError:(SqfliteDatabase*)database fmdb:(FMDatabase*)db call:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSString* sql = call.arguments[SqfliteParamSql];
     NSArray* arguments = call.arguments[SqfliteParamSqlArguments];
     NSArray* sqlArguments = [SqflitePlugin toSqlArguments:arguments];
     BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:arguments];
-    if (_log) {
+    if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     
@@ -240,11 +263,11 @@ static NSInteger _databaseOpenCount = 0;
     return true;
 }
 
-- (bool)executeOrError:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (bool)executeOrError:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
-    if (_log) {
+    if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     
@@ -265,11 +288,11 @@ static NSInteger _databaseOpenCount = 0;
 //
 // query
 //
-- (bool)query:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (bool)query:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
-    if (_log) {
+    if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     
@@ -318,7 +341,7 @@ static NSInteger _databaseOpenCount = 0;
             [rows addObject:row];
         }
         
-        if (_log) {
+        if (hasVerboseLogLevel(database.logLevel)) {
             NSLog(@"columns %@ rows %@", columns, rows);
         }
         [operation success:results];
@@ -334,7 +357,7 @@ static NSInteger _databaseOpenCount = 0;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
             SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
-            [self query:db operation:operation];
+            [self query:database fmdb:db operation:operation];
         }];
     });
 }
@@ -342,8 +365,8 @@ static NSInteger _databaseOpenCount = 0;
 //
 // insert
 //
-- (bool)insert:(FMDatabase*)db operation:(SqfliteOperation*)operation {
-    if (![self executeOrError:db operation:operation]) {
+- (bool)insert:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+    if (![self executeOrError:database fmdb:db operation:operation]) {
         return false;
     }
     if ([operation getNoResult]) {
@@ -354,14 +377,14 @@ static NSInteger _databaseOpenCount = 0;
     // before
     int changes = [db changes];
     if (changes == 0) {
-        if (_log) {
+        if (hasSqlLogLevel(database.logLevel)) {
             NSLog(@"no changes");
         }
         [operation success:[NSNull null]];
         return true;
     }
     sqlite_int64 insertedId = [db lastInsertRowId];
-    if (_log) {
+    if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"inserted %@", @(insertedId));
     }
     [operation success:(@(insertedId))];
@@ -377,7 +400,7 @@ static NSInteger _databaseOpenCount = 0;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
             SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
-            [self insert:db operation:operation];
+            [self insert:database fmdb:db operation:operation];
         }];
     });
     
@@ -386,8 +409,8 @@ static NSInteger _databaseOpenCount = 0;
 //
 // update
 //
-- (bool)update:(FMDatabase*)db operation:(SqfliteOperation*)operation {
-    if (![self executeOrError:db operation:operation]) {
+- (bool)update:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+    if (![self executeOrError:database fmdb:db operation:operation]) {
         return false;
     }
     if ([operation getNoResult]) {
@@ -395,7 +418,7 @@ static NSInteger _databaseOpenCount = 0;
         return true;
     }
     int changes = [db changes];
-    if (_log) {
+    if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"changed %@", @(changes));
     }
     [operation success:(@(changes))];
@@ -407,11 +430,11 @@ static NSInteger _databaseOpenCount = 0;
     if (database == nil) {
         return;
     }
-
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
             SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
-            [self update:db operation:operation];
+            [self update:database fmdb:db operation:operation];
         }];
     });
 }
@@ -419,8 +442,8 @@ static NSInteger _databaseOpenCount = 0;
 //
 // execute
 //
-- (bool)execute:(FMDatabase*)db operation:(SqfliteOperation*)operation {
-    if (![self executeOrError:db operation:operation]) {
+- (bool)execute:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+    if (![self executeOrError:database fmdb:db operation:operation]) {
         return false;
     }
     [operation success:[NSNull null]];
@@ -435,7 +458,7 @@ static NSInteger _databaseOpenCount = 0;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
             SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
-            [self execute:db operation:operation];
+            [self execute:database fmdb:db operation:operation];
         }];
     });
     
@@ -451,23 +474,23 @@ static NSInteger _databaseOpenCount = 0;
     }
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
-
+            
             SqfliteMethodCallOperation* mainOperation = [SqfliteMethodCallOperation newWithCall:call result:result];
             bool noResult = [mainOperation getNoResult];
             bool continueOnError = [mainOperation getContinueOnError];
-
+            
             NSArray* operations = call.arguments[_paramOperations];
             NSMutableArray* operationResults = [NSMutableArray new];
             for (NSDictionary* dictionary in operations) {
                 // do something with object
-
+                
                 SqfliteBatchOperation* operation = [SqfliteBatchOperation new];
                 operation.dictionary = dictionary;
                 operation.noResult = noResult;
-
+                
                 NSString* method = [operation getMethod];
                 if ([_methodInsert isEqualToString:method]) {
-                    if ([self insert:db operation:operation]) {
+                    if ([self insert:database fmdb:db operation:operation]) {
                         [operation handleSuccess:operationResults];
                     } else if (continueOnError) {
                         [operation handleErrorContinue:operationResults];
@@ -476,7 +499,7 @@ static NSInteger _databaseOpenCount = 0;
                         return;
                     }
                 } else if ([_methodUpdate isEqualToString:method]) {
-                    if ([self update:db operation:operation]) {
+                    if ([self update:database fmdb:db operation:operation]) {
                         [operation handleSuccess:operationResults];
                     } else if (continueOnError) {
                         [operation handleErrorContinue:operationResults];
@@ -485,7 +508,7 @@ static NSInteger _databaseOpenCount = 0;
                         return;
                     }
                 } else if ([_methodExecute isEqualToString:method]) {
-                    if ([self execute:db operation:operation]) {
+                    if ([self execute:database fmdb:db operation:operation]) {
                         [operation handleSuccess:operationResults];
                     } else if (continueOnError) {
                         [operation handleErrorContinue:operationResults];
@@ -494,7 +517,7 @@ static NSInteger _databaseOpenCount = 0;
                         return;
                     }
                 } else if ([_methodQuery isEqualToString:method]) {
-                    if ([self query:db operation:operation]) {
+                    if ([self query:database fmdb:db operation:operation]) {
                         [operation handleSuccess:operationResults];
                     } else if (continueOnError) {
                         [operation handleErrorContinue:operationResults];
@@ -509,13 +532,13 @@ static NSInteger _databaseOpenCount = 0;
                     return;
                 }
             }
-
+            
             if (noResult) {
                 result(nil);
             } else {
                 result(operationResults);
             }
-
+            
         }];
     });
     
@@ -550,6 +573,7 @@ static NSInteger _databaseOpenCount = 0;
     // A single instance must be a regular database
     bool singleInstance = [singleInstanceValue boolValue] != false && !inMemoryPath;
     
+    bool _log = hasSqlLogLevel(logLevel);
     if (_log) {
         NSLog(@"opening %@ %@ %@", path, readOnly ? @" read-only" : @"", singleInstance ? @"" : @" new instance");
     }
@@ -557,17 +581,17 @@ static NSInteger _databaseOpenCount = 0;
     // Handle hot-restart for single instance
     // The dart code is killed but the native code remains
     if (singleInstance) {
-         @synchronized (self.mapLock) {
-             SqfliteDatabase* database = self.singleInstanceDatabaseMap[path];
-             if (database != nil) {
-                 // Check if openedŸ
-                 if (_log) {
-                     NSLog(@"re-opened singleInstance %@ id %@", path, database.databaseId);
-                 }
-                 result([SqflitePlugin makeOpenResult:database.databaseId recovered:true]);
-                 return;
-             }
-         }
+        @synchronized (self.mapLock) {
+            SqfliteDatabase* database = self.singleInstanceDatabaseMap[path];
+            if (database != nil) {
+                // Check if openedŸ
+                if (_log) {
+                    NSLog(@"re-opened singleInstance %@ id %@", path, database.databaseId);
+                }
+                result([SqflitePlugin makeOpenResult:database.databaseId recovered:true]);
+                return;
+            }
+        }
     }
     
     FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:path flags:(readOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE))];
@@ -589,13 +613,14 @@ static NSInteger _databaseOpenCount = 0;
         database.singleInstance = singleInstance;
         database.databaseId = databaseId;
         database.path = path;
+        database.logLevel = logLevel;
         self.databaseMap[databaseId] = database;
         // To handle hot-restart recovery
         if (singleInstance) {
             self.singleInstanceDatabaseMap[path] = database;
         }
         if (_databaseOpenCount++ == 0) {
-            if (_log) {
+            if (hasVerboseLogLevel(logLevel)) {
                 NSLog(@"Creating operation queue");
             }
         }
@@ -614,7 +639,7 @@ static NSInteger _databaseOpenCount = 0;
         return;
     }
     
-    if (_log) {
+    if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"closing %@", database.path);
     }
     [database.fmDatabaseQueue close];
@@ -625,10 +650,63 @@ static NSInteger _databaseOpenCount = 0;
             [self.singleInstanceDatabaseMap removeObjectForKey:database.path];
         }
         if (--_databaseOpenCount == 0) {
-            if (_log) {
+            if (hasVerboseLogLevel(logLevel)) {
                 NSLog(@"No more databases open");
             }
         }
+    }
+    result(nil);
+}
+
+//
+// debug
+//
+- (void)handleDebugCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSMutableDictionary* info = [NSMutableDictionary new];
+    
+    NSString* cmd = call.arguments[_paramCmd];
+    // NSLog(@"cmd %@", cmd);
+    if ([_paramCmdGet isEqualToString:cmd]) {
+        @synchronized (self.mapLock) {
+            if ([self.databaseMap  count] > 0) {
+                NSMutableDictionary* dbsInfo     = [NSMutableDictionary new];
+                [self.databaseMap enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, SqfliteDatabase * _Nonnull db, BOOL * _Nonnull stop) {
+                    NSMutableDictionary* dbInfo	 = [NSMutableDictionary new];
+                    [dbInfo setObject:db.path forKey:_paramPath];
+                    [dbInfo setObject:[NSNumber numberWithBool:db.singleInstance] forKey:_paramSingleInstance];
+                    if (db.logLevel > logLevelNone) {
+                        [dbInfo setObject:[NSNumber numberWithInteger:db.logLevel ] forKey:_paramLogLevel];
+                    }
+                    [dbsInfo setObject:dbInfo forKey:[key stringValue]];
+                    [info setObject:dbsInfo forKey:_paramDatabases];
+                }];
+            }
+        }
+        if (logLevel > logLevelNone) {
+            [info setObject:[NSNumber numberWithInteger:logLevel] forKey:_paramLogLevel];
+        }
+        
+    }
+    result(info);
+}
+
+//
+// debug mode - trying deprecation since 1.1.6
+//
+- (void)handleDebugModeCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSNumber* on = (NSNumber*)call.arguments;
+    bool _log = [on boolValue];
+    NSLog(@"Debug mode %d", _log);
+    _extra_log = __extra_log && _log;
+    
+    if (_log) {
+        if (_extra_log) {
+            logLevel = logLevelVerbose;
+        } else {
+            logLevel = logLevelSql;
+        }
+    } else {
+        logLevel = logLevelNone;
     }
     result(nil);
 }
@@ -638,8 +716,15 @@ static NSInteger _databaseOpenCount = 0;
 //
 - (void)handleOptionsCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSNumber* queryAsMapList = call.arguments[_paramQueryAsMapList];
-    _queryAsMapList = [queryAsMapList boolValue];
+    if (queryAsMapList) {
+        _queryAsMapList = [queryAsMapList boolValue];
+    }
+    NSNumber* logLevelNumber = call.arguments[_paramLogLevel];
     
+    if (logLevelNumber) {
+        logLevel = [logLevelNumber intValue];
+        NSLog(@"Sqflite: logLevel %d", logLevel);
+    }
     result(nil);
 }
 
@@ -658,7 +743,7 @@ static NSInteger _databaseOpenCount = 0;
             result(res);
         });
     };
-
+    
     if ([_methodGetPlatformVersion isEqualToString:call.method]) {
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
     } else if ([_methodOpenDatabase isEqualToString:call.method]) {
@@ -673,18 +758,18 @@ static NSInteger _databaseOpenCount = 0;
         [self handleExecuteCall:call result:wrappedResult];
     } else if ([_methodBatch isEqualToString:call.method]) {
         [self handleBatchCall:call result:wrappedResult];
-    } else if ([_methodCloseDatabase isEqualToString:call.method]) {
-        [self handleCloseDatabaseCall:call result:wrappedResult];
-    } else if ([_methodDebugMode isEqualToString:call.method]) {
-        NSNumber* on = (NSNumber*)call.arguments;
-        _log = [on boolValue];
-        NSLog(@"Debug mode %d", _log);
-        _extra_log = __extra_log && _log;
-        result(nil);
-    } else if ([_methodOptions isEqualToString:call.method]) {
-        [self handleOptionsCall:call result:result];
     } else if ([_methodGetDatabasesPath isEqualToString:call.method]) {
         [self handleGetDatabasesPath:call result:result];
+    } else if ([_methodCloseDatabase isEqualToString:call.method]) {
+        [self handleCloseDatabaseCall:call result:wrappedResult];
+    } else if ([_methodOptions isEqualToString:call.method]) {
+        [self handleOptionsCall:call result:result];
+    } else if ([_methodDebug isEqualToString:call.method]) {
+        [self handleDebugCall:call
+                       result:result];
+    } else if ([_methodDebugMode isEqualToString:call.method]) {
+        [self handleDebugModeCall:call
+                           result:result];
     } else {
         result(FlutterMethodNotImplemented);
     }

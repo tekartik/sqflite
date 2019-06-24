@@ -1,6 +1,6 @@
 import 'package:pedantic/pedantic.dart';
-import 'package:test/test.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('sqflite', () {
@@ -98,6 +98,25 @@ void main() {
 
         db = await openDatabase(path, version: 1);
         expect(await db.getVersion(), 1);
+      } finally {
+        await db.close();
+      }
+    });
+
+    test('duplicated_column', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var path = 'test_duplicated_column.db';
+      await deleteDatabase(path);
+      var db = await openDatabase(path);
+      try {
+        await db.execute('CREATE TABLE Test (col1 INTEGER, col2 INTEGER)');
+        await db.insert('Test', {'col1': 1, 'col2': 2});
+
+        var result = await db.rawQuery(
+            'SELECT t.col1, col1, t.col2, col2 AS col1 FROM Test AS t');
+        expect(result, [
+          {'col1': 2, 'col2': 2}
+        ]);
       } finally {
         await db.close();
       }

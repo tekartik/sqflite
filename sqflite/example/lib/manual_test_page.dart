@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/src/factory_mixin.dart' as impl;
 import 'package:sqflite_example/model/item.dart';
 import 'package:sqflite_example/src/item_widget.dart';
 import 'package:sqflite_example/utils.dart';
@@ -31,7 +32,8 @@ class _ManualTestPageState extends State<ManualTestPage> {
   }
 
   @override
-  void initState() {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     items = <MenuItem>[
       MenuItem('BEGIN EXCLUSIVE', () async {
         // await Sqflite.devSetDebugModeOn(true);
@@ -44,9 +46,31 @@ class _ManualTestPageState extends State<ManualTestPage> {
         await _closeDatabase();
       },
           summary:
-              'Execute after starting then exit the app using the back button on Android and restart from the launcher.')
+              'Execute after starting then exit the app using the back button on Android and restart from the launcher.'),
+      MenuItem('log level: none', () async {
+        // ignore: deprecated_member_use
+        await Sqflite.devSetOptions(
+            // ignore: deprecated_member_use
+            SqfliteOptions(logLevel: sqfliteLogLevelNone));
+      }, summary: 'No logs'),
+      MenuItem('log level: sql', () async {
+        // ignore: deprecated_member_use
+        await Sqflite.devSetOptions(
+            // ignore: deprecated_member_use
+            SqfliteOptions(logLevel: sqfliteLogLevelSql));
+      }, summary: 'Log sql command and basic database operation'),
+      MenuItem('log level: verbose', () async {
+        // ignore: deprecated_member_use
+        await Sqflite.devSetOptions(
+            // ignore: deprecated_member_use
+            SqfliteOptions(logLevel: sqfliteLogLevelVerbose));
+      }, summary: 'Verbose logs, for debugging'),
+      MenuItem('Get info', () async {
+        final factory = databaseFactory as impl.SqfliteDatabaseFactoryMixin;
+        var info = await factory.getDebugInfo();
+        print(info?.toString());
+      }, summary: 'Implementation info (dev only)')
     ];
-    super.initState();
   }
 
   @override

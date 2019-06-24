@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:sqflite/sqflite.dart';
+
 import 'test_page.dart';
 
 class SlowTestPage extends TestPage {
@@ -140,8 +141,8 @@ class SlowTestPage extends TestPage {
     await db.close();
   }
 
-  // 2019-02-26
+// 2019-02-26
 
-  // BACKGROUND
+// BACKGROUND
 
 }

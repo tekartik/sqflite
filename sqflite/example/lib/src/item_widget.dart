@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+
 import '../model/item.dart';
 
 class ItemWidget extends StatefulWidget {
   ItemWidget(this.item, this.onTap, {this.summary});
+
   final String summary;
 
   final Item item;
@@ -36,12 +38,13 @@ class _ItemWidgetState extends State<ItemWidget> {
         break;
     }
     return ListTile(
-        isThreeLine: widget.summary != null,
-        leading: IconButton(
+        // isThreeLine: widget.summary != null,
+        leading: SizedBox(
+            child: IconButton(
           icon: Icon(icon, color: color),
 
           onPressed: null, // null disables the button
-        ),
+        )),
         title: Text(widget.item.name),
         subtitle: widget.summary != null ? Text(widget.summary) : null,
         onTap: _onTap);

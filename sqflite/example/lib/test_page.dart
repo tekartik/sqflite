@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sqflite_example/src/common_import.dart';
 import 'package:sqflite_example/src/expect.dart';
+
 import 'model/item.dart';
 import 'model/test.dart';
 import 'src/item_widget.dart';
-export 'package:sqflite_example/database/database.dart';
-export 'src/expect.dart' show expect, fail;
+
 export 'package:matcher/matcher.dart';
+export 'package:sqflite_example/database/database.dart';
+
+export 'src/expect.dart' show expect, fail;
 
 class TestPage extends StatefulWidget {
   TestPage(this.title);

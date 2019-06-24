@@ -1,4 +1,4 @@
-package sqflite.example.android.app.src.main.java.com.tekartik.sqflite_example;
+package com.tekartik.sqfliteexample;
 
 import android.os.Bundle;
 

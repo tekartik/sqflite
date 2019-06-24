@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+
 import '../model/main_item.dart';
 
 class MainItemWidget extends StatefulWidget {

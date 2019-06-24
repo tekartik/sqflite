@@ -31,10 +31,12 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
+import static com.tekartik.sqflite.Constant.CMD_GET;
 import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
 import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_BATCH;
 import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
+import static com.tekartik.sqflite.Constant.METHOD_DEBUG;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
 import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
 import static com.tekartik.sqflite.Constant.METHOD_GET_DATABASES_PATH;
@@ -44,7 +46,9 @@ import static com.tekartik.sqflite.Constant.METHOD_OPEN_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_OPTIONS;
 import static com.tekartik.sqflite.Constant.METHOD_QUERY;
 import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
+import static com.tekartik.sqflite.Constant.PARAM_CMD;
 import static com.tekartik.sqflite.Constant.PARAM_ID;
+import static com.tekartik.sqflite.Constant.PARAM_LOG_LEVEL;
 import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
 import static com.tekartik.sqflite.Constant.PARAM_PATH;
 import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
@@ -62,11 +66,13 @@ public class SqflitePlugin implements MethodCallHandler {
     static final Map<String, Integer> _singleInstancesByPath = new HashMap<>();
     static private boolean QUERY_AS_MAP_LIST = false; // set by options
     static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_BACKGROUND;
+    static int logLevel = LogLevel.none;
+
     private final Object databaseMapLocker = new Object();
+    private final Object openCloseLocker = new Object();
     // local cache
     String databasesPath;
     private Context context;
-    private int databaseOpenCount = 0;
     private int databaseId = 0; // incremental database id
     // Database thread execution
     private HandlerThread handlerThread;
@@ -225,7 +231,7 @@ public class SqflitePlugin implements MethodCallHandler {
 
     private boolean executeOrError(Database database, Operation operation) {
         SqlCommand command = operation.getSqlCommand();
-        if (Debug.LOGV) {
+        if (LogLevel.hasSqlLevel(database.logLevel)) {
             Log.d(TAG, "[" + database.getThreadLogTag() + "] " + command);
         }
         try {
@@ -238,7 +244,7 @@ public class SqflitePlugin implements MethodCallHandler {
     }
 
     private Database executeOrError(Database database, SqlCommand command, Result result) {
-        if (Debug.LOGV) {
+        if (LogLevel.hasSqlLevel(database.logLevel)) {
             Log.d(TAG, "[" + database.getThreadLogTag() + "] " + command);
         }
         try {
@@ -398,14 +404,14 @@ public class SqflitePlugin implements MethodCallHandler {
                 // If the change count is 0, assume the insert failed
                 // and return null
                 if (changed == 0) {
-                    if (Debug.LOGV) {
+                    if (LogLevel.hasSqlLevel(database.logLevel)) {
                         Log.d(TAG, "no changes (id was " + cursor.getLong(1) + ")");
                     }
                     operation.success(null);
                     return true;
                 } else {
                     final long id = cursor.getLong(1);
-                    if (Debug.LOGV) {
+                    if (LogLevel.hasSqlLevel(database.logLevel)) {
                         Log.d(TAG, "inserted " + id);
                     }
                     operation.success(id);
@@ -434,7 +440,7 @@ public class SqflitePlugin implements MethodCallHandler {
         Map<String, Object> newResults = null;
         List<List<Object>> rows = null;
         int newColumnCount = 0;
-        if (Debug.LOGV) {
+        if (LogLevel.hasSqlLevel(database.logLevel)) {
             Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
         }
         Cursor cursor = null;
@@ -448,7 +454,7 @@ public class SqflitePlugin implements MethodCallHandler {
             while (cursor.moveToNext()) {
                 if (queryAsMapList) {
                     Map<String, Object> map = cursorRowToMap(cursor);
-                    if (Debug.LOGV) {
+                    if (LogLevel.hasSqlLevel(database.logLevel)) {
                         Log.d(TAG, SqflitePlugin.toString(map));
                     }
                     results.add(map);
@@ -543,7 +549,7 @@ public class SqflitePlugin implements MethodCallHandler {
             cursor = db.rawQuery("SELECT changes()", null);
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 final int changed = cursor.getInt(0);
-                if (Debug.LOGV) {
+                if (LogLevel.hasSqlLevel(database.logLevel)) {
                     Log.d(TAG, "changed " + changed);
                 }
                 operation.success(changed);
@@ -606,15 +612,66 @@ public class SqflitePlugin implements MethodCallHandler {
         return result;
     }
 
+    private void onDebugCall(final MethodCall call, final Result result) {
+        String cmd = call.argument(PARAM_CMD);
+        Map<String, Object> map = new HashMap<>();
+
+        // Get database info
+
+        if (CMD_GET.equals(cmd)) {
+            if (logLevel > LogLevel.none) {
+                map.put(PARAM_LOG_LEVEL, logLevel);
+            }
+            if (!databaseMap.isEmpty()) {
+                Map<String, Object> databasesInfo = new HashMap<>();
+                for (Map.Entry<Integer, Database> entry : databaseMap.entrySet()) {
+                    Database database = entry.getValue();
+                    Map<String, Object> info = new HashMap<>();
+                    info.put(PARAM_PATH, database.path);
+                    info.put(PARAM_SINGLE_INSTANCE, database.singleInstance);
+                    if (database.logLevel > LogLevel.none) {
+                        info.put(PARAM_LOG_LEVEL, database.logLevel);
+                    }
+                    databasesInfo.put(entry.getKey().toString(), info);
+
+                }
+                map.put("databases", databasesInfo);
+            }
+        }
+        result.success(map);
+    }
+
+
+    // Deprecated since 1.1.6
+    private void onDebugModeCall(final MethodCall call, final Result result) {
+        // Old / argument was just a boolean
+        Object on = call.arguments();
+        Debug.LOGV = Boolean.TRUE.equals(on);
+        Debug.EXTRA_LOGV = Debug._EXTRA_LOGV && Debug.LOGV;
+
+        // set default logs to match existing
+        if (Debug.LOGV) {
+            if (Debug.EXTRA_LOGV) {
+                logLevel = LogLevel.verbose;
+            } else if (Debug.LOGV) {
+                logLevel = LogLevel.sql;
+            }
+
+        } else {
+            logLevel = LogLevel.none;
+        }
+        result.success(null);
+    }
+
     //
     // Sqflite.open
     //
-    private void onOpenDatabaseCall(MethodCall call, Result result) {
-        String path = call.argument(PARAM_PATH);
-        Boolean readOnly = call.argument(PARAM_READ_ONLY);
-        boolean inMemory = isInMemoryPath(path);
+    private void onOpenDatabaseCall(final MethodCall call, final Result result) {
+        final String path = call.argument(PARAM_PATH);
+        final Boolean readOnly = call.argument(PARAM_READ_ONLY);
+        final boolean inMemory = isInMemoryPath(path);
 
-        boolean singleInstance = !Boolean.FALSE.equals(call.argument(PARAM_SINGLE_INSTANCE)) && !inMemory;
+        final boolean singleInstance = !Boolean.FALSE.equals(call.argument(PARAM_SINGLE_INSTANCE)) && !inMemory;
 
         // For single instance we create or reuse a thread right away
         // DO NOT TRY TO LOAD existing instance, the database has been closed
@@ -623,7 +680,7 @@ public class SqflitePlugin implements MethodCallHandler {
         if (singleInstance) {
             // Look for in memory instance
             synchronized (databaseMapLocker) {
-                if (Debug.EXTRA_LOGV) {
+                if (LogLevel.hasVerboseLevel(logLevel)) {
                     Log.d(Constant.TAG, "Look for " + path + " in " + _singleInstancesByPath.keySet());
                 }
                 Integer databaseId = _singleInstancesByPath.get(path);
@@ -631,13 +688,12 @@ public class SqflitePlugin implements MethodCallHandler {
                     Database database = databaseMap.get(databaseId);
                     if (database != null) {
                         if (!database.sqliteDatabase.isOpen()) {
-                            if (Debug.LOGV) {
+                            if (LogLevel.hasVerboseLevel(logLevel)) {
                                 Log.d(Constant.TAG, "[" + Thread.currentThread() + "] single instance database of " + path + " not opened");
                             }
                         } else {
-
-                            if (Debug.LOGV) {
-                                Log.d(Constant.TAG, "[" + Thread.currentThread() + "] re-opened single instance " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
+                            if (LogLevel.hasVerboseLevel(logLevel)) {
+                                Log.d(Constant.TAG, "[" + Thread.currentThread() + "] re-opened single instance " + databaseId + " " + path);
                             }
                             result.success(makeOpenResult(databaseId, true));
                             return;
@@ -647,97 +703,140 @@ public class SqflitePlugin implements MethodCallHandler {
             }
         }
 
-
-        if (!inMemory) {
-            File file = new File(path);
-            File directory = new File(file.getParent());
-            if (!directory.exists()) {
-                if (!directory.mkdirs()) {
-                    if (!directory.exists()) {
-                        result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
-                        return;
-                    }
-                }
-            }
-        }
-
-        int databaseId;
+        // Generate new id
+        int newDatabaseId;
         synchronized (databaseMapLocker) {
-            databaseId = ++this.databaseId;
+            newDatabaseId = ++SqflitePlugin.this.databaseId;
         }
-        Database database = new Database(context, path, databaseId, singleInstance);
-        // force opening
-        try {
-            if (Boolean.TRUE.equals(readOnly)) {
-                database.openReadOnly();
-            } else {
-                database.open();
-            }
-        } catch (Exception e) {
-            MethodCallOperation operation = new MethodCallOperation(call, result);
-            handleException(e, operation, database);
-            return;
-        }
+        final int databaseId = newDatabaseId;
 
-        //SQLiteDatabase sqLiteDatabase = SQLiteDatabase.openDatabase(path, null, 0);
+        final Database database = new Database(path, databaseId, singleInstance, logLevel);
+
+
         synchronized (databaseMapLocker) {
-            if (databaseOpenCount++ == 0) {
+            // Create handler if necessary
+            if (handler == null) {
                 handlerThread = new HandlerThread("Sqflite", SqflitePlugin.THREAD_PRIORITY);
                 handlerThread.start();
-                //TEST UI  Handler
-                //handler = new Handler();
                 handler = new Handler(handlerThread.getLooper());
-                if (Debug.LOGV) {
+                if (LogLevel.hasSqlLevel(database.logLevel)) {
                     Log.d(TAG, "starting thread" + handlerThread + " priority " + SqflitePlugin.THREAD_PRIORITY);
                 }
             }
-            if (singleInstance) {
-                _singleInstancesByPath.put(path, databaseId);
+            if (LogLevel.hasSqlLevel(database.logLevel)) {
+                Log.d(TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path);
             }
-            databaseMap.put(databaseId, database);
-            if (Debug.LOGV) {
-                Log.d(TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path + " total open count (" + databaseOpenCount + ")");
-            }
+
+
+            // Open in background thread
+            handler.post(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+
+                            synchronized (openCloseLocker) {
+
+                                if (!inMemory) {
+                                    File file = new File(path);
+                                    File directory = new File(file.getParent());
+                                    if (!directory.exists()) {
+                                        if (!directory.mkdirs()) {
+                                            if (!directory.exists()) {
+                                                result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // force opening
+                                try {
+                                    if (Boolean.TRUE.equals(readOnly)) {
+                                        database.openReadOnly();
+                                    } else {
+                                        database.open();
+                                    }
+                                } catch (Exception e) {
+                                    MethodCallOperation operation = new MethodCallOperation(call, result);
+                                    handleException(e, operation, database);
+                                    return;
+                                }
+
+
+                                synchronized (databaseMapLocker) {
+                                    if (singleInstance) {
+                                        _singleInstancesByPath.put(path, databaseId);
+                                    }
+                                    databaseMap.put(databaseId, database);
+                                }
+                                if (LogLevel.hasSqlLevel(database.logLevel)) {
+                                    Log.d(TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path);
+                                }
+                            }
+
+
+                            result.success(makeOpenResult(databaseId, false));
+                        }
+
+                    });
         }
 
-        result.success(makeOpenResult(databaseId, false));
     }
 
     //
     // Sqflite.close
     //
-    private void onCloseDatabaseCall(MethodCall call, Result result) {
-        int databaseId = call.argument(PARAM_ID);
-        Database database = getDatabaseOrError(call, result);
+    private void onCloseDatabaseCall(MethodCall call, final Result result) {
+        final int databaseId = call.argument(PARAM_ID);
+        final Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return;
         }
-        if (Debug.LOGV) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] closing " + databaseId + " " + database.path + " total open count (" + databaseOpenCount + ")");
+
+        if (LogLevel.hasSqlLevel(database.logLevel)) {
+            Log.d(TAG, "[" + Thread.currentThread() + "] closing " + databaseId + " " + database.path);
         }
-        String path = database.path;
-        if (database.singleInstance) {
-            // Remove from single instance map
-            synchronized (databaseMapLocker) {
+
+        final String path = database.path;
+
+        // Remove from map right away
+        synchronized (databaseMapLocker) {
+            databaseMap.remove(databaseId);
+
+            if (database.singleInstance) {
                 _singleInstancesByPath.remove(path);
             }
         }
-        database.close();
 
-        synchronized (databaseMapLocker) {
-            databaseMap.remove(databaseId);
-            if (--databaseOpenCount == 0) {
-                if (Debug.LOGV) {
-                    Log.d(TAG, "stopping thread" + handlerThread);
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (openCloseLocker) {
+
+                    try {
+                        database.close();
+                    } catch (Exception e) {
+                        Log.e(TAG, "error " + e + " while closing database " + databaseId);
+                    }
+
+                    synchronized (databaseMapLocker) {
+
+                        if (databaseMap.isEmpty() && handler != null) {
+                            if (LogLevel.hasSqlLevel(database.logLevel)) {
+                                Log.d(TAG, "stopping thread" + handlerThread);
+                            }
+                            handlerThread.quit();
+                            handlerThread = null;
+                            handler = null;
+                        }
+                    }
                 }
-                handlerThread.quit();
-                handlerThread = null;
-                handler = null;
+
+                result.success(null);
             }
-        }
+        });
 
-
-        result.success(null);
     }
 
     @Override
@@ -748,13 +847,6 @@ public class SqflitePlugin implements MethodCallHandler {
                 result.success("Android " + android.os.Build.VERSION.RELEASE);
                 break;
 
-            case METHOD_DEBUG_MODE: {
-                Object on = call.arguments();
-                Debug.LOGV = Boolean.TRUE.equals(on);
-                Debug.EXTRA_LOGV = Debug._EXTRA_LOGV && Debug.LOGV;
-                result.success(null);
-                break;
-            }
             case METHOD_CLOSE_DATABASE: {
                 onCloseDatabaseCall(call, result);
                 break;
@@ -791,6 +883,15 @@ public class SqflitePlugin implements MethodCallHandler {
                 onGetDatabasesPath(call, result);
                 break;
             }
+            case METHOD_DEBUG: {
+                onDebugCall(call, result);
+                break;
+            }
+            // Obsolete
+            case METHOD_DEBUG_MODE: {
+                onDebugModeCall(call, result);
+                break;
+            }
             default:
                 result.notImplemented();
                 break;
@@ -806,6 +907,10 @@ public class SqflitePlugin implements MethodCallHandler {
         if (threadPriority != null) {
             THREAD_PRIORITY = (Integer) threadPriority;
         }
+        Integer logLevel = LogLevel.getLogLevel(call);
+        if (logLevel != null) {
+            SqflitePlugin.logLevel = logLevel;
+        }
         result.success(null);
     }
 
@@ -818,56 +923,6 @@ public class SqflitePlugin implements MethodCallHandler {
             databasesPath = file.getParent();
         }
         result.success(databasesPath);
-    }
-
-    private static class Database {
-        final boolean singleInstance;
-        final String path;
-        final int id;
-        SQLiteDatabase sqliteDatabase;
-
-        private Database(Context context, String path, int id, boolean singleInstance) {
-            this.path = path;
-            this.singleInstance = singleInstance;
-            this.id = id;
-        }
-
-        private void open() {
-            sqliteDatabase = SQLiteDatabase.openDatabase(path, null,
-                    SQLiteDatabase.CREATE_IF_NECESSARY);
-        }
-
-        private void openReadOnly() {
-            sqliteDatabase = SQLiteDatabase.openDatabase(path, null,
-                    SQLiteDatabase.OPEN_READONLY);
-        }
-
-        public void close() {
-            sqliteDatabase.close();
-        }
-
-        public SQLiteDatabase getWritableDatabase() {
-            return sqliteDatabase;
-        }
-
-        public SQLiteDatabase getReadableDatabase() {
-            return sqliteDatabase;
-        }
-
-        public boolean enableWriteAheadLogging() {
-            try {
-                return sqliteDatabase.enableWriteAheadLogging();
-            } catch (Exception e) {
-                Log.e(TAG, "enable WAL error: " + e);
-                return false;
-            }
-        }
-
-        String getThreadLogTag() {
-            Thread thread = Thread.currentThread();
-
-            return "" + id + "," + thread.getName() + "(" + thread.getId() + ")";
-        }
     }
 
     private class BgResult implements Result {

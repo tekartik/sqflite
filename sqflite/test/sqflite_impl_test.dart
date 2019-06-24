@@ -105,6 +105,24 @@ void main() {
       expect(queryResultToList(<String, dynamic>{}), <dynamic>[]);
     });
 
+    test('duplicated key', () {
+      final QueryResultSet queryResultSet = QueryResultSet(<dynamic>[
+        'col',
+        'col'
+      ], <dynamic>[
+        <dynamic>[1, 2]
+      ]);
+      // last one wins...
+      expect(queryResultSet.columnIndex('col'), 1);
+      final Map<String, dynamic> row = queryResultSet.first;
+      expect(row['col'], 2);
+
+      expect(row.length, 1);
+      expect(row.keys, <String>['col']);
+      expect(row.values, <dynamic>[2]);
+      expect(row, <String, dynamic>{"col": 2});
+    });
+
     test('lockWarning', () {});
   });
 }

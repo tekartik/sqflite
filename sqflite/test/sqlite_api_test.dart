@@ -11,7 +11,8 @@ void main() {
         Database,
         Transaction,
         Batch,
-        ConflictAlgorithm
+        ConflictAlgorithm,
+        inMemoryDatabasePath,
       ].forEach((dynamic value) {
         expect(value, isNotNull);
       });

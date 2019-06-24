@@ -8,7 +8,7 @@ public class Constant {
 
     static final public String METHOD_GET_PLATFORM_VERSION = "getPlatformVersion";
     static final public String METHOD_GET_DATABASES_PATH = "getDatabasesPath";
-    static final public String METHOD_DEBUG_MODE = "debugMode";
+    static final public String METHOD_DEBUG = "debug";
     static final public String METHOD_OPTIONS = "options";
     static final public String METHOD_OPEN_DATABASE = "openDatabase";
     static final public String METHOD_CLOSE_DATABASE = "closeDatabase";
@@ -23,6 +23,7 @@ public class Constant {
     // when opening a database
     static final String PARAM_READ_ONLY = "readOnly"; // boolean
     static final String PARAM_SINGLE_INSTANCE = "singleInstance"; // boolean
+    static final String PARAM_LOG_LEVEL = "logLevel"; // int
     // Result when opening a database
     static final String PARAM_RECOVERED = "recovered";
 
@@ -33,6 +34,10 @@ public class Constant {
     public static final String PARAM_SQL_ARGUMENTS = "arguments";
     public static final String PARAM_NO_RESULT = "noResult";
     public static final String PARAM_CONTINUE_OR_ERROR = "continueOnError";
+
+    // debugMode
+    static final String PARAM_CMD = "cmd"; // debugMode cmd: get/set
+    static final String CMD_GET = "get";
 
     // in batch
     static final String PARAM_OPERATIONS = "operations";
@@ -56,4 +61,7 @@ public class Constant {
 
     // android log tag
     static final public String TAG = "Sqflite";
+
+    // Obsolete since 1.17
+    static final public String METHOD_DEBUG_MODE = "debugMode";
 }
