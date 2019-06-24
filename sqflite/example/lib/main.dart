@@ -4,18 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/batch_test_page.dart';
-import 'package:sqflite_example/exp_test_page.dart';
 import 'package:sqflite_example/deprecated_test_page.dart';
+import 'package:sqflite_example/exception_test_page.dart';
+import 'package:sqflite_example/exp_test_page.dart';
 import 'package:sqflite_example/manual_test_page.dart';
 import 'package:sqflite_example/src/dev_utils.dart';
+
 import 'model/main_item.dart';
 import 'open_test_page.dart';
-import 'package:sqflite_example/exception_test_page.dart';
 import 'raw_test_page.dart';
 import 'slow_test_page.dart';
 import 'src/main_item_widget.dart';
-import 'type_test_page.dart';
 import 'todo_test_page.dart';
+import 'type_test_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -53,6 +54,7 @@ class _MyAppState extends State<MyApp> {
     testExpRoute: (BuildContext context) => ExpTestPage(),
     testDeprecatedRoute: (BuildContext context) => DeprecatedTestPage(),
   };
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -110,6 +112,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 String _debugAutoStartRouteName;
+
 String get debugAutoStartRouteName => _debugAutoStartRouteName;
 
 /// Deprecated to avoid calls

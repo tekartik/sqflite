@@ -642,7 +642,7 @@ public class SqflitePlugin implements MethodCallHandler {
     }
 
 
-    // Deprecated since 1.17
+    // Deprecated since 1.1.6
     private void onDebugModeCall(final MethodCall call, final Result result) {
         // Old / argument was just a boolean
         Object on = call.arguments();

@@ -181,7 +181,7 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
     final SqfliteDebugInfo info = SqfliteDebugInfo();
     final dynamic map =
         await safeInvokeMethod(methodDebug, <String, dynamic>{'cmd': 'get'});
-    final dynamic databasesMap = map['databases'];
+    final dynamic databasesMap = map[paramDatabases];
     if (databasesMap is Map) {
       info.databases = databasesMap.map((dynamic id, dynamic info) {
         final SqfliteDatabaseDebugInfo dbInfo = SqfliteDatabaseDebugInfo();
@@ -199,7 +199,8 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
 }
 
 // When opening the database (bool)
-const String paramLogLevel = "logLevel";
+const String paramLogLevel = 'logLevel';
+const String paramDatabases = 'databases';
 
 class SqfliteDatabaseDebugInfo {
   String path;
@@ -211,6 +212,20 @@ class SqfliteDatabaseDebugInfo {
     singleInstance = map[paramSingleInstance] as bool;
     logLevel = map[paramLogLevel] as int;
   }
+
+  Map<String, dynamic> toDebugMap() {
+    final Map<String, dynamic> map = <String, dynamic>{
+      paramPath: path,
+      paramSingleInstance: singleInstance
+    };
+    if ((logLevel ?? sqfliteLogLevelNone) > sqfliteLogLevelNone) {
+      map[paramLogLevel] = logLevel;
+    }
+    return map;
+  }
+
+  @override
+  String toString() => toDebugMap().toString();
 }
 
 class SqfliteDebugInfo {
@@ -218,4 +233,20 @@ class SqfliteDebugInfo {
 
   /// global log level (set for new opened databases)
   int logLevel;
+
+  Map<String, dynamic> toDebugMap() {
+    final Map<String, dynamic> map = <String, dynamic>{};
+    if (databases != null) {
+      map[paramDatabases] = databases.map(
+          (String key, SqfliteDatabaseDebugInfo dbInfo) =>
+              MapEntry<String, Map<String, dynamic>>(key, dbInfo.toDebugMap()));
+    }
+    if ((logLevel ?? sqfliteLogLevelNone) > sqfliteLogLevelNone) {
+      map[paramLogLevel] = logLevel;
+    }
+    return map;
+  }
+
+  @override
+  String toString() => toDebugMap().toString();
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/src/factory_mixin.dart' as impl;
 import 'package:sqflite_example/model/item.dart';
 import 'package:sqflite_example/src/item_widget.dart';
 import 'package:sqflite_example/utils.dart';
@@ -63,7 +64,12 @@ class _ManualTestPageState extends State<ManualTestPage> {
         await Sqflite.devSetOptions(
             // ignore: deprecated_member_use
             SqfliteOptions(logLevel: sqfliteLogLevelVerbose));
-      }, summary: 'Verbose logs, for debugging')
+      }, summary: 'Verbose logs, for debugging'),
+      MenuItem('Get info', () async {
+        final factory = databaseFactory as impl.SqfliteDatabaseFactoryMixin;
+        var info = await factory.getDebugInfo();
+        print(info?.toString());
+      }, summary: 'Implementation info (dev only)')
     ];
   }
 

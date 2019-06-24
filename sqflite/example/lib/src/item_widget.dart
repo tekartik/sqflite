@@ -5,6 +5,7 @@ import '../model/item.dart';
 
 class ItemWidget extends StatefulWidget {
   ItemWidget(this.item, this.onTap, {this.summary});
+
   final String summary;
 
   final Item item;

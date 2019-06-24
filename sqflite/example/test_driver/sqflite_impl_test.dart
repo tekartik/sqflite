@@ -1,7 +1,8 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/src/database_mixin.dart';
-import 'package:sqflite/src/factory_impl.dart';
+import 'package:sqflite/src/database_mixin.dart' as impl;
+import 'package:sqflite/src/factory_mixin.dart' as impl;
+
 import 'package:sqflite_example/utils.dart';
 import 'package:test/test.dart';
 
@@ -17,10 +18,10 @@ Future devVerbose() async {
 }
 
 void main() {
-  final factory = sqlfliteDatabaseFactory as SqfliteDatabaseFactoryImpl;
+  final factory = databaseFactory as impl.SqfliteDatabaseFactoryMixin;
   group('impl', () {
-    if (Platform.isAndroid) {
-      group('android_debug_info', () {
+    if (Platform.isIOS || Platform.isAndroid) {
+      group('debug_info', () {
         test('open null', () async {
           var info = await factory.getDebugInfo();
           expect(info.databases, isNull);
@@ -48,7 +49,7 @@ void main() {
           expect(info.databases, isNull);
 
           var sw = Stopwatch()..start();
-          var db = await openDatabase(path) as SqfliteDatabaseBase;
+          var db = await openDatabase(path) as impl.SqfliteDatabaseMixin;
           expect(db.id, greaterThan(0));
           print('Sqflite opening database: ${sw.elapsed}');
           try {
@@ -62,7 +63,7 @@ void main() {
             // open again
             var previousDb = db;
             var id = db.id;
-            db = await openDatabase(path) as SqfliteDatabaseBase;
+            db = await openDatabase(path) as impl.SqfliteDatabaseMixin;
             expect(db.id, id);
             expect(db, previousDb);
           } finally {
@@ -77,7 +78,7 @@ void main() {
           // reopen
           var id = db.id;
           sw = Stopwatch()..start();
-          var db3 = await openDatabase(path) as SqfliteDatabaseBase;
+          var db3 = await openDatabase(path) as impl.SqfliteDatabaseMixin;
           print('Sqflite opening database: ${sw.elapsed}');
           try {
             expect(db3.id, id + 1);
