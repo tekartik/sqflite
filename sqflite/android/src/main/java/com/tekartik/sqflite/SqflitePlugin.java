@@ -77,6 +77,7 @@ public class SqflitePlugin implements MethodCallHandler {
     // Database thread execution
     private HandlerThread handlerThread;
     private Handler handler;
+
     @SuppressLint("UseSparseArrays")
     private final Map<Integer, Database> databaseMap = new HashMap<>();
 
@@ -666,7 +667,7 @@ public class SqflitePlugin implements MethodCallHandler {
     //
     // Sqflite.open
     //
-    private void onOpenDatabaseCall(final MethodCall call, final Result result) {
+    private void onOpenDatabaseCall(final MethodCall call, Result result) {
         final String path = call.argument(PARAM_PATH);
         final Boolean readOnly = call.argument(PARAM_READ_ONLY);
         final boolean inMemory = isInMemoryPath(path);
@@ -712,6 +713,7 @@ public class SqflitePlugin implements MethodCallHandler {
 
         final Database database = new Database(path, databaseId, singleInstance, logLevel);
 
+        final BgResult bgResult = new BgResult(result);
 
         synchronized (databaseMapLocker) {
             // Create handler if necessary
@@ -742,7 +744,7 @@ public class SqflitePlugin implements MethodCallHandler {
                                     if (!directory.exists()) {
                                         if (!directory.mkdirs()) {
                                             if (!directory.exists()) {
-                                                result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
+                                                bgResult.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
                                                 return;
                                             }
                                         }
@@ -757,11 +759,10 @@ public class SqflitePlugin implements MethodCallHandler {
                                         database.open();
                                     }
                                 } catch (Exception e) {
-                                    MethodCallOperation operation = new MethodCallOperation(call, result);
+                                    MethodCallOperation operation = new MethodCallOperation(call, bgResult);
                                     handleException(e, operation, database);
                                     return;
                                 }
-
 
                                 synchronized (databaseMapLocker) {
                                     if (singleInstance) {
@@ -774,8 +775,7 @@ public class SqflitePlugin implements MethodCallHandler {
                                 }
                             }
 
-
-                            result.success(makeOpenResult(databaseId, false));
+                            bgResult.success(makeOpenResult(databaseId, false));
                         }
 
                     });
@@ -786,7 +786,7 @@ public class SqflitePlugin implements MethodCallHandler {
     //
     // Sqflite.close
     //
-    private void onCloseDatabaseCall(MethodCall call, final Result result) {
+    private void onCloseDatabaseCall(MethodCall call, Result result) {
         final int databaseId = call.argument(PARAM_ID);
         final Database database = getDatabaseOrError(call, result);
         if (database == null) {
@@ -808,7 +808,7 @@ public class SqflitePlugin implements MethodCallHandler {
             }
         }
 
-
+        final BgResult bgResult = new BgResult(result);
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -833,7 +833,7 @@ public class SqflitePlugin implements MethodCallHandler {
                     }
                 }
 
-                result.success(null);
+                bgResult.success(null);
             }
         });
 
