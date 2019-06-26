@@ -1,4 +1,4 @@
-## 1.1.6
+## 1.1.6+1
 
 * Open database in a background thread on Android
 
