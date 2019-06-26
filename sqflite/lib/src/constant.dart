@@ -67,6 +67,6 @@ final int sqfliteLogLevelSql = 1;
 /// Log native verbose
 final int sqfliteLogLevelVerbose = 2;
 
-// deprecated since 1.17
+// deprecated since 1.1.6
 // @deprecated
 const String methodSetDebugModeOn = "debugMode";

@@ -32,7 +32,7 @@ class Sqflite {
     await invokeMethod<dynamic>(methodSetDebugModeOn, on);
   }
 
-  /// Planned Deprecated for 1.17
+  /// Planned Deprecated for 1.1.7
   static Future<bool> getDebugModeOn() async {
     return impl.debugModeOn;
   }
