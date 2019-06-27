@@ -90,6 +90,36 @@ assert(count == 1);
 await database.close();
 ```
 
+### Upgrade Database 
+    
+Demo code to Upgrade your database
+
+```dart
+
+// Before Upgrade
+Database database = await openDatabase(path, version: 1,
+    onCreate: (Database db, int version) async {
+  // When creating the db, create the table
+      await db.execute(
+        'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
+      await db.setVersion(version);
+});
+
+//After Upgrade
+Database database = await openDatabase(path, version: 2,
+    onUpgrade: (Database db, int oldVersion, int newVersion) async {
+      await db.execute('ALTER TABLE Test ADD email TEXT');
+      await db.setVersion(newVersion);
+    },
+    onCreate: (Database db, int version) async {
+  // When creating the db, create the table
+      await db.execute(
+        'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
+      await db.setVersion(version);
+});
+```
+It's importante use setVersion({version}), to the sqlite check what's version is more recentily.
+
 ### SQL helpers
 
 Example using the helpers
