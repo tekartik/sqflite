@@ -23,11 +23,34 @@ For help getting started with Flutter, view the online
 
 ## Usage example
 
+
+
 Import `sqflite.dart`
 
 ```dart
 import 'package:sqflite/sqflite.dart';
 ```
+
+### Opening a database
+
+A SQLite database is a file in the file system identified by a path. If relative, this path is relative to the path
+obtained by `getDatabasesPath()`, which is the default database directory on Android and the documents directory on iOS.
+
+```dart
+var db = await openDatabase('my_db.db');
+```
+
+There is a basic migration mechanism to handle schema changes during opening.
+
+Many applications use one database and would never need to close it (it will be closed when the application is
+terminated). If you want to release resources, you can close the database.
+
+```dart
+await db.close();
+```
+
+* See [more information on opening a database](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/opening_db.md).
+* Full [migration example](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/migration_example.md)
 
 ### Raw SQL queries
     
