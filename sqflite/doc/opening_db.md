@@ -15,10 +15,20 @@ try {
 } catch (_) {}
 ```
 
+## Opening
+
+A SQLite database is a file in the file system identified by a path. If relative, this path is relative to the path
+obtained by `getDatabasesPath()`, which is the default database directory on Android and the documents directory on iOS.
+
+```dart
+var db = await openDatabase('my_db.db');
+```
+
 ## Read-write
 
 Opening a database in read-write mode is the default. One can specify a version to perform
 migration strategy, can configure the database and its version.
+
 
 ### Configuration
 
@@ -60,6 +70,11 @@ var db = await openDatabase(path,
 ```
 ### Migration
 
+To handle database upgrades (schema changes), there is a basic version mechanism
+similar to the Android API. While `getVersion` and `setVersion` are exposed,
+there should not be used and instead, migrations should be performed when opening
+the database.
+
 `onCreate`, `onUpgrade`, and `onDowngrade` are called when a `version` is
 specified. If the database does not exist, `onCreate` is called. If `onCreate`
 is not defined, `onUpgrade` is called instead with `oldVersion` having value 0.
@@ -93,7 +108,7 @@ var db = await openDatabase(path,
   onDowngrade: onDatabaseDowngradeDelete);
 ```
 
-See a complete migration example [here](migration_example.md)
+See a [complete migration example](migration_example.md)
 
 ### Post open callback
 
@@ -119,8 +134,11 @@ var db = await openReadOnlyDatabase(path);
 
 ## Prevent database locked issue
 
-It is strongly suggested to open a database only once.
-If you open the same database multiple times, you might encounter (at least on Android):
+It is strongly suggested to open a database only once. By default a database is open as
+a single instance (`singleInstance: true`). i.e. re-opening the same file is safe and it 
+will give you the same database.
+
+If you open the same database multiple times using `singleInstance: false`, you might encounter (at least on Android):
 
     android.database.sqlite.SQLiteDatabaseLockedException: database is locked (code 5)
     
