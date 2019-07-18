@@ -97,7 +97,7 @@ class SlowTestPage extends TestPage {
     try {
       await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
 
-      Stopwatch sw = new Stopwatch()..start();
+      Stopwatch sw = Stopwatch()..start();
       Batch batch = db.batch();
 
       for (int i = 0; i < count; i++) {
@@ -106,17 +106,17 @@ class SlowTestPage extends TestPage {
       await batch.commit();
       print("sw ${sw.elapsed} insert $count items batch ");
 
-      sw = new Stopwatch()..start();
+      sw = Stopwatch()..start();
       var result = await db.query('Test');
       print("sw ${sw.elapsed} SELECT * From Test : ${result.length} items");
 
-      sw = new Stopwatch()..start();
+      sw = Stopwatch()..start();
       result =
           await db.query('Test', where: 'name LIKE ?', whereArgs: ['%item%']);
       print(
           "sw ${sw.elapsed} SELECT * FROM Test WHERE name LIKE %item% ${result.length} items");
 
-      sw = new Stopwatch()..start();
+      sw = Stopwatch()..start();
       result =
           await db.query('Test', where: 'name LIKE ?', whereArgs: ['%dummy%']);
       print(

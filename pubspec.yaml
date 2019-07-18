@@ -15,7 +15,7 @@ dev_dependencies:
       url: git://github.com/tekartik/travis_ci_flutter.dart
       ref: dart2
     version: '>=0.1.0'
-  process_run: '>=0.10.0'
+  process_run: '>=0.10.1'
 
 dependency_overrides:
   pedantic: '>=1.4.0 <3.0.0'

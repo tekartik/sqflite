@@ -1,6 +1,6 @@
-## Development guide
+# Development guide
 
-### Check list
+## Check list
 
 * run test
 * no warning
@@ -8,6 +8,14 @@
 * run `tool/travis.dart`
 * run the example
 
-### Publishing
+## Publishing
 
     flutter packages pub publish
+    
+## Testing
+
+### Using `test_driver`
+
+From the `example` folder, you should be able to run some native tests using:
+
+    flutter driver test_driver/main.dart 
