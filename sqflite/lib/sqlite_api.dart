@@ -178,11 +178,11 @@ abstract class Database implements DatabaseExecutor {
       [List<dynamic> arguments]);
 }
 
-typedef FutureOr<void> OnDatabaseVersionChangeFn(
+typedef OnDatabaseVersionChangeFn = FutureOr<void> Function(
     Database db, int oldVersion, int newVersion);
-typedef FutureOr<void> OnDatabaseCreateFn(Database db, int version);
-typedef FutureOr<void> OnDatabaseOpenFn(Database db);
-typedef FutureOr<void> OnDatabaseConfigureFn(Database db);
+typedef OnDatabaseCreateFn = FutureOr<void> Function(Database db, int version);
+typedef OnDatabaseOpenFn = FutureOr<void> Function(Database db);
+typedef OnDatabaseConfigureFn = FutureOr<void> Function(Database db);
 
 /// to specify during [openDatabase] for [onDowngrade]
 /// Downgrading will always fail

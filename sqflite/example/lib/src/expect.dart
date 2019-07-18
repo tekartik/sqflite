@@ -20,8 +20,8 @@ class TestFailure {
 /// The type used for functions that can be used to build up error reports
 /// upon failures in [expect].
 @Deprecated("Will be removed in 0.13.0.")
-typedef String ErrorFormatter(
-    actual, Matcher matcher, String reason, Map matchState, bool verbose);
+typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
+    String reason, Map matchState, bool verbose);
 
 /// Assert that [actual] matches [matcher].
 ///
