@@ -43,15 +43,17 @@ insert and update. The option `implicit-casts: false` explained above helps to f
 This error is typically a build/setup error after adding the dependency.
 
 - Try all the steps defined at the top of the documents
-- make sure you stop the current running application if any
-- force a `flutter packages get`
-- try to clean your build folder `flutter clean`
-- on iOS, you can try to force a `pod install` / `pod update`
-
+- Make sure you stop the current running application if any
+- Force a `flutter packages get`
+- Try to clean your build folder `flutter clean`
+- On iOS, you can try to force a `pod install` / `pod update`
+- Search for [other bugs in flutter](https://github.com/flutter/flutter/search?q=MissingPluginException&type=Issues) 
+  like this, other people face the same issue with other plugins so it is likely not sqflite related 
+  
 Advanced checks:
-- the GeneratedPluginRegistrant file that flutter run should have generated in your project contain
+- The GeneratedPluginRegistrant file that flutter run should have generated in your project contain
   a line registering the plugin
-- (iOS) AppDelegate.m (iOS) or MainActivity.java (Android) contain a call to 
+- AppDelegate.m (iOS) or MainActivity.java (Android) contain a call to 
   GeneratedPluginRegistrant asking it to register itself. Those calls should be made from the app
   launch method (application:didFinishLaunchingWithOptions: on iOS, onCreate on Android).
 
