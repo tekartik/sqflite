@@ -59,7 +59,7 @@ Advanced checks:
   SqflitePlugin.registerWith(registry.registrarFor("com.tekartik.sqflite.SqflitePlugin"));
   ```
   iOS:
-  ```
+  ```objective-c
   [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
   ```
 - Check MainActivity.java (Android) contains a call to 
@@ -77,7 +77,7 @@ Advanced checks:
 - Check AppDelegate.m (iOS) contains a call to 
   GeneratedPluginRegistrant asking it to register itself. This call should be made from the app
   launch method (application:didFinishLaunchingWithOptions:).
-  ```
+  ```objective-c
   - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [GeneratedPluginRegistrant registerWithRegistry:self];
     return [super application:application didFinishLaunchingWithOptions:launchOptions];
