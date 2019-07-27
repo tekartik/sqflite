@@ -51,12 +51,38 @@ This error is typically a build/setup error after adding the dependency.
   like this, other people face the same issue with other plugins so it is likely not sqflite related 
   
 Advanced checks:
-- The GeneratedPluginRegistrant file that flutter run should have generated in your project contain
-  a line registering the plugin
-- AppDelegate.m (iOS) or MainActivity.java (Android) contain a call to 
-  GeneratedPluginRegistrant asking it to register itself. Those calls should be made from the app
-  launch method (application:didFinishLaunchingWithOptions: on iOS, onCreate on Android).
-
+- Check the GeneratedPluginRegistrant file that flutter run should have generated in your project contains
+  a line registering the plugin.
+  
+  Android:
+  ```java
+  SqflitePlugin.registerWith(registry.registrarFor("com.tekartik.sqflite.SqflitePlugin"));
+  ```
+  iOS:
+  ```objective-c
+  [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
+  ```
+- Check MainActivity.java (Android) contains a call to 
+  GeneratedPluginRegistrant asking it to register itself. This call should be made from the app
+  launch method (onCreate).
+  ```java
+  public class MainActivity extends FlutterActivity {
+      @Override
+      protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          GeneratedPluginRegistrant.registerWith(this);
+      }
+  }
+  ```
+- Check AppDelegate.m (iOS) contains a call to 
+  GeneratedPluginRegistrant asking it to register itself. This call should be made from the app
+  launch method (application:didFinishLaunchingWithOptions:).
+  ```objective-c
+  - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [GeneratedPluginRegistrant registerWithRegistry:self];
+    return [super application:application didFinishLaunchingWithOptions:launchOptions];
+  }
+  ```
 Before raising this issue, try adding another well established plugin (the simplest being 
 `path_provider` or `shared_preferences`) to see if you get the error here as well.
 
