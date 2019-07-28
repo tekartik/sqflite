@@ -9,12 +9,18 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 //import androidx.test.runner.AndroidJUnit4; import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -30,6 +36,48 @@ public class TestSqflitePluginTest {
     class Data {
         CountDownLatch signal;
         Integer id;
+    }
+
+    @Test
+    public void missingFile() {
+        Context appContext = ApplicationProvider.getApplicationContext();
+        File file = new File(appContext.getFilesDir(), "missing.db");
+        Database database = new Database(file.getPath(), 0, true, 0);
+        Exception exception = null;
+        try {
+            database.openReadOnly();
+            database.close();
+        } catch (Exception e) {
+            exception = e;
+        }
+
+        assertTrue(exception != null);
+    }
+
+    @Test
+    public void emptyFile() throws IOException {
+        Context appContext = ApplicationProvider.getApplicationContext();
+        File file = new File(appContext.getFilesDir(), "empty.db");
+        FileWriter fileWriter = new FileWriter(file);
+        fileWriter.write("");
+        fileWriter.close();
+        Database database = new Database(file.getPath(), 0, true, 0);
+        database.openReadOnly();
+        database.close();
+    }
+
+
+    @Test
+    public void nonSqfliteFile() throws IOException {
+        Context appContext = ApplicationProvider.getApplicationContext();
+        File file = new File(appContext.getFilesDir(), "non_sqflite_file.db");
+        FileWriter fileWriter = new FileWriter(file);
+        fileWriter.write("test");
+        fileWriter.close();
+        Database database = new Database(file.getPath(), 0, true, 0);
+        database.openReadOnly();
+        database.close();
+        assertEquals(FileUtils.getStringFromFile(file), "test");
     }
 
     @Test

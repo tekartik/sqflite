@@ -1,6 +1,6 @@
 package com.tekartik.sqflite;
 
-import android.content.Context;
+import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
@@ -12,6 +12,7 @@ class Database {
     final int id;
     final int logLevel;
     SQLiteDatabase sqliteDatabase;
+
 
     Database(String path, int id, boolean singleInstance, int logLevel) {
         this.path = path;
@@ -25,9 +26,19 @@ class Database {
                 SQLiteDatabase.CREATE_IF_NECESSARY);
     }
 
+    // Change default error handler to avoid erasing the existing file.
     public void openReadOnly() {
         sqliteDatabase = SQLiteDatabase.openDatabase(path, null,
-                SQLiteDatabase.OPEN_READONLY);
+                SQLiteDatabase.OPEN_READONLY, new DatabaseErrorHandler() {
+                    @Override
+                    public void onCorruption(SQLiteDatabase dbObj) {
+                        // ignored
+                        // default implementation delete the file
+                        //
+                        // This happens asynchronously so cannot be tracked. However a simple
+                        // access should fail
+                    }
+                });
     }
 
     public void close() {
