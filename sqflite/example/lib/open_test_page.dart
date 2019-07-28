@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:sqflite/sqflite.dart';
@@ -85,6 +86,24 @@ class OpenCallbacks {
             onUpgrade: onUpgrade,
             onOpen: onOpen));
   }
+}
+
+/// Check if a file is a valid database file
+///
+/// An empty file is a valid empty sqlite file
+Future<bool> isDatabase(String path) async {
+  Database db;
+  bool isDatabase = false;
+  try {
+    db = await openReadOnlyDatabase(path);
+    int version = await db.getVersion();
+    if (version != null) {
+      isDatabase = true;
+    }
+  } catch (_) {} finally {
+    await db?.close();
+  }
+  return isDatabase;
 }
 
 class OpenTestPage extends TestPage {
@@ -181,6 +200,8 @@ class OpenTestPage extends TestPage {
     test("Simple onCreate", () async {
       // await Sqflite.devSetDebugModeOn(true);
       String path = await initDeleteDb("open_simple_on_create.db");
+      expect(await isDatabase(path), isFalse);
+
       Database db =
           await openDatabase(path, version: 1, onCreate: (db, version) async {
         Batch batch = db.batch();
@@ -197,9 +218,12 @@ class OpenTestPage extends TestPage {
           {'id': 1, 'text': 'test'}
         ];
         expect(result, expected);
+
+        expect(await isDatabase(path), isTrue);
       } finally {
         await db?.close();
       }
+      expect(await isDatabase(path), isTrue);
     });
 
     test("Open 2 databases", () async {
@@ -830,19 +854,47 @@ class OpenTestPage extends TestPage {
         expect(await File(path).readAsString(), 'dummy');
       }
 
+      expect(await isDatabase(path), isFalse);
       // try read-write
       var minExpectedSize = 1000;
       expect(
           (await File(path).readAsBytes()).length, lessThan(minExpectedSize));
 
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(version: 1));
-      await db.getVersion();
+      var db = await factory.openDatabase(path);
+      if (Platform.isIOS) {
+        // On iOS it fails
+        try {
+          await db.getVersion();
+        } catch (e) {
+          print('getVersion error');
+        }
+      } else {
+        // On Android the database is re-created
+        await db.getVersion();
+      }
       await db?.close();
 
-      // Content has changed, it is a big file now!
-      expect((await File(path).readAsBytes()).length,
-          greaterThan(minExpectedSize));
+      if (Platform.isIOS) {
+        // On iOS it fails
+        try {
+          db = await factory.openDatabase(path,
+              options: OpenDatabaseOptions(version: 1));
+        } catch (e) {
+          print('getVersion error');
+        }
+      } else {
+        db = await factory.openDatabase(path,
+            options: OpenDatabaseOptions(version: 1));
+        // On Android the database is re-created
+        await db.getVersion();
+      }
+      await db?.close();
+
+      if (Platform.isAndroid) {
+        // Content has changed, it is a big file now!
+        expect((await File(path).readAsBytes()).length,
+            greaterThan(minExpectedSize));
+      }
     });
   }
 }

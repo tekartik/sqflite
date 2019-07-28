@@ -53,10 +53,12 @@ void main() {
       bool isDatabase = false;
       try {
         db = await openReadOnlyDatabase(path);
-        await db.getVersion();
-        isDatabase = true;
+        var version = await db.getVersion();
+        if (version != null) {
+          isDatabase = true;
+        }
       } catch (_) {} finally {
-        await db.close();
+        await db?.close();
       }
       return isDatabase;
     }
@@ -80,14 +82,14 @@ void main() {
       await File(fullPath).writeAsString('');
 
       // Open is fine, that is the native behavior
-      var db = await openReadOnlyDatabase(path);
+      var db = await openReadOnlyDatabase(fullPath);
       expect(await File(fullPath).readAsString(), '');
 
       await db.getVersion();
 
       await db.close();
       expect(await File(fullPath).readAsString(), '');
-      expect(await isDatabase(path), isTrue);
+      expect(await isDatabase(fullPath), isTrue);
     });
 
     test('read_only missing bad format', () async {
@@ -98,19 +100,20 @@ void main() {
       await File(fullPath).writeAsString('test');
 
       // Open is fine, that is the native behavior
-      var db = await openReadOnlyDatabase(path);
+      var db = await openReadOnlyDatabase(fullPath);
       expect(await File(fullPath).readAsString(), 'test');
       try {
-        await db.getVersion();
-        fail('getVersion should fail ${db?.path}');
+        var version = await db.getVersion();
+        print(await db.query('sqlite_master'));
+        fail('getVersion should fail ${db?.path} ${version}');
       } on DatabaseException catch (_) {
         // Android: DatabaseException(file is not a database (code 26 SQLITE_NOTADB)) sql 'PRAGMA user_version' args []}
       }
       await db.close();
       expect(await File(fullPath).readAsString(), 'test');
 
-      expect(await isDatabase(path), isFalse);
-      expect(await isDatabase(path), isFalse);
+      expect(await isDatabase(fullPath), isFalse);
+      expect(await isDatabase(fullPath), isFalse);
 
       expect(await File(fullPath).readAsString(), 'test');
     });
@@ -171,9 +174,11 @@ void main() {
 
         db = await openDatabase(path, version: 1);
         expect(await db.getVersion(), 1);
+        expect(await isDatabase(path), isTrue);
       } finally {
         await db.close();
       }
+      expect(await isDatabase(path), isTrue);
     });
 
     test('duplicated_column', () async {
