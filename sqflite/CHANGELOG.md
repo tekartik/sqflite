@@ -1,6 +1,7 @@
-## 1.1.6+2
+## 1.1.6+3
 
-* Open database in a background thread on Android
+* Open database in a background thread on Android.
+* Prevent database deletion on Android when opening a corrupted database in read-only.
 
 ## 1.1.5
 
