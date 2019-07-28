@@ -45,13 +45,49 @@ void main() {
       }
     });
 
+    /// Check if a file is a valid database file
+    ///
+    /// An empty file is a valid empty sqlite file
+    Future<bool> isDatabase(String path) async {
+      Database db;
+      bool isDatabase = false;
+      try {
+        db = await openReadOnlyDatabase(path);
+        await db.getVersion();
+        isDatabase = true;
+      } catch (_) {} finally {
+        await db.close();
+      }
+      return isDatabase;
+    }
+
     test('read_only missing database', () async {
       var path = 'test_missing_database.db';
       await deleteDatabase(path);
       try {
         var db = await openReadOnlyDatabase(path);
-        fail('should faile ${db?.path}');
+        fail('should fail ${db?.path}');
       } on DatabaseException catch (_) {}
+
+      expect(await isDatabase(path), isFalse);
+    });
+
+    test('read_only empty file', () async {
+      var path = 'empty_file_database.db';
+      await deleteDatabase(path);
+      var fullPath = join(await getDatabasesPath(), path);
+      await Directory(dirname(fullPath)).create(recursive: true);
+      await File(fullPath).writeAsString('');
+
+      // Open is fine, that is the native behavior
+      var db = await openReadOnlyDatabase(path);
+      expect(await File(fullPath).readAsString(), '');
+
+      await db.getVersion();
+
+      await db.close();
+      expect(await File(fullPath).readAsString(), '');
+      expect(await isDatabase(path), isTrue);
     });
 
     test('read_only missing bad format', () async {
@@ -71,6 +107,11 @@ void main() {
         // Android: DatabaseException(file is not a database (code 26 SQLITE_NOTADB)) sql 'PRAGMA user_version' args []}
       }
       await db.close();
+      expect(await File(fullPath).readAsString(), 'test');
+
+      expect(await isDatabase(path), isFalse);
+      expect(await isDatabase(path), isFalse);
+
       expect(await File(fullPath).readAsString(), 'test');
     });
 

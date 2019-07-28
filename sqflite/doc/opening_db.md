@@ -132,6 +132,27 @@ var db = await openDatabase(
 var db = await openReadOnlyDatabase(path);
 ```
 
+Experimental (Android): It seems that one way to check if a file is a valid database file is to open it in read-only 
+and check its version (i.e. sqlite fails on first access on Android)
+
+```dart
+/// Check if a file is a valid database file
+///
+/// An empty file is a valid empty sqlite file
+Future<bool> isDatabase(String path) async {
+  Database db;
+  bool isDatabase = false;
+  try {
+    db = await openReadOnlyDatabase(path);
+    await db.getVersion();
+    isDatabase = true;
+  } catch (_) {} finally {
+    await db.close();
+  }
+  return isDatabase;
+}
+```
+
 ## Prevent database locked issue
 
 It is strongly suggested to open a database only once. By default a database is open as
