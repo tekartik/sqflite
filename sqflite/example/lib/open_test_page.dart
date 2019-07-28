@@ -798,6 +798,7 @@ class OpenTestPage extends TestPage {
     });
 
     test('Open non sqlite file', () async {
+      // Kind of corruption simulation
       // await Sqflite.devSetDebugModeOn(true);
       var factory = databaseFactory;
       var path =
@@ -806,15 +807,42 @@ class OpenTestPage extends TestPage {
       await factory.deleteDatabase(path);
       // Write dummy content
       await File(path).writeAsString('dummy', flush: true);
-      // It is only 5 bytes
-      expect((await File(path).readAsBytes()).length, 5);
+      // check content
+      expect(await File(path).readAsString(), 'dummy');
+
+      // try read-only
+      {
+        Database db;
+        try {
+          db = await factory.openDatabase(path,
+              options: OpenDatabaseOptions(readOnly: true));
+        } catch (e) {
+          print('open error');
+        }
+        try {
+          await db.getVersion();
+        } catch (e) {
+          print('getVersion error');
+        }
+        await db?.close();
+
+        // check content
+        expect(await File(path).readAsString(), 'dummy');
+      }
+
+      // try read-write
+      var minExpectedSize = 1000;
+      expect(
+          (await File(path).readAsBytes()).length, lessThan(minExpectedSize));
 
       var db = await factory.openDatabase(path,
           options: OpenDatabaseOptions(version: 1));
-      try {} finally {
-        await db?.close();
-      }
-      expect((await File(path).readAsBytes()).length, greaterThan(5));
+      await db.getVersion();
+      await db?.close();
+
+      // Content has changed, it is a big file now!
+      expect((await File(path).readAsBytes()).length,
+          greaterThan(minExpectedSize));
     });
   }
 }

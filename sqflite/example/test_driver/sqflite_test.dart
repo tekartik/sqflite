@@ -1,5 +1,7 @@
+import 'package:path/path.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_example/utils.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -42,6 +44,36 @@ void main() {
         await db.close();
       }
     });
+
+    test('read_only missing database', () async {
+      var path = 'test_missing_database.db';
+      await deleteDatabase(path);
+      try {
+        var db = await openReadOnlyDatabase(path);
+        fail('should faile ${db?.path}');
+      } on DatabaseException catch (_) {}
+    });
+
+    test('read_only missing bad format', () async {
+      var path = 'test_bad_format_database.db';
+      await deleteDatabase(path);
+      var fullPath = join(await getDatabasesPath(), path);
+      await Directory(dirname(fullPath)).create(recursive: true);
+      await File(fullPath).writeAsString('test');
+
+      // Open is fine, that is the native behavior
+      var db = await openReadOnlyDatabase(path);
+      expect(await File(fullPath).readAsString(), 'test');
+      try {
+        await db.getVersion();
+        fail('getVersion should fail ${db?.path}');
+      } on DatabaseException catch (_) {
+        // Android: DatabaseException(file is not a database (code 26 SQLITE_NOTADB)) sql 'PRAGMA user_version' args []}
+      }
+      await db.close();
+      expect(await File(fullPath).readAsString(), 'test');
+    });
+
     test('multiple database', () async {
       //await Sqflite.devSetDebugModeOn(true);
       int count = 10;
