@@ -113,6 +113,8 @@ assert(count == 1);
 await database.close();
 ```
 
+Basic information on SQL [here](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/sql.md).
+
 ### SQL helpers
 
 Example using the helpers
