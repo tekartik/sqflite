@@ -34,7 +34,7 @@ int recordId = await db.insert('my_table', {'name': 'my_name', 'type': 'my_type'
 
 ### query
 
-`query` is for reading a table context. It returns a list of map.
+`query` is for reading a table content. It returns a list of map.
 
 ```dart
 var list = await db.query('my_table', columns: ['name', 'type']);
@@ -42,7 +42,7 @@ var list = await db.query('my_table', columns: ['name', 'type']);
 
 ### delete
 
-`delete` is for deleting content in a table. It returns the number of row deleted.
+`delete` is for deleting content in a table. It returns the number of rows deleted.
 
 ```dart
 var count = await db.delete('my_table', where: 'name = ?', whereArgs: ['cat']);
@@ -50,7 +50,7 @@ var count = await db.delete('my_table', where: 'name = ?', whereArgs: ['cat']);
 
 ### update
 
-`update` is for updating content in a table. It returns the number of row updated.
+`update` is for updating content in a table. It returns the number of rows updated.
 
 ```dart
 var count = await db.update('my_table', {'name': 'new cat name'}, where: 'name = ?', whereArgs: ['cat']);
@@ -81,7 +81,7 @@ The `?` character is recognized by SQLite as a placeholder for a value to be ins
 The number of `?` characters must match the number of arguments. Arguments types must be in the list of 
 [supported types](supported_types.md).
 
-Particulary, list (expect for blob content) are not supported. A common mistake is to expect to use `IN (?)` and give a list
+Particulary, lists (expect for blob content) are not supported. A common mistake is to expect to use `IN (?)` and give a list
 of values. This does not work. Instead you should list each argument one by one:
 
 ```dart
