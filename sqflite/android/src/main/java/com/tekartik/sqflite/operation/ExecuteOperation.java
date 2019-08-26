@@ -45,7 +45,7 @@ public class ExecuteOperation extends BaseReadOperation {
     }
 
     @Override
-    public Boolean getInTransactionArgument() {
+    public Boolean getInTransaction() {
         return inTransaction;
     }
 

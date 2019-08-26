@@ -28,7 +28,7 @@ public abstract class BaseReadOperation implements Operation {
         return new SqlCommand(getSql(), getSqlArguments());
     }
 
-    public Boolean getInTransactionArgument() {
+    public Boolean getInTransaction() {
         return getBoolean(PARAM_IN_TRANSACTION);
     }
 

@@ -244,7 +244,7 @@ public class SqflitePlugin implements MethodCallHandler {
         if (LogLevel.hasSqlLevel(database.logLevel)) {
             Log.d(TAG, "[" + database.getThreadLogTag() + "] " + command);
         }
-        Boolean inTransaction = operation.getInTransactionArgument();
+        Boolean inTransaction = operation.getInTransaction();
 
         try {
             database.getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
@@ -260,7 +260,7 @@ public class SqflitePlugin implements MethodCallHandler {
         } finally {
             // failure? ignore for false
             if (Boolean.FALSE.equals(inTransaction)) {
-                database.inTransaction = true;
+                database.inTransaction = false;
             }
 
         }
