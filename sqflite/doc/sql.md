@@ -32,6 +32,8 @@ await db.execute('CREATE TABLE my_table (id INTEGER PRIMARY KEY AUTO INCREMENT, 
 int recordId = await db.insert('my_table', {'name': 'my_name', 'type': 'my_type'});
 ```
 
+See [Conflict algorithm](conflict_algorithm.md) for conflict handling.
+
 ### query
 
 `query` is for reading a table content. It returns a list of map.
@@ -55,6 +57,8 @@ var count = await db.delete('my_table', where: 'name = ?', whereArgs: ['cat']);
 ```dart
 var count = await db.update('my_table', {'name': 'new cat name'}, where: 'name = ?', whereArgs: ['cat']);
 ```
+
+See [Conflict algorithm](conflict_algorithm.md) for conflict handling.
 
 ### transaction
 

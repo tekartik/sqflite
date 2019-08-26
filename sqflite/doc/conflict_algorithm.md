@@ -1,4 +1,4 @@
-#Conflict Algorithm
+## Conflict Algorithm
 
 The APIs insert and update have a optional params conflictAlgorithm to explicit what to do in these cases.
 
@@ -53,6 +53,6 @@ The second insert to productImage will replace the first insert.
 ```dart
 int recordId = await db.insert('Product', {'title': 'Example 1'});
 await db.insert('ProductImage', {'productId': recordId, 'imageUrl': 'someUrlHere'});
-await db.insert('ProductImage', {'productId': recordId, 'imageUrl': 'someUrlHere'}, conflictAlgorithm: ConflictAlgorithm.replace);
+await db.insert('ProductImage', {'productId': recordId, 'imageUrl': 'someUpdatedUrlHere'}, conflictAlgorithm: ConflictAlgorithm.replace);
 
 ```
