@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group("sqflite", () {
     const MethodChannel channel = MethodChannel('com.tekartik.sqflite');
 

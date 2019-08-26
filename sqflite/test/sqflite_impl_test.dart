@@ -4,6 +4,8 @@ import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group("sqflite", () {
     const MethodChannel channel = MethodChannel('com.tekartik.sqflite');
 
