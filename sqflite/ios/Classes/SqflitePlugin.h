@@ -9,6 +9,7 @@
 extern NSString *const SqfliteParamMethod;
 extern NSString *const SqfliteParamSql;
 extern NSString *const SqfliteParamSqlArguments;
+extern NSString *const SqfliteParamInTransaction;
 extern NSString *const SqfliteParamNoResult;
 extern NSString *const SqfliteParamContinueOnError;
 extern NSString *const SqfliteParamResult;

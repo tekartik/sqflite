@@ -24,6 +24,7 @@ static NSString *const _paramReadOnly = @"readOnly";
 static NSString *const _paramSingleInstance = @"singleInstance";
 // Open result
 static NSString *const _paramRecovered = @"recovered";
+static NSString *const _paramRecoveredInTransaction = @"recoveredInTransaction";
 
 // For batch
 static NSString *const _paramOperations = @"operations";
@@ -50,6 +51,7 @@ static NSString *const _paramCmdGet = @"get";
 // Shared
 NSString *const SqfliteParamSql = @"sql";
 NSString *const SqfliteParamSqlArguments = @"arguments";
+NSString *const SqfliteParamInTransaction = @"inTransaction"; // true, false or null
 NSString *const SqfliteParamNoResult = @"noResult";
 NSString *const SqfliteParamContinueOnError = @"continueOnError";
 NSString *const SqfliteParamMethod = @"method";
@@ -67,6 +69,7 @@ NSString *const SqfliteParamErrorData = @"data";
 @property (atomic, retain) NSNumber *databaseId;
 @property (atomic, retain) NSString* path;
 @property (nonatomic) bool singleInstance;
+@property (nonatomic) bool inTransaction;
 @property (nonatomic) int logLevel;
 
 @end
@@ -266,6 +269,7 @@ static NSInteger _databaseOpenCount = 0;
 - (bool)executeOrError:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
+    NSNumber* inTransaction = [operation getInTransactionArgument];
     BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
@@ -277,9 +281,23 @@ static NSInteger _databaseOpenCount = 0;
         [db executeUpdate: sql];
     }
     
+    // If wanted, we leave the transaction even if it fails
+    if (inTransaction != nil) {
+        if (![inTransaction boolValue]) {
+            database.inTransaction = false;
+        }
+    }
+    
     // handle error
     if ([self handleError:db operation:operation]) {
         return false;
+    }
+    
+    // We enter the transaction on success
+    if (inTransaction != nil) {
+        if ([inTransaction boolValue]) {
+            database.inTransaction = true;
+        }
     }
     
     return true;
@@ -552,11 +570,14 @@ static NSInteger _databaseOpenCount = 0;
     return false;
 }
 
-+ (NSDictionary*)makeOpenResult:(NSNumber*)databaseId recovered:(bool)recovered {
++ (NSDictionary*)makeOpenResult:(NSNumber*)databaseId recovered:(bool)recovered recoveredInTransaction:(bool)recoveredInTransaction {
     NSMutableDictionary* result = [NSMutableDictionary new];
     [result setObject:databaseId forKey:_paramId];
     if (recovered) {
         [result setObject:[NSNumber numberWithBool:recovered] forKey:_paramRecovered];
+    }
+    if (recoveredInTransaction) {
+        [result setObject:[NSNumber numberWithBool:recoveredInTransaction] forKey:_paramRecoveredInTransaction];
     }
     return result;
 }
@@ -586,9 +607,9 @@ static NSInteger _databaseOpenCount = 0;
             if (database != nil) {
                 // Check if openedŸ
                 if (_log) {
-                    NSLog(@"re-opened singleInstance %@ id %@", path, database.databaseId);
+                    NSLog(@"re-opened %@singleInstance %@ id %@", database.inTransaction ? @"(in transaction) ": @"", path, database.databaseId);
                 }
-                result([SqflitePlugin makeOpenResult:database.databaseId recovered:true]);
+                result([SqflitePlugin makeOpenResult:database.databaseId recovered:true recoveredInTransaction:database.inTransaction]);
                 return;
             }
         }
@@ -609,6 +630,7 @@ static NSInteger _databaseOpenCount = 0;
     @synchronized (self.mapLock) {
         SqfliteDatabase* database = [SqfliteDatabase new];
         databaseId = [NSNumber numberWithInteger:++_lastDatabaseId];
+        database.inTransaction = false;
         database.fmDatabaseQueue = queue;
         database.singleInstance = singleInstance;
         database.databaseId = databaseId;
@@ -627,7 +649,7 @@ static NSInteger _databaseOpenCount = 0;
         
     }
     
-    result([SqflitePlugin makeOpenResult: databaseId recovered:false]);
+    result([SqflitePlugin makeOpenResult: databaseId recovered:false recoveredInTransaction:false]);
 }
 
 //
