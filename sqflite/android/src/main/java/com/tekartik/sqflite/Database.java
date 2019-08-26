@@ -12,6 +12,7 @@ class Database {
     final int id;
     final int logLevel;
     SQLiteDatabase sqliteDatabase;
+    boolean inTransaction;
 
 
     Database(String path, int id, boolean singleInstance, int logLevel) {

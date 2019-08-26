@@ -24,8 +24,12 @@ public class Constant {
     static final String PARAM_READ_ONLY = "readOnly"; // boolean
     static final String PARAM_SINGLE_INSTANCE = "singleInstance"; // boolean
     static final String PARAM_LOG_LEVEL = "logLevel"; // int
+    // true when entering, false when leaving, null otherwise
+    public static final String PARAM_IN_TRANSACTION = "inTransaction";
     // Result when opening a database
-    static final String PARAM_RECOVERED = "recovered";
+    public static final String PARAM_RECOVERED = "recovered";
+    // Result when opening a database
+    public static final String PARAM_RECOVERED_IN_TRANSACTION = "recoveredInTransaction";
 
     static final String PARAM_QUERY_AS_MAP_LIST = "queryAsMapList"; // boolean
     static final String PARAM_THREAD_PRIORITY = "androidThreadPriority"; // int

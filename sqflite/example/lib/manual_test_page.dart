@@ -35,8 +35,10 @@ class _ManualTestPageState extends State<ManualTestPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     items = <MenuItem>[
+      MenuItem('openDatabase', () async {
+        await _openDatabase();
+      }, summary: 'Open the database'),
       MenuItem('BEGIN EXCLUSIVE', () async {
-        // await Sqflite.devSetDebugModeOn(true);
         var db = await _openDatabase();
         await db.execute('BEGIN EXCLUSIVE');
       },
