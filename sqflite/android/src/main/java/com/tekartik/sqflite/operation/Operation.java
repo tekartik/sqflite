@@ -18,4 +18,7 @@ public interface Operation extends OperationResult {
 
     // In batch, means ignoring the error
     boolean getContinueOnError();
+
+    // Only for execute command
+    Boolean getInTransaction();
 }

@@ -14,6 +14,7 @@
 - (NSString*)getMethod;
 - (NSString*)getSql;
 - (NSArray*)getSqlArguments;
+- (NSNumber*)getInTransactionArgument;
 - (void)success:(NSObject*)results;
 - (void)error:(FlutterError*)error;
 - (bool)getNoResult;

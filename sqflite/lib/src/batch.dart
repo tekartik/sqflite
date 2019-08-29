@@ -1,18 +1,33 @@
 import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
+import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/transaction.dart';
 
 abstract class SqfliteBatch implements Batch {
   final List<Map<String, dynamic>> operations = <Map<String, dynamic>>[];
 
-  void _add(String method, String sql, List<dynamic> arguments) {
-    operations.add(<String, dynamic>{
+  Map<String, dynamic> _getOperationMap(
+      String method, String sql, List<dynamic> arguments) {
+    return <String, dynamic>{
       paramMethod: method,
       paramSql: sql,
       paramSqlArguments: arguments
-    });
+    };
+  }
+
+  void _add(String method, String sql, List<dynamic> arguments) {
+    operations.add(_getOperationMap(method, sql, arguments));
+  }
+
+  void _addExecute(
+      String method, String sql, List<dynamic> arguments, bool inTransaction) {
+    final Map<String, dynamic> map = _getOperationMap(method, sql, arguments);
+    if (inTransaction != null) {
+      map[paramInTransaction] = inTransaction;
+    }
+    operations.add(map);
   }
 
   @override
@@ -88,7 +103,9 @@ abstract class SqfliteBatch implements Batch {
 
   @override
   void execute(String sql, [List<dynamic> arguments]) {
-    _add(methodExecute, sql, arguments);
+    // Check for begin/end transaction
+    final bool inTransaction = getSqlInTransactionArgument(sql);
+    _addExecute(methodExecute, sql, arguments, inTransaction);
   }
 }
 

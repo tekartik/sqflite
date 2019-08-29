@@ -2,9 +2,6 @@ package com.tekartik.sqflite.operation;
 
 import com.tekartik.sqflite.SqlCommand;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import io.flutter.plugin.common.MethodChannel;
 
 /**
@@ -12,13 +9,19 @@ import io.flutter.plugin.common.MethodChannel;
  */
 
 public class ExecuteOperation extends BaseReadOperation {
-    final Map<String, Object> map = new HashMap<>();
-    final SqlCommand command;
-    final MethodChannel.Result result;
+    final private SqlCommand command;
+    final private MethodChannel.Result result;
+    final private Boolean inTransaction;
 
-    public ExecuteOperation(MethodChannel.Result result, SqlCommand command) {
+    public ExecuteOperation(MethodChannel.Result result, SqlCommand command, Boolean inTransaction) {
         this.result = result;
         this.command = command;
+        this.inTransaction = inTransaction;
+    }
+
+    @Override
+    public SqlCommand getSqlCommand() {
+        return command;
     }
 
     @Override
@@ -31,15 +34,19 @@ public class ExecuteOperation extends BaseReadOperation {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T getArgument(String key) {
-        return (T) map.get(key);
+        return null;
     }
 
     @Override
     public void error(String errorCode, String errorMessage, Object data) {
         result.error(errorCode, errorMessage, data);
+    }
+
+    @Override
+    public Boolean getInTransaction() {
+        return inTransaction;
     }
 
     @Override

@@ -199,7 +199,8 @@ void run() {
         expect(db.argumentsLists[2], <String, dynamic>{
           'sql': 'ROLLBACK',
           'arguments': null,
-          'id': null
+          'id': null,
+          'inTransaction': false
         });
       });
       test('isOpen', () async {
@@ -382,7 +383,8 @@ void run() {
           <String, dynamic>{
             'sql': 'BEGIN IMMEDIATE',
             'arguments': null,
-            'id': null
+            'id': null,
+            'inTransaction': true
           },
           <String, dynamic>{
             'operations': <dynamic>[
@@ -394,10 +396,16 @@ void run() {
             ],
             'id': null
           },
-          <String, dynamic>{'sql': 'COMMIT', 'arguments': null, 'id': null},
+          <String, dynamic>{
+            'sql': 'COMMIT',
+            'arguments': null,
+            'id': null,
+            'inTransaction': false
+          },
           <String, dynamic>{
             'sql': 'BEGIN EXCLUSIVE',
             'arguments': null,
+            'inTransaction': true,
             'id': null
           },
           <String, dynamic>{
@@ -421,11 +429,17 @@ void run() {
             'arguments': null,
             'id': null
           },
-          <String, dynamic>{'sql': 'COMMIT', 'arguments': null, 'id': null},
+          <String, dynamic>{
+            'sql': 'COMMIT',
+            'arguments': null,
+            'id': null,
+            'inTransaction': false
+          },
           <String, dynamic>{
             'sql': 'BEGIN IMMEDIATE',
             'arguments': null,
-            'id': null
+            'id': null,
+            'inTransaction': true,
           },
           <String, dynamic>{
             'operations': <Map<String, dynamic>>[
@@ -438,7 +452,12 @@ void run() {
             'id': null,
             'continueOnError': true
           },
-          <String, dynamic>{'sql': 'COMMIT', 'arguments': null, 'id': null},
+          <String, dynamic>{
+            'sql': 'COMMIT',
+            'arguments': null,
+            'id': null,
+            'inTransaction': false
+          },
           <String, dynamic>{'id': null}
         ]);
       });

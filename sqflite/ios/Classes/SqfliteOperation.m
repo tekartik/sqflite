@@ -21,6 +21,9 @@
 - (NSArray*)getSqlArguments {
     return nil;
 }
+- (NSNumber*)getInTransactionArgument {
+    return nil;
+}
 - (bool)getNoResult {
     return false;
 }
@@ -48,6 +51,10 @@
 - (NSArray*)getSqlArguments {
     NSArray* arguments = [dictionary objectForKey:SqfliteParamSqlArguments];
     return [SqflitePlugin toSqlArguments:arguments];
+}
+
+- (NSNumber*)getInTransactionArgument {
+    return [dictionary objectForKey:SqfliteParamInTransaction];
 }
 
 - (bool)getNoResult {
@@ -130,6 +137,10 @@
 - (NSArray*)getSqlArguments {
     NSArray* arguments = flutterMethodCall.arguments[SqfliteParamSqlArguments];
     return [SqflitePlugin toSqlArguments:arguments];
+}
+
+- (NSNumber*)getInTransactionArgument {
+    return flutterMethodCall.arguments[SqfliteParamInTransaction];
 }
 
 - (void)success:(NSObject*)results {

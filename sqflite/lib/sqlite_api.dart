@@ -224,13 +224,30 @@ abstract class OpenDatabaseOptions {
         singleInstance: singleInstance);
   }
 
+  /// Specify the expected version.
   int version;
+
+  /// called right after opening the database.
   OnDatabaseConfigureFn onConfigure;
+
+  /// Called when the database is created.
   OnDatabaseCreateFn onCreate;
+
+  /// Called when the database is upgraded.
   OnDatabaseVersionChangeFn onUpgrade;
+
+  /// Called when the database is downgraded.
+  ///
+  /// Use [onDatabaseDowngradeDelete] for re-creating the database
   OnDatabaseVersionChangeFn onDowngrade;
+
+  /// Called after all other callbacks have been called.
   OnDatabaseOpenFn onOpen;
+
+  /// Open the database in read-only mode (no callback called).
   bool readOnly;
+
+  /// The existing single-instance (hot-restart)
   bool singleInstance;
 }
 

@@ -9,6 +9,7 @@ import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/factory.dart';
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/transaction.dart';
+import 'package:sqflite/src/utils.dart';
 import 'package:sqflite/utils/utils.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -191,9 +192,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   bool get readOnly => openHelper?.options?.readOnly == true;
 
-  // Set when parsing BEGIN and COMMIT/ROLLBACK
-  bool inTransaction = false;
-
   @override
   SqfliteDatabase get db => this;
 
@@ -224,10 +222,22 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   int id;
 
+  // Set when parsing BEGIN and COMMIT/ROLLBACK
+  bool inTransaction = false;
+
   static Map<String, dynamic> getBaseDatabaseMethodArguments(int id) {
     final Map<String, dynamic> map = <String, dynamic>{
       paramId: id,
     };
+    return map;
+  }
+
+  static Map<String, dynamic> getBaseDatabaseMethodArgumentsInTransaction(
+      int id, bool inTransaction) {
+    final Map<String, dynamic> map = getBaseDatabaseMethodArguments(id);
+    if (inTransaction != null) {
+      map[paramInTransaction] = inTransaction;
+    }
     return map;
   }
 
@@ -311,24 +321,29 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> txnExecute<T>(SqfliteTransaction txn, String sql,
       [List<dynamic> arguments]) {
     return txnWriteSynchronized<T>(txn, (_) {
-      if (sql != null) {
-        final String lowerSql = sql.trim().toLowerCase();
-        if (lowerSql.startsWith('begin')) {
-          inTransaction = true;
-        } else if (lowerSql.startsWith('commit') ||
-            lowerSql.startsWith('rollback')) {
-          inTransaction = false;
-        }
+      bool inTransactionChange = getSqlInTransactionArgument(sql);
+
+      if (inTransactionChange ?? false) {
+        inTransactionChange = true;
+        inTransaction = true;
+      } else if (inTransactionChange == false) {
+        inTransactionChange = false;
+        inTransaction = false;
       }
-      return invokeExecute<T>(sql, arguments);
+
+      return invokeExecute<T>(sql, arguments,
+          inTransactionChange: inTransactionChange);
     });
   }
 
-  Future<T> invokeExecute<T>(String sql, List<dynamic> arguments) {
+  /// [inTransactionChange] is true when entering a transaction, false when leaving
+  Future<T> invokeExecute<T>(String sql, List<dynamic> arguments,
+      {bool inTransactionChange}) {
     return safeInvokeMethod(
         methodExecute,
-        <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
-          ..addAll(baseDatabaseMethodArguments));
+        <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}..addAll(
+            getBaseDatabaseMethodArgumentsInTransaction(
+                id, inTransactionChange)));
   }
 
   /// for INSERT sql query
@@ -491,8 +506,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       // create the folder if needed (needed for iOS)
       await factory.createParentDirectory(path);
     }
+    final bool singleInstance = options?.singleInstance ?? false;
     // Single instance?
-    params[paramSingleInstance] = options?.singleInstance != false;
+    params[paramSingleInstance] = singleInstance;
 
     // Version up to 1.1.5 returns an int
     // Now it returns some database information
@@ -506,20 +522,21 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     } else if (openResult is Map) {
       final int id = openResult[paramId] as int;
       // Recover means we found an instance in the native world
-      final bool recovered = openResult[paramRecovered] == true;
+      final bool recoveredInTransaction =
+          openResult[paramRecoveredInTransaction] == true;
       // in this case, we are going to rollback any changes in case a transaction
       // was in progress. This catches hot-restart scenario
-      if (recovered) {
+      if (recoveredInTransaction) {
         // Don't do it for read-only
         if (readOnly != true) {
           // We are not yet open so invoke the plugin directly
           try {
             await safeInvokeMethod(
                 methodExecute,
-                <String, dynamic>{paramSql: 'ROLLBACK'}
-                  ..addAll(getBaseDatabaseMethodArguments(id)));
-          } catch (_) {
-            // devPrint('recovered database ROLLBACK failed $e');
+                <String, dynamic>{paramSql: 'ROLLBACK'}..addAll(
+                    getBaseDatabaseMethodArgumentsInTransaction(id, false)));
+          } catch (e) {
+            print('ignore recovered database ROLLBACK error $e');
           }
         }
       }
@@ -549,7 +566,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
             await txnWriteSynchronized(txn, (Transaction txn) async {
               // Special trick to cancel any pending transaction
               try {
-                await invokeExecute<dynamic>('ROLLBACK', null);
+                await invokeExecute<dynamic>('ROLLBACK', null,
+                    inTransactionChange: false);
               } catch (_) {
                 // devPrint('rollback error $_');
               }
