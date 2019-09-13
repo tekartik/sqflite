@@ -77,7 +77,10 @@ When providing a raw SQL statement, you should not attempt to "sanitize" any val
 should use the standard SQLite binding syntax:
 
 ```dart
-int recordId = await db.rawInsert('INSERT INTO my_table(name) VALUES (?)', ['my_name']);
+// good
+int recordId = await db.rawInsert('INSERT INTO my_table(name, year) VALUES (?, ?)', ['my_name', 2019]);
+// bad
+int recordId = await db.rawInsert("INSERT INTO my_table(name, year) VALUES ('my_name', 2019)");
 ```
 
 The `?` character is recognized by SQLite as a placeholder for a value to be inserted.

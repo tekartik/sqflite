@@ -5,7 +5,7 @@ Future<void> main() async {
 
   await shell.run('''
 
-flutter driver test_driver/main.dart
+flutter driver --target=test_driver/main.dart
 
 ''');
 }
