@@ -71,6 +71,11 @@ public class SqlCommand {
         for (int i = 0; i < sqlLength; i++) {
             char ch = sql.charAt(i);
             if (ch == '?') {
+                // If it is followed by a number
+                // it is an indexed param, cancel our weird conversion
+                if ((i + 1 < sqlLength) && Character.isDigit(sql.charAt(i + 1))) {
+                    return this;
+                }
                 count++;
                 // no match, return the same
                 if (argumentIndex >= rawArguments.size()) {

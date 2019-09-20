@@ -92,4 +92,10 @@ public class SqlCommandTest {
                 new byte[]{1, 2, 3})), command.sanitizeForQuery());
 
     }
+
+    @Test
+    public void indexedParam() {
+        SqlCommand command = new SqlCommand("?1", Arrays.asList((Object) 1));
+        assertEquals(new SqlCommand("?1", Arrays.asList((Object) 1)), command.sanitizeForQuery());
+    }
 }
