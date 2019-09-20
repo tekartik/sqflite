@@ -1,8 +1,9 @@
-## 1.1.6+4
+## 1.1.6+5
 
 * Open database in a background thread on Android.
 * Prevent database deletion on Android when opening a corrupted database in read-only.
 * Fix hot restart ROLLBACK warning
+* Fix indexed parameter binding on iOS
 
 ## 1.1.5
 
