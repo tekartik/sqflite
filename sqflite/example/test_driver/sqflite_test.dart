@@ -199,5 +199,13 @@ void main() {
         await db.close();
       }
     });
+
+    test('indexed_param', () async {
+      final db = await openDatabase(':memory:');
+      expect(await db.rawQuery('SELECT ?1 + ?2', [3, 4]), [
+        {'?1 + ?2': 7}
+      ]);
+      await db.close();
+    });
   });
 }
