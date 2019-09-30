@@ -58,7 +58,7 @@ class Database {
         try {
             return sqliteDatabase.enableWriteAheadLogging();
         } catch (Exception e) {
-            Log.e(TAG, "enable WAL error: " + e);
+            Log.e(TAG, getThreadLogPrefix() + "enable WAL error: " + e);
             return false;
         }
     }
@@ -67,5 +67,9 @@ class Database {
         Thread thread = Thread.currentThread();
 
         return "" + id + "," + thread.getName() + "(" + thread.getId() + ")";
+    }
+
+    String getThreadLogPrefix() {
+        return "[" + getThreadLogTag() + "] ";
     }
 }
