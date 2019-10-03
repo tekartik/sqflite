@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/src/batch.dart';
 import 'package:sqflite/src/collection_utils.dart';
-import 'package:sqflite/src/constant.dart' hide lockWarningDuration;
+import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/factory.dart';
@@ -11,10 +11,13 @@ import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/transaction.dart';
 import 'package:sqflite/src/utils.dart';
 import 'package:sqflite/utils/utils.dart';
+import 'package:sqflite/src/utils.dart' as utils;
 import 'package:synchronized/synchronized.dart';
 
+/// Base database implementation
 class SqfliteDatabaseBase
     with SqfliteDatabaseMixin, SqfliteDatabaseExecutorMixin {
+  /// ctor
   SqfliteDatabaseBase(SqfliteDatabaseOpenHelper openHelper, String path,
       {OpenDatabaseOptions options}) {
     this.openHelper = openHelper;
@@ -22,6 +25,7 @@ class SqfliteDatabaseBase
   }
 }
 
+/// Common database/transaction implementation
 mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   @override
   SqfliteTransaction get txn;
@@ -183,7 +187,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]) =>
       factory.wrapDatabaseException(() => invokeMethod(method, arguments));
 
-  // save the open helper for proper closing
+  /// Keep our open helper for proper closing.
   SqfliteDatabaseOpenHelper openHelper;
   @override
   OpenDatabaseOptions options;
@@ -205,24 +209,27 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   String path;
 
-  // only set during inTransaction to allow transaction during open
+  /// Transaction reference count.
+  ///
+  /// Only set during inTransaction to allow transaction during open.
   int transactionRefCount = 0;
 
-  // Not null during opening
-  // default transaction used during opening
+  /// Special transaction created during open.
+  ///
+  /// Only not null during opening.
   SqfliteTransaction openTransaction;
 
   @override
   SqfliteTransaction get txn => openTransaction;
 
-  // non-reentrant lock
+  /// Non-reentrant lock.
   final Lock rawLock = Lock();
 
   // Its internal id
   @override
   int id;
 
-  // Set when parsing BEGIN and COMMIT/ROLLBACK
+  /// Set when parsing BEGIN and COMMIT/ROLLBACK
   bool inTransaction = false;
 
   static Map<String, dynamic> getBaseDatabaseMethodArguments(int id) {
@@ -285,8 +292,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       return await action(txn);
     } else {
       // Simple timeout warning if we cannot get the lock after XX seconds
-      final bool handleTimeoutWarning =
-          (lockWarningDuration != null && lockWarningCallback != null);
+      final bool handleTimeoutWarning = (utils.lockWarningDuration != null &&
+          utils.lockWarningCallback != null);
       Completer<dynamic> timeoutCompleter;
       if (handleTimeoutWarning) {
         timeoutCompleter = Completer<dynamic>();
@@ -302,8 +309,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       // Simply warn the developer as this could likely be a deadlock
       if (handleTimeoutWarning) {
         // ignore: unawaited_futures
-        timeoutCompleter.future.timeout(lockWarningDuration, onTimeout: () {
-          lockWarningCallback();
+        timeoutCompleter.future.timeout(utils.lockWarningDuration,
+            onTimeout: () {
+          utils.lockWarningCallback();
         });
       }
       return await operation;
@@ -428,7 +436,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<void> endTransaction(SqfliteTransaction txn) async {
     // never commit transaction in read-only mode
     if (readOnly != true) {
-      if (txn.successfull == true) {
+      if (txn.successful == true) {
         await txnExecute<dynamic>(txn, "COMMIT");
       } else {
         await txnExecute<dynamic>(txn, "ROLLBACK");
@@ -450,7 +458,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     } finally {
       if (--transactionRefCount == 0) {
         final SqfliteTransaction sqfliteTransaction = txn as SqfliteTransaction;
-        sqfliteTransaction.successfull = successfull;
+        sqfliteTransaction.successful = successfull;
         await endTransaction(sqfliteTransaction);
       }
     }

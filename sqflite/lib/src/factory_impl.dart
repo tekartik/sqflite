@@ -5,24 +5,20 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/exception_impl.dart' as impl;
 import 'package:sqflite/src/factory.dart';
 import 'package:sqflite/src/factory_mixin.dart';
-import 'package:sqflite/src/open_options.dart';
 import 'package:sqflite/src/sqflite_impl.dart' as impl;
 
 export 'package:sqflite/src/open_options.dart';
 
 SqfliteDatabaseFactory _databaseFactory;
 
+/// Default factory
 DatabaseFactory get databaseFactory => sqlfliteDatabaseFactory;
 
+/// Default factory
 SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
     _databaseFactory ??= SqfliteDatabaseFactoryImpl();
 
-Future<Database> openReadOnlyDatabase(String path) async {
-  final SqfliteOpenDatabaseOptions options =
-      SqfliteOpenDatabaseOptions(readOnly: true);
-  return sqlfliteDatabaseFactory.openDatabase(path, options: options);
-}
-
+/// Factory implementation
 class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   @override
   Future<T> wrapDatabaseException<T>(Future<T> action()) =>

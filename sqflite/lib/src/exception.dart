@@ -1,7 +1,8 @@
 import 'package:sqflite/src/constant.dart';
 
-// Wrap sqlite native exception
+/// Wrap sqlite native exception
 abstract class DatabaseException implements Exception {
+  /// Create an exception with a message
   DatabaseException(this._message);
 
   String _message;
@@ -9,6 +10,7 @@ abstract class DatabaseException implements Exception {
   @override
   String toString() => "DatabaseException($_message)";
 
+  /// True if the exception is a no such table exception
   bool isNoSuchTableError([String table]) {
     if (_message != null) {
       String expected = "no such table: ";
@@ -20,6 +22,7 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
+  /// True if the exception is a syntax error
   bool isSyntaxError() {
     if (_message != null) {
       return _message.contains("syntax error");
@@ -27,6 +30,7 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
+  /// True if the exception is an open failed error
   bool isOpenFailedError() {
     if (_message != null) {
       return _message.contains("open_failed");
@@ -34,6 +38,7 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
+  /// True if the exception is a database closed error
   bool isDatabaseClosedError() {
     if (_message != null) {
       return _message.contains("database_closed");
@@ -41,6 +46,7 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
+  /// True if the exception is a read-only error
   bool isReadOnlyError() {
     if (_message != null) {
       return _message.contains("readonly");
@@ -48,6 +54,7 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
+  /// True if the exception is a unique constraint error
   bool isUniqueConstraintError([String field]) {
     if (_message != null) {
       String expected = "UNIQUE constraint failed: ";
@@ -60,10 +67,15 @@ abstract class DatabaseException implements Exception {
   }
 }
 
+/// Exception implementation
 class SqfliteDatabaseException extends DatabaseException {
+  /// ctor with a message and some data
   SqfliteDatabaseException(String message, this.result) : super(message);
 
+  /// Our exception message
   String get message => _message;
+
+  /// Typically the result of a native call
   dynamic result;
 
   @override

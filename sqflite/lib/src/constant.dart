@@ -1,69 +1,132 @@
-// Method to use
+//
+// Native methods to use
+//
+
+/// Native sql INSERT.
 const String methodInsert = "insert";
+
+/// Native batch.
 const String methodBatch = "batch";
+
+/// Native debug method.
 const String methodDebug = "debug";
+
+/// Native options method.
 const String methodOptions = "options";
+
+/// Native close database method.
 const String methodCloseDatabase = "closeDatabase";
+
+/// Native open database method.
 const String methodOpenDatabase = "openDatabase";
+
+/// Native sql execute.
 const String methodExecute = "execute";
+
+/// Native sql UPDATE or DELETE method.
 const String methodUpdate = "update";
+
+/// Native sql SELECT method.
 const String methodQuery = "query";
+
+/// deprecated.
 const String methodGetPlatformVersion = "getPlatformVersion";
+
+/// Native getDatabasePath method.
 const String methodGetDatabasesPath = "getDatabasesPath";
+
+/// Native database exists method.
 const String methodDatabaseExists = "databaseExists";
+
+/// Native database delete method.
 const String methodDeleteDatabase = "deleteDatabase";
 
-// For batch
+/// Native batch operations parameter.
 const String paramOperations = "operations";
-// if true the result of each batch operation is not filled
+
+/// Native batch 'no result' flag.
+///
+/// if true the result of each batch operation is not filled
 const String paramNoResult = "noResult";
-// if true all the operation in the batch are executed even if on failed
+
+/// Native batch 'continue on error' flag.
+///
+/// if true all the operation in the batch are executed even if on failed.
 const String paramContinueOnError = "continueOnError";
 
-// For each operation
+/// Batch operation method (insert/execute/query/update
 const String paramMethod = "method";
-// For each operation reponse
+
+/// Batch operation result.
 const String paramResult = "result";
+
+/// Error.
 const String paramError = "error";
+
+/// Error code.
 const String paramErrorCode = "code";
+
+/// Error message.
 const String paramErrorMessage = "message";
+
+/// Error data.
 const String paramErrorData = "data";
 
-// Result for open if a single instance was recovered from the native world
+/// Open database 'recovered' flag.
+///
+/// True if a single instance was recovered from the native world.
 const String paramRecovered = "recovered";
-// Result for open if a single instance was recovered from the native world while in a transaction
+
+/// Open database 'recovered in transaction' flag.
+///
+/// True if a single instance was recovered from the native world
+/// while in a transaction.
 const String paramRecoveredInTransaction = "recoveredInTransaction";
-// The database path (string)
+
+/// The database path (string).
 const String paramPath = "path";
-// The database instance name (string)
-const String paramName = "name";
-// The database version (int)
+
+/// The database version (int).
 const String paramVersion = "version";
-// The database id (int)
+
+/// The database id (int)
 const String paramId = "id";
-// True if the database is in a transaction
+
+/// True if the database is in a transaction
 const String paramInTransaction = "inTransaction";
-// When opening the database (bool)
+
+/// True when opening the database (bool)
 const String paramReadOnly = "readOnly";
-// When opening the database (bool)
+
+/// True if opened as a single instance (bool)
 const String paramSingleInstance = "singleInstance";
 
-const String paramTable = "table";
-const String paramValues = "values";
-
-// for SQL query
+/// SQL query (insert/execute/update/select).
+///
+/// String.
 const String paramSql = "sql";
+
+/// SQL query parameters.
+///
+/// List.
 const String paramSqlArguments = "arguments";
 
-// Error
+/// SQLite error code
 const String sqliteErrorCode = "sqlite_error";
 
+/// Special database name opened in memory
 const String inMemoryDatabasePath = ":memory:";
 
-// Non final for changing it during testing
-// If a database called is delayed by this duration, a print will happen
-const Duration lockWarningDuration = Duration(seconds: 10);
+/// Default duration before printing a lock warning if a database call hangs.
+///
+/// Non final for changing it during testing.
+///
+/// If a database called is delayed by this duration, a print will happen.
+const Duration lockWarningDurationDefault = Duration(seconds: 10);
 
+//
+// Log levels
+//
 /// No logs
 final int sqfliteLogLevelNone = 0;
 
@@ -75,4 +138,5 @@ final int sqfliteLogLevelVerbose = 2;
 
 // deprecated since 1.1.6
 // @deprecated
+/// deprecated
 const String methodSetDebugModeOn = "debugMode";

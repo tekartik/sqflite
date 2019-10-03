@@ -11,8 +11,10 @@ import 'package:sqflite/src/factory.dart';
 import 'package:sqflite/src/open_options.dart';
 import 'package:synchronized/synchronized.dart';
 
+/// Base factory implementation
 abstract class SqfliteDatabaseFactoryBase with SqfliteDatabaseFactoryMixin {}
 
+/// Common factory mixin
 mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
   /// To override to wrap wanted exception
   @override
@@ -21,9 +23,11 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
   Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]) =>
       wrapDatabaseException(() => invokeMethod(method, arguments));
 
-  // for single instances only
+  /// Open helpers for single instances only.
   Map<String, SqfliteDatabaseOpenHelper> databaseOpenHelpers =
       <String, SqfliteDatabaseOpenHelper>{};
+
+  /// Helper for null path database.
   SqfliteDatabaseOpenHelper nullDatabaseOpenHelper;
 
   // open lock mechanism
@@ -199,20 +203,31 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
 }
 
 // When opening the database (bool)
+/// Native parameter (int)
 const String paramLogLevel = 'logLevel';
+
+/// Native parameter
 const String paramDatabases = 'databases';
 
+/// Debug information
 class SqfliteDatabaseDebugInfo {
+  /// Database path
   String path;
+
+  /// Whether the database was open as a single instance
   bool singleInstance;
+
+  /// Log level
   int logLevel;
 
+  /// Deserializer
   void fromMap(Map<dynamic, dynamic> map) {
     path = map[paramPath]?.toString();
     singleInstance = map[paramSingleInstance] as bool;
     logLevel = map[paramLogLevel] as int;
   }
 
+  /// Debug formatting helper
   Map<String, dynamic> toDebugMap() {
     final Map<String, dynamic> map = <String, dynamic>{
       paramPath: path,
@@ -228,12 +243,15 @@ class SqfliteDatabaseDebugInfo {
   String toString() => toDebugMap().toString();
 }
 
+/// Internal debug info
 class SqfliteDebugInfo {
+  /// List of databases
   Map<String, SqfliteDatabaseDebugInfo> databases;
 
   /// global log level (set for new opened databases)
   int logLevel;
 
+  /// Debug formatting helper
   Map<String, dynamic> toDebugMap() {
     final Map<String, dynamic> map = <String, dynamic>{};
     if (databases != null) {

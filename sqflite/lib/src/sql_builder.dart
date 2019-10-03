@@ -1,8 +1,4 @@
-//
-// Sql builder similar to Android ported to dart by Razvan Lung
-// Adapted by Alexandre Roux
-//
-
+/// Insert/Update conflict resolver
 enum ConflictAlgorithm {
   /// When a constraint violation occurs, an immediate ROLLBACK occurs,
   /// thus ending the current transaction, and the command aborts with a
@@ -53,6 +49,7 @@ final List<String> _conflictValues = <String>[
 
 //final RegExp _sLimitPattern = new RegExp("\s*\d+\s*(,\s*\d+\s*)?");
 
+/// SQL command builder.
 class SqlBuilder {
   /// Convenience method for deleting rows in the database.
   ///
@@ -242,10 +239,13 @@ class SqlBuilder {
     arguments = bindArgs;
   }
 
+  /// The resulting SQL command.
   String sql;
+
+  /// The arguments list;
   List<dynamic> arguments;
 
-  // during build
+  /// Used during build if there was a name with an escaped keyword.
   bool hasEscape = false;
 
   String _escapeName(String name) {
@@ -285,6 +285,7 @@ class SqlBuilder {
   }
 }
 
+/// True if a name had been escaped already.
 bool isEscapedName(String name) {
   if (name != null && name.length >= 2) {
     final String first = name[0];
@@ -305,9 +306,10 @@ bool isEscapedName(String name) {
 // We use double quote, although backtick could be used too
 String _doEscape(String name) => '"$name"';
 
-// Escape a table or column name if necessary
-// i.e. if it is an identified it will be surrounded by " (double-quote)
-// Only some name belonging to keywords can be escaped
+/// Escape a table or column name if necessary.
+///
+/// i.e. if it is an identified it will be surrounded by " (double-quote)
+/// Only some name belonging to keywords can be escaped
 String escapeName(String name) {
   if (name == null) {
     return name;
@@ -318,7 +320,7 @@ String escapeName(String name) {
   return name;
 }
 
-// Unescape a table or column name
+/// Unescape a table or column name.
 String unescapeName(String name) {
   if (isEscapedName(name)) {
     return name.substring(1, name.length - 1);
@@ -326,10 +328,12 @@ String unescapeName(String name) {
   return name;
 }
 
-// This list was built from the whole set of keywords
-// ([allKeywords] kept here for reference
-// ignore: prefer_collection_literals
-final Set<String> escapeNames = Set<String>.from(<String>[
+/// SQLite keywords to escape.
+///
+/// This list was built from the whole set of keywords
+/// ([allKeywords] kept here for reference
+/// ignore: prefer_collection_literals
+final Set<String> escapeNames = <String>{
   "add",
   "all",
   "alter",
@@ -387,7 +391,7 @@ final Set<String> escapeNames = Set<String>.from(<String>[
   "values",
   "when",
   "where"
-]);
+};
 
 /*
 All keywords kept here for reference
