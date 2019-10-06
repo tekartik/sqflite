@@ -1,8 +1,9 @@
 package com.tekartik.sqflite;
 
-import android.database.DatabaseErrorHandler;
-import io.requery.android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import io.requery.android.database.DatabaseErrorHandler;
+import io.requery.android.database.sqlite.SQLiteDatabase;
+
 
 import static com.tekartik.sqflite.Constant.TAG;
 
@@ -32,12 +33,8 @@ class Database {
         sqliteDatabase = SQLiteDatabase.openDatabase(path, null,
                 SQLiteDatabase.OPEN_READONLY, new DatabaseErrorHandler() {
                     @Override
-                    public void onCorruption(SQLiteDatabase dbObj) {
-                        // ignored
-                        // default implementation delete the file
-                        //
-                        // This happens asynchronously so cannot be tracked. However a simple
-                        // access should fail
+                    public void onCorruption(SQLiteDatabase sqLiteDatabase) {
+
                     }
                 });
     }

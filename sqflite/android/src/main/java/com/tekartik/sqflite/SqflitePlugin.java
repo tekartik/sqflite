@@ -4,61 +4,24 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
-import io.requery.android.database.sqlite.SQLiteCantOpenDatabaseException;
-import io.requery.android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.util.Log;
-
 import com.tekartik.sqflite.dev.Debug;
-import com.tekartik.sqflite.operation.BatchOperation;
-import com.tekartik.sqflite.operation.ExecuteOperation;
-import com.tekartik.sqflite.operation.MethodCallOperation;
-import com.tekartik.sqflite.operation.Operation;
-import com.tekartik.sqflite.operation.SqlErrorInfo;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.tekartik.sqflite.operation.*;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.requery.android.database.sqlite.SQLiteDatabase;
 
-import static com.tekartik.sqflite.Constant.CMD_GET;
-import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
-import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
-import static com.tekartik.sqflite.Constant.METHOD_BATCH;
-import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
-import static com.tekartik.sqflite.Constant.METHOD_DEBUG;
-import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
-import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
-import static com.tekartik.sqflite.Constant.METHOD_GET_DATABASES_PATH;
-import static com.tekartik.sqflite.Constant.METHOD_GET_PLATFORM_VERSION;
-import static com.tekartik.sqflite.Constant.METHOD_INSERT;
-import static com.tekartik.sqflite.Constant.METHOD_OPEN_DATABASE;
-import static com.tekartik.sqflite.Constant.METHOD_OPTIONS;
-import static com.tekartik.sqflite.Constant.METHOD_QUERY;
-import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
-import static com.tekartik.sqflite.Constant.PARAM_CMD;
-import static com.tekartik.sqflite.Constant.PARAM_ID;
-import static com.tekartik.sqflite.Constant.PARAM_IN_TRANSACTION;
-import static com.tekartik.sqflite.Constant.PARAM_LOG_LEVEL;
-import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
-import static com.tekartik.sqflite.Constant.PARAM_PATH;
-import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
-import static com.tekartik.sqflite.Constant.PARAM_RECOVERED;
-import static com.tekartik.sqflite.Constant.PARAM_RECOVERED_IN_TRANSACTION;
-import static com.tekartik.sqflite.Constant.PARAM_SINGLE_INSTANCE;
-import static com.tekartik.sqflite.Constant.PARAM_SQL;
-import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
-import static com.tekartik.sqflite.Constant.TAG;
+import java.io.File;
+import java.util.*;
+
+import static com.tekartik.sqflite.Constant.*;
 
 /**
  * SqflitePlugin Android implementation
