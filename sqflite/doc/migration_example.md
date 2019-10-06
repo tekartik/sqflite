@@ -1,7 +1,8 @@
 ## Migration example
 
 Here is a simple example of a database schema migration where:
-* a column is added to an existing table
+* a column is added to an existing table (completely recreate table)
+* a column is added to an existing table (keep the old data, add a new column only)
 * a table is added
 
 ```dart
@@ -39,6 +40,26 @@ db = await factory.openDatabase(path,
 ```
 
 ## 2nd version
+
+The second version adds a new column to the existing table, any data inside the table stays intact. Main idea is to change the version number, which triggers "onUpgrade". And then use "ALTER TABLE" to add a new column into that existing database, without deleting any data.
+
+```dart        
+FutureOr<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  await db.execute(
+  '''
+    ALTER TABLE Company
+    ADD COLUMN name TEXT
+  ''');
+}
+
+db = await factory.openDatabase(
+      path,
+      version: 2,
+      onUpgrade: _onUpgrade,
+    );
+```
+
+## 3rd version
 
 Let say we want to add a new table `Employee` with a reference to a `Company` entity.
 We also want to add a new column `description` in the `Company` entity.
