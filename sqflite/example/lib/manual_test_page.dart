@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/factory_mixin.dart' as impl;
+import 'package:sqflite/utils/utils.dart';
 import 'package:sqflite_example/model/item.dart';
 import 'package:sqflite_example/src/item_widget.dart';
 import 'package:sqflite_example/utils.dart';
@@ -71,7 +72,12 @@ class _ManualTestPageState extends State<ManualTestPage> {
         final factory = databaseFactory as impl.SqfliteDatabaseFactoryMixin;
         var info = await factory.getDebugInfo();
         print(info?.toString());
-      }, summary: 'Implementation info (dev only)')
+      }, summary: 'Implementation info (dev only)'),
+      MenuItem('Multiple db', () async {
+        await Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+          return MultipleDbTestPage();
+        }));
+      }, summary: 'Open multiple databases')
     ];
   }
 
@@ -105,5 +111,121 @@ class _ManualTestPageState extends State<ManualTestPage> {
           ),
           onWillPop: pop),
     );
+  }
+}
+
+class MultipleDbTestPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    Widget dbTile(String name) {
+      return ListTile(
+        title: Text(name),
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+            return SimpleDbTestPage(
+              dbName: name,
+            );
+          }));
+        },
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Multiple databases'),
+      ),
+      body: ListView(
+        children: <Widget>[
+          dbTile('data1.db'),
+          dbTile('data2.db'),
+          dbTile('data3.db')
+        ],
+      ),
+    );
+  }
+}
+
+class SimpleDbTestPage extends StatefulWidget {
+  const SimpleDbTestPage({Key key, this.dbName}) : super(key: key);
+  final String dbName;
+
+  @override
+  _SimpleDbTestPageState createState() => _SimpleDbTestPageState();
+}
+
+class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
+  Database database;
+
+  Future<Database> _openDatabase() async {
+    // await Sqflite.devSetOptions(SqfliteOptions(logLevel: sqfliteLogLevelVerbose));
+    return database ??= await databaseFactory.openDatabase(widget.dbName,
+        options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              await db.execute('CREATE TABLE Test (value TEXT)');
+            }));
+  }
+
+  Future _closeDatabase() async {
+    await database?.close();
+    database = null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Simple db ${widget.dbName}'),
+        ),
+        body: Builder(
+          builder: (context) {
+            Widget menuItem(String title, void Function() onTap,
+                {String summary}) {
+              return ListTile(
+                title: Text(title),
+                subtitle: summary == null ? null : Text(summary),
+                onTap: onTap,
+              );
+            }
+
+            Future _countRecord() async {
+              var db = await _openDatabase();
+              var result = await firstIntValue(
+                  await db.query('test', columns: ['COUNT(*)']));
+              Scaffold.of(context).showSnackBar(SnackBar(
+                content: Text('$result records'),
+                duration: Duration(milliseconds: 700),
+              ));
+            }
+
+            var items = <Widget>[
+              menuItem('open Database', () async {
+                await _openDatabase();
+              }, summary: 'Open the database'),
+              menuItem('Add record', () async {
+                var db = await _openDatabase();
+                await db.insert('test', {'value': 'some_value'});
+                await _countRecord();
+              }, summary: 'Add one record. Open the database if needed'),
+              menuItem('Count record', () async {
+                await _countRecord();
+              }, summary: 'Count records. Open the database if needed'),
+              menuItem(
+                'Close Database',
+                () async {
+                  await _closeDatabase();
+                },
+              ),
+            ];
+            return ListView(
+              children: items,
+            );
+          },
+        ));
   }
 }

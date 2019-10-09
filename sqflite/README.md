@@ -1,5 +1,9 @@
 # sqflite
 
+[![pub package](https://img.shields.io/pub/v/sqflite.svg)](https://pub.dartlang.org/packages/provider)
+[![Build Status](https://travis-ci.org/tekartik/sqflite.svg?branch=master)](https://travis-ci.org/tekartik/sqflite)
+[![codecov](https://codecov.io/gh/tekartik/sqflite/branch/master/graph/badge.svg)](https://codecov.io/gh/tekartik/sqflite)
+
 SQLite plugin for [Flutter](https://flutter.io).
 Supports both iOS and Android.
 
@@ -15,7 +19,7 @@ In your flutter project add the dependency:
 ```yml
 dependencies:
   ...
-  sqflite: ^1.1.6
+  sqflite: ^1.1.7+1
 ```
 
 For help getting started with Flutter, view the online

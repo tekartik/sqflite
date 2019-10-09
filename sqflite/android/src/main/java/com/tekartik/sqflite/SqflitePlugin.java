@@ -70,18 +70,18 @@ public class SqflitePlugin implements MethodCallHandler {
     static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_BACKGROUND;
     static int logLevel = LogLevel.none;
 
-    private final Object databaseMapLocker = new Object();
-    private final Object openCloseLocker = new Object();
+    static private final Object databaseMapLocker = new Object();
+    static private final Object openCloseLocker = new Object();
     // local cache
-    String databasesPath;
-    private Context context;
-    private int databaseId = 0; // incremental database id
+    static String databasesPath;
+    static private Context context;
+    static private int databaseId = 0; // incremental database id
     // Database thread execution
-    private HandlerThread handlerThread;
-    private Handler handler;
+    static private HandlerThread handlerThread;
+    static private Handler handler;
 
     @SuppressLint("UseSparseArrays")
-    private final Map<Integer, Database> databaseMap = new HashMap<>();
+    static final Map<Integer, Database> databaseMap = new HashMap<>();
 
     SqflitePlugin(Context context) {
         this.context = context;
@@ -242,7 +242,7 @@ public class SqflitePlugin implements MethodCallHandler {
     private boolean executeOrError(Database database, Operation operation) {
         SqlCommand command = operation.getSqlCommand();
         if (LogLevel.hasSqlLevel(database.logLevel)) {
-            Log.d(TAG, "[" + database.getThreadLogTag() + "] " + command);
+            Log.d(TAG, database.getThreadLogPrefix() + command);
         }
         Boolean inTransaction = operation.getInTransaction();
 
@@ -414,20 +414,20 @@ public class SqflitePlugin implements MethodCallHandler {
                 // and return null
                 if (changed == 0) {
                     if (LogLevel.hasSqlLevel(database.logLevel)) {
-                        Log.d(TAG, "no changes (id was " + cursor.getLong(1) + ")");
+                        Log.d(TAG, database.getThreadLogPrefix() + "no changes (id was " + cursor.getLong(1) + ")");
                     }
                     operation.success(null);
                     return true;
                 } else {
                     final long id = cursor.getLong(1);
                     if (LogLevel.hasSqlLevel(database.logLevel)) {
-                        Log.d(TAG, "inserted " + id);
+                        Log.d(TAG, database.getThreadLogPrefix() + "inserted " + id);
                     }
                     operation.success(id);
                     return true;
                 }
             } else {
-                Log.e(TAG, "fail to read changes for Insert");
+                Log.e(TAG, database.getThreadLogPrefix() + "fail to read changes for Insert");
             }
             operation.success(null);
             return true;
@@ -450,7 +450,7 @@ public class SqflitePlugin implements MethodCallHandler {
         List<List<Object>> rows = null;
         int newColumnCount = 0;
         if (LogLevel.hasSqlLevel(database.logLevel)) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] " + command);
+            Log.d(TAG, database.getThreadLogPrefix() + command);
         }
         Cursor cursor = null;
         boolean queryAsMapList = QUERY_AS_MAP_LIST;
@@ -464,7 +464,7 @@ public class SqflitePlugin implements MethodCallHandler {
                 if (queryAsMapList) {
                     Map<String, Object> map = cursorRowToMap(cursor);
                     if (LogLevel.hasSqlLevel(database.logLevel)) {
-                        Log.d(TAG, SqflitePlugin.toString(map));
+                        Log.d(TAG, database.getThreadLogPrefix() + SqflitePlugin.toString(map));
                     }
                     results.add(map);
                 } else {
@@ -561,12 +561,12 @@ public class SqflitePlugin implements MethodCallHandler {
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 final int changed = cursor.getInt(0);
                 if (LogLevel.hasSqlLevel(database.logLevel)) {
-                    Log.d(TAG, "changed " + changed);
+                    Log.d(TAG, database.getThreadLogPrefix() + "changed " + changed);
                 }
                 operation.success(changed);
                 return true;
             } else {
-                Log.e(TAG, "fail to read changes for Update/Delete");
+                Log.e(TAG, database.getThreadLogPrefix() + "fail to read changes for Update/Delete");
             }
             operation.success(null);
             return true;
@@ -703,12 +703,11 @@ public class SqflitePlugin implements MethodCallHandler {
                     if (database != null) {
                         if (!database.sqliteDatabase.isOpen()) {
                             if (LogLevel.hasVerboseLevel(logLevel)) {
-                                Log.d(Constant.TAG, "[" + Thread.currentThread() + "] single instance database of " + path + " not opened");
+                                Log.d(Constant.TAG, database.getThreadLogPrefix() + "single instance database of " + path + " not opened");
                             }
                         } else {
                             if (LogLevel.hasVerboseLevel(logLevel)) {
-                                Log.d(Constant.TAG, "[" + Thread.currentThread() +
-                                        "] re-opened single instance " + (database.inTransaction ? "(in transaction) " : "") + databaseId + " " + path);
+                                Log.d(Constant.TAG, database.getThreadLogPrefix() + "re-opened single instance " + (database.inTransaction ? "(in transaction) " : "") + databaseId + " " + path);
                             }
                             result.success(makeOpenResult(databaseId, true, database.inTransaction));
                             return;
@@ -736,11 +735,11 @@ public class SqflitePlugin implements MethodCallHandler {
                 handlerThread.start();
                 handler = new Handler(handlerThread.getLooper());
                 if (LogLevel.hasSqlLevel(database.logLevel)) {
-                    Log.d(TAG, "starting thread" + handlerThread + " priority " + SqflitePlugin.THREAD_PRIORITY);
+                    Log.d(TAG, database.getThreadLogPrefix() + "starting thread" + handlerThread + " priority " + SqflitePlugin.THREAD_PRIORITY);
                 }
             }
             if (LogLevel.hasSqlLevel(database.logLevel)) {
-                Log.d(TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path);
+                Log.d(TAG, database.getThreadLogPrefix() + "opened " + databaseId + " " + path);
             }
 
 
@@ -785,7 +784,7 @@ public class SqflitePlugin implements MethodCallHandler {
                                     databaseMap.put(databaseId, database);
                                 }
                                 if (LogLevel.hasSqlLevel(database.logLevel)) {
-                                    Log.d(TAG, "[" + Thread.currentThread() + "] opened " + databaseId + " " + path);
+                                    Log.d(TAG, database.getThreadLogPrefix() + "opened " + databaseId + " " + path);
                                 }
                             }
 
@@ -808,7 +807,7 @@ public class SqflitePlugin implements MethodCallHandler {
         }
 
         if (LogLevel.hasSqlLevel(database.logLevel)) {
-            Log.d(TAG, "[" + Thread.currentThread() + "] closing " + databaseId + " " + database.path);
+            Log.d(TAG, database.getThreadLogPrefix() + "closing " + databaseId + " " + database.path);
         }
 
         final String path = database.path;
@@ -838,7 +837,7 @@ public class SqflitePlugin implements MethodCallHandler {
 
                         if (databaseMap.isEmpty() && handler != null) {
                             if (LogLevel.hasSqlLevel(database.logLevel)) {
-                                Log.d(TAG, "stopping thread" + handlerThread);
+                                Log.d(TAG, database.getThreadLogPrefix() + "stopping thread" + handlerThread);
                             }
                             handlerThread.quit();
                             handlerThread = null;

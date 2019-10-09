@@ -6,8 +6,9 @@ import 'package:sqflite/src/exception.dart';
 
 export 'dart:async';
 
-// Starting Dart preview 2, wrap the result
+/// Native result wrapper
 class Rows extends PluginList<Map<String, dynamic>> {
+  /// Wrap the native list as a raw
   Rows.from(List<dynamic> list) : super.from(list);
 
   @override
@@ -17,21 +18,14 @@ class Rows extends PluginList<Map<String, dynamic>> {
   }
 }
 
-Map<String, dynamic> newQueryResultSetMap(
-    List<String> columns, List<List<dynamic>> rows) {
-  final Map<String, dynamic> map = <String, dynamic>{
-    "columns": columns,
-    "rows": rows
-  };
-  return map;
-}
-
+/// Unpack the native results
 QueryResultSet queryResultSetFromMap(Map<dynamic, dynamic> queryResultSetMap) {
   final List<dynamic> columns = queryResultSetMap["columns"] as List<dynamic>;
   final List<dynamic> rows = queryResultSetMap["rows"] as List<dynamic>;
   return QueryResultSet(columns, rows);
 }
 
+/// Native exception wrapper
 DatabaseException databaseExceptionFromOperationError(
     Map<dynamic, dynamic> errorMap) {
   final String message = errorMap[paramErrorMessage] as String;
@@ -59,6 +53,7 @@ dynamic fromRawOperationResult(Map<dynamic, dynamic> rawOperationResultMap) {
   return successResult;
 }
 
+/// Native result to a map list as expected by the sqflite API
 List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
   // New 0.7.1 format
   // devPrint("queryResultToList: $queryResult");
@@ -79,7 +74,9 @@ List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
   throw 'Unsupported queryResult type $queryResult';
 }
 
+/// Query native result
 class QueryResultSet extends ListBase<Map<String, dynamic>> {
+  /// Creates a result set from a native column/row values
   QueryResultSet(List<dynamic> rawColumns, List<dynamic> rawRows) {
     _columns = rawColumns?.cast<String>();
     _rows = rawRows?.cast<List<dynamic>>();
@@ -115,6 +112,7 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
     throw UnsupportedError("read-only");
   }
 
+  /// Get the column index for a give column name
   int columnIndex(String name) {
     return _columnIndexMap[name];
   }
@@ -123,10 +121,15 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
   List<String> get keys => _keys ??= _columns.toSet().toList(growable: false);
 }
 
+/// Query Row wrapper
 class QueryRow extends MapBase<String, dynamic> {
+  /// Create a row from a result set information and a list of values
   QueryRow(this.queryResultSet, this.row);
 
+  /// Our result set
   final QueryResultSet queryResultSet;
+
+  /// Our row values
   final List<dynamic> row;
 
   @override
@@ -158,13 +161,18 @@ class QueryRow extends MapBase<String, dynamic> {
   }
 }
 
+/// Single batch operation results.
 class BatchResult {
+  /// Wrap a batch  operation result.
   BatchResult(this.result);
 
+  /// Our operation result
   final dynamic result;
 }
 
+/// Batch results.
 class BatchResults extends PluginList<dynamic> {
+  /// Creates a batch result from a native list.
   BatchResults.from(List<dynamic> list) : super.from(list);
 
   @override
@@ -176,13 +184,17 @@ class BatchResults extends PluginList<dynamic> {
   }
 }
 
+/// Helper to handle a native list.
 abstract class PluginList<T> extends ListBase<T> {
+  /// Creates a types list from a native list.
   PluginList.from(List<dynamic> list) : _list = list;
 
   final List<dynamic> _list;
 
+  /// Our raw native list.
   List<dynamic> get rawList => _list;
 
+  /// Get a raw element.
   dynamic rawElementAt(int index) => _list[index];
 
   @override

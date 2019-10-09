@@ -1,11 +1,6 @@
 .DS_Store
-.dart_tool/
-.idea/
-.atom/
-.idea
 .packages
 .pub/
-build/
 ios/.generated/
 packages
 pubspec.lock
@@ -18,3 +13,7 @@ doc/api/
 
 # local flutter install (travis)
 flutter
+
+# Conventional directory for build outputs
+build/
+coverage/

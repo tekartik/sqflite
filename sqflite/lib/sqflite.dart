@@ -23,6 +23,8 @@ export 'sqlite_api.dart';
 class Sqflite {
   //static MethodChannel get _channel => channel;
 
+  /// deprecated
+  @deprecated
   static Future<String> get platformVersion =>
       invokeMethod<String>(methodGetPlatformVersion);
 
@@ -54,8 +56,9 @@ class Sqflite {
     await invokeMethod<dynamic>(methodOptions, options.toMap());
   }
 
-  // Testing only
   @deprecated
+
+  /// Testing only
   static Future<void> devInvokeMethod(String method,
       [dynamic arguments]) async {
     await invokeMethod<dynamic>(method, arguments);

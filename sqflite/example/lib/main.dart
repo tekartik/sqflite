@@ -136,6 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
     String platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
+      // ignore: deprecated_member_use
       platformVersion = await Sqflite.platformVersion;
     } on PlatformException {
       platformVersion = "Failed to get platform version";

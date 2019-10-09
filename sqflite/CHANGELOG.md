@@ -1,3 +1,9 @@
+## 1.1.7+1
+
+* Bump flutter/dart dependency version (1.9.1/2.5.0)
+* Fix hot and warm restart for opened databases on Android
+* Add code documentation, code coverage and build badges
+
 ## 1.1.6+5
 
 * Open database in a background thread on Android.

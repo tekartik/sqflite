@@ -5,7 +5,9 @@ import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/transaction.dart';
 
+/// Batch implementation
 abstract class SqfliteBatch implements Batch {
+  /// List of operations
   final List<Map<String, dynamic>> operations = <Map<String, dynamic>>[];
 
   Map<String, dynamic> _getOperationMap(
@@ -109,9 +111,12 @@ abstract class SqfliteBatch implements Batch {
   }
 }
 
+/// Batch on a given database
 class SqfliteDatabaseBatch extends SqfliteBatch {
+  /// Create a batch in a database
   SqfliteDatabaseBatch(this.database);
 
+  /// Our database
   final SqfliteDatabase database;
 
   @override
@@ -126,9 +131,12 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   }
 }
 
+/// Batch on a given transaction
 class SqfliteTransactionBatch extends SqfliteBatch {
+  /// Create a batch in a transaction
   SqfliteTransactionBatch(this.transaction);
 
+  /// Our transaction
   final SqfliteTransaction transaction;
 
   @override
