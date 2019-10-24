@@ -11,7 +11,9 @@ class _Data {
   Database db;
 }
 
+/// Type test page.
 class TypeTestPage extends TestPage {
+  /// Type test page.
   TypeTestPage() : super("Type tests") {
     test("int", () async {
       //await Sqflite.devSetDebugModeOn(true);
@@ -41,14 +43,12 @@ class TypeTestPage extends TestPage {
       int value = pow(2, 63).round() - 1;
       id = await insertValue(value);
       //devPrint("${value} ${await getValue(id)}");
-      expect(await getValue(id), value,
-          reason: "${value} ${await getValue(id)}");
+      expect(await getValue(id), value, reason: "$value ${await getValue(id)}");
 
       value = -(pow(2, 63)).round();
       id = await insertValue(value);
       //devPrint("${value} ${await getValue(id)}");
-      expect(await getValue(id), value,
-          reason: "${value} ${await getValue(id)}");
+      expect(await getValue(id), value, reason: "$value ${await getValue(id)}");
       /*
       id = await insertValue(pow(2, 63));
       devPrint("2^63: ${pow(2, 63)} ${await getValue(id)}");
@@ -215,19 +215,20 @@ class TypeTestPage extends TestPage {
     });
   }
 
+  /// Out internal data.
   final _Data data = _Data();
 
-  // Get the value field from a given
+  /// Get the value field from a given id
   Future<dynamic> getValue(int id) async {
     return ((await data.db.query("Test", where: "id = $id")).first)["value"];
   }
 
-  // insert the value field and return the id
+  /// insert the value field and return the id
   Future<int> insertValue(dynamic value) async {
     return await data.db.insert("Test", {"value": value});
   }
 
-  // insert the value field and return the id
+  /// insert the value field and return the id
   Future<int> updateValue(int id, dynamic value) async {
     return await data.db.update("Test", {"value": value}, where: "id = $id");
   }

@@ -8,6 +8,7 @@ import 'package:sqflite_example/model/item.dart';
 import 'package:sqflite_example/src/item_widget.dart';
 import 'package:sqflite_example/utils.dart';
 
+/// Manual test page.
 class ManualTestPage extends StatefulWidget {
   @override
   _ManualTestPageState createState() => _ManualTestPageState();
@@ -114,6 +115,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
   }
 }
 
+/// Multiple db test page.
 class MultipleDbTestPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -145,8 +147,12 @@ class MultipleDbTestPage extends StatelessWidget {
   }
 }
 
+/// Simple db test page.
 class SimpleDbTestPage extends StatefulWidget {
+  /// Simple db test page.
   const SimpleDbTestPage({Key key, this.dbName}) : super(key: key);
+
+  /// db name.
   final String dbName;
 
   @override
