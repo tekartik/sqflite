@@ -10,22 +10,30 @@ analyzer:
 
 linter:
   rules:
-  - iterable_contains_unrelated_type
-  - list_remove_unrelated_type
-  - test_types_in_equals
-  - unrelated_type_equality_checks
-  - valid_regexps
-  - annotate_overrides
-  - hash_and_equals
-  - prefer_is_not_empty
-  - avoid_empty_else
-  - cancel_subscriptions
-  - close_sinks
-  - always_declare_return_types
-  - camel_case_types
-  - empty_constructor_bodies
-  - avoid_init_to_null
-  - constant_identifier_names
-  - one_member_abstracts
-  - slash_for_doc_comments
-  - sort_constructors_first
+    iterable_contains_unrelated_type: true
+    list_remove_unrelated_type: true
+    test_types_in_equals: true
+    unrelated_type_equality_checks: true
+    valid_regexps: true
+    annotate_overrides: true
+    hash_and_equals: true
+    prefer_is_not_empty: true
+    avoid_empty_else: true
+    cancel_subscriptions: true
+    close_sinks: true
+    always_declare_return_types: true
+    camel_case_types: true
+    empty_constructor_bodies: true
+    avoid_init_to_null: true
+    constant_identifier_names: true
+    one_member_abstracts: true
+    slash_for_doc_comments: true
+    sort_constructors_first: true
+
+    # === doc rules ===
+    public_member_api_docs: false
+
+    # ignore specify types
+    always_specify_types: false
+    # ignore const for now
+    prefer_const_constructors: false
