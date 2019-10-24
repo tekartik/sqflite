@@ -8,7 +8,9 @@ import 'package:sqflite_example/src/dev_utils.dart';
 
 import 'test_page.dart';
 
+/// Raw test page.
 class RawTestPage extends TestPage {
+  /// Raw test page.
   RawTestPage() : super("Raw tests") {
     test("Simple", () async {
       // await Sqflite.devSetDebugModeOn(true);

@@ -4,24 +4,40 @@ import 'package:sqflite/sqflite.dart';
 
 import 'test_page.dart';
 
+/// `todo` table name
 final String tableTodo = "todo";
+
+/// id column name
 final String columnId = "_id";
+
+/// title column name
 final String columnTitle = "title";
+
+/// done column name
 final String columnDone = "done";
 
+/// Todo model.
 class Todo {
+  /// Todo model.
   Todo();
 
+  /// Read from a record.
   Todo.fromMap(Map map) {
     id = map[columnId] as int;
     title = map[columnTitle] as String;
     done = map[columnDone] == 1;
   }
 
+  /// id.
   int id;
+
+  /// title.
   String title;
+
+  /// done.
   bool done;
 
+  /// Convert to a record.
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
       columnTitle: title,
@@ -34,9 +50,12 @@ class Todo {
   }
 }
 
+/// Todo provider.
 class TodoProvider {
+  /// The database when opened.
   Database db;
 
+  /// Open the database.
   Future open(String path) async {
     db = await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
@@ -49,11 +68,13 @@ create table $tableTodo (
     });
   }
 
+  /// Insert a todo.
   Future<Todo> insert(Todo todo) async {
     todo.id = await db.insert(tableTodo, todo.toMap());
     return todo;
   }
 
+  /// Get a todo.
   Future<Todo> getTodo(int id) async {
     List<Map> maps = await db.query(tableTodo,
         columns: [columnId, columnDone, columnTitle],
@@ -65,19 +86,24 @@ create table $tableTodo (
     return null;
   }
 
+  /// Delete a todo.
   Future<int> delete(int id) async {
     return await db.delete(tableTodo, where: "$columnId = ?", whereArgs: [id]);
   }
 
+  /// Update a todo.
   Future<int> update(Todo todo) async {
     return await db.update(tableTodo, todo.toMap(),
         where: "$columnId = ?", whereArgs: [todo.id]);
   }
 
+  /// Close database.
   Future close() async => db.close();
 }
 
+/// Todo test page.
 class TodoTestPage extends TestPage {
+  /// Todo test page.
   TodoTestPage() : super("Todo example") {
     test("open", () async {
       // await Sqflite.devSetDebugModeOn(true);

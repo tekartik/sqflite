@@ -15,7 +15,9 @@ import 'package:synchronized/synchronized.dart';
 
 import 'test_page.dart';
 
+/// Open callbacks.
 class OpenCallbacks {
+  /// Open callbacks.
   OpenCallbacks() {
     onConfigure = (Database db) {
       //print("onConfigure");
@@ -55,18 +57,37 @@ class OpenCallbacks {
     reset();
   }
 
+  /// true when onConfigure is called.
   bool onConfigureCalled;
+
+  /// true when onOpen is called.
   bool onOpenCalled;
+
+  /// true when onCreate is called.
   bool onCreateCalled;
+
+  /// true when onDowngrade is called.
   bool onDowngradeCalled;
+
+  /// true when onUpgrade is called.
   bool onUpgradeCalled;
 
+  /// onCreate callback.
   OnDatabaseCreateFn onCreate;
+
+  /// onConfigure callback.
   OnDatabaseConfigureFn onConfigure;
+
+  /// onDowngrade callback.
   OnDatabaseVersionChangeFn onDowngrade;
+
+  /// onUpgrade callback.
   OnDatabaseVersionChangeFn onUpgrade;
+
+  /// onOpen callback.
   OnDatabaseOpenFn onOpen;
 
+  /// reset callbacks called information.
   void reset() {
     onConfigureCalled = false;
     onOpenCalled = false;
@@ -75,6 +96,7 @@ class OpenCallbacks {
     onUpgradeCalled = false;
   }
 
+  /// open the database.
   Future<Database> open(String path, {int version}) async {
     reset();
     return await databaseFactory.openDatabase(path,
@@ -106,7 +128,9 @@ Future<bool> isDatabase(String path) async {
   return isDatabase;
 }
 
+/// Open test page.
 class OpenTestPage extends TestPage {
+  /// Open test page.
   OpenTestPage() : super("Open tests") {
     var factory = databaseFactory;
 
@@ -899,13 +923,17 @@ class OpenTestPage extends TestPage {
   }
 }
 
+/// Open helper.
 class Helper {
+  /// Open helper.
   Helper(this.path);
 
+  /// Datebase path.
   final String path;
   Database _db;
   final _lock = Lock();
 
+  /// Open the database if not done.
   Future<Database> getDb() async {
     if (_db == null) {
       await _lock.synchronized(() async {

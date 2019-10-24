@@ -29,9 +29,10 @@ linter:
     one_member_abstracts: true
     slash_for_doc_comments: true
     sort_constructors_first: true
+    unnecessary_brace_in_string_interps: true
 
     # === doc rules ===
-    public_member_api_docs: false
+    public_member_api_docs: true
 
     # ignore specify types
     always_specify_types: false

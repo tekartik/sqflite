@@ -1,21 +1,43 @@
 import 'package:sqflite_example/src/common_import.dart';
 
-enum ItemState { none, running, success, failure }
+/// Item states.
+enum ItemState {
+  /// test not run yet.
+  none,
 
+  /// test is running.
+  running,
+
+  /// test succeeded.
+  success,
+
+  /// test fails.
+  failure
+}
+
+/// Menu item.
 class Item {
+  /// Menu item.
   Item(this.name);
 
+  /// Menu item state.
   ItemState state = ItemState.running;
+
+  /// Menu item name/
   String name;
 }
 
+/// Menu item implementation.
 class MenuItem extends Item {
+  /// Menu item implementation.
   MenuItem(String name, this.body, {this.summary}) : super(name) {
     state = ItemState.none;
   }
 
+  /// Summary.
   String summary;
 
+  /// Run the item.
   Future run() {
     state = ItemState.running;
     return Future.delayed(Duration()).then((_) async {
@@ -29,5 +51,6 @@ class MenuItem extends Item {
     });
   }
 
+  /// Menu item body.
   final FutureOr Function() body;
 }

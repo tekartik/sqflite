@@ -7,7 +7,9 @@ import 'package:sqflite/sql.dart';
 
 import 'test_page.dart';
 
+/// Exception test page.
 class ExceptionTestPage extends TestPage {
+  /// Exception test page.
   ExceptionTestPage() : super("Exception tests") {
     test("Transaction failed", () async {
       //await Sqflite.devSetDebugModeOn(true);
@@ -525,6 +527,7 @@ class ExceptionTestPage extends TestPage {
   }
 }
 
+/// Name that should be escaped.
 var escapeNames = [
   "add",
   "all",
@@ -585,6 +588,7 @@ var escapeNames = [
   "where"
 ];
 
+/// all SQLite keywords to escape.
 var allEscapeNames = [
   "abort",
   "action",

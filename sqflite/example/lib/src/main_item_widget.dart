@@ -3,10 +3,15 @@ import 'package:flutter/widgets.dart';
 
 import '../model/main_item.dart';
 
+/// Main item widget.
 class MainItemWidget extends StatefulWidget {
+  /// Main item widget.
   MainItemWidget(this.item, this.onTap);
 
+  /// item data.
   final MainItem item;
+
+  /// onTap action (typically run or open).
   final Function onTap; // = Function(MainItem item);
 
   @override

@@ -2,7 +2,9 @@ import 'package:sqflite/sqflite.dart';
 
 import 'test_page.dart';
 
+/// Batch test page.
 class BatchTestPage extends TestPage {
+  /// Batch test page.
   BatchTestPage() : super("Batch tests") {
     test('BatchQuery', () async {
       // await Sqflite.devSetDebugModeOn();

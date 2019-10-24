@@ -10,12 +10,21 @@ import 'package:sqflite/sqflite.dart';
 
 import 'test_page.dart';
 
+/// `todo` table name
 final String tableTodo = "todo";
+
+/// id column name
 final String columnId = "_id";
+
+/// title column name
 final String columnTitle = "title";
+
+/// done column name
 final String columnDone = "done";
 
+/// Experiment test page.
 class ExpTestPage extends TestPage {
+  /// Experiment test page.
   ExpTestPage() : super("Exp Tests") {
     test("order_by", () async {
       //await Sqflite.setDebugModeOn(true);
@@ -529,10 +538,12 @@ CREATE TABLE test (
   }
 }
 
+/// Insert a record with a given id.
 Future insert(Database db, int id) async {
   await db.insert('Test', {'id': id, 'name': 'item $id'});
 }
 
+/// Open, insert and query for isolate testing.
 Future simpleInsertQueryIsolate(SendPort sendPort) async {
   final receivePort = ReceivePort();
   // First share our receive port

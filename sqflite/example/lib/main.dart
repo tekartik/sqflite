@@ -22,6 +22,7 @@ void main() {
   runApp(MyApp());
 }
 
+/// Sqflite test app
 class MyApp extends StatefulWidget {
   // This widget is the root of your application.
 
@@ -29,15 +30,34 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
+/// Simple test page.
 const String testRawRoute = "/test/simple";
+
+/// Open test page.
 const String testOpenRoute = "/test/open";
+
+/// Slow test page.
 const String testSlowRoute = "/test/slow";
+
+/// Type test page.
 const String testTypeRoute = "/test/type";
+
+/// Batch test page.
 const String testBatchRoute = "/test/batch";
+
+/// `todo` example test page.
 const String testTodoRoute = "/test/todo";
+
+/// Exception test page.
 const String testExceptionRoute = "/test/exception";
+
+/// Manual test page.
 const String testManualRoute = "/test/manual";
+
+/// Experiment test page.
 const String testExpRoute = "/test/exp";
+
+/// Deprecated test page.
 const String testDeprecatedRoute = "/test/deprecated";
 
 class _MyAppState extends State<MyApp> {
@@ -76,27 +96,30 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
+/// App home menu page.
 class MyHomePage extends StatefulWidget {
+  /// App home menu page.
   MyHomePage({Key key, this.title}) : super(key: key) {
-    items.add(
+    _items.add(
         MainItem("Raw tests", "Raw SQLite operations", route: testRawRoute));
-    items.add(MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
+    _items.add(MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
         route: testOpenRoute));
-    items.add(MainItem("Type tests", "Test value types", route: testTypeRoute));
-    items.add(MainItem("Batch tests", "Test batch operations",
+    _items
+        .add(MainItem("Type tests", "Test value types", route: testTypeRoute));
+    _items.add(MainItem("Batch tests", "Test batch operations",
         route: testBatchRoute));
-    items.add(
+    _items.add(
         MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
-    items.add(MainItem(
+    _items.add(MainItem(
         "Todo database example", "Simple Todo-like database usage example",
         route: testTodoRoute));
-    items.add(MainItem("Exp tests", "Experimental and various tests",
+    _items.add(MainItem("Exp tests", "Experimental and various tests",
         route: testExpRoute));
-    items.add(MainItem("Exception tests", "Tests that trigger exceptions",
+    _items.add(MainItem("Exception tests", "Tests that trigger exceptions",
         route: testExceptionRoute));
-    items.add(MainItem("Manual tests", "Tests that requires manual execution",
+    _items.add(MainItem("Manual tests", "Tests that requires manual execution",
         route: testManualRoute));
-    items.add(MainItem("Deprecated test",
+    _items.add(MainItem("Deprecated test",
         "Keeping some old tests for deprecated functionalities",
         route: testDeprecatedRoute));
 
@@ -104,7 +127,9 @@ class MyHomePage extends StatefulWidget {
     //Sqflite.devSetDebugModeOn(true);
   }
 
-  final List<MainItem> items = [];
+  final List<MainItem> _items = [];
+
+  /// Page title.
   final String title;
 
   @override
@@ -113,6 +138,7 @@ class MyHomePage extends StatefulWidget {
 
 String _debugAutoStartRouteName;
 
+/// (debug) set the route to start with.
 String get debugAutoStartRouteName => _debugAutoStartRouteName;
 
 /// Deprecated to avoid calls
@@ -123,7 +149,7 @@ set debugAutoStartRouteName(String routeName) =>
 class _MyHomePageState extends State<MyHomePage> {
   String _platformVersion = 'Unknown';
 
-  int get _itemCount => widget.items.length;
+  int get _itemCount => widget._items.length;
 
   @override
   void initState() {
@@ -181,7 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //new Center(child: new Text('Running on: $_platformVersion\n')),
 
   Widget _itemBuilder(BuildContext context, int index) {
-    return MainItemWidget(widget.items[index], (MainItem item) {
+    return MainItemWidget(widget._items[index], (MainItem item) {
       Navigator.of(context).pushNamed(item.route);
     });
   }

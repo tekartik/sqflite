@@ -3,12 +3,18 @@ import 'package:flutter/widgets.dart';
 
 import '../model/item.dart';
 
+/// Item widget.
 class ItemWidget extends StatefulWidget {
+  /// Item widget.
   ItemWidget(this.item, this.onTap, {this.summary});
 
+  /// item summary.
   final String summary;
 
+  /// item data.
   final Item item;
+
+  /// Action when pressed (typically run).
   final Function onTap; // = Function(MainItem item);
 
   @override
