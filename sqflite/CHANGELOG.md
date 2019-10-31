@@ -1,4 +1,4 @@
-## 1.1.7+1
+## 1.1.7+2
 
 * Bump flutter/dart dependency version (1.9.1/2.5.0)
 * Fix hot and warm restart for opened databases on Android
