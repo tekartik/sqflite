@@ -26,7 +26,7 @@ From the `example` folder, you should be able to run some native tests using:
 
 Development is done on the develop branch.
 
-[![pub package](https://img.shields.io/pub/vpre/sqflite.svg)](https://pub.dartlang.org/packages/provider)
+[![pub package](https://img.shields.io/pub/vpre/sqflite.svg)](https://pub.dev/packages/sqflite)
 [![Build Status](https://travis-ci.org/tekartik/sqflite.svg?branch=develop)](https://travis-ci.org/tekartik/sqflite)
 [![codecov](https://codecov.io/gh/tekartik/sqflite/branch/develop/graph/badge.svg)](https://codecov.io/gh/tekartik/sqflite)
 
@@ -34,6 +34,6 @@ Development is done on the develop branch.
 
 Published version are merged on master.
 
-[![pub package](https://img.shields.io/pub/v/sqflite.svg)](https://pub.dartlang.org/packages/provider)
+[![pub package](https://img.shields.io/pub/v/sqflite.svg)](https://pub.dev/packages/sqflite)
 [![Build Status](https://travis-ci.org/tekartik/sqflite.svg?branch=master)](https://travis-ci.org/tekartik/sqflite)
 [![codecov](https://codecov.io/gh/tekartik/sqflite/branch/master/graph/badge.svg)](https://codecov.io/gh/tekartik/sqflite)

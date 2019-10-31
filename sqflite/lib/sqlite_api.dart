@@ -175,10 +175,28 @@ abstract class Database implements DatabaseExecutor {
       [List<dynamic> arguments]);
 }
 
+/// Prototype of the function called when the version has changed.
+///
+/// Schema migration (adding column, adding table, adding trigger...)
+/// should happen here.
 typedef OnDatabaseVersionChangeFn = FutureOr<void> Function(
     Database db, int oldVersion, int newVersion);
+
+/// Prototype of the function called when the database is created.
+///
+/// Database intialization (creating tables, views, triggers...)
+/// should happen here.
 typedef OnDatabaseCreateFn = FutureOr<void> Function(Database db, int version);
+
+/// Prototype of the function called when the database is open.
+///
+/// Post initialization should happen here.
 typedef OnDatabaseOpenFn = FutureOr<void> Function(Database db);
+
+/// Prototype of the function called before calling [onCreate]/[onUpdate]/[onOpen]
+/// when the database is open.
+///
+/// Post initialization should happen here.
 typedef OnDatabaseConfigureFn = FutureOr<void> Function(Database db);
 
 /// to specify during [openDatabase] for [onDowngrade]
@@ -193,7 +211,9 @@ Future<void> __onDatabaseDowngradeDelete(
   // Implementation is hidden implemented in openDatabase._onDatabaseDowngradeDelete
 }
 
-/// Downgrading will delete the database and open it again
+/// Downgrading will delete the database and open it again.
+///
+/// To set in [onDowngrade] if you want to delete everything on downgrade.
 final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
     __onDatabaseDowngradeDelete;
 
