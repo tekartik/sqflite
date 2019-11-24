@@ -4,13 +4,13 @@
 Pod::Spec.new do |s|
   s.name             = 'sqflite'
   s.version          = '0.0.1'
-  s.summary          = 'A new flutter plugin project.'
+  s.summary          = 'SQLite plugin.'
   s.description      = <<-DESC
-A new flutter plugin project.
+Accss SQLite database.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/tekartik/sqflite'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Tekartik' => 'alex@tekartik.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
@@ -18,5 +18,6 @@ A new flutter plugin project.
   s.dependency 'FMDB', '~> 2.7.2'
   
   s.ios.deployment_target = '8.0'
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
 end
 
