@@ -1,8 +1,9 @@
-## 1.1.7+2
+## 1.1.7+3
 
 * Bump flutter/dart dependency version (1.9.1/2.5.0)
 * Fix hot and warm restart for opened databases on Android
 * Add code documentation, code coverage and build badges
+* Fix ios example build
 
 ## 1.1.6+5
 
