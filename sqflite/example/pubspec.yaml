@@ -1,6 +1,7 @@
 name: sqflite_example
 description: Demonstrates how to use the sqflite plugin.
 publish_to: none
+version: '0.1.0'
 
 environment:
   sdk: ">=2.1.0-dev <3.0.0"
