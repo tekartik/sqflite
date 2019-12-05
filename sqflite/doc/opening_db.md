@@ -81,7 +81,7 @@ is not defined, `onUpgrade` is called instead with `oldVersion` having value 0.
 If the database exists and the new version is higher than the current version,
 `onUpgrade` is called. Inversely, if the new version is lower than the current
 version, `onDowngrade` is called. Try to avoid this by always incrementing the
-database version. For the downgrade case, a special `onDowngradeDatabaseDelete`
+database version. For the downgrade case, a special `onDatabaseDowngradeDelete`
 callback exist that will simply delete the database and call `onCreate` to
 create it.
 

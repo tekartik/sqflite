@@ -13,6 +13,11 @@ void main() {
         Batch,
         ConflictAlgorithm,
         inMemoryDatabasePath,
+        OnDatabaseConfigureFn,
+        OnDatabaseCreateFn,
+        OnDatabaseOpenFn,
+        OnDatabaseVersionChangeFn,
+        onDatabaseDowngradeDelete,
       ].forEach((dynamic value) {
         expect(value, isNotNull);
       });
