@@ -1,6 +1,6 @@
 ## 1.1.8
 
-* support `deleteDatabase after hot-restart. Existing, if any, single instance database ìs closed
+* support `deleteDatabase` after hot-restart. Existing, if any, single instance database ìs closed
 before deletion
 
 ## 1.1.7+3
