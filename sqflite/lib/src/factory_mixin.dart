@@ -119,9 +119,13 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
 
   @override
   Future<void> deleteDatabase(String path) async {
-    path = await fixPath(path);
-    return safeInvokeMethod<void>(
-        methodDeleteDatabase, <String, dynamic>{paramPath: path});
+    return lock.synchronized(() async {
+      path = await fixPath(path);
+      // Handle already single instance open database
+      removeDatabaseOpenHelper(path);
+      return safeInvokeMethod<void>(
+          methodDeleteDatabase, <String, dynamic>{paramPath: path});
+    });
   }
 
   @override

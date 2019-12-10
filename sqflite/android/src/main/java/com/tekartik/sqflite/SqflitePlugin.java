@@ -38,6 +38,7 @@ import static com.tekartik.sqflite.Constant.METHOD_BATCH;
 import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
+import static com.tekartik.sqflite.Constant.METHOD_DELETE_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
 import static com.tekartik.sqflite.Constant.METHOD_GET_DATABASES_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_GET_PLATFORM_VERSION;
@@ -826,30 +827,97 @@ public class SqflitePlugin implements MethodCallHandler {
             @Override
             public void run() {
                 synchronized (openCloseLocker) {
-
-                    try {
-                        database.close();
-                    } catch (Exception e) {
-                        Log.e(TAG, "error " + e + " while closing database " + databaseId);
-                    }
-
-                    synchronized (databaseMapLocker) {
-
-                        if (databaseMap.isEmpty() && handler != null) {
-                            if (LogLevel.hasSqlLevel(database.logLevel)) {
-                                Log.d(TAG, database.getThreadLogPrefix() + "stopping thread" + handlerThread);
-                            }
-                            handlerThread.quit();
-                            handlerThread = null;
-                            handler = null;
-                        }
-                    }
+                    closeDatabase(database);
                 }
 
                 bgResult.success(null);
             }
         });
 
+    }
+
+    //
+    // Sqflite.open
+    //
+    private void onDeleteDatabaseCall(final MethodCall call, Result result) {
+        final String path = call.argument(PARAM_PATH);
+        Database foundOpenedDatabase = null;
+        // Look for in memory instance
+        synchronized (databaseMapLocker) {
+            if (LogLevel.hasVerboseLevel(logLevel)) {
+                Log.d(Constant.TAG, "Look for " + path + " in " + _singleInstancesByPath.keySet());
+            }
+            Integer databaseId = _singleInstancesByPath.get(path);
+            if (databaseId != null) {
+                Database database = databaseMap.get(databaseId);
+                if (database != null) {
+                    if (database.sqliteDatabase.isOpen()) {
+                        if (LogLevel.hasVerboseLevel(logLevel)) {
+                            Log.d(Constant.TAG, database.getThreadLogPrefix() + "found single instance " + (database.inTransaction ? "(in transaction) " : "") + databaseId + " " + path);
+                        }
+                        foundOpenedDatabase = database;
+
+                        // Remove from map right away
+                        databaseMap.remove(databaseId);
+                        _singleInstancesByPath.remove(path);
+                    }
+                }
+            }
+        }
+        final Database openedDatabase = foundOpenedDatabase;
+
+        final BgResult bgResult = new BgResult(result);
+        final Runnable deleteRunnable = new Runnable() {
+            @Override
+            public void run() {
+                synchronized (openCloseLocker) {
+
+                    if (openedDatabase != null) {
+                        closeDatabase(openedDatabase);
+                    }
+                    try {
+                        if (LogLevel.hasVerboseLevel(logLevel)) {
+                            Log.d(Constant.TAG, "delete database " + path);
+                        }
+                        Database.deleteDatabase(path);
+                    } catch (Exception e) {
+                        Log.e(TAG, "error " + e + " while closing database " + databaseId);
+                    }
+                }
+                bgResult.success(null);
+            }
+        };
+
+        // handler might not exist yet
+        if (handler != null) {
+            handler.post(deleteRunnable);
+        } else {
+            // Otherwise run in the UI thread
+            deleteRunnable.run();
+        }
+
+    }
+
+    private void closeDatabase(Database database) {
+        try {
+            if (LogLevel.hasSqlLevel(database.logLevel)) {
+                Log.d(TAG, database.getThreadLogPrefix() + "closing database " + handlerThread);
+            }
+            database.close();
+        } catch (Exception e) {
+            Log.e(TAG, "error " + e + " while closing database " + databaseId);
+        }
+        synchronized (databaseMapLocker) {
+
+            if (databaseMap.isEmpty() && handler != null) {
+                if (LogLevel.hasSqlLevel(database.logLevel)) {
+                    Log.d(TAG, database.getThreadLogPrefix() + "stopping thread" + handlerThread);
+                }
+                handlerThread.quit();
+                handlerThread = null;
+                handler = null;
+            }
+        }
     }
 
     @Override
@@ -893,7 +961,11 @@ public class SqflitePlugin implements MethodCallHandler {
                 break;
             }
             case METHOD_GET_DATABASES_PATH: {
-                onGetDatabasesPath(call, result);
+                onGetDatabasesPathCall(call, result);
+                break;
+            }
+            case METHOD_DELETE_DATABASE: {
+                onDeleteDatabaseCall(call, result);
                 break;
             }
             case METHOD_DEBUG: {
@@ -929,7 +1001,7 @@ public class SqflitePlugin implements MethodCallHandler {
 
     //private static class Database
 
-    void onGetDatabasesPath(final MethodCall call, Result result) {
+    void onGetDatabasesPathCall(final MethodCall call, Result result) {
         if (databasesPath == null) {
             String dummyDatabaseName = "tekartik_sqflite.db";
             File file = context.getDatabasePath(dummyDatabaseName);

@@ -32,11 +32,15 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   @override
   Future<void> deleteDatabase(String path) async {
     path = await fixPath(path);
-    try {
-      await File(path).delete(recursive: true);
-    } catch (_) {
-      // 0.8.4
-      // print(_);
+    if (Platform.isAndroid) {
+      await super.deleteDatabase(path);
+    } else {
+      try {
+        await File(path).delete(recursive: true);
+      } catch (_) {
+        // 0.8.4
+        // print(_);
+      }
     }
   }
 

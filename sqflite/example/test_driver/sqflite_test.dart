@@ -207,5 +207,35 @@ void main() {
       ]);
       await db.close();
     });
+
+    test('deleteDatabase', () async {
+      // await devVerbose();
+      Database db;
+      try {
+        var path = 'test_delete_database.db';
+        await deleteDatabase(path);
+        db = await openDatabase(path);
+        expect(await db.getVersion(), 0);
+        await db.setVersion(1);
+
+        // delete without closing every time
+        await deleteDatabase(path);
+        db = await openDatabase(path);
+        expect(await db.getVersion(), 0);
+        await db.execute('BEGIN TRANSACTION');
+        await db.setVersion(2);
+
+        await deleteDatabase(path);
+        db = await openDatabase(path);
+        expect(await db.getVersion(), 0);
+        await db.setVersion(3);
+
+        await deleteDatabase(path);
+        db = await openDatabase(path);
+        expect(await db.getVersion(), 0);
+      } finally {
+        await db?.close();
+      }
+    });
   });
 }
