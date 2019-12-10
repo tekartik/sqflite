@@ -19,7 +19,7 @@ In your flutter project add the dependency:
 ```yml
 dependencies:
   ...
-  sqflite: ^1.1.7+1
+  sqflite: ^1.1.7+3
 ```
 
 For help getting started with Flutter, view the online

@@ -118,9 +118,6 @@ abstract class DatabaseExecutor {
   /// You may include ?s in the where clause, which will be replaced by the
   /// values from [whereArgs]
   ///
-  /// [conflictAlgorithm] (optional) specifies algorithm to use in case of a
-  /// conflict. See [ConflictResolver] docs for more details
-  ///
   /// Returns the number of rows affected if a whereClause is passed in, 0
   /// otherwise. To remove all rows and get a count pass "1" as the
   /// whereClause.
