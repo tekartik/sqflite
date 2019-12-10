@@ -1,3 +1,8 @@
+## 1.1.8
+
+* support `deleteDatabase after hot-restart. Existing, if any, single instance database ìs closed
+before deletion
+
 ## 1.1.7+3
 
 * Bump flutter/dart dependency version (1.9.1/2.5.0)
