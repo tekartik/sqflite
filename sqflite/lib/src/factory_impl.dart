@@ -28,21 +28,20 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
       impl.invokeMethod(method, arguments);
 
-  /// Optimized but could be removed
+  /*
+  /// Old implementation which does not handle hot-restart and Android restart
   @override
   Future<void> deleteDatabase(String path) async {
     path = await fixPath(path);
-    if (Platform.isAndroid) {
-      await super.deleteDatabase(path);
-    } else {
+
       try {
         await File(path).delete(recursive: true);
       } catch (_) {
         // 0.8.4
         // print(_);
       }
-    }
   }
+  */
 
   /// Optimized but could be removed
   @override
