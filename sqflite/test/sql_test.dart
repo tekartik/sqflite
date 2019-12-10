@@ -5,7 +5,7 @@ import 'package:sqflite/sql.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group("sqflite", () {
+  group('sqflite', () {
     const MethodChannel channel = MethodChannel('com.tekartik.sqflite');
 
     final List<MethodCall> log = <MethodCall>[];
@@ -20,16 +20,16 @@ void main() {
       log.clear();
     });
 
-    test("exported", () {
+    test('exported', () {
       expect(ConflictAlgorithm.abort, isNotNull);
     });
 
-    test("escapeName_export", () {
-      expect(escapeName("group"), '"group"');
+    test('escapeName_export', () {
+      expect(escapeName('group'), '"group"');
     });
 
-    test("unescapeName_export", () {
-      expect(unescapeName('"group"'), "group");
+    test('unescapeName_export', () {
+      expect(unescapeName('"group"'), 'group');
     });
   });
 }

@@ -3,119 +3,119 @@
 //
 
 /// Native sql INSERT.
-const String methodInsert = "insert";
+const String methodInsert = 'insert';
 
 /// Native batch.
-const String methodBatch = "batch";
+const String methodBatch = 'batch';
 
 /// Native debug method.
-const String methodDebug = "debug";
+const String methodDebug = 'debug';
 
 /// Native options method.
-const String methodOptions = "options";
+const String methodOptions = 'options';
 
 /// Native close database method.
-const String methodCloseDatabase = "closeDatabase";
+const String methodCloseDatabase = 'closeDatabase';
 
 /// Native open database method.
-const String methodOpenDatabase = "openDatabase";
+const String methodOpenDatabase = 'openDatabase';
 
 /// Native sql execute.
-const String methodExecute = "execute";
+const String methodExecute = 'execute';
 
 /// Native sql UPDATE or DELETE method.
-const String methodUpdate = "update";
+const String methodUpdate = 'update';
 
 /// Native sql SELECT method.
-const String methodQuery = "query";
+const String methodQuery = 'query';
 
 /// deprecated.
-const String methodGetPlatformVersion = "getPlatformVersion";
+const String methodGetPlatformVersion = 'getPlatformVersion';
 
 /// Native getDatabasePath method.
-const String methodGetDatabasesPath = "getDatabasesPath";
+const String methodGetDatabasesPath = 'getDatabasesPath';
 
 /// Native database exists method.
-const String methodDatabaseExists = "databaseExists";
+const String methodDatabaseExists = 'databaseExists';
 
 /// Native database delete method.
-const String methodDeleteDatabase = "deleteDatabase";
+const String methodDeleteDatabase = 'deleteDatabase';
 
 /// Native batch operations parameter.
-const String paramOperations = "operations";
+const String paramOperations = 'operations';
 
 /// Native batch 'no result' flag.
 ///
 /// if true the result of each batch operation is not filled
-const String paramNoResult = "noResult";
+const String paramNoResult = 'noResult';
 
 /// Native batch 'continue on error' flag.
 ///
 /// if true all the operation in the batch are executed even if on failed.
-const String paramContinueOnError = "continueOnError";
+const String paramContinueOnError = 'continueOnError';
 
 /// Batch operation method (insert/execute/query/update
-const String paramMethod = "method";
+const String paramMethod = 'method';
 
 /// Batch operation result.
-const String paramResult = "result";
+const String paramResult = 'result';
 
 /// Error.
-const String paramError = "error";
+const String paramError = 'error';
 
 /// Error code.
-const String paramErrorCode = "code";
+const String paramErrorCode = 'code';
 
 /// Error message.
-const String paramErrorMessage = "message";
+const String paramErrorMessage = 'message';
 
 /// Error data.
-const String paramErrorData = "data";
+const String paramErrorData = 'data';
 
 /// Open database 'recovered' flag.
 ///
 /// True if a single instance was recovered from the native world.
-const String paramRecovered = "recovered";
+const String paramRecovered = 'recovered';
 
 /// Open database 'recovered in transaction' flag.
 ///
 /// True if a single instance was recovered from the native world
 /// while in a transaction.
-const String paramRecoveredInTransaction = "recoveredInTransaction";
+const String paramRecoveredInTransaction = 'recoveredInTransaction';
 
 /// The database path (string).
-const String paramPath = "path";
+const String paramPath = 'path';
 
 /// The database version (int).
-const String paramVersion = "version";
+const String paramVersion = 'version';
 
 /// The database id (int)
-const String paramId = "id";
+const String paramId = 'id';
 
 /// True if the database is in a transaction
-const String paramInTransaction = "inTransaction";
+const String paramInTransaction = 'inTransaction';
 
 /// True when opening the database (bool)
-const String paramReadOnly = "readOnly";
+const String paramReadOnly = 'readOnly';
 
 /// True if opened as a single instance (bool)
-const String paramSingleInstance = "singleInstance";
+const String paramSingleInstance = 'singleInstance';
 
 /// SQL query (insert/execute/update/select).
 ///
 /// String.
-const String paramSql = "sql";
+const String paramSql = 'sql';
 
 /// SQL query parameters.
 ///
 /// List.
-const String paramSqlArguments = "arguments";
+const String paramSqlArguments = 'arguments';
 
 /// SQLite error code
-const String sqliteErrorCode = "sqlite_error";
+const String sqliteErrorCode = 'sqlite_error';
 
 /// Special database name opened in memory
-const String inMemoryDatabasePath = ":memory:";
+const String inMemoryDatabasePath = ':memory:';
 
 /// Default duration before printing a lock warning if a database call hangs.
 ///
@@ -139,4 +139,4 @@ final int sqfliteLogLevelVerbose = 2;
 // deprecated since 1.1.6
 // @deprecated
 /// deprecated
-const String methodSetDebugModeOn = "debugMode";
+const String methodSetDebugModeOn = 'debugMode';

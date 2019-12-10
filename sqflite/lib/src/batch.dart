@@ -143,8 +143,8 @@ class SqfliteTransactionBatch extends SqfliteBatch {
   Future<List<dynamic>> commit(
       {bool exclusive, bool noResult, bool continueOnError}) {
     if (exclusive != null) {
-      throw ArgumentError.value(exclusive, "exclusive",
-          "must not be set when commiting a batch in a transaction");
+      throw ArgumentError.value(exclusive, 'exclusive',
+          'must not be set when commiting a batch in a transaction');
     }
     return transaction.database.txnApplyBatch(transaction, this,
         noResult: noResult, continueOnError: continueOnError);

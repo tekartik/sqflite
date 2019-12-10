@@ -21,7 +21,7 @@ SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
 /// Factory implementation
 class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   @override
-  Future<T> wrapDatabaseException<T>(Future<T> action()) =>
+  Future<T> wrapDatabaseException<T>(Future<T> Function() action) =>
       impl.wrapDatabaseException(action);
 
   @override

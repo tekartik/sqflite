@@ -20,3 +20,4 @@ pubspec.lock
 .idea/
 *.iml
 .vscode/
+/sqflite/example/.flutter-plugins-dependencies

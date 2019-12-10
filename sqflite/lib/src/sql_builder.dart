@@ -40,14 +40,14 @@ enum ConflictAlgorithm {
 }
 
 final List<String> _conflictValues = <String>[
-  " OR ROLLBACK ",
-  " OR ABORT ",
-  " OR FAIL ",
-  " OR IGNORE ",
-  " OR REPLACE "
+  ' OR ROLLBACK ',
+  ' OR ABORT ',
+  ' OR FAIL ',
+  ' OR IGNORE ',
+  ' OR REPLACE '
 ];
 
-//final RegExp _sLimitPattern = new RegExp("\s*\d+\s*(,\s*\d+\s*)?");
+//final RegExp _sLimitPattern = new RegExp('\s*\d+\s*(,\s*\d+\s*)?');
 
 /// SQL command builder.
 class SqlBuilder {
@@ -61,9 +61,9 @@ class SqlBuilder {
   ///            will be bound as Strings.
   SqlBuilder.delete(String table, {String where, List<dynamic> whereArgs}) {
     final StringBuffer delete = StringBuffer();
-    delete.write("DELETE FROM ");
+    delete.write('DELETE FROM ');
     delete.write(_escapeName(table));
-    _writeClause(delete, " WHERE ", where);
+    _writeClause(delete, ' WHERE ', where);
     sql = delete.toString();
     arguments = whereArgs != null ? List<dynamic>.from(whereArgs) : null;
   }
@@ -103,31 +103,31 @@ class SqlBuilder {
       int offset}) {
     if (groupBy == null && having != null) {
       throw ArgumentError(
-          "HAVING clauses are only permitted when using a groupBy clause");
+          'HAVING clauses are only permitted when using a groupBy clause');
     }
 
     final StringBuffer query = StringBuffer();
 
-    query.write("SELECT ");
+    query.write('SELECT ');
     if (distinct == true) {
-      query.write("DISTINCT ");
+      query.write('DISTINCT ');
     }
     if (columns != null && columns.isNotEmpty) {
       _writeColumns(query, columns);
     } else {
-      query.write("* ");
+      query.write('* ');
     }
-    query.write("FROM ");
+    query.write('FROM ');
     query.write(_escapeName(table));
-    _writeClause(query, " WHERE ", where);
-    _writeClause(query, " GROUP BY ", groupBy);
-    _writeClause(query, " HAVING ", having);
-    _writeClause(query, " ORDER BY ", orderBy);
+    _writeClause(query, ' WHERE ', where);
+    _writeClause(query, ' GROUP BY ', groupBy);
+    _writeClause(query, ' HAVING ', having);
+    _writeClause(query, ' ORDER BY ', orderBy);
     if (limit != null) {
-      _writeClause(query, " LIMIT ", limit.toString());
+      _writeClause(query, ' LIMIT ', limit.toString());
     }
     if (offset != null) {
-      _writeClause(query, " OFFSET ", offset.toString());
+      _writeClause(query, ' OFFSET ', offset.toString());
     }
 
     sql = query.toString();
@@ -143,11 +143,11 @@ class SqlBuilder {
   SqlBuilder.insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
     final StringBuffer insert = StringBuffer();
-    insert.write("INSERT");
+    insert.write('INSERT');
     if (conflictAlgorithm != null) {
       insert.write(_conflictValues[conflictAlgorithm.index]);
     }
-    insert.write(" INTO ");
+    insert.write(' INTO ');
     insert.write(_escapeName(table));
     insert.write(' (');
 
@@ -155,19 +155,19 @@ class SqlBuilder {
     final int size = (values != null) ? values.length : 0;
 
     if (size > 0) {
-      final StringBuffer sbValues = StringBuffer(") VALUES (");
+      final StringBuffer sbValues = StringBuffer(') VALUES (');
 
       bindArgs = <dynamic>[];
       int i = 0;
       values.forEach((String colName, dynamic value) {
         if (i++ > 0) {
-          insert.write(", ");
-          sbValues.write(", ");
+          insert.write(', ');
+          sbValues.write(', ');
         }
 
         insert.write(_escapeName(colName));
         if (value == null) {
-          sbValues.write("NULL");
+          sbValues.write('NULL');
         } else {
           bindArgs.add(value);
           sbValues.write('?');
@@ -176,9 +176,9 @@ class SqlBuilder {
       insert.write(sbValues);
     } else {
       if (nullColumnHack == null) {
-        throw ArgumentError("nullColumnHack required when inserting no data");
+        throw ArgumentError('nullColumnHack required when inserting no data');
       }
-      insert.write(nullColumnHack + ") VALUES (NULL");
+      insert.write(nullColumnHack + ') VALUES (NULL');
     }
     insert.write(')');
 
@@ -203,29 +203,29 @@ class SqlBuilder {
       List<dynamic> whereArgs,
       ConflictAlgorithm conflictAlgorithm}) {
     if (values == null || values.isEmpty) {
-      throw ArgumentError("Empty values");
+      throw ArgumentError('Empty values');
     }
 
     final StringBuffer update = StringBuffer();
-    update.write("UPDATE ");
+    update.write('UPDATE ');
     if (conflictAlgorithm != null) {
       update.write(_conflictValues[conflictAlgorithm.index]);
     }
     update.write(_escapeName(table));
-    update.write(" SET ");
+    update.write(' SET ');
 
     final List<dynamic> bindArgs = <dynamic>[];
     int i = 0;
 
     values.keys.forEach((String colName) {
-      update.write((i++ > 0) ? ", " : "");
+      update.write((i++ > 0) ? ', ' : '');
       update.write(_escapeName(colName));
       final dynamic value = values[colName];
       if (value != null) {
         bindArgs.add(values[colName]);
-        update.write(" = ?");
+        update.write(' = ?');
       } else {
-        update.write(" = NULL");
+        update.write(' = NULL');
       }
     });
 
@@ -233,7 +233,7 @@ class SqlBuilder {
       bindArgs.addAll(whereArgs);
     }
 
-    _writeClause(update, " WHERE ", where);
+    _writeClause(update, ' WHERE ', where);
 
     sql = update.toString();
     arguments = bindArgs;
@@ -276,7 +276,7 @@ class SqlBuilder {
 
       if (column != null) {
         if (i > 0) {
-          s.write(", ");
+          s.write(', ');
         }
         s.write(_escapeName(column));
       }
@@ -293,9 +293,9 @@ bool isEscapedName(String name) {
     if (first == last) {
       switch (first) {
         case '"':
-        case "`":
+        case '`':
           return escapeNames
-              .contains("${name.substring(1, name.length - 1).toLowerCase()}");
+              .contains('${name.substring(1, name.length - 1).toLowerCase()}');
       }
     }
   }
@@ -334,192 +334,192 @@ String unescapeName(String name) {
 /// ([allKeywords] kept here for reference
 /// ignore: prefer_collection_literals
 final Set<String> escapeNames = <String>{
-  "add",
-  "all",
-  "alter",
-  "and",
-  "as",
-  "autoincrement",
-  "between",
-  "case",
-  "check",
-  "collate",
-  "commit",
-  "constraint",
-  "create",
-  "default",
-  "deferrable",
-  "delete",
-  "distinct",
-  "drop",
-  "else",
-  "escape",
-  "except",
-  "exists",
-  "foreign",
-  "from",
-  "group",
-  "having",
-  "if",
-  "in",
-  "index",
-  "insert",
-  "intersect",
-  "into",
-  "is",
-  "isnull",
-  "join",
-  "limit",
-  "not",
-  "notnull",
-  "null",
-  "on",
-  "or",
-  "order",
-  "primary",
-  "references",
-  "select",
-  "set",
-  "table",
-  "then",
-  "to",
-  "transaction",
-  "union",
-  "unique",
-  "update",
-  "using",
-  "values",
-  "when",
-  "where"
+  'add',
+  'all',
+  'alter',
+  'and',
+  'as',
+  'autoincrement',
+  'between',
+  'case',
+  'check',
+  'collate',
+  'commit',
+  'constraint',
+  'create',
+  'default',
+  'deferrable',
+  'delete',
+  'distinct',
+  'drop',
+  'else',
+  'escape',
+  'except',
+  'exists',
+  'foreign',
+  'from',
+  'group',
+  'having',
+  'if',
+  'in',
+  'index',
+  'insert',
+  'intersect',
+  'into',
+  'is',
+  'isnull',
+  'join',
+  'limit',
+  'not',
+  'notnull',
+  'null',
+  'on',
+  'or',
+  'order',
+  'primary',
+  'references',
+  'select',
+  'set',
+  'table',
+  'then',
+  'to',
+  'transaction',
+  'union',
+  'unique',
+  'update',
+  'using',
+  'values',
+  'when',
+  'where'
 };
 
 /*
 All keywords kept here for reference
 
 Set<String> _allKeywords = new Set.from([
-  "abort",
-  "action",
-  "add",
-  "after",
-  "all",
-  "alter",
-  "analyze",
-  "and",
-  "as",
-  "asc",
-  "attach",
-  "autoincrement",
-  "before",
-  "begin",
-  "between",
-  "by",
-  "cascade",
-  "case",
-  "cast",
-  "check",
-  "collate",
-  "column",
-  "commit",
-  "conflict",
-  "constraint",
-  "create",
-  "cross",
-  "current_date",
-  "current_time",
-  "current_timestamp",
-  "database",
-  "default",
-  "deferrable",
-  "deferred",
-  "delete",
-  "desc",
-  "detach",
-  "distinct",
-  "drop",
-  "each",
-  "else",
-  "end",
-  "escape",
-  "except",
-  "exclusive",
-  "exists",
-  "explain",
-  "fail",
-  "for",
-  "foreign",
-  "from",
-  "full",
-  "glob",
-  "group",
-  "having",
-  "if",
-  "ignore",
-  "immediate",
-  "in",
-  "index",
-  "indexed",
-  "initially",
-  "inner",
-  "insert",
-  "instead",
-  "intersect",
-  "into",
-  "is",
-  "isnull",
-  "join",
-  "key",
-  "left",
-  "like",
-  "limit",
-  "match",
-  "natural",
-  "no",
-  "not",
-  "notnull",
-  "null",
-  "of",
-  "offset",
-  "on",
-  "or",
-  "order",
-  "outer",
-  "plan",
-  "pragma",
-  "primary",
-  "query",
-  "raise",
-  "recursive",
-  "references",
-  "regexp",
-  "reindex",
-  "release",
-  "rename",
-  "replace",
-  "restrict",
-  "right",
-  "rollback",
-  "row",
-  "savepoint",
-  "select",
-  "set",
-  "table",
-  "temp",
-  "temporary",
-  "then",
-  "to",
-  "transaction",
-  "trigger",
-  "union",
-  "unique",
-  "update",
-  "using",
-  "vacuum",
-  "values",
-  "view",
-  "virtual",
-  "when",
-  "where",
-  "with",
-  "without"
+  'abort',
+  'action',
+  'add',
+  'after',
+  'all',
+  'alter',
+  'analyze',
+  'and',
+  'as',
+  'asc',
+  'attach',
+  'autoincrement',
+  'before',
+  'begin',
+  'between',
+  'by',
+  'cascade',
+  'case',
+  'cast',
+  'check',
+  'collate',
+  'column',
+  'commit',
+  'conflict',
+  'constraint',
+  'create',
+  'cross',
+  'current_date',
+  'current_time',
+  'current_timestamp',
+  'database',
+  'default',
+  'deferrable',
+  'deferred',
+  'delete',
+  'desc',
+  'detach',
+  'distinct',
+  'drop',
+  'each',
+  'else',
+  'end',
+  'escape',
+  'except',
+  'exclusive',
+  'exists',
+  'explain',
+  'fail',
+  'for',
+  'foreign',
+  'from',
+  'full',
+  'glob',
+  'group',
+  'having',
+  'if',
+  'ignore',
+  'immediate',
+  'in',
+  'index',
+  'indexed',
+  'initially',
+  'inner',
+  'insert',
+  'instead',
+  'intersect',
+  'into',
+  'is',
+  'isnull',
+  'join',
+  'key',
+  'left',
+  'like',
+  'limit',
+  'match',
+  'natural',
+  'no',
+  'not',
+  'notnull',
+  'null',
+  'of',
+  'offset',
+  'on',
+  'or',
+  'order',
+  'outer',
+  'plan',
+  'pragma',
+  'primary',
+  'query',
+  'raise',
+  'recursive',
+  'references',
+  'regexp',
+  'reindex',
+  'release',
+  'rename',
+  'replace',
+  'restrict',
+  'right',
+  'rollback',
+  'row',
+  'savepoint',
+  'select',
+  'set',
+  'table',
+  'temp',
+  'temporary',
+  'then',
+  'to',
+  'transaction',
+  'trigger',
+  'union',
+  'unique',
+  'update',
+  'using',
+  'vacuum',
+  'values',
+  'view',
+  'virtual',
+  'when',
+  'where',
+  'with',
+  'without'
 ]);
 */

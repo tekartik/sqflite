@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group("sqflite", () {
+  group('sqflite', () {
     const MethodChannel channel = MethodChannel('com.tekartik.sqflite');
 
     final List<MethodCall> log = <MethodCall>[];
@@ -20,14 +20,14 @@ void main() {
       log.clear();
     });
 
-    test("setDebugModeOn", () async {
+    test('setDebugModeOn', () async {
       await Sqflite.setDebugModeOn();
-      expect(log.first.method, "debugMode");
+      expect(log.first.method, 'debugMode');
       expect(log.first.arguments, true);
     });
 
     // Check that public api are exported
-    test("exported", () {
+    test('exported', () {
       <dynamic>[
         // Not part of sqflite_api
         openDatabase,
