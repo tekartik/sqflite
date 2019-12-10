@@ -55,7 +55,7 @@ class MockDatabase extends SqfliteDatabaseBase {
       argumentsLists.add(null);
       sqls.add(null);
     }
-    //devPrint("$method $arguments");
+    //devPrint('$method $arguments');
     return null;
   }
 }
@@ -119,35 +119,35 @@ void run() {
       final MockDatabaseFactoryEmpty factory = MockDatabaseFactoryEmpty();
       try {
         await factory.getDatabasesPath();
-        fail("should fail");
+        fail('should fail');
       } on DatabaseException catch (_) {}
       expect(factory.methods, <String>['getDatabasesPath']);
       //expect(directory, )
     });
   });
-  group("database", () {
-    test("transaction", () async {
+  group('database', () {
+    test('transaction', () async {
       final Database db = mockDatabaseFactory.newEmptyDatabase();
-      await db.execute("test");
-      await db.insert("test", <String, dynamic>{'test': 1});
-      await db.update("test", <String, dynamic>{'test': 1});
-      await db.delete("test");
-      await db.query("test");
+      await db.execute('test');
+      await db.insert('test', <String, dynamic>{'test': 1});
+      await db.update('test', <String, dynamic>{'test': 1});
+      await db.delete('test');
+      await db.query('test');
 
       await db.transaction((Transaction txn) async {
-        await txn.execute("test");
-        await txn.insert("test", <String, dynamic>{'test': 1});
-        await txn.update("test", <String, dynamic>{'test': 1});
-        await txn.delete("test");
-        await txn.query("test");
+        await txn.execute('test');
+        await txn.insert('test', <String, dynamic>{'test': 1});
+        await txn.update('test', <String, dynamic>{'test': 1});
+        await txn.delete('test');
+        await txn.query('test');
       });
 
       final Batch batch = db.batch();
-      batch.execute("test");
-      batch.insert("test", <String, dynamic>{'test': 1});
-      batch.update("test", <String, dynamic>{'test': 1});
-      batch.delete("test");
-      batch.query("test");
+      batch.execute('test');
+      batch.insert('test', <String, dynamic>{'test': 1});
+      batch.update('test', <String, dynamic>{'test': 1});
+      batch.delete('test');
+      batch.query('test');
       await batch.commit();
     });
 
@@ -255,9 +255,9 @@ void run() {
                 options: SqfliteOpenDatabaseOptions(
                     version: 1,
                     onCreate: (Database db, int version) async {
-                      await db.execute("test1");
+                      await db.execute('test1');
                       await db.transaction((Transaction txn) async {
-                        await txn.execute("test2");
+                        await txn.execute('test2');
                       });
                     })) as MockDatabase;
 
@@ -290,9 +290,9 @@ void run() {
                 options: OpenDatabaseOptions(
                     version: 1,
                     onConfigure: (Database db) async {
-                      await db.execute("test1");
+                      await db.execute('test1');
                       await db.transaction((Transaction txn) async {
-                        await txn.execute("test2");
+                        await txn.execute('test2');
                       });
                     })) as MockDatabase;
 
@@ -317,9 +317,9 @@ void run() {
                 options: OpenDatabaseOptions(
                     version: 1,
                     onOpen: (Database db) async {
-                      await db.execute("test1");
+                      await db.execute('test1');
                       await db.transaction((Transaction txn) async {
-                        await txn.execute("test2");
+                        await txn.execute('test2');
                       });
                     })) as MockDatabase;
 
@@ -344,17 +344,17 @@ void run() {
                 version: 1,
                 onConfigure: (Database db) async {
                   final Batch batch = db.batch();
-                  batch.execute("test1");
+                  batch.execute('test1');
                   await batch.commit();
                 },
                 onCreate: (Database db, _) async {
                   final Batch batch = db.batch();
-                  batch.execute("test2");
+                  batch.execute('test2');
                   await batch.commit(noResult: true);
                 },
                 onOpen: (Database db) async {
                   final Batch batch = db.batch();
-                  batch.execute("test3");
+                  batch.execute('test3');
                   await batch.commit(continueOnError: true);
                 })) as MockDatabase;
 
@@ -472,13 +472,13 @@ void run() {
         final Completer<dynamic> step3 = Completer<dynamic>();
 
         Future<void> action1() async {
-          await db.execute("test");
+          await db.execute('test');
           step1.complete();
 
           await step2.future;
           try {
-            await db.execute("test").timeout(const Duration(milliseconds: 100));
-            throw "should fail";
+            await db.execute('test').timeout(const Duration(milliseconds: 100));
+            throw 'should fail';
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -491,12 +491,12 @@ void run() {
           await step1.future;
           await db.transaction((Transaction txn) async {
             // Wait for table being created;
-            await txn.execute("test");
+            await txn.execute('test');
             step2.complete();
 
             await step3.future;
 
-            await txn.execute("test");
+            await txn.execute('test');
           });
         }
 
@@ -516,13 +516,13 @@ void run() {
         final Completer<dynamic> step3 = Completer<dynamic>();
 
         Future<void> action1() async {
-          await db.execute("test");
+          await db.execute('test');
           step1.complete();
 
           await step2.future;
           try {
-            await db.execute("test").timeout(const Duration(milliseconds: 100));
-            throw "should fail";
+            await db.execute('test').timeout(const Duration(milliseconds: 100));
+            throw 'should fail';
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -534,12 +534,12 @@ void run() {
           await db.transaction((Transaction txn) async {
             await step1.future;
             // Wait for table being created;
-            await txn.execute("test");
+            await txn.execute('test');
             step2.complete();
 
             await step3.future;
 
-            await txn.execute("test");
+            await txn.execute('test');
           });
         }
 
@@ -559,13 +559,13 @@ void run() {
         final Completer<dynamic> step3 = Completer<dynamic>();
 
         Future<void> action1() async {
-          await db.execute("test");
+          await db.execute('test');
           step1.complete();
 
           await step2.future;
           try {
-            await db.execute("test").timeout(const Duration(milliseconds: 100));
-            throw "should fail";
+            await db.execute('test').timeout(const Duration(milliseconds: 100));
+            throw 'should fail';
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -578,12 +578,12 @@ void run() {
           await step1.future;
           await db.transaction((Transaction txn) async {
             // Wait for table being created;
-            await txn.execute("test");
+            await txn.execute('test');
             step2.complete();
 
             await step3.future;
 
-            await txn.execute("test");
+            await txn.execute('test');
           });
         }
 
@@ -605,16 +605,16 @@ void run() {
         Future<void> action1() async {
           await step1.future;
           try {
-            await db.execute("test").timeout(const Duration(milliseconds: 100));
-            throw "should fail";
+            await db.execute('test').timeout(const Duration(milliseconds: 100));
+            throw 'should fail';
           } catch (e) {
             expect(e is TimeoutException, true);
           }
 
           await step2.future;
           try {
-            await db.execute("test").timeout(const Duration(milliseconds: 100));
-            throw "should fail";
+            await db.execute('test').timeout(const Duration(milliseconds: 100));
+            throw 'should fail';
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -627,12 +627,12 @@ void run() {
             step1.complete();
 
             // Wait for table being created;
-            await txn.execute("test");
+            await txn.execute('test');
             step2.complete();
 
             await step3.future;
 
-            await txn.execute("test");
+            await txn.execute('test');
           });
         }
 
@@ -651,7 +651,7 @@ void run() {
             .openDatabase('batch_simple.db') as MockDatabase;
 
         final Batch batch = db.batch();
-        batch.execute("test");
+        batch.execute('test');
         await batch.commit();
         await batch.commit();
         await db.close();
@@ -683,7 +683,7 @@ void run() {
 
         await db.transaction((Transaction txn) async {
           final Batch batch = txn.batch();
-          batch.execute("test");
+          batch.execute('test');
 
           await batch.commit();
           await batch.commit();
@@ -719,10 +719,10 @@ void run() {
         final MockDatabase db2 = await mockDatabaseFactory.openDatabase('test',
             options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
         final MockDatabase db1 = await futureDb1 as MockDatabase;
-        final MockDatabase db3 = await mockDatabaseFactory.openDatabase("other",
+        final MockDatabase db3 = await mockDatabaseFactory.openDatabase('other',
             options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
         final MockDatabase db4 = await mockDatabaseFactory.openDatabase(
-            join(".", "other"),
+            join('.', 'other'),
             options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
         //expect(db1, db2);
         expect(db1, isNot(db3));
@@ -760,7 +760,7 @@ void run() {
       try {
         await db.transaction((Transaction txn) async {
           await db.execute('test');
-          fail("should fail");
+          fail('should fail');
         }).timeout(const Duration(milliseconds: 500));
       } on TimeoutException catch (_) {
         hasTimedOut = true;

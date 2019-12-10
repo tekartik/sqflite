@@ -15,12 +15,12 @@ class MyList1 extends Object with ListMixin<Map<String, dynamic>> {
 
   @override
   void operator []=(int index, Map<String, dynamic> value) {
-    throw "read-only";
+    throw 'read-only';
   }
 
   @override
   set length(int newLength) {
-    throw "read-only";
+    throw 'read-only';
   }
 
   @override
@@ -40,12 +40,12 @@ class MyList2 extends ListBase<Map<String, dynamic>> {
 
   @override
   void operator []=(int index, Map<String, dynamic> value) {
-    throw "read-only";
+    throw 'read-only';
   }
 
   @override
   set length(int newLength) {
-    throw "read-only";
+    throw 'read-only';
   }
 
   @override
@@ -53,7 +53,7 @@ class MyList2 extends ListBase<Map<String, dynamic>> {
 }
 
 void main() {
-  group("mixin", () {
+  group('mixin', () {
     // This fails on beta 1, should work now
     test('ListMixin', () {
       final List<dynamic> raw = <dynamic>[

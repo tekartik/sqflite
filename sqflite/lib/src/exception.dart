@@ -5,15 +5,15 @@ abstract class DatabaseException implements Exception {
   /// Create an exception with a message
   DatabaseException(this._message);
 
-  String _message;
+  final String _message;
 
   @override
-  String toString() => "DatabaseException($_message)";
+  String toString() => 'DatabaseException($_message)';
 
   /// True if the exception is a no such table exception
   bool isNoSuchTableError([String table]) {
     if (_message != null) {
-      String expected = "no such table: ";
+      String expected = 'no such table: ';
       if (table != null) {
         expected += table;
       }
@@ -25,7 +25,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a syntax error
   bool isSyntaxError() {
     if (_message != null) {
-      return _message.contains("syntax error");
+      return _message.contains('syntax error');
     }
     return false;
   }
@@ -33,7 +33,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is an open failed error
   bool isOpenFailedError() {
     if (_message != null) {
-      return _message.contains("open_failed");
+      return _message.contains('open_failed');
     }
     return false;
   }
@@ -41,7 +41,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a database closed error
   bool isDatabaseClosedError() {
     if (_message != null) {
-      return _message.contains("database_closed");
+      return _message.contains('database_closed');
     }
     return false;
   }
@@ -49,7 +49,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a read-only error
   bool isReadOnlyError() {
     if (_message != null) {
-      return _message.contains("readonly");
+      return _message.contains('readonly');
     }
     return false;
   }
@@ -57,7 +57,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a unique constraint error
   bool isUniqueConstraintError([String field]) {
     if (_message != null) {
-      String expected = "UNIQUE constraint failed: ";
+      String expected = 'UNIQUE constraint failed: ';
       if (field != null) {
         expected += field;
       }
@@ -101,7 +101,7 @@ class SqfliteDatabaseException extends DatabaseException {
       final int index = message.indexOf(patternPrefix);
       if (index != -1) {
         final String code = message.substring(index + patternPrefix.length);
-        final int endIndex = code.indexOf(")");
+        final int endIndex = code.indexOf(')');
         if (endIndex != -1) {
           try {
             final int resultCode = int.parse(code.substring(0, endIndex));
@@ -114,11 +114,11 @@ class SqfliteDatabaseException extends DatabaseException {
       return null;
     }
 
-    int code = findCode("(sqlite code ");
+    int code = findCode('(sqlite code ');
     if (code != null) {
       return code;
     }
-    code = findCode("(code ");
+    code = findCode('(code ');
     if (code != null) {
       return code;
     }

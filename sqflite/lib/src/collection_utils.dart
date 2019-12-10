@@ -20,8 +20,8 @@ class Rows extends PluginList<Map<String, dynamic>> {
 
 /// Unpack the native results
 QueryResultSet queryResultSetFromMap(Map<dynamic, dynamic> queryResultSetMap) {
-  final List<dynamic> columns = queryResultSetMap["columns"] as List<dynamic>;
-  final List<dynamic> rows = queryResultSetMap["rows"] as List<dynamic>;
+  final List<dynamic> columns = queryResultSetMap['columns'] as List<dynamic>;
+  final List<dynamic> rows = queryResultSetMap['rows'] as List<dynamic>;
   return QueryResultSet(columns, rows);
 }
 
@@ -56,7 +56,7 @@ dynamic fromRawOperationResult(Map<dynamic, dynamic> rawOperationResultMap) {
 /// Native result to a map list as expected by the sqflite API
 List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
   // New 0.7.1 format
-  // devPrint("queryResultToList: $queryResult");
+  // devPrint('queryResultToList: $queryResult');
   if (queryResult == null) {
     return null;
   }
@@ -104,12 +104,12 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
 
   @override
   void operator []=(int index, Map<String, dynamic> value) {
-    throw UnsupportedError("read-only");
+    throw UnsupportedError('read-only');
   }
 
   @override
   set length(int newLength) {
-    throw UnsupportedError("read-only");
+    throw UnsupportedError('read-only');
   }
 
   /// Get the column index for a give column name
@@ -144,12 +144,12 @@ class QueryRow extends MapBase<String, dynamic> {
 
   @override
   void operator []=(String key, dynamic value) {
-    throw UnsupportedError("read-only");
+    throw UnsupportedError('read-only');
   }
 
   @override
   void clear() {
-    throw UnsupportedError("read-only");
+    throw UnsupportedError('read-only');
   }
 
   @override
@@ -157,7 +157,7 @@ class QueryRow extends MapBase<String, dynamic> {
 
   @override
   dynamic remove(Object key) {
-    throw UnsupportedError("read-only");
+    throw UnsupportedError('read-only');
   }
 }
 
@@ -202,11 +202,11 @@ abstract class PluginList<T> extends ListBase<T> {
 
   @override
   set length(int newLength) {
-    throw UnsupportedError("read-only");
+    throw UnsupportedError('read-only');
   }
 
   @override
   void operator []=(int index, T value) {
-    throw UnsupportedError("read-only");
+    throw UnsupportedError('read-only');
   }
 }

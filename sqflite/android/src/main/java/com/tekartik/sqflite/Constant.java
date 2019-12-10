@@ -17,6 +17,7 @@ public class Constant {
     static final public String METHOD_QUERY = "query";
     static final public String METHOD_UPDATE = "update";
     static final public String METHOD_BATCH = "batch";
+    static final public String METHOD_DELETE_DATABASE = "deleteDatabase";
 
     static final String PARAM_ID = "id";
     static final String PARAM_PATH = "path";

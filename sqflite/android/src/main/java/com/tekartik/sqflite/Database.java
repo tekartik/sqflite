@@ -4,6 +4,8 @@ import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import java.io.File;
+
 import static com.tekartik.sqflite.Constant.TAG;
 
 class Database {
@@ -71,5 +73,10 @@ class Database {
 
     String getThreadLogPrefix() {
         return "[" + getThreadLogTag() + "] ";
+    }
+
+
+    static void deleteDatabase(String path) {
+        SQLiteDatabase.deleteDatabase(new File(path));
     }
 }

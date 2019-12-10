@@ -174,7 +174,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   /// conflict. See [ConflictResolver] docs for more details
   ///
   /// Returns the number of rows affected if a whereClause is passed in, 0
-  /// otherwise. To remove all rows and get a count pass "1" as the
+  /// otherwise. To remove all rows and get a count pass '1' as the
   /// whereClause.
   @override
   Future<int> delete(String table, {String where, List<dynamic> whereArgs}) {
@@ -286,7 +286,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// Ugly compatibility step to not support older synchronized
   /// mechanism
   Future<T> txnSynchronized<T>(
-      Transaction txn, Future<T> action(Transaction txn)) async {
+      Transaction txn, Future<T> Function(Transaction txn) action) async {
     // If in a transaction, execute right away
     if (txn != null) {
       return await action(txn);
@@ -321,7 +321,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// synchronized call to the database
   /// not re-entrant
   Future<T> txnWriteSynchronized<T>(
-          Transaction txn, Future<T> action(Transaction txn)) =>
+          Transaction txn, Future<T> Function(Transaction txn) action) =>
       txnSynchronized(txn, action);
 
   /// for sql without return values
@@ -424,9 +424,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     // never create transaction in read-only mode
     if (readOnly != true) {
       if (exclusive == true) {
-        await txnExecute<dynamic>(txn, "BEGIN EXCLUSIVE");
+        await txnExecute<dynamic>(txn, 'BEGIN EXCLUSIVE');
       } else {
-        await txnExecute<dynamic>(txn, "BEGIN IMMEDIATE");
+        await txnExecute<dynamic>(txn, 'BEGIN IMMEDIATE');
       }
     }
     return txn;
@@ -437,15 +437,15 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     // never commit transaction in read-only mode
     if (readOnly != true) {
       if (txn.successful == true) {
-        await txnExecute<dynamic>(txn, "COMMIT");
+        await txnExecute<dynamic>(txn, 'COMMIT');
       } else {
-        await txnExecute<dynamic>(txn, "ROLLBACK");
+        await txnExecute<dynamic>(txn, 'ROLLBACK');
       }
     }
   }
 
   Future<T> _runTransaction<T>(
-      Transaction txn, Future<T> action(Transaction txn),
+      Transaction txn, Future<T> Function(Transaction txn) action,
       {bool exclusive}) async {
     bool successfull;
     if (transactionRefCount++ == 0) {
@@ -466,7 +466,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   }
 
   @override
-  Future<T> transaction<T>(Future<T> action(Transaction txn),
+  Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
       {bool exclusive}) {
     checkNotClosed();
     return txnWriteSynchronized<T>(txn, (Transaction txn) async {
@@ -480,7 +480,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   Future<int> getVersion() async {
     final List<Map<String, dynamic>> rows =
-        await rawQuery("PRAGMA user_version");
+        await rawQuery('PRAGMA user_version');
     return firstIntValue(rows);
   }
 
@@ -490,7 +490,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   ///
   @override
   Future<void> setVersion(int version) async {
-    await execute("PRAGMA user_version = $version");
+    await execute('PRAGMA user_version = $version');
   }
 
   /// Close the database. Cannot be access anymore
@@ -503,7 +503,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   @override
   String toString() {
-    return "$id $path";
+    return '$id $path';
   }
 
   Future<int> openDatabase() async {
@@ -601,19 +601,19 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<SqfliteDatabase> doOpen(OpenDatabaseOptions options) async {
     if (options.version != null) {
       if (options.version == 0) {
-        throw ArgumentError("version cannot be set to 0 in openDatabase");
+        throw ArgumentError('version cannot be set to 0 in openDatabase');
       }
     } else {
       if (options.onCreate != null) {
-        throw ArgumentError("onCreate must be null if no version is specified");
+        throw ArgumentError('onCreate must be null if no version is specified');
       }
       if (options.onUpgrade != null) {
         throw ArgumentError(
-            "onUpgrade must be null if no version is specified");
+            'onUpgrade must be null if no version is specified');
       }
       if (options.onDowngrade != null) {
         throw ArgumentError(
-            "onDowngrade must be null if no version is specified");
+            'onDowngrade must be null if no version is specified');
       }
     }
     this.options = options;

@@ -18,7 +18,7 @@ abstract class SqfliteDatabaseFactoryBase with SqfliteDatabaseFactoryMixin {}
 mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
   /// To override to wrap wanted exception
   @override
-  Future<T> wrapDatabaseException<T>(Future<T> action()) => action();
+  Future<T> wrapDatabaseException<T>(Future<T> Function() action) => action();
 
   Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]) =>
       wrapDatabaseException(() => invokeMethod(method, arguments));
@@ -119,9 +119,13 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
 
   @override
   Future<void> deleteDatabase(String path) async {
-    path = await fixPath(path);
-    return safeInvokeMethod<void>(
-        methodDeleteDatabase, <String, dynamic>{paramPath: path});
+    return lock.synchronized(() async {
+      path = await fixPath(path);
+      // Handle already single instance open database
+      removeDatabaseOpenHelper(path);
+      return safeInvokeMethod<void>(
+          methodDeleteDatabase, <String, dynamic>{paramPath: path});
+    });
   }
 
   @override
@@ -140,7 +144,7 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
           await safeInvokeMethod<String>(methodGetDatabasesPath);
 
       if (path == null) {
-        throw SqfliteDatabaseException("getDatabasesPath is null", null);
+        throw SqfliteDatabaseException('getDatabasesPath is null', null);
       }
       _databasesPath = path;
     }

@@ -149,7 +149,8 @@ abstract class Database implements DatabaseExecutor {
 
   /// Calls in action must only be done using the transaction object
   /// using the database will trigger a dead-lock
-  Future<T> transaction<T>(Future<T> action(Transaction txn), {bool exclusive});
+  Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
+      {bool exclusive});
 
   ///
   /// Get the database inner version

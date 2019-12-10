@@ -16,14 +16,25 @@ class ManualTestPage extends StatefulWidget {
 
 class _ManualTestPageState extends State<ManualTestPage> {
   Database database;
+  static const String dbName = 'manual_test.db';
 
   Future<Database> _openDatabase() async {
-    return database ??= await databaseFactory.openDatabase('manual_test.db');
+    return database ??= await databaseFactory.openDatabase(dbName);
   }
 
   Future _closeDatabase() async {
     await database?.close();
     database = null;
+  }
+
+  Future _deleteDatabase() async {
+    await databaseFactory.deleteDatabase(dbName);
+  }
+
+  Future _incrementVersion() async {
+    var version = await database.getVersion();
+    print('version $version');
+    await database.setVersion(version + 1);
   }
 
   List<MenuItem> items;
@@ -51,6 +62,11 @@ class _ManualTestPageState extends State<ManualTestPage> {
       },
           summary:
               'Execute after starting then exit the app using the back button on Android and restart from the launcher.'),
+      MenuItem('delete', () async {
+        await _deleteDatabase();
+      },
+          summary:
+              'Try open (then optionally) delete, exit or hot-restart then delete then open'),
       MenuItem('log level: none', () async {
         // ignore: deprecated_member_use
         await Sqflite.devSetOptions(
@@ -73,6 +89,9 @@ class _ManualTestPageState extends State<ManualTestPage> {
         final factory = databaseFactory as impl.SqfliteDatabaseFactoryMixin;
         var info = await factory.getDebugInfo();
         print(info?.toString());
+      }, summary: 'Implementation info (dev only)'),
+      MenuItem('Increment version', () async {
+        print(await _incrementVersion());
       }, summary: 'Implementation info (dev only)'),
       MenuItem('Multiple db', () async {
         await Navigator.of(context).push(MaterialPageRoute(builder: (_) {

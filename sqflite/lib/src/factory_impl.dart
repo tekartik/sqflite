@@ -21,24 +21,27 @@ SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
 /// Factory implementation
 class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   @override
-  Future<T> wrapDatabaseException<T>(Future<T> action()) =>
+  Future<T> wrapDatabaseException<T>(Future<T> Function() action) =>
       impl.wrapDatabaseException(action);
 
   @override
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
       impl.invokeMethod(method, arguments);
 
-  /// Optimized but could be removed
+  /*
+  /// Old implementation which does not handle hot-restart and Android restart
   @override
   Future<void> deleteDatabase(String path) async {
     path = await fixPath(path);
-    try {
-      await File(path).delete(recursive: true);
-    } catch (_) {
-      // 0.8.4
-      // print(_);
-    }
+
+      try {
+        await File(path).delete(recursive: true);
+      } catch (_) {
+        // 0.8.4
+        // print(_);
+      }
   }
+  */
 
   /// Optimized but could be removed
   @override

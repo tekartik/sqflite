@@ -10,7 +10,7 @@ abstract class SqfliteDatabaseFactory implements DatabaseFactory {
   Future<T> invokeMethod<T>(String method, [dynamic arguments]);
 
   /// Wrap any exception to a [DatabaseException].
-  Future<T> wrapDatabaseException<T>(Future<T> action());
+  Future<T> wrapDatabaseException<T>(Future<T> Function() action);
   // To override
   // This also should wrap exception
   //Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]);
