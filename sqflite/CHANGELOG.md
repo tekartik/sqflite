@@ -1,3 +1,7 @@
+## 1.2.0-dev.1
+
+* Add experimental MacOS support
+
 ## 1.1.8
 
 * support `deleteDatabase` after hot-restart. Existing, if any, single instance database ìs closed
