@@ -6,13 +6,20 @@ description: Flutter plugin for SQLite, a self-contained, high-reliability,
 version: 1.1.8
 
 environment:
-  sdk: '>=2.5.0 <3.0.0'
-  flutter: ">=1.9.1 <2.0.0"
+  sdk: '>=2.6.0 <3.0.0'
+  flutter: ">=1.10.1 <2.0.0"
 
 flutter:
   plugin:
-    androidPackage: com.tekartik.sqflite
-    pluginClass: SqflitePlugin
+    platforms:
+      android:
+        package: com.tekartik.sqflite
+        pluginClass: SqflitePlugin
+      ios:
+        pluginClass: SqflitePlugin
+      macos:
+        pluginClass: SqflitePlugin
+
 
 dependencies:
   flutter:
