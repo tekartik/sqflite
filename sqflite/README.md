@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/tekartik/sqflite/branch/master/graph/badge.svg)](https://codecov.io/gh/tekartik/sqflite)
 
 SQLite plugin for [Flutter](https://flutter.io).
-Supports both iOS and Android.
+Supports iOS, Android and MacOS.
 
 * Support transactions and batches
 * Automatic version managment during open
@@ -19,7 +19,7 @@ In your flutter project add the dependency:
 ```yml
 dependencies:
   ...
-  sqflite: ^1.1.8
+  sqflite: ^1.2.0
 ```
 
 For help getting started with Flutter, view the online

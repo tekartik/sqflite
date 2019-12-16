@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqlite_api.dart';
@@ -149,21 +148,6 @@ mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
       _databasesPath = path;
     }
     return _databasesPath;
-  }
-
-  @override
-  Future<void> createParentDirectory(String path) async {
-    // needed on iOS
-    if (Platform.isIOS) {
-      path = await fixPath(path);
-      if (isPath(path)) {
-        try {
-          path = dirname(path);
-          // devPrint('createParentDirectory: $path');
-          await Directory(path).create(recursive: true);
-        } catch (_) {}
-      }
-    }
   }
 
   /// path must be non null

@@ -2,7 +2,6 @@ name: sqflite_repo
 description: Sqflite repo
 version: 0.1.0
 homepage: https://github.com/tekartik/sqflite
-author: alex <alex@tekartik.com>
 publish_to: none
 
 environment:
@@ -15,7 +14,7 @@ dev_dependencies:
       url: git://github.com/tekartik/travis_ci_flutter.dart
       ref: dart2
     version: '>=0.1.0'
-  process_run: '>=0.10.1'
+  process_run: '>=0.10.6'
 
 dependency_overrides:
   pedantic: '>=1.9.0 <3.0.0'

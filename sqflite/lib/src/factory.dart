@@ -38,7 +38,4 @@ abstract class SqfliteDatabaseFactory implements DatabaseFactory {
 
   @override
   Future<bool> databaseExists(String path);
-
-  /// Create the parent directory of a database.
-  Future<void> createParentDirectory(String path);
 }

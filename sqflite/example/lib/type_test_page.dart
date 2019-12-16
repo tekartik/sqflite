@@ -154,7 +154,7 @@ class TypeTestPage extends TestPage {
         // try blob lookup - does work on iOS only
         var rows = await data.db
             .rawQuery('SELECT * FROM Test WHERE value = ?', [blob1234]);
-        if (Platform.isIOS) {
+        if (Platform.isIOS || Platform.isMacOS) {
           expect(rows.length, 1);
         } else {
           expect(rows.length, 0);

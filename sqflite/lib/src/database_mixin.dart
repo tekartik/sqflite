@@ -510,9 +510,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     final Map<String, dynamic> params = <String, dynamic>{paramPath: path};
     if (readOnly == true) {
       params[paramReadOnly] = true;
-    } else {
-      // create the folder if needed (needed for iOS)
-      await factory.createParentDirectory(path);
     }
     final bool singleInstance = options?.singleInstance ?? false;
     // Single instance?

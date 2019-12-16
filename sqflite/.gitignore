@@ -17,3 +17,6 @@ flutter
 # Conventional directory for build outputs
 build/
 coverage/
+
+# flutter
+.metadata
