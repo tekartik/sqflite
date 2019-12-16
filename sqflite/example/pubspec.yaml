@@ -22,6 +22,7 @@ dev_dependencies:
     sdk: flutter
   flutter_driver:
     sdk: flutter
+  e2e:
   test:
   matcher: '>=0.12.3 < 2.0.0'
   pedantic: '>=1.4.0 <3.0.0'
