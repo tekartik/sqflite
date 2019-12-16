@@ -8,6 +8,7 @@ import 'package:e2e/e2e.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+// import 'sqflite_impl_test.dart' show devVerbose;
 
 void main() {
   E2EWidgetsFlutterBinding.ensureInitialized();
@@ -15,9 +16,11 @@ void main() {
   group('sqflite', () {
     group('open', () {
       test('missing directory', () async {
+        //await devVerbose();
         var path = join('test_missing_sub_dir', 'simple.db');
         try {
-          await Directory(dirname(path)).delete(recursive: true);
+          await Directory(join(await getDatabasesPath(), dirname(path)))
+              .delete(recursive: true);
         } catch (_) {}
         var db =
             await openDatabase(path, version: 1, onCreate: (db, version) async {

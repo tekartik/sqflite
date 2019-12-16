@@ -616,6 +616,18 @@ static NSInteger _databaseOpenCount = 0;
         }
     }
     
+    // Make sure the directory exists
+    if (!inMemoryPath && !readOnly) {
+        NSError* error;
+        NSString* parentDir = [path stringByDeletingLastPathComponent];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:parentDir]) {
+            if (_log) {
+                NSLog(@"Creating parent dir %@", parentDir);
+            }
+            [[NSFileManager defaultManager] createDirectoryAtPath:parentDir withIntermediateDirectories:YES attributes:nil error:&error];
+            // Ingore the error, it will break later during open
+        }
+    }
     FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:path flags:(readOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE))];
     bool success = queue != nil;
     
