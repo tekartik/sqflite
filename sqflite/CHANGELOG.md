@@ -1,6 +1,6 @@
-## 1.2.0-dev.1
+## 1.2.0
 
-* Add experimental MacOS support
+* Add MacOS support
 
 ## 1.1.8
 
