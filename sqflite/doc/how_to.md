@@ -7,4 +7,5 @@
 * Some personal [usage recommendations](usage_recommendations.md)
 * Some [dev tips](dev_tips.md)
 * [Sqflite development](sqflite_dev_guide.md) guide
+* [Unit testing](testing.md) 
 * [External](external.md) documentation and tutorials
