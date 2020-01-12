@@ -52,7 +52,7 @@ This could be caught this way
 try {
   await db.query('Test');
 } on DatabaseException catch (e) {
-  if (exception.isNoSuchTableError()) {
+  if (e.isNoSuchTableError()) {
     // ok I knew it
   }
 }
