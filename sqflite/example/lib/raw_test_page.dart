@@ -356,7 +356,7 @@ class RawTestPage extends TestPage {
             ["another name", 12345678]);
         print("inserted2: $id");
         int count = await database.rawUpdate(
-            'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
+            'UPDATE Test SET name = ?, value = ? WHERE name = ?',
             ["updated name", "9876", "some name"]);
         print("updated: $count");
         expect(count, 1);
@@ -424,7 +424,7 @@ class RawTestPage extends TestPage {
 
       // Update some record
       int count = await database.rawUpdate(
-          'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
+          'UPDATE Test SET name = ?, value = ? WHERE name = ?',
           ["updated name", "9876", "some name"]);
       print("updated: $count");
 

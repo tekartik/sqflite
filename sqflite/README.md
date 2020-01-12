@@ -89,7 +89,7 @@ await database.transaction((txn) async {
 
 // Update some record
 int count = await database.rawUpdate(
-    'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
+    'UPDATE Test SET name = ?, value = ? WHERE name = ?',
     ['updated name', '9876', 'some name']);
 print('updated: $count');
 
