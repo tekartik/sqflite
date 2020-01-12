@@ -77,12 +77,12 @@ Future<bool> _exists(Transaction txn, Product product) async {
       1;
 }
 
-Future<bool> _update(Transaction txn, Product product) async {
+Future _update(Transaction txn, Product product) async {
   await txn.update('Product', product.toMap(),
       where: 'id = ?', whereArgs: [product.id]);
 }
 
-Future<bool> _insert(Transaction txn, Product product) async {
+Future _insert(Transaction txn, Product product) async {
   await txn.insert('Product', product.toMap()..['id'] = product.id);
 }
 
@@ -108,12 +108,12 @@ await upsertRecord(product);
 or you could try to insert and handle a constraint error:
 
 ```dart
-Future<bool> _update(Product product) async {
+Future _update(Product product) async {
   await db.update('Product', product.toMap(),
       where: 'id = ?', whereArgs: [product.id]);
 }
 
-Future<bool> _insert(Product product) async {
+Future< _insert(Product product) async {
   await db.insert('Product', product.toMap()..['id'] = product.id);
 }
 
