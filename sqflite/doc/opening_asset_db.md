@@ -30,6 +30,11 @@ For better performance you should copy the asset only once (the first time) then
 always try to open the copy
 
 ```dart
+
+import 'package:path/path.dart';
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
+
 var databasesPath = await getDatabasesPath();
 var path = join(databasesPath, "demo_asset_example.db");
 
