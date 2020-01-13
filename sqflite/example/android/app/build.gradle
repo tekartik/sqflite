@@ -32,7 +32,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        // Because MainActivity -> GeneratedPluginRegistrant -> E2EPlugin -> CompletableFuture added api 24.
+        minSdkVersion 24
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
