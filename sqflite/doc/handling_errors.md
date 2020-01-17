@@ -136,3 +136,14 @@ await upsertRecord(product);
 ```
 
 In the last example above, there is a short race condition between _insert and _update that depending on your use, should be avoided.
+
+## Limitations
+
+### SQLiteBlobTooBigException (Row too big to fit into CursorWindow)
+
+There seems to be a limit of (around) 1MB when reading on Android and iOS. I could not find a portable way to allow the developer to change
+this limit.
+
+I find the 1MB blob limit a good limitation (firestore has a similar limit) since otherwise performance would be pretty bad.
+
+Solution: reduce the size of your blob or store your data in a external file and only save a reference to it in SQLite.
