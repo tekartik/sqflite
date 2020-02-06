@@ -2,13 +2,12 @@ import 'dart:async';
 
 import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/src/database.dart';
+import 'package:sqflite/src/mixin/factory.dart';
 import 'package:synchronized/synchronized.dart';
 
 /// Internal database factory interface.
-abstract class SqfliteDatabaseFactory implements DatabaseFactory {
-  /// Invoke a native method.
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]);
-
+abstract class SqfliteDatabaseFactory
+    implements DatabaseFactory, SqfliteInvokeHandler {
   /// Wrap any exception to a [DatabaseException].
   Future<T> wrapDatabaseException<T>(Future<T> Function() action);
   // To override

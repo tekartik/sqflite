@@ -7,6 +7,7 @@ import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/database_mixin.dart';
 import 'package:sqflite/src/exception.dart';
 import 'package:sqflite/src/factory.dart';
+import 'package:sqflite/src/mixin/factory.dart';
 import 'package:sqflite/src/open_options.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -14,7 +15,8 @@ import 'package:synchronized/synchronized.dart';
 abstract class SqfliteDatabaseFactoryBase with SqfliteDatabaseFactoryMixin {}
 
 /// Common factory mixin
-mixin SqfliteDatabaseFactoryMixin implements SqfliteDatabaseFactory {
+mixin SqfliteDatabaseFactoryMixin
+    implements SqfliteDatabaseFactory, SqfliteInvokeHandler {
   /// To override to wrap wanted exception
   @override
   Future<T> wrapDatabaseException<T>(Future<T> Function() action) => action();
