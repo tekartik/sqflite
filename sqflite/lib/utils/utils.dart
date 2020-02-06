@@ -1,4 +1,3 @@
-import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/utils.dart';
 import 'package:sqflite/src/utils.dart' as impl;
 
