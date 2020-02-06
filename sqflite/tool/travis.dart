@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:http/io_client.dart';
 import 'package:path/path.dart';
-import 'package:process_run/shell.dart';
+import 'package:process_run/shell_run.dart';
 
 Future<void> main() async {
   final Shell shell = Shell();
@@ -14,6 +14,8 @@ flutter analyze --no-current-package lib test tool
 flutter test --no-pub --coverage
 
 ''');
+
+  await run('dart test/no_flutter_main.dart', verbose: false);
 
   // CODECOV_TOKEN must be defined on travis
   final String codeCovToken = userEnvironment['CODECOV_TOKEN'];

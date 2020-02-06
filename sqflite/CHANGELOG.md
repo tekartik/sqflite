@@ -1,3 +1,7 @@
+## 1.2.1-dev.2
+
+* Add private mixin
+
 ## 1.2.0
 
 * Add MacOS support
