@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/src/mixin/factory.dart';
@@ -12,6 +11,5 @@ Future<void> main() async {
     return result;
   });
   final Database db = await factory.openDatabase(inMemoryDatabasePath);
-  print('db version: ${await db.getVersion()}');
-  print(Platform.environment);
+  await db?.getVersion();
 }
