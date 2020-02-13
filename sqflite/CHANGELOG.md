@@ -1,5 +1,6 @@
-## 1.2.1-dev.2
+## 1.2.1-dev.3
 
+* Support Android embedding v2
 * Add private mixin
 
 ## 1.2.0

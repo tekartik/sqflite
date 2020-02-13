@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -64,7 +66,8 @@ import static com.tekartik.sqflite.Constant.TAG;
 /**
  * SqflitePlugin Android implementation
  */
-public class SqflitePlugin implements MethodCallHandler {
+public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
+
 
     static final Map<String, Integer> _singleInstancesByPath = new HashMap<>();
     static private boolean QUERY_AS_MAP_LIST = false; // set by options
@@ -75,25 +78,49 @@ public class SqflitePlugin implements MethodCallHandler {
     static private final Object openCloseLocker = new Object();
     // local cache
     static String databasesPath;
-    static private Context context;
+    private Context context;
     static private int databaseId = 0; // incremental database id
     // Database thread execution
     static private HandlerThread handlerThread;
     static private Handler handler;
-
+    private MethodChannel methodChannel;
     @SuppressLint("UseSparseArrays")
     static final Map<Integer, Database> databaseMap = new HashMap<>();
 
-    SqflitePlugin(Context context) {
-        this.context = context;
+    // Needed public constructor
+    public SqflitePlugin() {
+
+    }
+
+    // Testing only
+    public SqflitePlugin(Context context) {
+        this.context = context.getApplicationContext();
     }
 
     //
     // Plugin registration.
     //
     public static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "com.tekartik.sqflite");
-        channel.setMethodCallHandler(new SqflitePlugin(registrar.context()));
+        SqflitePlugin sqflitePlugin = new SqflitePlugin();
+        sqflitePlugin.onAttachedToEngine(registrar.context(), registrar.messenger());
+    }
+
+    @Override
+    public void onAttachedToEngine(FlutterPluginBinding binding) {
+        onAttachedToEngine(binding.getApplicationContext(), binding.getBinaryMessenger());
+    }
+
+    private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
+        this.context = applicationContext;
+        methodChannel = new MethodChannel(messenger, Constant.PLUGIN_KEY);
+        methodChannel.setMethodCallHandler(this);
+    }
+
+    @Override
+    public void onDetachedFromEngine(FlutterPluginBinding binding) {
+        context = null;
+        methodChannel.setMethodCallHandler(null);
+        methodChannel = null;
     }
 
     private static Object cursorValue(Cursor cursor, int index) {
@@ -1009,6 +1036,7 @@ public class SqflitePlugin implements MethodCallHandler {
         }
         result.success(databasesPath);
     }
+
 
     private class BgResult implements Result {
         // Caller handler
