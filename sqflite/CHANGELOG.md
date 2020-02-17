@@ -1,7 +1,8 @@
-## 1.2.1-dev.3
+## 1.2.1
 
 * Support Android embedding v2
 * Add private mixin
+* Support iOS/MacOS incremental build
 
 ## 1.2.0
 
