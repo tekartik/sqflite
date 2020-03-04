@@ -6,6 +6,7 @@
 * Solve you [build and runtime issues](troubleshooting.md)
 * Some personal [usage recommendations](usage_recommendations.md)
 * Some [dev tips](dev_tips.md)
+* Get information about the [SQLite version](version.md) 
 * [Sqflite development](sqflite_dev_guide.md) guide
 * [Unit testing](testing.md) 
 * [External](external.md) documentation and tutorials
