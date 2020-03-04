@@ -1,6 +1,6 @@
 # SQLite version
 
-`sqflite` uses the SQLite available on the platform. It does not ship any additional sqlite version. You can get the
+`sqflite` uses the SQLite available on the platform. It does not ship/bundle any additional SQLite library. You can get the
 version using `SELECT sqlite_version()`:
 
 ```dart
