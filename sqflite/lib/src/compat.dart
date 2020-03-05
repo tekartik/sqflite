@@ -23,7 +23,7 @@ class SqfliteOptions {
 
   /// deprecated
   Map<String, dynamic> toMap() {
-    final Map<String, dynamic> map = <String, dynamic>{};
+    final map = <String, dynamic>{};
     if (queryAsMapList != null) {
       map['queryAsMapList'] = queryAsMapList;
     }

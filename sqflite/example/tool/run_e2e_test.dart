@@ -3,7 +3,7 @@ import 'package:process_run/shell.dart';
 import 'package:sqflite_example/utils.dart';
 
 Future<void> main() async {
-  final Shell shell = Shell();
+  final shell = Shell();
 
 // # flutter driver --driver=test_driver/sqflite_e2e_test.dart test_driver/sqflite_e2e.dart
   await shell.run('flutter build apk');

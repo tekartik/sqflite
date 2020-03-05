@@ -9,7 +9,7 @@ class MyList1 extends Object with ListMixin<Map<String, dynamic>> {
 
   @override
   Map<String, dynamic> operator [](int index) {
-    final Map<dynamic, dynamic> value = _list[index] as Map<dynamic, dynamic>;
+    final value = _list[index] as Map<dynamic, dynamic>;
     return value.cast<String, dynamic>();
   }
 
@@ -34,7 +34,7 @@ class MyList2 extends ListBase<Map<String, dynamic>> {
 
   @override
   Map<String, dynamic> operator [](int index) {
-    final Map<dynamic, dynamic> value = _list[index] as Map<dynamic, dynamic>;
+    final value = _list[index] as Map<dynamic, dynamic>;
     return value.cast<String, dynamic>();
   }
 
@@ -56,18 +56,18 @@ void main() {
   group('mixin', () {
     // This fails on beta 1, should work now
     test('ListMixin', () {
-      final List<dynamic> raw = <dynamic>[
+      final raw = <dynamic>[
         <dynamic, dynamic>{'col': 1}
       ];
-      final MyList1 rows = MyList1.from(raw);
+      final rows = MyList1.from(raw);
       expect(rows, raw);
     });
 
     test('ListBase', () {
-      final List<dynamic> raw = <dynamic>[
+      final raw = <dynamic>[
         <dynamic, dynamic>{'col': 1}
       ];
-      final MyList2 rows = MyList2.from(raw);
+      final rows = MyList2.from(raw);
       expect(rows, raw);
     });
   });

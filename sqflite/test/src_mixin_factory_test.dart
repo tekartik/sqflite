@@ -12,8 +12,8 @@ void main() {
       SqfliteInvokeHandler;
     });
     test('buildDatabaseFactory', () async {
-      final List<String> methods = <String>[];
-      final DatabaseFactory factory = buildDatabaseFactory(
+      final methods = <String>[];
+      final factory = buildDatabaseFactory(
           invokeMethod: (String method, [dynamic arguments]) async {
         dynamic result;
         methods.add(method);

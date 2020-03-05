@@ -18,6 +18,9 @@ void main() {
         OnDatabaseOpenFn,
         OnDatabaseVersionChangeFn,
         onDatabaseDowngradeDelete,
+        sqfliteLogLevelNone,
+        sqfliteLogLevelSql,
+        sqfliteLogLevelVerbose
       ].forEach((dynamic value) {
         expect(value, isNotNull);
       });

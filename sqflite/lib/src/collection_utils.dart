@@ -13,22 +13,22 @@ class Rows extends PluginList<Map<String, dynamic>> {
 
   @override
   Map<String, dynamic> operator [](int index) {
-    final Map<dynamic, dynamic> item = rawList[index] as Map<dynamic, dynamic>;
+    final item = rawList[index] as Map<dynamic, dynamic>;
     return item.cast<String, dynamic>();
   }
 }
 
 /// Unpack the native results
 QueryResultSet queryResultSetFromMap(Map<dynamic, dynamic> queryResultSetMap) {
-  final List<dynamic> columns = queryResultSetMap['columns'] as List<dynamic>;
-  final List<dynamic> rows = queryResultSetMap['rows'] as List<dynamic>;
+  final columns = queryResultSetMap['columns'] as List<dynamic>;
+  final rows = queryResultSetMap['rows'] as List<dynamic>;
   return QueryResultSet(columns, rows);
 }
 
 /// Native exception wrapper
 DatabaseException databaseExceptionFromOperationError(
     Map<dynamic, dynamic> errorMap) {
-  final String message = errorMap[paramErrorMessage] as String;
+  final message = errorMap[paramErrorMessage] as String;
   return SqfliteDatabaseException(message, errorMap[paramErrorData]);
 }
 
@@ -37,7 +37,7 @@ DatabaseException databaseExceptionFromOperationError(
 /// or
 /// {'error':...}
 dynamic fromRawOperationResult(Map<dynamic, dynamic> rawOperationResultMap) {
-  final Map<dynamic, dynamic> errorMap =
+  final errorMap =
       rawOperationResultMap[constant.paramError] as Map<dynamic, dynamic>;
   if (errorMap != null) {
     return databaseExceptionFromOperationError(errorMap);
@@ -67,7 +67,7 @@ List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
   // dart2 support <= 0.7.0 - this is a list
   // to remove once done on iOS and Android
   if (queryResult is List) {
-    final Rows rows = Rows.from(queryResult);
+    final rows = Rows.from(queryResult);
     return rows;
   }
 
@@ -83,7 +83,7 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
     if (_columns != null) {
       _columnIndexMap = <String, int>{};
 
-      for (int i = 0; i < _columns.length; i++) {
+      for (var i = 0; i < _columns.length; i++) {
         _columnIndexMap[_columns[i]] = i;
       }
     }
@@ -134,8 +134,8 @@ class QueryRow extends MapBase<String, dynamic> {
 
   @override
   dynamic operator [](Object key) {
-    final String stringKey = key as String;
-    final int columnIndex = queryResultSet.columnIndex(stringKey);
+    final stringKey = key as String;
+    final columnIndex = queryResultSet.columnIndex(stringKey);
     if (columnIndex != null) {
       return row[columnIndex];
     }
@@ -179,7 +179,7 @@ class BatchResults extends PluginList<dynamic> {
   dynamic operator [](int index) {
     // New in 0.13
     // It is always a Map and can be either a result or an error
-    final Map<dynamic, dynamic> rawMap = _list[index] as Map<dynamic, dynamic>;
+    final rawMap = _list[index] as Map<dynamic, dynamic>;
     return fromRawOperationResult(rawMap);
   }
 }

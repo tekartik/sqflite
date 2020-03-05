@@ -6,9 +6,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('sqflite', () {
-    const MethodChannel channel = MethodChannel('com.tekartik.sqflite');
+    const channel = MethodChannel('com.tekartik.sqflite');
 
-    final List<MethodCall> log = <MethodCall>[];
+    final log = <MethodCall>[];
     String response;
 
     channel.setMockMethodCallHandler((MethodCall methodCall) async {

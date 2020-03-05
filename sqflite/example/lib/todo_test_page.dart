@@ -5,16 +5,16 @@ import 'package:sqflite/sqflite.dart';
 import 'test_page.dart';
 
 /// `todo` table name
-final String tableTodo = "todo";
+final String tableTodo = 'todo';
 
 /// id column name
-final String columnId = "_id";
+final String columnId = '_id';
 
 /// title column name
-final String columnTitle = "title";
+final String columnTitle = 'title';
 
 /// done column name
-final String columnDone = "done";
+final String columnDone = 'done';
 
 /// Todo model.
 class Todo {
@@ -78,7 +78,7 @@ create table $tableTodo (
   Future<Todo> getTodo(int id) async {
     List<Map> maps = await db.query(tableTodo,
         columns: [columnId, columnDone, columnTitle],
-        where: "$columnId = ?",
+        where: '$columnId = ?',
         whereArgs: [id]);
     if (maps.isNotEmpty) {
       return Todo.fromMap(maps.first);
@@ -88,13 +88,13 @@ create table $tableTodo (
 
   /// Delete a todo.
   Future<int> delete(int id) async {
-    return await db.delete(tableTodo, where: "$columnId = ?", whereArgs: [id]);
+    return await db.delete(tableTodo, where: '$columnId = ?', whereArgs: [id]);
   }
 
   /// Update a todo.
   Future<int> update(Todo todo) async {
     return await db.update(tableTodo, todo.toMap(),
-        where: "$columnId = ?", whereArgs: [todo.id]);
+        where: '$columnId = ?', whereArgs: [todo.id]);
   }
 
   /// Close database.
@@ -104,38 +104,38 @@ create table $tableTodo (
 /// Todo test page.
 class TodoTestPage extends TestPage {
   /// Todo test page.
-  TodoTestPage() : super("Todo example") {
-    test("open", () async {
+  TodoTestPage() : super('Todo example') {
+    test('open', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      String path = await initDeleteDb("simple_todo_open.db");
-      TodoProvider todoProvider = TodoProvider();
+      var path = await initDeleteDb('simple_todo_open.db');
+      var todoProvider = TodoProvider();
       await todoProvider.open(path);
 
       await todoProvider.close();
       //await Sqflite.setDebugModeOn(false);
     });
 
-    test("insert/query/update/delete", () async {
+    test('insert/query/update/delete', () async {
       // await Sqflite.devSetDebugModeOn();
-      String path = await initDeleteDb("simple_todo.db");
-      TodoProvider todoProvider = TodoProvider();
+      var path = await initDeleteDb('simple_todo.db');
+      var todoProvider = TodoProvider();
       await todoProvider.open(path);
 
-      Todo todo = Todo()..title = "test";
+      var todo = Todo()..title = 'test';
       await todoProvider.insert(todo);
       expect(todo.id, 1);
 
       expect(await todoProvider.getTodo(0), null);
       todo = await todoProvider.getTodo(1);
       expect(todo.id, 1);
-      expect(todo.title, "test");
+      expect(todo.title, 'test');
       expect(todo.done, false);
 
       todo.done = true;
       expect(await todoProvider.update(todo), 1);
       todo = await todoProvider.getTodo(1);
       expect(todo.id, 1);
-      expect(todo.title, "test");
+      expect(todo.title, 'test');
       expect(todo.done, true);
 
       expect(await todoProvider.delete(0), 0);

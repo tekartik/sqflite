@@ -5,7 +5,7 @@ import 'package:sqflite/src/sql_builder.dart';
 void main() {
   group('sql_builder', () {
     test('delete', () {
-      SqlBuilder builder = SqlBuilder.delete('test',
+      var builder = SqlBuilder.delete('test',
           where: 'value = ?', whereArgs: <dynamic>[1]);
       expect(builder.sql, 'DELETE FROM test WHERE value = ?');
       expect(builder.arguments, <int>[1]);
@@ -16,7 +16,7 @@ void main() {
     });
 
     test('query', () {
-      SqlBuilder builder = SqlBuilder.query('test');
+      var builder = SqlBuilder.query('test');
       expect(builder.sql, 'SELECT * FROM test');
       expect(builder.arguments, isNull);
 
@@ -41,8 +41,7 @@ void main() {
         fail('should fail, no nullColumnHack');
       } on ArgumentError catch (_) {}
 
-      SqlBuilder builder =
-          SqlBuilder.insert('test', null, nullColumnHack: 'value');
+      var builder = SqlBuilder.insert('test', null, nullColumnHack: 'value');
       expect(builder.sql, 'INSERT INTO test (value) VALUES (NULL)');
       expect(builder.arguments, isNull);
 
@@ -63,8 +62,7 @@ void main() {
         fail('should fail, no values');
       } on ArgumentError catch (_) {}
 
-      SqlBuilder builder =
-          SqlBuilder.update('test', <String, dynamic>{'value': 1});
+      var builder = SqlBuilder.update('test', <String, dynamic>{'value': 1});
       expect(builder.sql, 'UPDATE test SET value = ?');
       expect(builder.arguments, <dynamic>[1]);
 
@@ -80,7 +78,7 @@ void main() {
     });
 
     test('query', () {
-      SqlBuilder builder = SqlBuilder.query('table', orderBy: 'value');
+      var builder = SqlBuilder.query('table', orderBy: 'value');
       expect(builder.sql, 'SELECT * FROM "table" ORDER BY value');
       expect(builder.arguments, isNull);
 
@@ -111,7 +109,7 @@ void main() {
       expect(escapeName('group'), '"group"');
       expect(escapeName('dummy'), 'dummy');
 
-      for (String name in escapeNames) {
+      for (var name in escapeNames) {
         expect(escapeName(name), '"$name"');
       }
     });
@@ -125,7 +123,7 @@ void main() {
       expect(unescapeName('"group"'), 'group');
       expect(unescapeName('`group`'), 'group');
 
-      for (String name in escapeNames) {
+      for (var name in escapeNames) {
         expect(unescapeName('"$name"'), name);
       }
     });

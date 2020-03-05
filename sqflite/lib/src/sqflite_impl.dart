@@ -13,7 +13,7 @@ const String channelName = 'com.tekartik.sqflite';
 const MethodChannel channel = MethodChannel(channelName);
 
 /// Temp flag to test concurrent reads
-final bool supportsConcurrency = false;
+final supportsConcurrency = false;
 
 /// Invoke a native method
 Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>

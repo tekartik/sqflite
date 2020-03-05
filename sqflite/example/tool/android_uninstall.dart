@@ -1,7 +1,7 @@
 import 'package:process_run/shell.dart';
 
 Future<void> main() async {
-  final Shell shell = Shell();
+  final shell = Shell();
 
   await shell.run('''
 

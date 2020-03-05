@@ -5,7 +5,7 @@ import 'package:sqflite/src/utils.dart' as impl;
 /// Useful for COUNT(*) queries
 int firstIntValue(List<Map<String, dynamic>> list) {
   if (list != null && list.isNotEmpty) {
-    final Map<String, dynamic> firstRow = list.first;
+    final firstRow = list.first;
     if (firstRow.isNotEmpty) {
       return parseInt(firstRow.values?.first);
     }
@@ -16,8 +16,8 @@ int firstIntValue(List<Map<String, dynamic>> list) {
 /// Utility to encode a blob to allow blow query using
 /// 'hex(blob_field) = ?', Sqlite.hex([1,2,3])
 String hex(List<int> bytes) {
-  final StringBuffer buffer = StringBuffer();
-  for (int part in bytes) {
+  final buffer = StringBuffer();
+  for (var part in bytes) {
     if (part & 0xff != part) {
       throw FormatException('$part is not a byte integer');
     }

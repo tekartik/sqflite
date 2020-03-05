@@ -7,71 +7,70 @@ import 'test_page.dart';
 /// Slow test page.
 class SlowTestPage extends TestPage {
   /// Slow test page.
-  SlowTestPage() : super("Slow tests") {
-    test("Perf 100 insert", () async {
-      String path = await initDeleteDb("slow_txn_100_insert.db");
-      Database db = await openDatabase(path);
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+  SlowTestPage() : super('Slow tests') {
+    test('Perf 100 insert', () async {
+      var path = await initDeleteDb('slow_txn_100_insert.db');
+      var db = await openDatabase(path);
+      await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
       await db.transaction((txn) async {
-        for (int i = 0; i < 100; i++) {
+        for (var i = 0; i < 100; i++) {
           await txn
-              .rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
+              .rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
         }
       });
       await db.close();
     });
 
-    test("Perf 100 insert no txn", () async {
-      String path = await initDeleteDb("slow_100_insert.db");
-      Database db = await openDatabase(path);
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
-      for (int i = 0; i < 1000; i++) {
-        await db.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
+    test('Perf 100 insert no txn', () async {
+      var path = await initDeleteDb('slow_100_insert.db');
+      var db = await openDatabase(path);
+      await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+      for (var i = 0; i < 1000; i++) {
+        await db.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
       }
       await db.close();
     });
 
-    test("Perf 1000 insert", () async {
+    test('Perf 1000 insert', () async {
       await perfInsert();
     });
 
-    test("Perf 1000 insert batch", () async {
-      String path = await initDeleteDb("slow_txn_1000_insert_batch.db");
-      Database db = await openDatabase(path);
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+    test('Perf 1000 insert batch', () async {
+      var path = await initDeleteDb('slow_txn_1000_insert_batch.db');
+      var db = await openDatabase(path);
+      await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
-      Stopwatch sw = Stopwatch()..start();
-      Batch batch = db.batch();
+      var sw = Stopwatch()..start();
+      var batch = db.batch();
 
-      for (int i = 0; i < 1000; i++) {
-        batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
+      for (var i = 0; i < 1000; i++) {
+        batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
       }
       await batch.commit();
-      print("1000 insert batch ${sw.elapsed}");
+      print('1000 insert batch ${sw.elapsed}');
       await db.close();
     });
 
-    test("Perf 1000 insert batch no result", () async {
-      String path =
-          await initDeleteDb("slow_txn_1000_insert_batch_no_result.db");
-      Database db = await openDatabase(path);
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+    test('Perf 1000 insert batch no result', () async {
+      var path = await initDeleteDb('slow_txn_1000_insert_batch_no_result.db');
+      var db = await openDatabase(path);
+      await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
-      Stopwatch sw = Stopwatch()..start();
-      Batch batch = db.batch();
+      var sw = Stopwatch()..start();
+      var batch = db.batch();
 
-      for (int i = 0; i < 1000; i++) {
-        batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
+      for (var i = 0; i < 1000; i++) {
+        batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
       }
       await batch.commit(noResult: true);
 
-      print("1000 insert batch no result ${sw.elapsed}");
+      print('1000 insert batch no result ${sw.elapsed}');
       await db.close();
     });
 
-    int count = 10000;
+    var count = 10000;
 
-    test("Perf $count item", () async {
+    test('Perf $count item', () async {
       //Sqflite.devSetDebugModeOn(true);
       await perfDo(count);
     });
@@ -95,35 +94,35 @@ class SlowTestPage extends TestPage {
 
   /// basic performance testing.
   Future perfDo(int count) async {
-    String path = await initDeleteDb("pref_${count}_items.db");
-    Database db = await openDatabase(path);
+    var path = await initDeleteDb('pref_${count}_items.db');
+    var db = await openDatabase(path);
     try {
-      await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+      await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
-      Stopwatch sw = Stopwatch()..start();
-      Batch batch = db.batch();
+      var sw = Stopwatch()..start();
+      var batch = db.batch();
 
-      for (int i = 0; i < count; i++) {
-        batch.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
+      for (var i = 0; i < count; i++) {
+        batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
       }
       await batch.commit();
-      print("sw ${sw.elapsed} insert $count items batch ");
+      print('sw ${sw.elapsed} insert $count items batch ');
 
       sw = Stopwatch()..start();
       var result = await db.query('Test');
-      print("sw ${sw.elapsed} SELECT * From Test : ${result.length} items");
+      print('sw ${sw.elapsed} SELECT * From Test : ${result.length} items');
 
       sw = Stopwatch()..start();
       result =
           await db.query('Test', where: 'name LIKE ?', whereArgs: ['%item%']);
       print(
-          "sw ${sw.elapsed} SELECT * FROM Test WHERE name LIKE %item% ${result.length} items");
+          'sw ${sw.elapsed} SELECT * FROM Test WHERE name LIKE %item% ${result.length} items');
 
       sw = Stopwatch()..start();
       result =
           await db.query('Test', where: 'name LIKE ?', whereArgs: ['%dummy%']);
       print(
-          "sw ${sw.elapsed} SELECT * FROM Test WHERE name LIKE %dummy% ${result.length} items");
+          'sw ${sw.elapsed} SELECT * FROM Test WHERE name LIKE %dummy% ${result.length} items');
     } finally {
       await db.close();
     }
@@ -131,17 +130,17 @@ class SlowTestPage extends TestPage {
 
   /// Insert perf testing.
   Future perfInsert() async {
-    String path = await initDeleteDb("slow_txn_1000_insert.db");
-    Database db = await openDatabase(path);
-    await db.execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+    var path = await initDeleteDb('slow_txn_1000_insert.db');
+    var db = await openDatabase(path);
+    await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
-    Stopwatch sw = Stopwatch()..start();
+    var sw = Stopwatch()..start();
     await db.transaction((txn) async {
-      for (int i = 0; i < 1000; i++) {
-        await txn.rawInsert("INSERT INTO Test (name) VALUES (?)", ["item $i"]);
+      for (var i = 0; i < 1000; i++) {
+        await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
       }
     });
-    print("1000 insert ${sw.elapsed}");
+    print('1000 insert ${sw.elapsed}');
     await db.close();
   }
 

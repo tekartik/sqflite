@@ -35,7 +35,7 @@ void main() {
       var db = await factory.openDatabase(path,
           options: OpenDatabaseOptions(version: 1));
       try {
-        await db.execute("BEGIN TRANSACTION");
+        await db.execute('BEGIN TRANSACTION');
         await db.close();
 
         db = await factory.openDatabase(path,
@@ -50,7 +50,7 @@ void main() {
     /// An empty file is a valid empty sqlite file
     Future<bool> isDatabase(String path) async {
       Database db;
-      bool isDatabase = false;
+      var isDatabase = false;
       try {
         db = await openReadOnlyDatabase(path);
         var version = await db.getVersion();
@@ -120,23 +120,23 @@ void main() {
 
     test('multiple database', () async {
       //await Sqflite.devSetDebugModeOn(true);
-      int count = 10;
+      var count = 10;
       var dbs = List<Database>(count);
-      for (int i = 0; i < count; i++) {
+      for (var i = 0; i < count; i++) {
         var path = 'test_multiple_$i.db';
         await deleteDatabase(path);
         dbs[i] =
             await openDatabase(path, version: 1, onCreate: (db, version) async {
           await db
-              .execute("CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)");
+              .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
           expect(
               await db
-                  .rawInsert("INSERT INTO Test (name) VALUES (?)", ['test_$i']),
+                  .rawInsert('INSERT INTO Test (name) VALUES (?)', ['test_$i']),
               1);
         });
       }
 
-      for (int i = 0; i < count; i++) {
+      for (var i = 0; i < count; i++) {
         var db = dbs[i];
         try {
           var name = (await db.query('Test', columns: ['name']))
@@ -149,7 +149,7 @@ void main() {
         }
       }
 
-      for (int i = 0; i < count; i++) {
+      for (var i = 0; i < count; i++) {
         var db = dbs[i];
         await db.close();
       }

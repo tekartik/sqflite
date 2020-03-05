@@ -11,8 +11,6 @@ import 'sqlite_api.dart';
 
 export 'package:sqflite/sql.dart' show ConflictAlgorithm;
 export 'package:sqflite/src/compat.dart';
-export 'package:sqflite/src/constant.dart'
-    show sqfliteLogLevelNone, sqfliteLogLevelSql, sqfliteLogLevelVerbose;
 export 'package:sqflite/src/factory_impl.dart' show databaseFactory;
 
 export 'sqlite_api.dart';
@@ -70,7 +68,7 @@ class Sqflite {
       utils.firstIntValue(list);
 
   /// Utility to encode a blob to allow blow query using
-  /// "hex(blob_field) = ?", Sqlite.hex([1,2,3])
+  /// 'hex(blob_field) = ?', Sqlite.hex([1,2,3])
   static String hex(List<int> bytes) => utils.hex(bytes);
 
   /// Sqlite has a dead lock warning feature that will print some text
@@ -142,7 +140,7 @@ Future<Database> openDatabase(String path,
     OnDatabaseOpenFn onOpen,
     bool readOnly = false,
     bool singleInstance = true}) {
-  final OpenDatabaseOptions options = OpenDatabaseOptions(
+  final options = OpenDatabaseOptions(
       version: version,
       onConfigure: onConfigure,
       onCreate: onCreate,
