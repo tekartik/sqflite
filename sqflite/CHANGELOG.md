@@ -1,3 +1,7 @@
+## 1.2.2-dev.1
+
+* Support pedantic 1.9
+
 ## 1.2.1
 
 * Support Android embedding v2
