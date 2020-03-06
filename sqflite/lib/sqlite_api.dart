@@ -4,7 +4,12 @@ import 'package:sqflite/sql.dart' show ConflictAlgorithm;
 import 'package:sqflite/src/open_options.dart' as impl;
 
 export 'package:sqflite/sql.dart' show ConflictAlgorithm;
-export 'package:sqflite/src/constant.dart' show inMemoryDatabasePath;
+export 'package:sqflite/src/constant.dart'
+    show
+        inMemoryDatabasePath,
+        sqfliteLogLevelNone,
+        sqfliteLogLevelSql,
+        sqfliteLogLevelVerbose;
 export 'package:sqflite/src/exception.dart' show DatabaseException;
 
 /// Basic databases operations
@@ -119,7 +124,7 @@ abstract class DatabaseExecutor {
   /// values from [whereArgs]
   ///
   /// Returns the number of rows affected if a whereClause is passed in, 0
-  /// otherwise. To remove all rows and get a count pass "1" as the
+  /// otherwise. To remove all rows and get a count pass '1' as the
   /// whereClause.
   Future<int> delete(String table, {String where, List<dynamic> whereArgs});
 

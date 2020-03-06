@@ -8,7 +8,7 @@ import 'sqflite_impl_test.dart' as sqflite_impl_test;
 import 'sqflite_test.dart' as sqflite_test;
 
 void main() {
-  final Completer<String> completer = Completer<String>();
+  final completer = Completer<String>();
   enableFlutterDriverExtension(handler: (_) => completer.future);
   tearDownAll(() => completer.complete(null));
 

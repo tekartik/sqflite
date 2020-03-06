@@ -26,25 +26,25 @@ class TestPage extends StatefulWidget {
   final List<Test> tests = [];
 
   /// define a test.
-  void test(String name, FutureOr fn()) {
+  void test(String name, FutureOr Function() fn) {
     tests.add(Test(name, fn));
   }
 
   /// define a solo test.
-  @Deprecated("SOLO_TEST - On purpose to remove before checkin")
-  void solo_test(String name, FutureOr fn()) {
+  @Deprecated('SOLO_TEST - On purpose to remove before checkin')
+  void solo_test(String name, FutureOr Function() fn) {
     tests.add(Test(name, fn, solo: true));
   }
 
   /// skip a test.
-  @Deprecated("SKIP_TEST - On purpose to remove before checkin")
-  void skip_test(String name, FutureOr fn()) {
+  @Deprecated('SKIP_TEST - On purpose to remove before checkin')
+  void skip_test(String name, FutureOr Function() fn) {
     tests.add(Test(name, fn, skip: true));
   }
 
   /// Thrown an exception
   void fail([String message]) {
-    throw Exception(message ?? "should fail");
+    throw Exception(message ?? 'should fail');
   }
 
   @override
@@ -53,14 +53,14 @@ class TestPage extends StatefulWidget {
 
 /// Verify a condition.
 bool verify(bool condition, [String message]) {
-  message ??= "verify failed";
+  message ??= 'verify failed';
   expect(condition, true, reason: message);
   /*
   if (condition == null) {
-    throw new Exception('"$message" null condition');
+    throw new Exception(''$message' null condition');
   }
   if (!condition) {
-    throw new Exception('"$message"');
+    throw new Exception(''$message'');
   }
   */
   return condition;
@@ -72,7 +72,7 @@ abstract class Group {
   List<Test> get tests;
 
   bool _hasSolo;
-  List<Test> _tests = [];
+  final _tests = <Test>[];
 
   /// Add a test.
   void add(Test test) {
@@ -107,11 +107,11 @@ class _TestPageState extends State<TestPage> with Group {
       items.clear();
     });
     _tests.clear();
-    for (Test test in widget.tests) {
+    for (var test in widget.tests) {
       add(test);
     }
-    for (Test test in _tests) {
-      Item item = Item("${test.name}");
+    for (var test in _tests) {
+      var item = Item('${test.name}');
 
       int position;
       setState(() {
@@ -121,11 +121,11 @@ class _TestPageState extends State<TestPage> with Group {
       try {
         await test.fn();
 
-        item = Item("${test.name}")..state = ItemState.success;
+        item = Item('${test.name}')..state = ItemState.success;
       } catch (e, st) {
         print(e);
         print(st);
-        item = Item("${test.name}")..state = ItemState.failure;
+        item = Item('${test.name}')..state = ItemState.failure;
       }
 
       if (!mounted) {
@@ -143,24 +143,24 @@ class _TestPageState extends State<TestPage> with Group {
       return null;
     }
 
-    Test test = _tests[index];
+    var test = _tests[index];
 
-    Item item = items[index];
+    var item = items[index];
     setState(() {
       item.state = ItemState.running;
     });
     try {
-      print("TEST Running ${test.name}");
+      print('TEST Running ${test.name}');
       await test.fn();
-      print("TEST Done ${test.name}");
+      print('TEST Done ${test.name}');
 
-      item = Item("${test.name}")..state = ItemState.success;
+      item = Item('${test.name}')..state = ItemState.success;
     } catch (e, st) {
-      print("TEST Error $e running ${test.name}");
+      print('TEST Error $e running ${test.name}');
       try {
         print(st);
       } catch (_) {}
-      item = Item("${test.name}")..state = ItemState.failure;
+      item = Item('${test.name}')..state = ItemState.failure;
     }
 
     if (!mounted) {
@@ -198,7 +198,7 @@ class _TestPageState extends State<TestPage> with Group {
   }
 
   Widget _itemBuilder(BuildContext context, int index) {
-    Item item = getItem(index);
+    var item = getItem(index);
     return ItemWidget(item, (Item item) {
       //Navigator.of(context).pushNamed(item.route);
       _runTest(index);

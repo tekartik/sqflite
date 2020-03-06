@@ -5,9 +5,8 @@ void main() {
   group('sqflite_exception', () {
     test('isUniqueContraint', () async {
       // Android
-      String msg = 'UNIQUE constraint failed: Test.name (code 2067))';
-      final SqfliteDatabaseException exception =
-          SqfliteDatabaseException(msg, null);
+      var msg = 'UNIQUE constraint failed: Test.name (code 2067))';
+      final exception = SqfliteDatabaseException(msg, null);
       expect(exception.isDatabaseClosedError(), isFalse);
       expect(exception.isReadOnlyError(), isFalse);
       expect(exception.isNoSuchTableError(), isFalse);
@@ -24,9 +23,8 @@ void main() {
 
     test('isSyntaxError', () async {
       // Android
-      final String msg = 'near "DUMMY": syntax error (code 1)';
-      final SqfliteDatabaseException exception =
-          SqfliteDatabaseException(msg, null);
+      final msg = 'near "DUMMY": syntax error (code 1)';
+      final exception = SqfliteDatabaseException(msg, null);
       expect(exception.isDatabaseClosedError(), isFalse);
       expect(exception.isReadOnlyError(), isFalse);
       expect(exception.isNoSuchTableError(), isFalse);
@@ -38,9 +36,8 @@ void main() {
 
     test('isNoSuchTable', () async {
       // Android
-      final String msg = 'no such table: Test (code 1)';
-      final SqfliteDatabaseException exception =
-          SqfliteDatabaseException(msg, null);
+      final msg = 'no such table: Test (code 1)';
+      final exception = SqfliteDatabaseException(msg, null);
       expect(exception.isDatabaseClosedError(), isFalse);
       expect(exception.isReadOnlyError(), isFalse);
       expect(exception.isNoSuchTableError(), isTrue);
@@ -54,8 +51,8 @@ void main() {
 
     test('getResultCode', () async {
       // Android
-      final String msg = 'UNIQUE constraint failed: Test.name (code 2067))';
-      SqfliteDatabaseException exception = SqfliteDatabaseException(msg, null);
+      final msg = 'UNIQUE constraint failed: Test.name (code 2067))';
+      var exception = SqfliteDatabaseException(msg, null);
       expect(exception.getResultCode(), 2067);
       exception = SqfliteDatabaseException(
           'UNIQUE constraint failed: Test.name (code 1555))', null);

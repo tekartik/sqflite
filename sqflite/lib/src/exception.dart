@@ -13,7 +13,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a no such table exception
   bool isNoSuchTableError([String table]) {
     if (_message != null) {
-      String expected = 'no such table: ';
+      var expected = 'no such table: ';
       if (table != null) {
         expected += table;
       }
@@ -57,7 +57,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a unique constraint error
   bool isUniqueConstraintError([String field]) {
     if (_message != null) {
-      String expected = 'UNIQUE constraint failed: ';
+      var expected = 'UNIQUE constraint failed: ';
       if (field != null) {
         expected += field;
       }
@@ -96,15 +96,15 @@ class SqfliteDatabaseException extends DatabaseException {
   /// Parse the sqlite native message to extract the code
   /// See https://www.sqlite.org/rescode.html for the list of result code
   int getResultCode() {
-    final String message = _message.toLowerCase();
+    final message = _message.toLowerCase();
     int findCode(String patternPrefix) {
-      final int index = message.indexOf(patternPrefix);
+      final index = message.indexOf(patternPrefix);
       if (index != -1) {
-        final String code = message.substring(index + patternPrefix.length);
-        final int endIndex = code.indexOf(')');
+        final code = message.substring(index + patternPrefix.length);
+        final endIndex = code.indexOf(')');
         if (endIndex != -1) {
           try {
-            final int resultCode = int.parse(code.substring(0, endIndex));
+            final resultCode = int.parse(code.substring(0, endIndex));
             if (resultCode != null) {
               return resultCode;
             }
@@ -114,7 +114,7 @@ class SqfliteDatabaseException extends DatabaseException {
       return null;
     }
 
-    int code = findCode('(sqlite code ');
+    var code = findCode('(sqlite code ');
     if (code != null) {
       return code;
     }

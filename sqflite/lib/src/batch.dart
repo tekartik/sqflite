@@ -25,7 +25,7 @@ abstract class SqfliteBatch implements Batch {
 
   void _addExecute(
       String method, String sql, List<dynamic> arguments, bool inTransaction) {
-    final Map<String, dynamic> map = _getOperationMap(method, sql, arguments);
+    final map = _getOperationMap(method, sql, arguments);
     if (inTransaction != null) {
       map[paramInTransaction] = inTransaction;
     }
@@ -40,7 +40,7 @@ abstract class SqfliteBatch implements Batch {
   @override
   void insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
-    final SqlBuilder builder = SqlBuilder.insert(table, values,
+    final builder = SqlBuilder.insert(table, values,
         nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
   }
@@ -61,7 +61,7 @@ abstract class SqfliteBatch implements Batch {
       String orderBy,
       int limit,
       int offset}) {
-    final SqlBuilder builder = SqlBuilder.query(table,
+    final builder = SqlBuilder.query(table,
         distinct: distinct,
         columns: columns,
         where: where,
@@ -84,7 +84,7 @@ abstract class SqfliteBatch implements Batch {
       {String where,
       List<dynamic> whereArgs,
       ConflictAlgorithm conflictAlgorithm}) {
-    final SqlBuilder builder = SqlBuilder.update(table, values,
+    final builder = SqlBuilder.update(table, values,
         where: where,
         whereArgs: whereArgs,
         conflictAlgorithm: conflictAlgorithm);
@@ -93,7 +93,7 @@ abstract class SqfliteBatch implements Batch {
 
   @override
   void delete(String table, {String where, List<dynamic> whereArgs}) {
-    final SqlBuilder builder =
+    final builder =
         SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
     return rawDelete(builder.sql, builder.arguments);
   }
@@ -106,7 +106,7 @@ abstract class SqfliteBatch implements Batch {
   @override
   void execute(String sql, [List<dynamic> arguments]) {
     // Check for begin/end transaction
-    final bool inTransaction = getSqlInTransactionArgument(sql);
+    final inTransaction = getSqlInTransactionArgument(sql);
     _addExecute(methodExecute, sql, arguments, inTransaction);
   }
 }
@@ -124,7 +124,7 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
       {bool exclusive, bool noResult, bool continueOnError}) {
     database.checkNotClosed();
     return database.transaction<List<dynamic>>((Transaction txn) {
-      final SqfliteTransaction sqfliteTransaction = txn as SqfliteTransaction;
+      final sqfliteTransaction = txn as SqfliteTransaction;
       return database.txnApplyBatch(sqfliteTransaction, this,
           noResult: noResult, continueOnError: continueOnError);
     }, exclusive: exclusive);

@@ -1,3 +1,8 @@
+## 1.2.2
+
+* Fix iOS warning on FMDB import
+* Support pedantic 1.9
+
 ## 1.2.1
 
 * Support Android embedding v2

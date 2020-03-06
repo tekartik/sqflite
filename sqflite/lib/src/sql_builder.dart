@@ -60,7 +60,7 @@ class SqlBuilder {
   ///            will be replaced by the values from whereArgs. The values
   ///            will be bound as Strings.
   SqlBuilder.delete(String table, {String where, List<dynamic> whereArgs}) {
-    final StringBuffer delete = StringBuffer();
+    final delete = StringBuffer();
     delete.write('DELETE FROM ');
     delete.write(_escapeName(table));
     _writeClause(delete, ' WHERE ', where);
@@ -106,7 +106,7 @@ class SqlBuilder {
           'HAVING clauses are only permitted when using a groupBy clause');
     }
 
-    final StringBuffer query = StringBuffer();
+    final query = StringBuffer();
 
     query.write('SELECT ');
     if (distinct == true) {
@@ -142,7 +142,7 @@ class SqlBuilder {
 
   SqlBuilder.insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
-    final StringBuffer insert = StringBuffer();
+    final insert = StringBuffer();
     insert.write('INSERT');
     if (conflictAlgorithm != null) {
       insert.write(_conflictValues[conflictAlgorithm.index]);
@@ -152,13 +152,13 @@ class SqlBuilder {
     insert.write(' (');
 
     List<dynamic> bindArgs;
-    final int size = (values != null) ? values.length : 0;
+    final size = (values != null) ? values.length : 0;
 
     if (size > 0) {
-      final StringBuffer sbValues = StringBuffer(') VALUES (');
+      final sbValues = StringBuffer(') VALUES (');
 
       bindArgs = <dynamic>[];
-      int i = 0;
+      var i = 0;
       values.forEach((String colName, dynamic value) {
         if (i++ > 0) {
           insert.write(', ');
@@ -206,7 +206,7 @@ class SqlBuilder {
       throw ArgumentError('Empty values');
     }
 
-    final StringBuffer update = StringBuffer();
+    final update = StringBuffer();
     update.write('UPDATE ');
     if (conflictAlgorithm != null) {
       update.write(_conflictValues[conflictAlgorithm.index]);
@@ -214,8 +214,8 @@ class SqlBuilder {
     update.write(_escapeName(table));
     update.write(' SET ');
 
-    final List<dynamic> bindArgs = <dynamic>[];
-    int i = 0;
+    final bindArgs = <dynamic>[];
+    var i = 0;
 
     values.keys.forEach((String colName) {
       update.write((i++ > 0) ? ', ' : '');
@@ -269,10 +269,10 @@ class SqlBuilder {
   /// Add the names that are non-null in columns to s, separating
   /// them with commas.
   void _writeColumns(StringBuffer s, List<String> columns) {
-    final int n = columns.length;
+    final n = columns.length;
 
-    for (int i = 0; i < n; i++) {
-      final String column = columns[i];
+    for (var i = 0; i < n; i++) {
+      final column = columns[i];
 
       if (column != null) {
         if (i > 0) {
@@ -288,8 +288,8 @@ class SqlBuilder {
 /// True if a name had been escaped already.
 bool isEscapedName(String name) {
   if (name != null && name.length >= 2) {
-    final String first = name[0];
-    final String last = name[name.length - 1];
+    final first = name[0];
+    final last = name[name.length - 1];
     if (first == last) {
       switch (first) {
         case '"':

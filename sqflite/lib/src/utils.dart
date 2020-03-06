@@ -28,7 +28,7 @@ bool debugModeOn = false;
 /// True if entering, false if leaving, null otherwise.
 bool getSqlInTransactionArgument(String sql) {
   if (sql != null) {
-    final String lowerSql = sql.trim().toLowerCase();
+    final lowerSql = sql.trim().toLowerCase();
 
     if (lowerSql.startsWith('begin')) {
       return true;

@@ -93,10 +93,9 @@ mixin SqfliteDatabaseFactoryMixin
           }
         }
 
-        SqfliteDatabaseOpenHelper databaseOpenHelper =
-            getExistingDatabaseOpenHelper(path);
+        var databaseOpenHelper = getExistingDatabaseOpenHelper(path);
 
-        final bool firstOpen = databaseOpenHelper == null;
+        final firstOpen = databaseOpenHelper == null;
         if (firstOpen) {
           databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options);
           setDatabaseOpenHelper(databaseOpenHelper);
@@ -111,7 +110,7 @@ mixin SqfliteDatabaseFactoryMixin
           rethrow;
         }
       } else {
-        final SqfliteDatabaseOpenHelper databaseOpenHelper =
+        final databaseOpenHelper =
             SqfliteDatabaseOpenHelper(this, path, options);
         return await databaseOpenHelper.openDatabase();
       }
@@ -141,8 +140,7 @@ mixin SqfliteDatabaseFactoryMixin
   @override
   Future<String> getDatabasesPath() async {
     if (_databasesPath == null) {
-      final String path =
-          await safeInvokeMethod<String>(methodGetDatabasesPath);
+      final path = await safeInvokeMethod<String>(methodGetDatabasesPath);
 
       if (path == null) {
         throw SqfliteDatabaseException('getDatabasesPath is null', null);
@@ -172,14 +170,14 @@ mixin SqfliteDatabaseFactoryMixin
   }
 
   Future<SqfliteDebugInfo> getDebugInfo() async {
-    final SqfliteDebugInfo info = SqfliteDebugInfo();
+    final info = SqfliteDebugInfo();
     final dynamic map =
         await safeInvokeMethod(methodDebug, <String, dynamic>{'cmd': 'get'});
     final dynamic databasesMap = map[paramDatabases];
     if (databasesMap is Map) {
       info.databases = databasesMap.map((dynamic id, dynamic info) {
-        final SqfliteDatabaseDebugInfo dbInfo = SqfliteDatabaseDebugInfo();
-        final String databaseId = id?.toString();
+        final dbInfo = SqfliteDatabaseDebugInfo();
+        final databaseId = id?.toString();
 
         if (info is Map) {
           dbInfo?.fromMap(info);
@@ -219,7 +217,7 @@ class SqfliteDatabaseDebugInfo {
 
   /// Debug formatting helper
   Map<String, dynamic> toDebugMap() {
-    final Map<String, dynamic> map = <String, dynamic>{
+    final map = <String, dynamic>{
       paramPath: path,
       paramSingleInstance: singleInstance
     };
@@ -243,7 +241,7 @@ class SqfliteDebugInfo {
 
   /// Debug formatting helper
   Map<String, dynamic> toDebugMap() {
-    final Map<String, dynamic> map = <String, dynamic>{};
+    final map = <String, dynamic>{};
     if (databases != null) {
       map[paramDatabases] = databases.map(
           (String key, SqfliteDatabaseDebugInfo dbInfo) =>

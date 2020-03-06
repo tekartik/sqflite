@@ -31,34 +31,34 @@ class MyApp extends StatefulWidget {
 }
 
 /// Simple test page.
-const String testRawRoute = "/test/simple";
+const String testRawRoute = '/test/simple';
 
 /// Open test page.
-const String testOpenRoute = "/test/open";
+const String testOpenRoute = '/test/open';
 
 /// Slow test page.
-const String testSlowRoute = "/test/slow";
+const String testSlowRoute = '/test/slow';
 
 /// Type test page.
-const String testTypeRoute = "/test/type";
+const String testTypeRoute = '/test/type';
 
 /// Batch test page.
-const String testBatchRoute = "/test/batch";
+const String testBatchRoute = '/test/batch';
 
 /// `todo` example test page.
-const String testTodoRoute = "/test/todo";
+const String testTodoRoute = '/test/todo';
 
 /// Exception test page.
-const String testExceptionRoute = "/test/exception";
+const String testExceptionRoute = '/test/exception';
 
 /// Manual test page.
-const String testManualRoute = "/test/manual";
+const String testManualRoute = '/test/manual';
 
 /// Experiment test page.
-const String testExpRoute = "/test/exp";
+const String testExpRoute = '/test/exp';
 
 /// Deprecated test page.
-const String testDeprecatedRoute = "/test/deprecated";
+const String testDeprecatedRoute = '/test/deprecated';
 
 class _MyAppState extends State<MyApp> {
   var routes = <String, WidgetBuilder>{
@@ -82,11 +82,11 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           // This is the theme of your application.
           //
-          // Try running your application with "flutter run". You'll see
+          // Try running your application with 'flutter run'. You'll see
           // the application has a blue toolbar. Then, without quitting
           // the app, try changing the primarySwatch below to Colors.green
-          // and then invoke "hot reload" (press "r" in the console where
-          // you ran "flutter run", or press Run > Hot Reload App in IntelliJ).
+          // and then invoke 'hot reload' (press 'r' in the console where
+          // you ran 'flutter run', or press Run > Hot Reload App in IntelliJ).
           // Notice that the counter didn't reset back to zero -- the application
           // is not restarted.
           primarySwatch: Colors.blue,
@@ -101,26 +101,26 @@ class MyHomePage extends StatefulWidget {
   /// App home menu page.
   MyHomePage({Key key, this.title}) : super(key: key) {
     _items.add(
-        MainItem("Raw tests", "Raw SQLite operations", route: testRawRoute));
-    _items.add(MainItem("Open tests", "Open onCreate/onUpgrade/onDowngrade",
+        MainItem('Raw tests', 'Raw SQLite operations', route: testRawRoute));
+    _items.add(MainItem('Open tests', 'Open onCreate/onUpgrade/onDowngrade',
         route: testOpenRoute));
     _items
-        .add(MainItem("Type tests", "Test value types", route: testTypeRoute));
-    _items.add(MainItem("Batch tests", "Test batch operations",
+        .add(MainItem('Type tests', 'Test value types', route: testTypeRoute));
+    _items.add(MainItem('Batch tests', 'Test batch operations',
         route: testBatchRoute));
     _items.add(
-        MainItem("Slow tests", "Lengthy operations", route: testSlowRoute));
+        MainItem('Slow tests', 'Lengthy operations', route: testSlowRoute));
     _items.add(MainItem(
-        "Todo database example", "Simple Todo-like database usage example",
+        'Todo database example', 'Simple Todo-like database usage example',
         route: testTodoRoute));
-    _items.add(MainItem("Exp tests", "Experimental and various tests",
+    _items.add(MainItem('Exp tests', 'Experimental and various tests',
         route: testExpRoute));
-    _items.add(MainItem("Exception tests", "Tests that trigger exceptions",
+    _items.add(MainItem('Exception tests', 'Tests that trigger exceptions',
         route: testExceptionRoute));
-    _items.add(MainItem("Manual tests", "Tests that requires manual execution",
+    _items.add(MainItem('Manual tests', 'Tests that requires manual execution',
         route: testManualRoute));
-    _items.add(MainItem("Deprecated test",
-        "Keeping some old tests for deprecated functionalities",
+    _items.add(MainItem('Deprecated test',
+        'Keeping some old tests for deprecated functionalities',
         route: testDeprecatedRoute));
 
     // Uncomment to view all logs
@@ -165,7 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // ignore: deprecated_member_use
       platformVersion = await Sqflite.platformVersion;
     } on PlatformException {
-      platformVersion = "Failed to get platform version";
+      platformVersion = 'Failed to get platform version';
     }
 
     // If the widget was removed from the tree while the asynchronous platform
@@ -177,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _platformVersion = platformVersion;
     });
 
-    print("running on: " + _platformVersion);
+    print('running on: ' + _platformVersion);
 
     // Use it to auto start a test page
     if (debugAutoStartRouteName != null) {

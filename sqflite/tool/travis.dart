@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:process_run/shell_run.dart';
 
 Future<void> main() async {
-  final Shell shell = Shell();
+  final shell = Shell();
 
   await shell.run('''
 
@@ -18,13 +18,13 @@ flutter test --no-pub --coverage
   await run('dart test/no_flutter_main.dart', verbose: false);
 
   // CODECOV_TOKEN must be defined on travis
-  final String codeCovToken = userEnvironment['CODECOV_TOKEN'];
-  final String dartVersion = userEnvironment['TRAVIS_DART_VERSION'];
+  final codeCovToken = userEnvironment['CODECOV_TOKEN'];
+  final dartVersion = userEnvironment['TRAVIS_DART_VERSION'];
 
   if (dartVersion == 'stable') {
     if (codeCovToken != null) {
-      final Directory dir = await Directory.systemTemp.createTemp('sqflite');
-      final String bashFilePath = join(dir.path, 'codecov.bash');
+      final dir = await Directory.systemTemp.createTemp('sqflite');
+      final bashFilePath = join(dir.path, 'codecov.bash');
       await File(bashFilePath)
           .writeAsString(await IOClient().read('https://codecov.io/bash'));
       await shell.run('bash $bashFilePath');

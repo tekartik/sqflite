@@ -9,9 +9,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('sqflite', () {
-    const MethodChannel channel = MethodChannel('com.tekartik.sqflite');
+    const channel = MethodChannel('com.tekartik.sqflite');
 
-    final List<MethodCall> log = <MethodCall>[];
+    final log = <MethodCall>[];
     String response;
 
     channel.setMockMethodCallHandler((MethodCall methodCall) async {
@@ -32,11 +32,11 @@ void main() {
     });
 
     test('Rows', () {
-      final List<dynamic> raw = <dynamic>[
+      final raw = <dynamic>[
         <dynamic, dynamic>{'col': 1}
       ];
-      final Rows rows = Rows.from(raw);
-      final Map<String, dynamic> row = rows.first;
+      final rows = Rows.from(raw);
+      final row = rows.first;
       expect(rows, raw);
       expect(row, <String, dynamic>{'col': 1});
     });
@@ -55,8 +55,7 @@ void main() {
           <Map<String, dynamic>>[
             <String, dynamic>{'column': 1}
           ]);
-      final SqfliteDatabaseException exception =
-          fromRawOperationResult(<dynamic, dynamic>{
+      final exception = fromRawOperationResult(<dynamic, dynamic>{
         'error': <dynamic, dynamic>{
           'code': 1234,
           'message': 'hello',
@@ -67,20 +66,20 @@ void main() {
       expect(exception.result, <dynamic, dynamic>{'some': 'data'});
     });
     test('ResultSet', () {
-      final Map<dynamic, dynamic> raw = <dynamic, dynamic>{
+      final raw = <dynamic, dynamic>{
         'columns': <dynamic>['column'],
         'rows': <dynamic>[
           <int>[1]
         ]
       };
-      final QueryResultSet queryResultSet = QueryResultSet(<dynamic>[
+      final queryResultSet = QueryResultSet(<dynamic>[
         'column'
       ], <dynamic>[
         <dynamic>[1]
       ]);
       expect(queryResultSet.columnIndex('dummy'), isNull);
       expect(queryResultSet.columnIndex('column'), 0);
-      final Map<String, dynamic> row = queryResultSet.first;
+      final row = queryResultSet.first;
       //expect(rows, raw);
       expect(row, <String, dynamic>{'column': 1});
 
@@ -89,18 +88,18 @@ void main() {
         row['column'] = 2;
         fail('should have failed');
       } on UnsupportedError catch (_) {}
-      final Map<String, dynamic> map = Map<String, dynamic>.from(row);
+      final map = Map<String, dynamic>.from(row);
       // now can modify
       map['column'] = 2;
 
-      final Map<dynamic, dynamic> queryResultSetMap = <dynamic, dynamic>{
+      final queryResultSetMap = <dynamic, dynamic>{
         'columns': <dynamic>['id', 'name'],
         'rows': <List<dynamic>>[
           <dynamic>[1, 'item 1'],
           <dynamic>[2, 'item 2']
         ]
       };
-      final List<Map<String, dynamic>> expected = <Map<String, dynamic>>[
+      final expected = <Map<String, dynamic>>[
         <String, dynamic>{'id': 1, 'name': 'item 1'},
         <String, dynamic>{'id': 2, 'name': 'item 2'}
       ];
@@ -114,7 +113,7 @@ void main() {
     });
 
     test('duplicated key', () {
-      final QueryResultSet queryResultSet = QueryResultSet(<dynamic>[
+      final queryResultSet = QueryResultSet(<dynamic>[
         'col',
         'col'
       ], <dynamic>[
@@ -122,7 +121,7 @@ void main() {
       ]);
       // last one wins...
       expect(queryResultSet.columnIndex('col'), 1);
-      final Map<String, dynamic> row = queryResultSet.first;
+      final row = queryResultSet.first;
       expect(row['col'], 2);
 
       expect(row.length, 1);
