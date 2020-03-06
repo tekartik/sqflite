@@ -137,3 +137,5 @@ flutter build ios
 # run!
 flutter run
 ```
+
+In the worst case, you can also re-create your ios project by deleting the ios/folder and running `flutter create .`
