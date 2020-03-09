@@ -229,7 +229,7 @@ class TypeTestPage extends TestPage {
           failed = true;
         }
         print('for now bool are accepted but inconsistent on iOS/Android');
-        // expect(failed, true);
+        expect(failed, isFalse);
       } finally {
         await data.db.close();
       }
