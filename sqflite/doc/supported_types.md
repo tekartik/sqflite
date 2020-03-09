@@ -77,4 +77,3 @@ int (millisSinceEpoch) or string (iso8601). SQLite `TIMESTAMP` type sometimes re
 
 * SQLite typ: `BLOB`
 * Dart type: `Uint8List`
-* Dart type `List<int>` is supported but not recommended (slow conversion)
