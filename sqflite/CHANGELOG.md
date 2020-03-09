@@ -1,7 +1,8 @@
-## 1.2.2
+## 1.2.2+1
 
 * Fix iOS warning on FMDB import
 * Support pedantic 1.9
+* Check arguments in debug mode (print errors only)
 
 ## 1.2.1
 
