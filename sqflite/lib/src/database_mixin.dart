@@ -10,6 +10,7 @@ import 'package:sqflite/src/factory.dart';
 import 'package:sqflite/src/sql_builder.dart';
 import 'package:sqflite/src/transaction.dart';
 import 'package:sqflite/src/utils.dart';
+import 'package:sqflite/src/value_utils.dart';
 import 'package:sqflite/utils/utils.dart';
 import 'package:sqflite/src/utils.dart' as utils;
 import 'package:synchronized/synchronized.dart';
@@ -106,7 +107,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
         limit: limit,
         offset: offset,
         whereArgs: whereArgs);
-    return rawQuery(builder.sql, builder.arguments);
+    return _rawQuery(builder.sql, builder.arguments);
   }
 
   /// Execute a raw SQL SELECT query
@@ -114,6 +115,12 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   /// Returns a list of rows that were found
   @override
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
+      [List<dynamic> arguments]) {
+    checkRawArgs(arguments);
+    return _rawQuery(sql, arguments);
+  }
+
+  Future<List<Map<String, dynamic>>> _rawQuery(String sql,
       [List<dynamic> arguments]) {
     db.checkNotClosed();
     return db.txnRawQuery(txn, sql, arguments);
@@ -124,6 +131,14 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   /// Returns the number of changes made
   @override
   Future<int> rawUpdate(String sql, [List<dynamic> arguments]) {
+    checkRawArgs(arguments);
+    return _rawUpdate(sql, arguments);
+  }
+
+  /// Execute a raw SQL UPDATE query
+  ///
+  /// Returns the number of changes made
+  Future<int> _rawUpdate(String sql, [List<dynamic> arguments]) {
     db.checkNotClosed();
     return db.txnRawUpdate(txn, sql, arguments);
   }
@@ -157,7 +172,12 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   ///
   /// Returns the number of changes made
   @override
-  Future<int> rawDelete(String sql, [List<dynamic> arguments]) =>
+  Future<int> rawDelete(String sql, [List<dynamic> arguments]) {
+    checkRawArgs(arguments);
+    return _rawDelete(sql, arguments);
+  }
+
+  Future<int> _rawDelete(String sql, [List<dynamic> arguments]) =>
       rawUpdate(sql, arguments);
 
   /// Convenience method for deleting rows in the database.
@@ -180,7 +200,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   Future<int> delete(String table, {String where, List<dynamic> whereArgs}) {
     final builder =
         SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
-    return rawDelete(builder.sql, builder.arguments);
+    return _rawDelete(builder.sql, builder.arguments);
   }
 }
 mixin SqfliteDatabaseMixin implements SqfliteDatabase {

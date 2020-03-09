@@ -1,3 +1,5 @@
+import 'package:sqflite/src/value_utils.dart';
+
 /// Insert/Update conflict resolver
 enum ConflictAlgorithm {
   /// When a constraint violation occurs, an immediate ROLLBACK occurs,
@@ -60,6 +62,7 @@ class SqlBuilder {
   ///            will be replaced by the values from whereArgs. The values
   ///            will be bound as Strings.
   SqlBuilder.delete(String table, {String where, List<dynamic> whereArgs}) {
+    checkWhereArgs(whereArgs);
     final delete = StringBuffer();
     delete.write('DELETE FROM ');
     delete.write(_escapeName(table));
@@ -105,6 +108,7 @@ class SqlBuilder {
       throw ArgumentError(
           'HAVING clauses are only permitted when using a groupBy clause');
     }
+    checkWhereArgs(whereArgs);
 
     final query = StringBuffer();
 
@@ -169,6 +173,7 @@ class SqlBuilder {
         if (value == null) {
           sbValues.write('NULL');
         } else {
+          checkNonNullValue(value);
           bindArgs.add(value);
           sbValues.write('?');
         }
@@ -205,6 +210,7 @@ class SqlBuilder {
     if (values == null || values.isEmpty) {
       throw ArgumentError('Empty values');
     }
+    checkWhereArgs(whereArgs);
 
     final update = StringBuffer();
     update.write('UPDATE ');
@@ -222,7 +228,8 @@ class SqlBuilder {
       update.write(_escapeName(colName));
       final dynamic value = values[colName];
       if (value != null) {
-        bindArgs.add(values[colName]);
+        checkNonNullValue(value);
+        bindArgs.add(value);
         update.write(' = ?');
       } else {
         update.write(' = NULL');

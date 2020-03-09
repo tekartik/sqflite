@@ -341,7 +341,6 @@ More information on supported types [here](https://github.com/tekartik/sqflite/b
 ### BLOB
 
 * Dart type: `Uint8List`
-* Dart type `List<int>` is supported but not recommended (slow conversion)
 
 ## Current issues
 

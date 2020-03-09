@@ -213,6 +213,27 @@ class TypeTestPage extends TestPage {
         await data.db.close();
       }
     });
+
+    test('bool', () async {
+      //await Sqflite.devSetDebugModeOn(true);
+      data.db = await openDatabase(inMemoryDatabasePath, version: 1,
+          onCreate: (Database db, int version) async {
+        await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value BOOLEAN)');
+      });
+      try {
+        var failed = false;
+        try {
+          await insertValue(true);
+        } on ArgumentError catch (_) {
+          failed = true;
+        }
+        print('for now bool are accepted but inconsistent on iOS/Android');
+        expect(failed, isFalse);
+      } finally {
+        await data.db.close();
+      }
+    });
   }
 
   /// Out internal data.

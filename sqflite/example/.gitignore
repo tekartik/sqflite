@@ -13,3 +13,6 @@ sqflite_example.iml
 # local files
 .local/
 tmp/
+
+# no web support
+/web/
