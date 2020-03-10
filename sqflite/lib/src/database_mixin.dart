@@ -533,7 +533,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     // Single instance?
     params[paramSingleInstance] = singleInstance;
 
-    if (options?.extraOptions != null){
+    if (options?.extraOptions != null) {
       params.addAll(options.extraOptions);
     }
 
