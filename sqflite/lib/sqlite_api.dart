@@ -11,6 +11,7 @@ export 'package:sqflite/src/constant.dart'
         sqfliteLogLevelSql,
         sqfliteLogLevelVerbose;
 export 'package:sqflite/src/exception.dart' show DatabaseException;
+export 'package:sqflite/src/factory_impl.dart' show SqfliteDatabaseFactoryImpl;
 
 /// Basic databases operations
 abstract class DatabaseFactory {
@@ -287,7 +288,8 @@ abstract class OpenDatabaseOptions {
       OnDatabaseVersionChangeFn onDowngrade,
       OnDatabaseOpenFn onOpen,
       bool readOnly = false,
-      bool singleInstance = true}) {
+      bool singleInstance = true,
+      Map<String, dynamic> extraOptions}) {
     return impl.SqfliteOpenDatabaseOptions(
         version: version,
         onConfigure: onConfigure,
@@ -296,7 +298,8 @@ abstract class OpenDatabaseOptions {
         onDowngrade: onDowngrade,
         onOpen: onOpen,
         readOnly: readOnly,
-        singleInstance: singleInstance);
+        singleInstance: singleInstance,
+        extraOptions: extraOptions);
   }
 
   /// Specify the expected version.
@@ -324,6 +327,9 @@ abstract class OpenDatabaseOptions {
 
   /// The existing single-instance (hot-restart)
   bool singleInstance;
+
+  /// Extra options, they will be sent to the native side
+  Map<String, dynamic> extraOptions;
 }
 
 ///

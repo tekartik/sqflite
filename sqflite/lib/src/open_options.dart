@@ -15,6 +15,7 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     this.onOpen,
     this.readOnly = false,
     this.singleInstance = true,
+    this.extraOptions,
   }) {
     readOnly ??= false;
     singleInstance ??= true;
@@ -35,6 +36,8 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
   bool readOnly;
   @override
   bool singleInstance;
+  @override
+  Map<String, dynamic> extraOptions;
 
   @override
   String toString() {
@@ -44,6 +47,9 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     }
     map['readOnly'] = readOnly;
     map['singleInstance'] = singleInstance;
+    if (map != null) {
+      map.addAll(extraOptions);
+    }
     return map.toString();
   }
 }
