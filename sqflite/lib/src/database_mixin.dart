@@ -699,7 +699,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           if (oldVersion == null || oldVersion == 0) {
             if (options.onCreate != null) {
               await options.onCreate(this, options.version);
-            } else if (options.onUpgrade != null) {
+            } 
+            if (options.onUpgrade != null) {
               await options.onUpgrade(this, 0, options.version);
             }
           } else if (options.version > oldVersion) {
