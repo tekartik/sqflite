@@ -396,19 +396,23 @@ void run(SqfliteTestContext context) {
       }
     });
     test('bool', () async {
-      //await Sqflite.devSetDebugModeOn(true);
-      var path = await context.initDeleteDb('type_bool.db');
-      _data.db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute(
-                    'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value BOOL)');
-              }));
+      try {
+        //await Sqflite.devSetDebugModeOn(true);
+        var path = await context.initDeleteDb('type_bool.db');
+        _data.db = await factory.openDatabase(path,
+            options: OpenDatabaseOptions(
+                version: 1,
+                onCreate: (Database db, int version) async {
+                  await db.execute(
+                      'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value BOOL)');
+                }));
 
-      // text
-      var id = await _insertValue('test');
-      expect(await _getValue(id), 'test');
+        // text
+        var id = await _insertValue('test');
+        expect(await _getValue(id), 'test');
+      } finally {
+        await _data.db.close();
+      }
     });
   });
 }

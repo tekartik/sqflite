@@ -7,12 +7,12 @@ SQFlite test package
 dependencies:
 
 ```yaml
-  sqflite_test:
+  sqflite_common_test:
     git:
-      url: git://github.com/tekartik/sqflite_more
-      ref: dart2
-      path: sqflite_test
-    version: '>=0.2.0'
+      url: git://github.com/tekartik/sqflite
+      ref: develop
+      path: sqflite_common_test
+    version: '>=0.3.0'
 ```
 
 ## Running tests
