@@ -1,3 +1,7 @@
+## 1.3.0-dev.1
+
+* Add sqflite_common dependency
+
 ## 1.2.2+1
 
 * Fix iOS warning on FMDB import
