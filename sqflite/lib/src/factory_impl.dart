@@ -18,6 +18,11 @@ DatabaseFactory get databaseFactory => sqlfliteDatabaseFactory;
 SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
     _databaseFactory ??= SqfliteDatabaseFactoryImpl();
 
+/// Change the default factory. test only.
+@deprecated
+set sqlfliteDatabaseFactory(SqfliteDatabaseFactory databaseFactory) =>
+    _databaseFactory = databaseFactory;
+
 /// Factory implementation
 class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   @override

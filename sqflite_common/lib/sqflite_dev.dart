@@ -1,11 +1,10 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/compat.dart';
-import 'package:sqflite_common/src/mixin/constant.dart';
-import 'package:sqflite_common/src/mixin/factory.dart';
+import 'package:sqflite_common/src/mixin/import_mixin.dart';
 
 /// Dev extension
 extension SqfliteDatabaseFactoryDev on DatabaseFactory {
-  /// Turns on debug mode if you want to see the SQL query
+  /// Change the log level if you want to see the SQL query
   /// executed natively.
   ///
   /// Deprecated for temp usage only
