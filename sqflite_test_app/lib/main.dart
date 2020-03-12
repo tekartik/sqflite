@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_example/main.dart' as example;
 import 'package:sqflite_example/utils.dart';
-import 'package:sqflite_test_app/setup_flutter.dart';
+
+import 'main_ffi.dart' as main_ffi;
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux) {
-    sqfliteFfiInit();
-    sqfliteFfiInitAsMockMethodCallHandler();
+    main_ffi.main();
+    return;
+  } else {
+    WidgetsFlutterBinding.ensureInitialized();
+    example.main();
   }
-
-  example.main();
 }

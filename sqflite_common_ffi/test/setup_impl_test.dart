@@ -10,8 +10,8 @@ void main() {
         expect(
             toFilePath('dummy',
                 'file:///C:/opt/app/flutter/beta/flutter/.pub-cache/git/sqflite_more-f89bc2b3f92fa35b7c027c8862d3a7eb35128600/sqflite_common_ffi/lib/'),
-            'C:\\opt\\app\\flutter\\beta\\flutter\\.pub-cache\\git\\sqflite_more-f89bc2b3f92fa35b7c027c8862d3a7eb35128600\\sqflite_common_ffi\\lib\\');
-        expect(toFilePath('dummy', 'lib/'), 'dummy\\lib\\');
+            'C:\\opt\\app\\flutter\\beta\\flutter\\.pub-cache\\git\\sqflite_more-f89bc2b3f92fa35b7c027c8862d3a7eb35128600\\sqflite_common_ffi\\lib');
+        expect(toFilePath('dummy', 'lib/'), 'dummy\\lib');
       } else {
         expect(toFilePath('dummy', '/root/dir'), '/root/dir');
         expect(toFilePath('dummy', 'lib/'), 'dummy/lib');
