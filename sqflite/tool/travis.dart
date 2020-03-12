@@ -22,7 +22,7 @@ flutter test --no-pub --coverage
   }
 
   // CODECOV_TOKEN must be defined on travis
-  final codeCovToken = userEnvironment['CODECOV_TOKEN'];
+  final codeCovToken = userEnvironment['SQFLITE_CODECOV_TOKEN'];
   final dartVersion = userEnvironment['TRAVIS_DART_VERSION'];
 
   if (dartVersion == 'stable') {

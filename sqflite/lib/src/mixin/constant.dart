@@ -1,1 +1,1 @@
-export 'package:sqflite/src/constant.dart' hide methodSetDebugModeOn;
+export 'package:sqflite_common/src/mixin/constant.dart';

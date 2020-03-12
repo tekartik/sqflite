@@ -1,0 +1,68 @@
+import 'package:sqflite_common/utils/utils.dart';
+import 'package:test/test.dart';
+
+void main() {
+  group('sqflite', () {
+    test('firstIntValue', () {
+      expect(
+          firstIntValue(<Map<String, dynamic>>[
+            <String, dynamic>{'test': 1}
+          ]),
+          1);
+      expect(
+          firstIntValue(<Map<String, dynamic>>[
+            <String, dynamic>{'test': 1},
+            <String, dynamic>{'test': 1}
+          ]),
+          1);
+      expect(
+          firstIntValue(<Map<String, dynamic>>[
+            <String, dynamic>{'test': null}
+          ]),
+          null);
+      expect(
+          firstIntValue(<Map<String, dynamic>>[<String, dynamic>{}]), isNull);
+      expect(firstIntValue(<Map<String, dynamic>>[]), isNull);
+      expect(
+          firstIntValue(<Map<String, dynamic>>[<String, dynamic>{}]), isNull);
+    });
+
+    test('hex', () {
+      expect(
+          hex(<int>[
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            255
+          ]),
+          '000102030405060708090A0B0C0D0E0F1011FF');
+      expect(hex(<int>[]), '');
+      expect(hex(<int>[32]), '20');
+
+      try {
+        hex(<int>[-1]);
+        fail('should fail');
+      } on FormatException catch (_) {}
+
+      try {
+        hex(<int>[256]);
+        fail('should fail');
+      } on FormatException catch (_) {}
+    });
+  });
+}
