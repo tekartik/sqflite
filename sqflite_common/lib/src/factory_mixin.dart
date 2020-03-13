@@ -150,6 +150,10 @@ mixin SqfliteDatabaseFactoryMixin
     return _databasesPath;
   }
 
+  Future<void> setDatabasesPath(String path) async {
+    _databasesPath = path;
+  }
+
   /// path must be non null
   Future<String> fixPath(String path) async {
     assert(path != null, 'path cannot be null');

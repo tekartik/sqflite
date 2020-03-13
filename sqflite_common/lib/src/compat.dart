@@ -11,6 +11,7 @@ import 'factory_mixin.dart';
 class SqfliteOptions {
   /// deprecated
   SqfliteOptions({this.logLevel});
+
   // true =<0.7.0
   /// deprecated
   bool queryAsMapList;

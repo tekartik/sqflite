@@ -21,4 +21,10 @@ void main() {
       }
     ]);
   });
+  test('databasesPath', () async {
+    await databaseFactoryMock.setDatabasesPath('.');
+    final path = await databaseFactoryMock.getDatabasesPath();
+    expect(path, '.');
+    await databaseFactoryMock.setDatabasesPath(null);
+  });
 }
