@@ -45,6 +45,15 @@ abstract class SqfliteTestContext {
   /// true if iOS
   bool get isIOS;
 
+  /// true if MacOS
+  bool get isMacOS;
+
+  /// true if Linux
+  bool get isLinux;
+
+  /// true if Linux
+  bool get isWindows;
+
   /// Set debug mode on
   @deprecated
   Future devSetDebugModeOn(bool on);
@@ -128,6 +137,15 @@ mixin SqfliteLocalTestContextMixin implements SqfliteTestContext {
 
   @override
   bool get isIOS => Platform.isIOS;
+
+  @override
+  bool get isMacOS => Platform.isMacOS;
+
+  @override
+  bool get isLinux => Platform.isLinux;
+
+  @override
+  bool get isWindows => Platform.isWindows;
 }
 
 /// Based local file based context.

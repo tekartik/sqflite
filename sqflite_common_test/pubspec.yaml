@@ -1,6 +1,6 @@
 name: sqflite_common_test
 description: SQFlite test package
-version: 0.3.0
+version: 0.3.1
 publish_to: none
 
 environment:

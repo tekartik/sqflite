@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -230,14 +229,12 @@ void run(SqfliteTestContext context) {
             'SELECT hex(value) FROM Test WHERE _id = ?', <dynamic>[id]);
         expect(hexResult[0].values.first, '01020304');
 
-        // try blob lookup - does work
+        // try blob lookup - does work but on Android
         var rows = await _data.db.rawQuery(
             'SELECT * FROM Test WHERE value = ?', <dynamic>[blob1234]);
         if (context.isAndroid) {
           expect(rows.length, 0);
-        } else if (context.isIOS) {
-          expect(rows.length, 1);
-        } else if (Platform.isMacOS) {
+        } else if (context.isIOS || context.isMacOS || context.isLinux) {
           expect(rows.length, 1);
         }
 
