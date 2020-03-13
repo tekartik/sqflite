@@ -233,12 +233,12 @@ void run(SqfliteTestContext context) {
         // try blob lookup - does work
         var rows = await _data.db.rawQuery(
             'SELECT * FROM Test WHERE value = ?', <dynamic>[blob1234]);
-        if (Platform.isIOS || Platform.isAndroid) {
-          print(Platform());
+        if (context.isAndroid) {
           expect(rows.length, 0);
-        } else {
-          // expect(rows.length, 1); // to iOS server
-          // expect(rows.length, 0); // on Android server
+        } else if (context.isIOS) {
+          expect(rows.length, 1);
+        } else if (Platform.isMacOS) {
+          expect(rows.length, 1);
         }
 
         // try blob lookup using hex
