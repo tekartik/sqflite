@@ -1,3 +1,5 @@
+library sqflite_common_ffi;
+
 import 'dart:io';
 
 import 'package:sqflite_common/sqlite_api.dart';
