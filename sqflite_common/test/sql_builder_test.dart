@@ -54,6 +54,11 @@ void main() {
       expect(builder.sql,
           'INSERT INTO test (value, other_value) VALUES (?, NULL)');
       expect(builder.arguments, <int>[1]);
+
+      builder = SqlBuilder.insert('test', <String, dynamic>{'value': 1},
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+      expect(builder.sql, 'INSERT OR IGNORE INTO test (value) VALUES (?)');
+      expect(builder.arguments, <int>[1]);
     });
 
     test('update', () {
