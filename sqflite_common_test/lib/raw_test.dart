@@ -693,5 +693,25 @@ void run(SqfliteTestContext context) {
         await db.close();
       }
     });
+
+    test('insert conflict ignore', () async {
+      var db = await factory.openDatabase(inMemoryDatabasePath);
+      try {
+        await db.execute('''
+      CREATE TABLE test (
+        name TEXT PRIMARY KEY
+      )''');
+        var key1 = await db.insert('test', {'name': 'name 1'},
+            conflictAlgorithm: ConflictAlgorithm.ignore);
+        var key2 = await db.insert('test', {'name': 'name 2'},
+            conflictAlgorithm: ConflictAlgorithm.ignore);
+        // Conflict, key3 should be null
+        var key3 = await db.insert('test', {'name': 'name 1'},
+            conflictAlgorithm: ConflictAlgorithm.ignore);
+        expect([key1, key2, key3], [1, 2, null]);
+      } finally {
+        await db.close();
+      }
+    });
   });
 }

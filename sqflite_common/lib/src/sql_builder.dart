@@ -42,11 +42,11 @@ enum ConflictAlgorithm {
 }
 
 final List<String> _conflictValues = <String>[
-  ' OR ROLLBACK ',
-  ' OR ABORT ',
-  ' OR FAIL ',
-  ' OR IGNORE ',
-  ' OR REPLACE '
+  'OR ROLLBACK',
+  'OR ABORT',
+  'OR FAIL',
+  'OR IGNORE',
+  'OR REPLACE'
 ];
 
 //final RegExp _sLimitPattern = new RegExp('\s*\d+\s*(,\s*\d+\s*)?');
@@ -149,7 +149,7 @@ class SqlBuilder {
     final insert = StringBuffer();
     insert.write('INSERT');
     if (conflictAlgorithm != null) {
-      insert.write(_conflictValues[conflictAlgorithm.index]);
+      insert.write(' ${_conflictValues[conflictAlgorithm.index]}');
     }
     insert.write(' INTO ');
     insert.write(_escapeName(table));
@@ -213,11 +213,11 @@ class SqlBuilder {
     checkWhereArgs(whereArgs);
 
     final update = StringBuffer();
-    update.write('UPDATE ');
+    update.write('UPDATE');
     if (conflictAlgorithm != null) {
-      update.write(_conflictValues[conflictAlgorithm.index]);
+      update.write(' ${_conflictValues[conflictAlgorithm.index]}');
     }
-    update.write(_escapeName(table));
+    update.write(' ${_escapeName(table)}');
     update.write(' SET ');
 
     final bindArgs = <dynamic>[];

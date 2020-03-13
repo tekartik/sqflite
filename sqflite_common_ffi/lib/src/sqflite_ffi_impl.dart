@@ -84,6 +84,11 @@ class SqfliteFfiDatabase {
 
   /// Last insert id.
   int getLastInsertId() {
+    // Check the row count first, if 0 it means no insert
+    // Fix issue #402
+    if (getUpdatedRows() == 0) {
+      return null;
+    }
     var id = _ffiDb.getLastInsertId();
     if (logLevel >= sqfliteLogLevelSql) {
       print('$_prefix Inserted $id');

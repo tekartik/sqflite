@@ -5,15 +5,22 @@ import 'package:test/test.dart';
 
 import 'sqflite_open_test.dart';
 
+var openStep = [
+  'openDatabase',
+  {'path': ':memory:', 'singleInstance': true},
+  1
+];
+var closeStep = [
+  'closeDatabase',
+  {'id': 1},
+  null
+];
+
 void main() {
   group('sqflite', () {
     test('open insert', () async {
       final scenario = startScenario([
-        [
-          'openDatabase',
-          {'path': ':memory:', 'singleInstance': true},
-          1
-        ],
+        openStep,
         [
           'insert',
           {
@@ -25,11 +32,7 @@ void main() {
           },
           null
         ],
-        [
-          'closeDatabase',
-          {'id': 1},
-          null
-        ],
+        closeStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.insert('test', {
@@ -38,13 +41,31 @@ void main() {
       await db.close();
       scenario.end();
     });
+
+    test('open insert conflict', () async {
+      final scenario = startScenario([
+        openStep,
+        [
+          'insert',
+          {
+            'sql': 'INSERT OR IGNORE INTO test (value) VALUES (?)',
+            'arguments': [1],
+            'id': 1
+          },
+          null
+        ],
+        closeStep
+      ]);
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+      await db.insert('test', {'value': 1},
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+      await db.close();
+      scenario.end();
+    });
+
     test('open batch insert', () async {
       final scenario = startScenario([
-        [
-          'openDatabase',
-          {'path': ':memory:', 'singleInstance': true},
-          1
-        ],
+        openStep,
         [
           'execute',
           {
@@ -76,11 +97,7 @@ void main() {
           {'sql': 'COMMIT', 'arguments': null, 'id': 1, 'inTransaction': false},
           null
         ],
-        [
-          'closeDatabase',
-          {'id': 1},
-          null
-        ],
+        closeStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       final batch = db.batch();
