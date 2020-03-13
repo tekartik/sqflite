@@ -27,8 +27,6 @@ var ffiSingleInstanceDbs = <String, SqfliteFfiDatabase>{};
 
 var _lastFfiId = 0;
 
-//SqfliteIsolate _isolate;
-
 /// Ffi log level.
 int logLevel = sqfliteLogLevelNone;
 

@@ -22,4 +22,8 @@ void main() {
     expect(await db.getVersion(), 1);
     await db.close();
   });
+  test('databasesPath', () async {
+    var originalDatabasesPath = await databaseFactory.getDatabasesPath();
+    expect(originalDatabasesPath, isNotNull);
+  });
 }

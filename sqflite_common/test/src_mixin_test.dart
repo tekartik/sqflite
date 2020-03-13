@@ -124,6 +124,23 @@ void run() {
       expect(factory.methods, <String>['getDatabasesPath']);
       //expect(directory, )
     });
+    test('setDatabasesPath', () async {
+      final factory = MockDatabaseFactoryEmpty();
+
+      await factory.setDatabasesPath('.');
+      expect(await factory.getDatabasesPath(), '.');
+
+      // reset
+      await factory.setDatabasesPath(null);
+      expect(factory.methods, <String>[]);
+
+      try {
+        await factory.getDatabasesPath();
+        fail('should fail');
+      } on DatabaseException catch (_) {}
+      expect(factory.methods, <String>['getDatabasesPath']);
+      //expect(directory, )
+    });
   });
   group('database', () {
     test('transaction', () async {

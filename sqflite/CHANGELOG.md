@@ -1,4 +1,4 @@
-## 1.3.0-dev.2
+## 1.3.0
 
 * Add sqflite_common dependency
 

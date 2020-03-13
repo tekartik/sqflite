@@ -21,9 +21,12 @@ Another option is to run the tests as a regular flutter application
 flutter run test/my_sqflite_test.dart
 ```
 
-## More...
+## Using sqflite_common_ffi
 
-Unfortunately none of the alternatives reports error in a consistent way without looking at the logs.
+This allow running unit tests using the desktop sqlite version installed. Be aware that the sqlite version used could be
+different (and likely more recent).
+
+More info on [sqflite_common_ffi](https://github.com/tekartik/sqflite/tree/master/sqflite_common_ffi).
 
 ### Sqflite server
 
