@@ -3,9 +3,6 @@ import 'dart:core';
 
 import 'services_impl.dart';
 
-export 'package:sqflite/src/collection_utils.dart';
-export 'package:sqflite/src/utils.dart';
-
 /// Sqflite channel name
 const String channelName = 'com.tekartik.sqflite';
 
