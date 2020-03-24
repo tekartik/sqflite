@@ -1,14 +1,15 @@
-import 'package:test/test.dart';
 import 'package:sqflite_common_test/sqflite_test.dart';
+import 'package:test/test.dart';
 
 import 'batch_test.dart' as batch_test;
 import 'doc_test.dart' as doc_test;
 import 'exception_test.dart' as exception_test;
 import 'exp_test.dart' as exp_test;
-import 'log_test.dart' as log_test;
 import 'open_flutter_test.dart' as open_flutter_test;
 import 'open_test.dart' as open_test;
 import 'raw_test.dart' as raw_test;
+import 'service_impl_test.dart' as log_test;
+import 'service_impl_test.dart' as service_impl_test;
 import 'slow_test.dart' as slow_test;
 import 'statement_test.dart' as statement_test;
 import 'type_test.dart' as type_test;
@@ -16,6 +17,7 @@ import 'type_test.dart' as type_test;
 /// Run all common tests.
 void run(SqfliteTestContext context) {
   group('all', () {
+    service_impl_test.run(context);
     batch_test.run(context);
     log_test.run(context);
     doc_test.run(context);
