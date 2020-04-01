@@ -103,3 +103,21 @@ instead `WHERE my_col IS NULL`.
 ```dart
 var list = await db.query('my_table', columns: ['name'], where: 'type IS NULL');
 ```
+
+# Examples
+
+## Using `LIKE`
+
+Look for items with `name` starting with 'Ta':
+
+```dart
+var list = await db.query('my_table', columns: ['name'], where: 'name LIKE ?', whereArgs: ['Ta%']);
+```
+
+Look for items with `name` containing with 'free':
+
+```dart
+var list = await db.query('my_table', columns: ['name'], where: 'name LIKE ?', whereArgs: ['%free%']);
+```
+
+

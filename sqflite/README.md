@@ -12,6 +12,8 @@ Supports iOS, Android and MacOS.
 * Helpers for insert/query/update/delete queries
 * DB operation executed in a background thread on iOS and Android
 
+Web [is not supported](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/troubleshooting.md#error-in-flutter-web).
+
 ## Getting Started
 
 In your flutter project add the dependency:
