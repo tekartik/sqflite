@@ -1,6 +1,5 @@
 import 'package:sqflite/src/services_impl.dart';
-import 'package:sqflite/src/constant.dart';
-import 'package:sqflite/src/exception.dart';
+import 'package:sqflite/src/sqflite_import.dart';
 
 /// Wrap any exception to a [DatabastException]
 Future<T> wrapDatabaseException<T>(Future<T> Function() action) async {

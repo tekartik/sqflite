@@ -132,11 +132,25 @@ void run(SqfliteTestContext context) {
 
     expect(await checkFileExists(path), isTrue);
 
-    // expect((await new File(path).exists()), true);
-    print('Deleting database $path');
     await factory.deleteDatabase(path);
-    // expect((await new File(path).exists()), false);
     expect(await checkFileExists(path), isFalse);
+  });
+
+  test('Delete database while open', () async {
+    var path = await context.initDeleteDb('delete_open_database.db');
+    var db = await factory.openDatabase(path);
+    await db.getVersion();
+
+    await factory.deleteDatabase(path);
+    try {
+      await db.getVersion();
+      fail('Should fail');
+    } catch (e) {
+      expect(e, isNot(const TypeMatcher<TestFailure>()));
+    }
+
+    db = await factory.openDatabase(path);
+    await db.getVersion();
   });
 
   test('Open no version', () async {
