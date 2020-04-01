@@ -142,10 +142,10 @@ In the worst case, you can also re-create your ios project by deleting the ios/f
 
 ## Error in Flutter web
 
-As far as i know, the web does not support sqlite in any acceptable ways (yes there in memory solution but no 
+As far as i know, the web does not support sqlite in any acceptable ways (yes there are in memory solution but no 
 persistency, see https://github.com/tekartik/sqflite/issues/212).
 
-Since there is no decent solution on the Web, as of today, support is not planned.
+Since there is no decent solution on the web, as of today, support is not planned.
 
 IndexedDB or any solution on top of it should be considered for storage on the Web.
 
