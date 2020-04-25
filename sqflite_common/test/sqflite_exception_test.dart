@@ -34,6 +34,19 @@ void main() {
       expect(exception.getResultCode(), 1);
     });
 
+    test('isSyntaxError with symbolic names', () async {
+      // Android
+      final msg = 'near "DUMMY": syntax error (code 1 SQLITE_ERROR)';
+      final exception = SqfliteDatabaseException(msg, null);
+      expect(exception.isDatabaseClosedError(), isFalse);
+      expect(exception.isReadOnlyError(), isFalse);
+      expect(exception.isNoSuchTableError(), isFalse);
+      expect(exception.isOpenFailedError(), isFalse);
+      expect(exception.isSyntaxError(), isTrue);
+      expect(exception.isUniqueConstraintError(), isFalse);
+      expect(exception.getResultCode(), 1);
+    });
+
     test('isNoSuchTable', () async {
       // Android
       final msg = 'no such table: Test (code 1)';
