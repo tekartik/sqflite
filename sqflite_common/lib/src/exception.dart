@@ -105,20 +105,23 @@ class SqfliteDatabaseException extends DatabaseException {
     return super.toString();
   }
 
-  /// Get the (extended) result code.
+  /// Get the (extended if available) result code.
   ///
   /// This might involve parsing the sqlite native message to extract the code
-  /// See https://www.sqlite.org/rescode.html for the list of result code
+  /// See https://www.sqlite.org/rescode.html for the list of result code.
+  ///
+  /// iOS returns normal code while Android/ffi returns extended code for now
+  /// The application should handle both.
   @override
-  int getResultCode() =>
-      _resultCode ??= () {
+  int getResultCode() => _resultCode ??= () {
         final message = _message.toLowerCase();
         int findCode(String patternPrefix) {
           final index = message.indexOf(patternPrefix);
           if (index != -1) {
             try {
               // Split at first space
-              var code = message.substring(index + patternPrefix.length)
+              var code = message
+                  .substring(index + patternPrefix.length)
                   .trim()
                   .split(' ')[0];
               // Find ending parenthesis if any
@@ -127,8 +130,7 @@ class SqfliteDatabaseException extends DatabaseException {
                 code = code.substring(0, endIndex);
               }
 
-              final resultCode =
-              int.parse(code);
+              final resultCode = int.parse(code);
               if (resultCode != null) {
                 return resultCode;
               }

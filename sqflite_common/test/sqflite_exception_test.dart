@@ -84,9 +84,8 @@ void main() {
           "Error Domain=FMDatabase Code=19 'UNIQUE constraint failed: Test.name' UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name})",
           null);
       expect(exception.getResultCode(), 19);
-      exception = SqfliteDatabaseException(
-          "Error Domain=FMDatabase Code=19",
-          null);
+      exception =
+          SqfliteDatabaseException('Error Domain=FMDatabase Code=19', null);
       expect(exception.getResultCode(), 19);
     });
   });
