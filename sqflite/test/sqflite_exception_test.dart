@@ -65,6 +65,9 @@ void main() {
           'attempt to write a readonly database (code 8)) running Open read-only',
           null);
       expect(exception.getResultCode(), 8);
+
+      exception = SqfliteDatabaseException(null, null, resultCode: 12345678);
+      expect(exception.getResultCode(), 12345678);
     });
   });
 }
