@@ -202,7 +202,11 @@ void run(SqfliteTestContext context) {
         print(e);
         verify(e.isUniqueConstraintError());
         verify(e.isUniqueConstraintError('Test.name'));
-        expect(e.getResultCode(), 2067);
+        if (Platform.isIOS) {
+          expect(e.getResultCode(), 19);
+        } else {
+          expect(e.getResultCode(), 2067);
+        }
       }
 
       await db.close();
@@ -228,7 +232,11 @@ void run(SqfliteTestContext context) {
         print(e);
         verify(e.isUniqueConstraintError());
         verify(e.isUniqueConstraintError('Test.name'));
-        expect(e.getResultCode(), 1555);
+        if (Platform.isIOS) {
+          expect(e.getResultCode(), 19);
+        } else {
+          expect(e.getResultCode(), 1555);
+        }
       }
 
       await db.close();
@@ -247,6 +255,7 @@ void run(SqfliteTestContext context) {
         fail('should fail'); // should fail before
       } on DatabaseException catch (e) {
         print(e);
+        // DatabaseException(Error Domain=FMDatabase Code=1 "no such table: Test"
         // ffi: SqfliteFfiException(sqlite_error, SqliteException(1): no such table: Test, SQL logic error (code 1)}
         verify(e.isNoSuchTableError('Test'));
         expect(e.getResultCode(), 1);
