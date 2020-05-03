@@ -65,15 +65,24 @@ abstract class DatabaseException implements Exception {
     }
     return false;
   }
+
+  /// Extended result code
+  int getResultCode();
 }
 
 /// Exception implementation
 class SqfliteDatabaseException extends DatabaseException {
   /// ctor with a message and some data
-  SqfliteDatabaseException(String message, this.result) : super(message);
+  SqfliteDatabaseException(String message, this.result, {int resultCode})
+      : super(message) {
+    _resultCode = resultCode;
+  }
 
   /// Our exception message
   String get message => _message;
+
+  /// Extended result code.
+  int _resultCode;
 
   /// Typically the result of a native call
   dynamic result;
@@ -93,36 +102,38 @@ class SqfliteDatabaseException extends DatabaseException {
     return super.toString();
   }
 
-  /// Parse the sqlite native message to extract the code
+  /// Get the extended result code.
+  ///
+  /// This might involve parsing the sqlite native message to extract the code
   /// See https://www.sqlite.org/rescode.html for the list of result code
-  int getResultCode() {
-    final message = _message.toLowerCase();
-    int findCode(String patternPrefix) {
-      final index = message.indexOf(patternPrefix);
-      if (index != -1) {
-        final code = message.substring(index + patternPrefix.length);
-        final endIndex = code.indexOf(')');
-        if (endIndex != -1) {
-          try {
-            final resultCode =
-                int.parse(code.substring(0, endIndex).split(' ')[0]);
-            if (resultCode != null) {
-              return resultCode;
+  @override
+  int getResultCode() => _resultCode ??= () {
+        final message = _message.toLowerCase();
+        int findCode(String patternPrefix) {
+          final index = message.indexOf(patternPrefix);
+          if (index != -1) {
+            final code = message.substring(index + patternPrefix.length);
+            final endIndex = code.indexOf(')');
+            if (endIndex != -1) {
+              try {
+                final resultCode = int.parse(code.substring(0, endIndex));
+                if (resultCode != null) {
+                  return resultCode;
+                }
+              } catch (_) {}
             }
-          } catch (_) {}
+          }
+          return null;
         }
-      }
-      return null;
-    }
 
-    var code = findCode('(sqlite code ');
-    if (code != null) {
-      return code;
-    }
-    code = findCode('(code ');
-    if (code != null) {
-      return code;
-    }
-    return null;
-  }
+        var code = findCode('(sqlite code ');
+        if (code != null) {
+          return code;
+        }
+        code = findCode('(code ');
+        if (code != null) {
+          return code;
+        }
+        return null;
+      }();
 }

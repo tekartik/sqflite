@@ -515,7 +515,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
         // Hardcoded
         code: sqliteErrorCode,
         message: code == null ? '$e' : '$code: $e',
-        details: details);
+        details: details,
+        resultCode: e.extendedResultCode);
   }
 
   /// Handle execute.

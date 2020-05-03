@@ -39,7 +39,8 @@ class SqfliteIsolate {
         throw SqfliteFfiException(
             code: error['code'] as String,
             message: error['message'] as String,
-            details: (error['details'] as Map)?.cast<String, dynamic>());
+            details: (error['details'] as Map)?.cast<String, dynamic>(),
+            resultCode: error['resultCode'] as int);
       }
       return response['result'];
     }

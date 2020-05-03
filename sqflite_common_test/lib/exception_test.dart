@@ -157,6 +157,7 @@ void run(SqfliteTestContext context) {
         print(e);
         verify(e.isUniqueConstraintError());
         verify(e.isUniqueConstraintError('Test.name'));
+        expect(e.getResultCode(), 2067);
       }
 
       await db.close();
@@ -182,6 +183,7 @@ void run(SqfliteTestContext context) {
         print(e);
         verify(e.isUniqueConstraintError());
         verify(e.isUniqueConstraintError('Test.name'));
+        expect(e.getResultCode(), 1555);
       }
 
       await db.close();
