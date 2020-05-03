@@ -94,6 +94,7 @@ Future _isolate(SendPort sendPort) async {
               error['code'] = e.code;
               error['details'] = e.details;
               error['message'] = e.message;
+              error['resultCode'] = e.getResultCode();
             } else {
               // should not happen
               error['message'] = e.toString();

@@ -69,6 +69,9 @@ const String paramErrorCode = 'code';
 /// Error message.
 const String paramErrorMessage = 'message';
 
+/// Error message.
+const String paramErrorResultCode = 'resultCode';
+
 /// Error data.
 const String paramErrorData = 'data';
 

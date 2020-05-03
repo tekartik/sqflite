@@ -9,8 +9,8 @@ class SqfliteFfiException extends SqfliteDatabaseException {
       {@required this.code,
       @required String message,
       this.details,
-      this.resultCode})
-      : super(message, details);
+      int resultCode})
+      : super(message, details, resultCode: resultCode);
 
   /// The database.
   SqfliteFfiDatabase database;
@@ -24,11 +24,10 @@ class SqfliteFfiException extends SqfliteDatabaseException {
   /// Error code.
   final String code;
 
-  /// Extended result code.
-  final int resultCode;
-
   /// Error details.
   Map<String, dynamic> details;
+
+  int get _resultCode => getResultCode();
 
   @override
   String toString() {
@@ -36,6 +35,6 @@ class SqfliteFfiException extends SqfliteDatabaseException {
     if (details != null) {
       map['details'] = details;
     }
-    return 'SqfliteFfiException($code${resultCode == null ? '' : '$resultCode, '}, $message} ${super.toString()} $map';
+    return 'SqfliteFfiException($code${_resultCode == null ? '' : '$_resultCode, '}, $message} ${super.toString()} $map';
   }
 }

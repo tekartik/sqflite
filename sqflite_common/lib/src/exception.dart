@@ -116,7 +116,8 @@ class SqfliteDatabaseException extends DatabaseException {
             final endIndex = code.indexOf(')');
             if (endIndex != -1) {
               try {
-                final resultCode = int.parse(code.substring(0, endIndex));
+                final resultCode =
+                    int.parse(code.substring(0, endIndex).split(' ')[0]);
                 if (resultCode != null) {
                   return resultCode;
                 }
