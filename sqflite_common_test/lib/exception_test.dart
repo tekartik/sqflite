@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:path/path.dart';
 import 'package:sqflite_common/sql.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
@@ -138,6 +139,50 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    test('open read-only exception', () async {
+      var path = await context.initDeleteDb('read_only_exception.db');
+      // Make sure the path exists
+      try {
+        await Directory(dirname(path)).create(recursive: true);
+      } catch (_) {}
+      // but not the db
+      try {
+        await File(path).delete();
+      } catch (_) {}
+
+      // Opening a non-existent database should fail
+      try {
+        await factory.openDatabase(path,
+            options: OpenDatabaseOptions(readOnly: true));
+        fail('should fail');
+      } on DatabaseException catch (_) {
+        /// Ffi: SqfliteFfiException(error, Bad state: file read_only_exception.db not found
+      }
+
+      // Open in read-write mode to create the database
+      var db = await factory.openDatabase(path);
+      // Change the user version to test read-write access
+      await db.setVersion(1);
+      await db.close();
+
+      // Open in read-only
+      db = await factory.openDatabase(path,
+          options: OpenDatabaseOptions(readOnly: true));
+      // Change the user version to test read-only mode
+      try {
+        // await db.setVersion(2);
+        await db.execute('PRAGMA user_version = 2');
+        fail('should fail');
+      } on DatabaseException catch (e) {
+        // ffo: SqfliteFfiException(sqlite_error8, , SqliteException(8): attempt to write a readonly database} DatabaseException(SqliteException(8): attempt to write a readonly database) sql 'PRAGMA user_version = 2
+        print(e);
+        expect(e.isReadOnlyError(), isTrue);
+        expect(e.getResultCode(), 8);
+      }
+      // Check that it has not changed
+      expect(await db.getVersion(), 1);
+    });
+
     test('Sqlite constraint Exception', () async {
       // await utils.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('constraint_exception.db');
@@ -202,7 +247,9 @@ void run(SqfliteTestContext context) {
         fail('should fail'); // should fail before
       } on DatabaseException catch (e) {
         print(e);
+        // ffi: SqfliteFfiException(sqlite_error, SqliteException(1): no such table: Test, SQL logic error (code 1)}
         verify(e.isNoSuchTableError('Test'));
+        expect(e.getResultCode(), 1);
       }
 
       // Catch without using on DatabaseException
@@ -217,6 +264,7 @@ void run(SqfliteTestContext context) {
         //verify(e.toString().contains('malformed query'));
         // malform only on FFI
         verify(e.toString().contains('malformed'));
+        expect(e.getResultCode(), 1);
       }
 
       try {
@@ -230,6 +278,7 @@ void run(SqfliteTestContext context) {
         // verify(e.toString().contains('malformed query with args ?'));
         // FFI only SqliteException: near 'malformed': syntax error, SQL logic error
         verify(e.toString().contains('malformed'));
+        expect(e.getResultCode(), 1);
       }
 
       try {
@@ -241,7 +290,9 @@ void run(SqfliteTestContext context) {
         verify(e.isSyntaxError());
         // devPrint(e);
         // iOS Error Domain=FMDatabase Code=1 'near 'DUMMY': syntax error' UserInfo={NSLocalizedDescription=near 'DUMMY': syntax error})
+        // ffi: SqfliteFfiException(sqlite_error, SqliteException(1): near "malformed": syntax error, SQL logic error (code 1
         verify(e.toString().contains('DUMMY'));
+        expect(e.getResultCode(), 1);
       }
 
       try {
@@ -252,6 +303,7 @@ void run(SqfliteTestContext context) {
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
         verify(e.toString().contains('DUMMY'));
+        expect(e.getResultCode(), 1);
       }
 
       try {
@@ -262,6 +314,7 @@ void run(SqfliteTestContext context) {
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
         verify(e.toString().contains('DUMMY'));
+        expect(e.getResultCode(), 1);
       }
 
       await db.close();

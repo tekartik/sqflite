@@ -28,7 +28,7 @@ void main() {
           <Map<String, dynamic>>[
             <String, dynamic>{'column': 1}
           ]);
-      final exception = fromRawOperationResult(<dynamic, dynamic>{
+      var exception = fromRawOperationResult(<dynamic, dynamic>{
         'error': <dynamic, dynamic>{
           'code': 1234,
           'message': 'hello',
@@ -37,6 +37,19 @@ void main() {
       }) as SqfliteDatabaseException;
       expect(exception.message, 'hello');
       expect(exception.result, <dynamic, dynamic>{'some': 'data'});
+      expect(exception.getResultCode(), null);
+
+      exception = fromRawOperationResult(<dynamic, dynamic>{
+        'error': <dynamic, dynamic>{
+          'code': 1234,
+          'message': 'hello',
+          'data': <dynamic, dynamic>{'some': 'data'},
+          'resultCode': 1,
+        }
+      }) as SqfliteDatabaseException;
+      expect(exception.message, 'hello');
+      expect(exception.result, <dynamic, dynamic>{'some': 'data'});
+      expect(exception.getResultCode(), 1);
     });
     test('ResultSet', () {
       final raw = <dynamic, dynamic>{
