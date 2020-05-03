@@ -78,6 +78,16 @@ void main() {
           'attempt to write a readonly database (code 8)) running Open read-only',
           null);
       expect(exception.getResultCode(), 8);
+
+      // iOS: Error Domain=FMDatabase Code=19 'UNIQUE constraint failed: Test.name' UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name}) s
+      exception = SqfliteDatabaseException(
+          "Error Domain=FMDatabase Code=19 'UNIQUE constraint failed: Test.name' UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name})",
+          null);
+      expect(exception.getResultCode(), 19);
+      exception = SqfliteDatabaseException(
+          "Error Domain=FMDatabase Code=19",
+          null);
+      expect(exception.getResultCode(), 19);
     });
   });
 }

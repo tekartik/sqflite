@@ -66,7 +66,10 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
-  /// Extended result code
+  /// Extended result code on Android/ffi, normal result code on iOS.
+  ///
+  /// This might involve parsing the sqlite native message to extract the code
+  /// See https://www.sqlite.org/rescode.html for the list of result code
   int getResultCode();
 }
 
@@ -102,27 +105,34 @@ class SqfliteDatabaseException extends DatabaseException {
     return super.toString();
   }
 
-  /// Get the extended result code.
+  /// Get the (extended) result code.
   ///
   /// This might involve parsing the sqlite native message to extract the code
   /// See https://www.sqlite.org/rescode.html for the list of result code
   @override
-  int getResultCode() => _resultCode ??= () {
+  int getResultCode() =>
+      _resultCode ??= () {
         final message = _message.toLowerCase();
         int findCode(String patternPrefix) {
           final index = message.indexOf(patternPrefix);
           if (index != -1) {
-            final code = message.substring(index + patternPrefix.length);
-            final endIndex = code.indexOf(')');
-            if (endIndex != -1) {
-              try {
-                final resultCode =
-                    int.parse(code.substring(0, endIndex).split(' ')[0]);
-                if (resultCode != null) {
-                  return resultCode;
-                }
-              } catch (_) {}
-            }
+            try {
+              // Split at first space
+              var code = message.substring(index + patternPrefix.length)
+                  .trim()
+                  .split(' ')[0];
+              // Find ending parenthesis if any
+              final endIndex = code.indexOf(')');
+              if (endIndex != -1) {
+                code = code.substring(0, endIndex);
+              }
+
+              final resultCode =
+              int.parse(code);
+              if (resultCode != null) {
+                return resultCode;
+              }
+            } catch (_) {}
           }
           return null;
         }
@@ -132,6 +142,11 @@ class SqfliteDatabaseException extends DatabaseException {
           return code;
         }
         code = findCode('(code ');
+        if (code != null) {
+          return code;
+        }
+        // ios
+        code = findCode('code=');
         if (code != null) {
           return code;
         }
