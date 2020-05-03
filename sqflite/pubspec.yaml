@@ -23,7 +23,7 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  sqflite_common: '>=1.0.0 <3.0.0'
+  sqflite_common: '>=1.0.1-dev.1 <3.0.0'
   path: '>=1.5.1 <3.0.0'
 
 dev_dependencies:
