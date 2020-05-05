@@ -153,12 +153,7 @@ class ExceptionTestPage extends TestPage {
         print(e);
 
         verify(e.isUniqueConstraintError());
-        if (Platform.isIOS) {
-          expect(e.getResultCode(), 19);
-        } else {
-          expect(e.getResultCode(), 2067);
-        }
-
+        expect(e.getResultCode(), 2067);
         verify(e.isUniqueConstraintError('Test.name'));
       }
 
@@ -181,11 +176,8 @@ class ExceptionTestPage extends TestPage {
         print(e);
         verify(e.isUniqueConstraintError());
         verify(e.isUniqueConstraintError('Test.name'));
-        if (Platform.isIOS) {
-          expect(e.getResultCode(), 19);
-        } else {
-          expect(e.getResultCode(), 1555);
-        }
+
+        expect(e.getResultCode(), 1555);
       }
 
       await db.close();
