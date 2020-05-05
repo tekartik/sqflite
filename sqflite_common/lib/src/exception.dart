@@ -66,6 +66,18 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
+  /// True if the exception is a not null constraint error
+  bool isNotNullConstraintError([String field]) {
+    if (_message != null) {
+      var expected = 'NOT NULL constraint failed: ';
+      if (field != null) {
+        expected += field;
+      }
+      return _message.toLowerCase().contains(expected.toLowerCase());
+    }
+    return false;
+  }
+
   /// Extended result code on Android/ffi, normal result code on iOS.
   ///
   /// This might involve parsing the sqlite native message to extract the code
