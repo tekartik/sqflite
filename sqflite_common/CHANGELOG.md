@@ -1,6 +1,6 @@
-## 1.0.1-dev.2
+## 1.0.1
 
-* Export `DatabaseException.getResultCode()`
+* Export `DatabaseException.getResultCode()`.
 
 ## 1.0.0+1
 
