@@ -3,22 +3,50 @@ import 'package:sqflite_common/src/exception.dart';
 
 void main() {
   group('sqflite_exception', () {
-    test('isUniqueContraint', () async {
+    test('isUniqueConstraint', () async {
       // Android
       var msg = 'UNIQUE constraint failed: Test.name (code 2067))';
-      final exception = SqfliteDatabaseException(msg, null);
+      var exception = SqfliteDatabaseException(msg, null);
       expect(exception.isDatabaseClosedError(), isFalse);
       expect(exception.isReadOnlyError(), isFalse);
       expect(exception.isNoSuchTableError(), isFalse);
       expect(exception.isOpenFailedError(), isFalse);
       expect(exception.isSyntaxError(), isFalse);
+      expect(exception.isNotNullConstraintError(), isFalse);
       expect(exception.isUniqueConstraintError(), isTrue);
       expect(exception.isUniqueConstraintError('Test.name'), isTrue);
 
       msg = 'UNIQUE constraint failed: Test.name (code 1555))';
+      exception = SqfliteDatabaseException(msg, null);
       expect(exception.isSyntaxError(), isFalse);
       expect(exception.isUniqueConstraintError(), isTrue);
       expect(exception.isUniqueConstraintError('Test.name'), isTrue);
+    });
+
+    test('isNotNullConstraint', () async {
+      // FFI mac
+      var msg =
+          'DatabaseException(SqliteException(1299): NOT NULL constraint failed: Test.name, constraint failed (code 1299))';
+      var exception = SqfliteDatabaseException(msg, null);
+      expect(exception.isDatabaseClosedError(), isFalse);
+      expect(exception.isReadOnlyError(), isFalse);
+      expect(exception.isNoSuchTableError(), isFalse);
+      expect(exception.isOpenFailedError(), isFalse);
+      expect(exception.isSyntaxError(), isFalse);
+      expect(exception.isUniqueConstraintError(), isFalse);
+      expect(exception.isUniqueConstraintError('Test.name'), isFalse);
+      expect(exception.getResultCode(), 1299);
+
+      // ios
+      msg =
+          'DatabaseException(Error Domain=FMDatabase Code=1299 "NOT NULL constraint failed: Test.name"';
+      exception = SqfliteDatabaseException(msg, null);
+      expect(exception.isSyntaxError(), isFalse);
+      expect(exception.isNotNullConstraintError(), isTrue);
+      expect(exception.isNotNullConstraintError('Test.name'), isTrue);
+      expect(exception.isUniqueConstraintError(), isFalse);
+      expect(exception.isUniqueConstraintError('Test.name'), isFalse);
+      expect(exception.getResultCode(), 1299);
     });
 
     test('isSyntaxError', () async {

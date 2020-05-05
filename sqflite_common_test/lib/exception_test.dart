@@ -196,24 +196,44 @@ void run(SqfliteTestContext context) {
 
       try {
         await db.insert('Test', <String, dynamic>{'name': 'test1'});
+        fail('should fail');
       } on DatabaseException catch (e) {
         // iOS: Error Domain=FMDatabase Code=19 'UNIQUE constraint failed: Test.name' UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name}) s
         // Android: UNIQUE constraint failed: Test.name (code 2067))
         print(e);
         verify(e.isUniqueConstraintError());
         verify(e.isUniqueConstraintError('Test.name'));
-        if (Platform.isIOS) {
-          expect(e.getResultCode(), 19);
-        } else {
-          expect(e.getResultCode(), 2067);
-        }
+        expect(e.getResultCode(), 2067);
       }
+      await db.close();
+    });
 
+    test('Sqlite constraint not null', () async {
+      // await utils.devSetDebugModeOn(true);
+      var path = await context.initDeleteDb('constraint_not_null_exception.db');
+      var db = await factory.openDatabase(path,
+          options: OpenDatabaseOptions(
+              version: 1,
+              onCreate: (db, version) {
+                db.execute(
+                    'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL)');
+              }));
+      await db.insert('Test', <String, dynamic>{'id': 1, 'name': 'test1'});
+      try {
+        await db.insert('Test', <String, dynamic>{'id': 1});
+        fail('should fail');
+      } on DatabaseException catch (e) {
+        print(e);
+        // iOS DatabaseException(Error Domain=FMDatabase Code=1299 "NOT NULL constraint failed: Test.name"
+        expect(e.getResultCode(), 1299);
+        expect(e.isNotNullConstraintError(), isTrue);
+        expect(e.isNotNullConstraintError('Test.name'), isTrue);
+      }
       await db.close();
     });
 
     test('Sqlite constraint primary key', () async {
-      // await utils.devSetDebugModeOn(true);
+      // await context.devSetDebugModeOn(true);
       var path =
           await context.initDeleteDb('constraint_primary_key_exception.db');
       var db = await factory.openDatabase(path,
@@ -226,19 +246,43 @@ void run(SqfliteTestContext context) {
 
       try {
         await db.insert('Test', <String, dynamic>{'name': 'test1'});
+        fail('should fail');
+      } on DatabaseException catch (e) {
+        // iOS: DatabaseException(Error Domain=FMDatabase Code=1555 "UNIQUE constraint failed: Test.name"
+        // Android: UNIQUE constraint failed: Test.name (code 1555))
+        print(e);
+        expect(e.isUniqueConstraintError(), isTrue);
+        expect(e.isUniqueConstraintError('Test.name'), isTrue);
+        expect(e.getResultCode(), 1555);
+      }
+
+      // try in batch
+      var batch = db.batch();
+      batch.insert('Test', <String, dynamic>{'name': 'test1'});
+      try {
+        await batch.commit();
+        fail('should fail');
       } on DatabaseException catch (e) {
         // iOS: Error Domain=FMDatabase Code=19 'UNIQUE constraint failed: Test.name' UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name}) s
         // Android: UNIQUE constraint failed: Test.name (code 1555))
         print(e);
-        verify(e.isUniqueConstraintError());
-        verify(e.isUniqueConstraintError('Test.name'));
-        if (Platform.isIOS) {
-          expect(e.getResultCode(), 19);
-        } else {
-          expect(e.getResultCode(), 1555);
-        }
+        expect(e.isUniqueConstraintError(), isTrue);
+        expect(e.isUniqueConstraintError('Test.name'), isTrue);
+        expect(e.getResultCode(), 1555);
       }
 
+      // update
+      await db.insert('Test', <String, dynamic>{'name': 'test2'});
+      try {
+        await db.update('Test', <String, dynamic>{'name': 'test1'},
+            where: 'name = "test2"');
+        fail('should fail');
+      } on DatabaseException catch (e) {
+        // iOS DatabaseException(Error Domain=FMDatabase Code=1555 "UNIQUE constraint failed: Test.name"
+        expect(e.getResultCode(), 1555);
+        expect(e.isUniqueConstraintError(), isTrue);
+        expect(e.isUniqueConstraintError('Test.name'), isTrue);
+      }
       await db.close();
     });
 
