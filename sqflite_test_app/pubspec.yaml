@@ -14,7 +14,7 @@ description: sqflite test application.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.8.0-0 <3.0.0"
 
 dependencies:
   flutter:
@@ -27,7 +27,8 @@ dependencies:
   sqflite_common_ffi:
   sqflite_example:
     path: ../sqflite/example
-
+  flutter_web_plugins:
+    sdk: flutter
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -55,6 +56,12 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  plugin:
+    platforms:
+      web:
+        pluginClass: SqflitePluginWeb
+        fileName: src/sqflite_web_sim.dart
 
   # To add assets to your application, add an assets section, like this:
   # assets:
