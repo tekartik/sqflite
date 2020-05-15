@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
@@ -7,12 +8,13 @@ import 'package:test/test.dart';
 void run(SqfliteTestContext context) {
   var factory = context.databaseFactory;
 
-  test('with_sudoku_solver', () async {
-    //await Sqflite.setDebugModeOn(true);
-    var path = await context.initDeleteDb('with_sudoku_solver.db');
-    var db = await factory.openDatabase(path);
-    try {
-      var result = await db.rawQuery('''
+  group('statement', () {
+    test('with_sudoku_solver', () async {
+      //await Sqflite.setDebugModeOn(true);
+      var path = await context.initDeleteDb('with_sudoku_solver.db');
+      var db = await factory.openDatabase(path);
+      try {
+        var result = await db.rawQuery('''
 WITH RECURSIVE
   input(sud) AS (
     VALUES('53..7....6..195....98....6.8...6...34..8.3..17...2...6.6....28....419..5....8..79')
@@ -42,17 +44,32 @@ WITH RECURSIVE
   )
 SELECT s FROM x WHERE ind=0;
             ''');
-      //print(result);
-      expect(result, [
-        {
-          's':
-              '534678912672195348198342567859761423426853791713924856961537284287419635345286179'
-        }
+        //print(result);
+        expect(result, [
+          {
+            's':
+                '534678912672195348198342567859761423426853791713924856961537284287419635345286179'
+          }
+        ]);
+      } finally {
+        await db.close();
+      }
+    },
+        // This fail on ubuntu...why
+        skip: context.strict && !Platform.isWindows);
+
+    test('indexed_param', () async {
+      final db = await factory.openDatabase(inMemoryDatabasePath);
+      expect(await db.rawQuery('SELECT ?1 + ?2', [3, 4]), [
+        {'?1 + ?2': 7}
       ]);
-    } finally {
+      expect(
+          await db.rawQuery(
+              'SELECT ?1 as item1, ?2 as item2, ?1 + ?2 as sum', [3, 4]),
+          [
+            {'item1': 3, 'item2': 4, 'sum': 7}
+          ]);
       await db.close();
-    }
-  },
-      // This fail on ubuntu...why
-      skip: context.strict && !Platform.isWindows);
+    });
+  });
 }
