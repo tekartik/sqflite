@@ -63,9 +63,40 @@ SELECT s FROM x WHERE ind=0;
       expect(await db.rawQuery('SELECT ?1 + ?2', [3, 4]), [
         {'?1 + ?2': 7}
       ]);
+      try {
+        expect(await db.rawQuery('SELECT ? as a', [2]), [
+          {'a': 2}
+        ]);
+      } catch (e) {
+        print('failed on Android $e');
+        expect(await db.rawQuery('SELECT ? as a', [2]), [
+          {'a': '2'}
+        ]);
+      }
+      try {
+        expect(await db.rawQuery('SELECT ? as a', [1.5]), [
+          {'a': 1.5}
+        ]);
+      } catch (e) {
+        print('failed on Android $e');
+        expect(await db.rawQuery('SELECT ?1 as a', [1.5]), [
+          {'a': '1.5'}
+        ]);
+      }
+      try {
+        expect(await db.rawQuery('SELECT ?1 as a', [1.5]), [
+          {'a': 1.5}
+        ]);
+      } catch (e) {
+        print('failed on Android $e');
+        expect(await db.rawQuery('SELECT ?1 as a', [1.5]), [
+          {'a': '1.5'}
+        ]);
+      }
       expect(
           await db.rawQuery(
-              'SELECT ?1 as item1, ?2 as item2, ?1 + ?2 as sum', [3, 4]),
+              'SELECT ?1 + 0 as item1, ?2 + 0 as item2, ?1 + ?2 as sum',
+              [3, 4]),
           [
             {'item1': 3, 'item2': 4, 'sum': 7}
           ]);

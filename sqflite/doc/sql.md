@@ -106,6 +106,10 @@ expect(
     [{'item1': 3, 'item2': 4, 'sum': 7}]);
 ```
 
+Be aware that Android binds argument as String. While it works in most cases (in where args), in the example above, the result
+ will be `[{'item1': '3', 'item2': '4', 'sum': 7}]);`. We might consider inlining num in the future.
+
+
 ## NULL value
 
 `NULL` is a special value. When testing for null in a query you should not do `'WHERE my_col = ?', [null]` but use 
