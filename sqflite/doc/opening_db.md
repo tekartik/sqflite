@@ -209,6 +209,30 @@ class Helper {
 }
 ```
 
+If you have some lenghty operations after `openDatabase` before considering it ready for the user
+you should protect your code (put here in a private `_initDb()` method from concurrent access:
+
+```dart
+class Helper {
+  final String path;
+  Helper(this.path);
+  Future<Database> _db;
+
+  Future<Database> getDb() {
+    _db ??= _initDb(path);
+    return _db;
+  }
+
+  // Guaranteed to be called only once.
+  Future<Database> _initDb() async {
+    final db = await openDatabase(path);
+    // do "tons of stuff in async mode"
+    return db;
+  }
+}
+```
+
+
 ## Solving exceptions
 
 If you get exception when opening a database:

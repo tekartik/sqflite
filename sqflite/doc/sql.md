@@ -95,6 +95,21 @@ of values. This does not work. Instead you should list each argument one by one:
 var list = await db.rawQuery('SELECT * FROM my_table WHERE name IN (?, ?, ?)', ['cat', 'dog', 'fish']);
 ```
 
+### Parameter position
+
+You can use `?NNN` to specify a parameter position:
+
+```dart
+expect(
+  await db.rawQuery(
+    'SELECT ?1 as item1, ?2 as item2, ?1 + ?2 as sum', [3, 4]),
+    [{'item1': 3, 'item2': 4, 'sum': 7}]);
+```
+
+Be aware that Android binds argument as String. While it works in most cases (in where args), in the example above, the result
+ will be `[{'item1': '3', 'item2': '4', 'sum': 7}]);`. We might consider inlining num in the future.
+
+
 ## NULL value
 
 `NULL` is a special value. When testing for null in a query you should not do `'WHERE my_col = ?', [null]` but use 

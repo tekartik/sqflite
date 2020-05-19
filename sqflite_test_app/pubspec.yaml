@@ -37,6 +37,7 @@ dev_dependencies:
   sqflite_common_test:
     path: ../sqflite_common_test
   test:
+  process_run: '>=0.10.10+1'
 
 dependency_overrides:
   sqflite:
