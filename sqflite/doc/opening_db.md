@@ -195,22 +195,14 @@ Since `openDatabase` is async, there is a race condition risk where openDatabase
 might be called twice. You could fix this with the following:
 
 ```dart
-import 'package:synchronized/synchronized.dart';
-
 class Helper {
   final String path;
   Helper(this.path);
-  Database _db;
-  final _lock = new Lock();
+  Future<Database> _db;
 
-  Future<Database> getDb() async {
+  Future<Database> getDb() {
     if (_db == null) {
-      await _lock.synchronized(() async {
-        // Check again once entering the synchronized block
-        if (_db == null) {
-          _db = await openDatabase(path);
-        }
-      });
+      _db = openDatabase(path);
     }
     return _db;
   }
