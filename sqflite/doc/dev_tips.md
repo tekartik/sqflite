@@ -33,7 +33,52 @@ you can simply dump an existing table content:
 print(await db.query("my_table"));
 ````
 
+## Unit tests
 
+Errors in SQL statement are sometimes hard to debug, especially during migration where the status/schema
+of the database can change.
+
+As much as you can, try to extract your database logic using an abstract databaseFactory and database path
+to allow unit tests using FFI during development:
+
+Setup in `pubspec.yaml`:
+
+```yaml
+dev_dependencies:
+  sqflite_common_ffi:
+```
+
+```dart
+import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:test/test.dart';
+
+void main() {
+  // Init ffi loader if needed.
+  sqfliteFfiInit();
+  test('MyUnitTest', () async {
+    var factory = databaseFactoryFfi;
+    var db = await factory.openDatabase(inMemoryDatabasePath);
+
+    // Should fail table does not exists
+    try {
+      await db.query('Test');
+    } on DatabaseException catch (e) {
+      // no such table: Test
+      expect(e.isNoSuchTableError('Test'), isTrue);
+      print(e.toString());
+    }
+
+    // Ok
+    await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
+    await db.execute('ALTER TABLE Test ADD COLUMN name TEXT');
+    // should succeed, but empty
+    expect(await db.query('Test'), []);
+
+    await db.close();
+  });
+}
+```
 ## Extract SQLite database on Android
 
 In Android Studio (> 3.0.1)

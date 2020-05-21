@@ -139,6 +139,37 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    test('Duplicate column Exception', () async {
+      // await utils.devSetDebugModeOn(true);
+      var path = inMemoryDatabasePath;
+      var db = await factory.openDatabase(path);
+
+      try {
+        await db.execute('ALTER TABLE Test ADD COLUMN name TEXT');
+      } on DatabaseException catch (e) {
+        // devPrint(e);
+        // Ffi: SqfliteFfiException(sqlite_error1, , SqliteException(1): no such table: Test} DatabaseException(SqliteException(1): no such table: Test) sql 'ALTER TABLE Test ADD COLUMN name TEXT' {details: {database: {path: :memory:, id: 1, readOnly: false, singleInstance: true}, sql: ALTER TABLE Test ADD COLUMN name TEXT}}
+        // Android: DatabaseException(no such table: Test (code 1 SQLITE_ERROR): , while compiling: ALTER TABLE Test ADD COLUMN name TEXT) sql 'ALTER TABLE Test ADD COLUMN name TEXT' args []}
+        expect(e.getResultCode(), 1, reason: 'error $e');
+        expect(e.isNoSuchTableError('Test'), isTrue, reason: 'error $e');
+        expect(e.isNoSuchTableError(), isTrue, reason: 'error $e');
+      }
+
+      await db.execute('CREATE Table Test (id INTEGER PRIMARY KEY)');
+      await db.execute('ALTER TABLE Test ADD COLUMN name TEXT');
+
+      try {
+        await db.execute('ALTER TABLE Test ADD COLUMN name TEXT');
+      } on DatabaseException catch (e) {
+        // devPrint(e);
+        // Ffi: SqfliteFfiException(sqlite_error1, , SqliteException(1): duplicate column name: name} DatabaseException(SqliteException(1): duplicate column name: name) sql 'ALTER TABLE Test ADD COLUMN name TEXT' {details: {database: {path: :memory:, id: 1, readOnly: false, singleInstance: true}, sql: ALTER TABLE Test ADD COLUMN name TEXT}}
+        // Android DatabaseException(duplicate column name: name (code 1 SQLITE_ERROR): , while compiling: ALTER TABLE Test ADD COLUMN name TEXT) sql 'ALTER TABLE Test ADD COLUMN name TEXT' args []}
+        expect(e.getResultCode(), 1, reason: 'error $e');
+        expect(e.isDuplicateColumnError('name'), isTrue, reason: 'error $e');
+        expect(e.isDuplicateColumnError(), isTrue, reason: 'error $e');
+      }
+    });
+
     test('open read-only exception', () async {
       var path = await context.initDeleteDb('read_only_exception.db');
       // Make sure the path exists

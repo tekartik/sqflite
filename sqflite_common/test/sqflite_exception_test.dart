@@ -62,7 +62,7 @@ void main() {
       expect(exception.getResultCode(), 1);
     });
 
-    test('isSyntaxError with symbolic names', () async {
+    test('isSyntaxError with symbolic names', () {
       // Android
       final msg = 'near "DUMMY": syntax error (code 1 SQLITE_ERROR)';
       final exception = SqfliteDatabaseException(msg, null);
@@ -84,12 +84,31 @@ void main() {
       expect(exception.isNoSuchTableError(), isTrue);
       expect(exception.isNoSuchTableError('Test'), isTrue);
       expect(exception.isNoSuchTableError('Other'), isFalse);
+      expect(exception.isDuplicateColumnError('tableName'), isFalse);
+      expect(exception.isDuplicateColumnError(), isFalse);
       expect(exception.isOpenFailedError(), isFalse);
       expect(exception.isSyntaxError(), isFalse);
       expect(exception.isUniqueConstraintError(), isFalse);
       expect(exception.getResultCode(), 1);
     });
 
+    test('isDuplicateColumn', () {
+      // Android
+      final msg = 'duplicate column name: tableName (code 1 SQLITE_ERROR)';
+      final exception = SqfliteDatabaseException(msg, null);
+      expect(exception.isDatabaseClosedError(), isFalse);
+      expect(exception.isReadOnlyError(), isFalse);
+      expect(exception.isDuplicateColumnError('tableName'), isTrue);
+      expect(exception.isDuplicateColumnError(), isTrue);
+      expect(exception.isDuplicateColumnError('tableName2'), isFalse);
+      expect(exception.isNoSuchTableError(), isFalse);
+      expect(exception.isNoSuchTableError('Test'), isFalse);
+      expect(exception.isNoSuchTableError('Other'), isFalse);
+      expect(exception.isOpenFailedError(), isFalse);
+      expect(exception.isSyntaxError(), isFalse);
+      expect(exception.isUniqueConstraintError(), isFalse);
+      expect(exception.getResultCode(), 1);
+    });
     test('getResultCode', () async {
       // Android
       final msg = 'UNIQUE constraint failed: Test.name (code 2067))';
