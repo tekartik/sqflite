@@ -3,6 +3,7 @@ sudo: required
 dist: trusty
 dart:
   - stable
+  - beta
   - dev
 before_script:
   - pub run tekartik_travis_ci_flutter:install
