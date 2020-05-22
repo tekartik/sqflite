@@ -14,8 +14,17 @@ void main() {
 
   group('macos', () {
     test('ios/macos sample implementation', () async {
-      final ios = 'ios/Classes';
-      final macos = 'macos/Classes';
+      // Somehow we have either...
+      // sqflite
+      // or
+      // sqflite/test
+      var dir = Directory.current.path;
+      // print(dir);
+      if (basename(dir) == 'test') {
+        dir = dirname(dir);
+      }
+      final ios = join(dir, 'ios', 'Classes');
+      final macos = join(dir, 'macos', 'Classes');
       for (var file in [
         ...['.h', '.m'].map((ext) => 'SqfliteOperation$ext'),
         ...['.h', '.m'].map((ext) => 'SqflitePlugin$ext')
