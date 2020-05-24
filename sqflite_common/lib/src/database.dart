@@ -51,14 +51,11 @@ class SqfliteDatabaseOpenHelper {
 
   /// Open the database if opened.
   Future<void> closeDatabase(SqfliteDatabase sqfliteDatabase) async {
-    if (isOpen) {
-      if (!isOpen) {
-        return;
-      } else {
-        await sqfliteDatabase.doClose();
-        this.sqfliteDatabase = null;
-      }
+    if (!isOpen) {
+      return;
     }
+    await sqfliteDatabase.doClose();
+    this.sqfliteDatabase = null;
   }
 }
 
