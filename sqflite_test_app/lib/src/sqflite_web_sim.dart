@@ -11,7 +11,7 @@ class SqflitePluginWeb {
   static void registerWith(Registrar registrar) {
     /// Set the default database factory to use.
     /// Currently calling an on-purpose deprecated helper.
-    // ignore: deprecated_member_use
+    // ignore: invalid_use_of_visible_for_testing_member
     setMockDatabaseFactory(databaseFactoryWeb);
   }
 }
