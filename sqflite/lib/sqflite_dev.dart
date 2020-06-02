@@ -9,6 +9,6 @@ import 'package:sqflite_common/sqlite_api.dart';
 ///
 @visibleForTesting
 void setMockDatabaseFactory(DatabaseFactory factory) {
-  // ignore: deprecated_member_use_from_same_package
+  // ignore: invalid_use_of_visible_for_testing_member
   sqfliteDatabaseFactory = factory as SqfliteDatabaseFactory;
 }

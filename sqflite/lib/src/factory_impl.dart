@@ -17,7 +17,7 @@ DatabaseFactory get databaseFactory => sqfliteDatabaseFactory;
 /// Be aware of the potential side effect. Any library using sqflite
 /// will have this factory as the default for all operations.
 ///
-/// This setter must be call once once, before any other calls to sqflite.
+/// This setter must be call only once, before any other calls to sqflite.
 set databaseFactory(DatabaseFactory databaseFactory) {
   // Warn when changing. might throw in the future
   if (databaseFactory != null) {
