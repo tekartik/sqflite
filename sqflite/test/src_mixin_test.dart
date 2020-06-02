@@ -111,6 +111,28 @@ class MockDatabaseFactoryEmpty extends SqfliteDatabaseFactoryBase {
   }
 }
 
+/// This unfortunately won't work, you must extends SqfliteDatabaseFactory
+class MockInvalidFactory implements DatabaseFactory {
+  @override
+  Future<bool> databaseExists(String path) async {
+    return null;
+  }
+
+  @override
+  Future<void> deleteDatabase(String path) async {}
+
+  @override
+  Future<String> getDatabasesPath() async {
+    return null;
+  }
+
+  @override
+  Future<Database> openDatabase(String path,
+      {OpenDatabaseOptions options}) async {
+    return null;
+  }
+}
+
 final MockDatabaseFactory mockDatabaseFactory = MockDatabaseFactory();
 
 void run() {

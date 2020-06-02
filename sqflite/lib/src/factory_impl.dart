@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/sqflite_import.dart';
 import 'package:sqflite/src/exception_impl.dart' as impl;
@@ -8,16 +9,66 @@ import 'package:sqflite/src/sqflite_impl.dart' as impl;
 
 SqfliteDatabaseFactory _databaseFactory;
 
-/// Default factory
-DatabaseFactory get databaseFactory => sqlfliteDatabaseFactory;
+/// sqflite Default factory
+DatabaseFactory get databaseFactory => sqfliteDatabaseFactory;
 
-/// Default factory
+/// Change the default factory.
+///
+/// Be aware of the potential side effect. Any library using sqflite
+/// will have this factory as the default for all operations.
+///
+/// This setter must be call once once, before any other calls to sqflite.
+set databaseFactory(DatabaseFactory databaseFactory) {
+  // Warn when changing. might throw in the future
+  if (databaseFactory != null) {
+    if (!(databaseFactory is SqfliteDatabaseFactory)) {
+      throw ArgumentError.value(
+          databaseFactory, 'databaseFactory', 'Unsupported sqflite factory');
+    }
+    if (_databaseFactory != null) {
+      stderr.writeln('''
+*** sqflite warning ***
+
+You are changing sqflite default factory.
+Be aware of the potential side effects. Any library using sqflite
+will have this factory as the default for all operations.
+
+*** sqflite warning ***
+''');
+    }
+    sqfliteDatabaseFactory = databaseFactory as SqfliteDatabaseFactory;
+  } else {
+    /// Will use the plugin sqflite factory
+    sqfliteDatabaseFactory = null;
+  }
+}
+
+/// sqflite Default factory
+///
+/// Definition with a typo error.
+/// - Will be soon deprecated
+/// - Will be removed in 2.0.0
+/// @deprecated
 SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
     _databaseFactory ??= SqfliteDatabaseFactoryImpl();
 
 /// Change the default factory. test only.
-@deprecated
+///
+/// Definition with a typo error.
+///
+/// Will be removed in 2.0.0
+@Deprecated('Use databaseFactory')
 set sqlfliteDatabaseFactory(SqfliteDatabaseFactory databaseFactory) =>
+    _databaseFactory = databaseFactory;
+
+/// sqflite Default factory
+@visibleForTesting
+SqfliteDatabaseFactory get sqfliteDatabaseFactory =>
+    _databaseFactory ??= SqfliteDatabaseFactoryImpl();
+
+/// Change the default factory. test only.
+@visibleForTesting
+set sqfliteDatabaseFactory(SqfliteDatabaseFactory databaseFactory) =>
     _databaseFactory = databaseFactory;
 
 /// Factory implementation

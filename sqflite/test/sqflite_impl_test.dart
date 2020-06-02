@@ -29,5 +29,19 @@ void main() {
     test('supportsConcurrency', () async {
       expect(supportsConcurrency, isFalse);
     });
+
+    test('deprecated', () {
+      // ignore: deprecated_member_use_from_same_package
+      sqlfliteDatabaseFactory = null;
+      sqfliteDatabaseFactory = null;
+      [
+        // ignore: unnecessary_statements
+        sqlfliteDatabaseFactory,
+        // ignore: unnecessary_statements
+        sqfliteDatabaseFactory
+      ].forEach((element) {
+        expect(element, isNotNull);
+      });
+    });
   });
 }
