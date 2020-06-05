@@ -92,8 +92,6 @@ Future main() async {
 ## Limitations
 
 * Primary intent was to support unit testing sqflite based code.
-* Database calls are made in the foreground isolate so don't make fancy lock mechanism,
+* Database calls are made in a separate isolate,
 * Only `Uint8List` is accepted for blob since `List<int>` is not optimized
-* read-only support is limited and faked so some command might still
- work (such as `PRAGMA user_version = 4`), insert, update, delete will be prevented though
 * Multi-instance support (not common) is simulated

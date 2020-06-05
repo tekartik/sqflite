@@ -1,4 +1,8 @@
-## 1.3.0+1
+## 1.3.1-dev.1
+
+* add `databaseFactory` setter to change the default sqflite factory.
+
+## 1.3.0+2
 
 * Add sqflite_common dependency
 

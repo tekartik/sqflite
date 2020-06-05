@@ -2,6 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'src_mixin_test.dart' show MockDatabaseFactoryEmpty, MockInvalidFactory;
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -49,7 +51,8 @@ void main() {
         Sqflite.devSetOptions,
         sqfliteLogLevelNone,
         sqfliteLogLevelSql,
-        sqfliteLogLevelVerbose
+        sqfliteLogLevelVerbose,
+        databaseFactory,
       ].forEach((dynamic value) {
         expect(value, isNotNull);
       });
@@ -125,6 +128,26 @@ void main() {
         exception = e;
       }
       expect(exception, isNotNull);
+    });
+
+    test('databaseFactory', () {
+      final originalDefaultFactory = databaseFactory;
+      try {
+        databaseFactory = null;
+        final factory = MockDatabaseFactoryEmpty();
+        databaseFactory = factory;
+        expect(databaseFactory, factory);
+        expect(databaseFactory, isNot(originalDefaultFactory));
+        databaseFactory = originalDefaultFactory; // stderr trigger here
+
+        try {
+          databaseFactory = MockInvalidFactory();
+          fail('should fail');
+        } on ArgumentError catch (_) {}
+      } finally {
+        databaseFactory = null;
+        databaseFactory = originalDefaultFactory;
+      }
     });
   });
 }

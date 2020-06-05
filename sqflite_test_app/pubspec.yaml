@@ -58,11 +58,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  plugin:
-    platforms:
-      web:
-        pluginClass: SqflitePluginWeb
-        fileName: src/sqflite_web_sim.dart
+  # plugin:
+  #  platforms:
+  #    web:
+  #      pluginClass: SqflitePluginWeb
+  #      fileName: src/sqflite_web_sim.dart
 
   # To add assets to your application, add an assets section, like this:
   # assets:
