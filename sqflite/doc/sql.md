@@ -135,4 +135,31 @@ Look for items with `name` containing with 'free':
 var list = await db.query('my_table', columns: ['name'], where: 'name LIKE ?', whereArgs: ['%free%']);
 ```
 
+## SQLite schema information
 
+SQLite has a [`sqlite_master`](https://www.sqlite.org/faq.html#q7) table that store schema information:
+
+### Check if a table exists
+
+```dart
+Future<bool> tableExists(DatabaseExecutor db, String table) async {
+  var count = firstIntValue(await db.query('sqlite_master',
+      columns: ['COUNT(*)'],
+      where: 'type = ? AND name = ?',
+      whereArgs: ['table', table]));
+  return count > 0;
+}
+```
+
+### List table names
+
+```dart
+Future<List<String>> getTableNames(DatabaseExecutor db) async {
+  var tableNames = (await db
+          .query('sqlite_master', where: 'type = ?', whereArgs: ['table']))
+      .map((row) => row['name'] as String)
+      .toList(growable: false)
+        ..sort();
+  return tableNames;
+}
+```
