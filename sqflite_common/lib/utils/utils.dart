@@ -13,7 +13,7 @@ int firstIntValue(List<Map<String, dynamic>> list) {
   return null;
 }
 
-/// Utility to encode a blob to allow blow query using
+/// Utility to encode a blob to allow blob query using
 /// 'hex(blob_field) = ?', Sqlite.hex([1,2,3])
 String hex(List<int> bytes) {
   final buffer = StringBuffer();
