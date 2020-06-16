@@ -48,7 +48,6 @@ class Sqflite {
     await invokeMethod<dynamic>(methodOptions, options.toMap());
   }
 
-
   /// Testing only
   @deprecated
   static Future<void> devInvokeMethod(String method,
