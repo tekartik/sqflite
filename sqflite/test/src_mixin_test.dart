@@ -246,6 +246,7 @@ void run() {
 
         expect(db.sqls, <String>[
           null,
+          'PRAGMA user_version',
           'BEGIN EXCLUSIVE',
           'PRAGMA user_version',
           'PRAGMA user_version = 1',
@@ -259,13 +260,7 @@ void run() {
             )) as MockDatabase;
         await db.close();
 
-        expect(db.sqls, <String>[
-          null,
-          'BEGIN EXCLUSIVE',
-          'PRAGMA user_version',
-          'COMMIT',
-          null
-        ]);
+        expect(db.sqls, <String>[null, 'PRAGMA user_version', null]);
       });
     });
     group('openTransaction', () {
@@ -283,6 +278,7 @@ void run() {
         await db.close();
         expect(db.methods, <String>[
           'openDatabase',
+          'query',
           'execute',
           'query',
           'execute',
@@ -293,6 +289,7 @@ void run() {
         ]);
         expect(db.sqls, <String>[
           null,
+          'PRAGMA user_version',
           'BEGIN EXCLUSIVE',
           'PRAGMA user_version',
           'test1',
@@ -321,6 +318,7 @@ void run() {
           'BEGIN IMMEDIATE',
           'test2',
           'COMMIT',
+          'PRAGMA user_version',
           'BEGIN EXCLUSIVE',
           'PRAGMA user_version',
           'PRAGMA user_version = 1',
@@ -343,6 +341,7 @@ void run() {
         await db.close();
         expect(db.sqls, <String>[
           null,
+          'PRAGMA user_version',
           'BEGIN EXCLUSIVE',
           'PRAGMA user_version',
           'PRAGMA user_version = 1',
@@ -381,6 +380,7 @@ void run() {
           'BEGIN IMMEDIATE',
           'test1',
           'COMMIT',
+          'PRAGMA user_version',
           'BEGIN EXCLUSIVE',
           'PRAGMA user_version',
           'test2',
@@ -418,6 +418,11 @@ void run() {
             'arguments': null,
             'id': null,
             'inTransaction': false
+          },
+          <String, dynamic>{
+            'sql': 'PRAGMA user_version',
+            'arguments': null,
+            'id': null
           },
           <String, dynamic>{
             'sql': 'BEGIN EXCLUSIVE',

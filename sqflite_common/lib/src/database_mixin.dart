@@ -689,32 +689,38 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       }
 
       if (options.version != null) {
-        await transaction((Transaction txn) async {
-          // Set the current transaction as the open one
-          // to allow direct database call during open
-          final sqfliteTransaction = txn as SqfliteTransaction;
-          openTransaction = sqfliteTransaction;
+        // Check the version outside of the transaction
+        // And only create the transaction if needed (https://github.com/tekartik/sqflite/issues/459)
+        final oldVersion = await getVersion();
+        if (oldVersion != options.version) {
+          await transaction((Transaction txn) async {
+            // Set the current transaction as the open one
+            // to allow direct database call during open
+            final sqfliteTransaction = txn as SqfliteTransaction;
+            openTransaction = sqfliteTransaction;
 
-          final oldVersion = await getVersion();
-          if (oldVersion == null || oldVersion == 0) {
-            if (options.onCreate != null) {
-              await options.onCreate(this, options.version);
-            } else if (options.onUpgrade != null) {
-              await options.onUpgrade(this, 0, options.version);
+            // We read again the version to be safe regarding edge cases
+            final oldVersion = await getVersion();
+            if (oldVersion == null || oldVersion == 0) {
+              if (options.onCreate != null) {
+                await options.onCreate(this, options.version);
+              } else if (options.onUpgrade != null) {
+                await options.onUpgrade(this, 0, options.version);
+              }
+            } else if (options.version > oldVersion) {
+              if (options.onUpgrade != null) {
+                await options.onUpgrade(this, oldVersion, options.version);
+              }
+            } else if (options.version < oldVersion) {
+              if (options.onDowngrade != null) {
+                await options.onDowngrade(this, oldVersion, options.version);
+              }
             }
-          } else if (options.version > oldVersion) {
-            if (options.onUpgrade != null) {
-              await options.onUpgrade(this, oldVersion, options.version);
+            if (oldVersion != options.version) {
+              await setVersion(options.version);
             }
-          } else if (options.version < oldVersion) {
-            if (options.onDowngrade != null) {
-              await options.onDowngrade(this, oldVersion, options.version);
-            }
-          }
-          if (oldVersion != options.version) {
-            await setVersion(options.version);
-          }
-        }, exclusive: true);
+          }, exclusive: true);
+        }
       }
 
       if (options.onOpen != null) {
