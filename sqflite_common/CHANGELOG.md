@@ -1,4 +1,4 @@
-## 1.0.2
+## 1.0.2+1
 
 * Don't create a transaction during openDatabase if not needed.
 
