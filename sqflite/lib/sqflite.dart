@@ -19,13 +19,6 @@ export 'sqlite_api.dart';
 /// sqflite plugin
 ///
 class Sqflite {
-  //static MethodChannel get _channel => channel;
-
-  /// deprecated
-  @deprecated
-  static Future<String> get platformVersion =>
-      invokeMethod<String>(methodGetPlatformVersion);
-
   /// Turns on debug mode if you want to see the SQL query
   /// executed natively.
   static Future<void> setDebugModeOn([bool on = true]) async {
@@ -47,16 +40,16 @@ class Sqflite {
     return setDebugModeOn(on);
   }
 
-  // Testing only
+  /// Testing only.
+  ///
   /// deprecated on purpose to remove from code.
   @deprecated
   static Future<void> devSetOptions(SqfliteOptions options) async {
     await invokeMethod<dynamic>(methodOptions, options.toMap());
   }
 
-  @deprecated
-
   /// Testing only
+  @deprecated
   static Future<void> devInvokeMethod(String method,
       [dynamic arguments]) async {
     await invokeMethod<dynamic>(method, arguments);
@@ -67,7 +60,7 @@ class Sqflite {
   static int firstIntValue(List<Map<String, dynamic>> list) =>
       utils.firstIntValue(list);
 
-  /// Utility to encode a blob to allow blow query using
+  /// Utility to encode a blob to allow blob query using
   /// 'hex(blob_field) = ?', Sqlite.hex([1,2,3])
   static String hex(List<int> bytes) => utils.hex(bytes);
 
