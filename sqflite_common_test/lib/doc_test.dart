@@ -262,6 +262,7 @@ CREATE TABLE Product (
       }
     });
     test('upsert', () async {
+      // await factory.setLogLevel(sqfliteLogLevelVerbose);
       var path = inMemoryDatabasePath;
 
       {

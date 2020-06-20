@@ -511,6 +511,47 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    /// Check that non alpha table and column name are properly escaped
+    test('escape when needed', () async {
+      // await factory.setLogLevel(sqfliteLogLevelVerbose);
+      var db = await factory.openDatabase(inMemoryDatabasePath);
+
+      var safeTableName = 'my_table';
+      var safeColumnName = 'my_column';
+      for (var name in [
+        'semicolumn:',
+        '1',
+        'table',
+        r'$',
+        '[](){}:;?/\\&éçà^ù*-+,!̣'
+      ]) {
+        try {
+          await db.execute('CREATE TABLE $name ($safeColumnName INTEGER)');
+          fail('should fail');
+        } on DatabaseException catch (_) {
+          // unrecognized token: ":"
+        }
+        try {
+          await db.execute('CREATE TABLE $safeTableName ($name INTEGER)');
+          fail('should fail');
+        } on DatabaseException catch (_) {
+          // unrecognized token: ":"
+        }
+
+        await db.execute('CREATE TABLE "$name" ("$name" INTEGER)');
+        await db.insert('"$name"', {'"$name"': 1});
+        expect(await db.query('"$name"'), [
+          {name: 1}
+        ]);
+        expect(await db.update('"$name"', {'"$name"': 2}), 1);
+        expect(await db.query('"$name"'), [
+          {name: 2}
+        ]);
+      }
+
+      await db.close();
+    });
+
     test('Bind no argument (no iOS)', () async {
       if (!Platform.isIOS) {
         // await utils.devSetDebugModeOn(true);

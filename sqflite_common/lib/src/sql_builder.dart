@@ -169,6 +169,7 @@ class SqlBuilder {
           sbValues.write(', ');
         }
 
+        /// This should be just a column name
         insert.write(_escapeName(colName));
         if (value == null) {
           sbValues.write('NULL');
@@ -255,16 +256,7 @@ class SqlBuilder {
   /// Used during build if there was a name with an escaped keyword.
   bool hasEscape = false;
 
-  String _escapeName(String name) {
-    if (name == null) {
-      return name;
-    }
-    if (escapeNames.contains(name.toLowerCase())) {
-      hasEscape = true;
-      return _doEscape(name);
-    }
-    return name;
-  }
+  String _escapeName(String name) => escapeName(name);
 
   void _writeClause(StringBuffer s, String name, String clause) {
     if (clause != null) {
@@ -295,15 +287,10 @@ class SqlBuilder {
 /// True if a name had been escaped already.
 bool isEscapedName(String name) {
   if (name != null && name.length >= 2) {
-    final first = name[0];
-    final last = name[name.length - 1];
-    if (first == last) {
-      switch (first) {
-        case '"':
-        case '`':
-          return escapeNames
-              .contains('${name.substring(1, name.length - 1).toLowerCase()}');
-      }
+    final codeUnits = name?.codeUnits;
+    if (_areCodeUnitsEscaped(codeUnits)) {
+      return escapeNames
+          .contains('${name.substring(1, name.length - 1).toLowerCase()}');
     }
   }
   return false;
@@ -330,6 +317,91 @@ String escapeName(String name) {
 /// Unescape a table or column name.
 String unescapeName(String name) {
   if (isEscapedName(name)) {
+    return name.substring(1, name.length - 1);
+  }
+  return name;
+}
+
+/// Escape a column name if necessary.
+///
+/// Only for insert and update keys
+String escapeEntityName(String name) {
+  if (name == null) {
+    return name;
+  }
+  if (_entityNameNeedEscape(name)) {
+    return _doEscape(name);
+  }
+  return name;
+}
+
+const _lowercaseA = 0x61;
+const _lowercaseZ = 0x7A;
+
+const _underscore = 0x5F;
+const _digit0 = 0x30;
+const _digit9 = 0x39;
+
+const _backtick = 0x60;
+const _doubleQuote = 0x22;
+const _singleQuote = 0x27;
+
+const _uppercaseA = 0x41;
+const _uppercaseZ = 0x5A;
+
+/// Returns `true` if [codeUnit] represents a digit.
+///
+/// The definition of digit matches the Unicode `0x3?` range of Western
+/// European digits.
+bool _isDigit(int codeUnit) => codeUnit >= _digit0 && codeUnit <= _digit9;
+
+/// Returns `true` if [codeUnit] represents matchs azAZ_.
+bool _isAlphaOrUnderscore(int codeUnit) =>
+    (codeUnit >= _lowercaseA && codeUnit <= _lowercaseZ) ||
+    (codeUnit >= _uppercaseA && codeUnit <= _uppercaseZ) ||
+    codeUnit == _underscore;
+
+/// True if already escaped
+bool _areCodeUnitsEscaped(List<int> codeUnits) {
+  if (codeUnits?.isNotEmpty ?? false) {
+    final first = codeUnits.first;
+    switch (first) {
+      case _singleQuote:
+      case _doubleQuote:
+      case _backtick:
+        final last = codeUnits.last;
+        return last == first;
+    }
+  }
+  return false;
+}
+
+bool _entityNameNeedEscape(String name) {
+  /// We need to escape if not escaped yet and if not a valid keyword
+  if (escapeNames.contains(name.toLowerCase())) {
+    return true;
+  }
+
+  final codeUnits = name.codeUnits;
+
+  // Must start with a alpha or underscode
+  if (!_isAlphaOrUnderscore(codeUnits.first)) {
+    return true;
+  }
+  for (var i = 1; i < codeUnits.length; i++) {
+    final codeUnit = codeUnits[i];
+    if (!_isAlphaOrUnderscore(codeUnit) && !_isDigit(codeUnit)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/// Unescape a table or column name.
+String unescapeValueKeyName(String name) {
+  final codeUnits = name?.codeUnits;
+  if (_areCodeUnitsEscaped(codeUnits)) {
     return name.substring(1, name.length - 1);
   }
   return name;
