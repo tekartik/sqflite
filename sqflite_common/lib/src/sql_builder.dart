@@ -366,11 +366,12 @@ bool _areCodeUnitsEscaped(List<int> codeUnits) {
   if (codeUnits?.isNotEmpty ?? false) {
     final first = codeUnits.first;
     switch (first) {
-      case _singleQuote:
       case _doubleQuote:
       case _backtick:
         final last = codeUnits.last;
         return last == first;
+      case _singleQuote:
+      // not yet
     }
   }
   return false;

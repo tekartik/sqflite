@@ -69,9 +69,9 @@ void main() {
       expect(builder.sql, 'INSERT OR IGNORE INTO test (value) VALUES (?)');
       expect(builder.arguments, <int>[1]);
 
-      // escape
+      // no escape yet
       builder = SqlBuilder.insert('test', <String, dynamic>{'value:': 1});
-      expect(builder.sql, 'INSERT INTO test ("value:") VALUES (?)');
+      expect(builder.sql, 'INSERT INTO test (value:) VALUES (?)');
       expect(builder.arguments, <int>[1]);
 
       // escape
@@ -100,9 +100,14 @@ void main() {
           where: 'a = ? AND b = ?', whereArgs: <dynamic>['some_test', 1]);
       expect(builder.arguments, <dynamic>[1, 'some_test', 1]);
 
-      // escape
+      // no escape yet
       builder = SqlBuilder.update('test:', <String, dynamic>{'value:': 1});
-      expect(builder.sql, 'UPDATE test: SET "value:" = ?');
+      expect(builder.sql, 'UPDATE test: SET value: = ?');
+      expect(builder.arguments, <int>[1]);
+
+      // escape
+      builder = SqlBuilder.update('test:', <String, dynamic>{'table': 1});
+      expect(builder.sql, 'UPDATE test: SET "table" = ?');
       expect(builder.arguments, <int>[1]);
     });
 
@@ -138,7 +143,7 @@ void main() {
       expect(escapeName('group'), '"group"');
       expect(escapeName('dummy'), 'dummy');
       expect(escapeName('"dummy"'), '"dummy"');
-      expect(escapeName('semicolumn:'), '"semicolumn:"');
+      expect(escapeName('semicolumn:'), 'semicolumn:'); // for now no escape
       expect(
           escapeName(
               'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789'),
@@ -149,11 +154,11 @@ void main() {
       }
     });
 
-    test('escapeValueKeyName', () {
+    test('escapeEntityName', () {
       expect(escapeEntityName(null), null);
       expect(escapeEntityName('group'), '"group"');
       expect(escapeEntityName('dummy'), 'dummy');
-      expect(escapeEntityName('"dummy"'), '"dummy"');
+      expect(escapeEntityName('"dummy"'), '""dummy""');
       expect(escapeEntityName('semicolumn:'), '"semicolumn:"');
       expect(
           escapeEntityName(
@@ -169,8 +174,8 @@ void main() {
       expect(unescapeName(null), null);
 
       expect(unescapeName('dummy'), 'dummy');
-      expect(unescapeName("'dummy'"), 'dummy');
-      expect(unescapeName("'group'"), 'group');
+      expect(unescapeName("'dummy'"), "'dummy'");
+      expect(unescapeName("'group'"), "'group'");
       expect(unescapeName('"group"'), 'group');
       expect(unescapeName('`group`'), 'group');
 
