@@ -462,7 +462,7 @@ INSERT INTO test (value) VALUES (10);
   });
 
   test('Issue#155', () async {
-    // Sqflite.devSetDebugModeOn(true);
+    // await factory.setLogLevel(sqfliteLogLevelVerbose);
     // Try to insert string with quote
     var path = await context.initDeleteDb('exp_issue_155.db');
     var db = await factory.openDatabase(path);

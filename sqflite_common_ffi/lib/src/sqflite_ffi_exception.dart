@@ -35,6 +35,6 @@ class SqfliteFfiException extends SqfliteDatabaseException {
     if (details != null) {
       map['details'] = details;
     }
-    return 'SqfliteFfiException($code${_resultCode == null ? '' : '$_resultCode, '}, $message} ${super.toString()} $map';
+    return 'SqfliteFfiException($code${_resultCode == null ? '' : ': $_resultCode, '}, $message} ${super.toString()} $map';
   }
 }

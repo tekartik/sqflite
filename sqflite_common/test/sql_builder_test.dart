@@ -13,11 +13,20 @@ void main() {
       builder = SqlBuilder.delete('test');
       expect(builder.sql, 'DELETE FROM test');
       expect(builder.arguments, isNull);
+
+      // escape
+      builder = SqlBuilder.delete('table');
+      expect(builder.sql, 'DELETE FROM "table"');
+      expect(builder.arguments, isNull);
     });
 
     test('query', () {
       var builder = SqlBuilder.query('test');
       expect(builder.sql, 'SELECT * FROM test');
+      expect(builder.arguments, isNull);
+
+      builder = SqlBuilder.query('test', columns: ['COUNT(*)']);
+      expect(builder.sql, 'SELECT COUNT(*) FROM test');
       expect(builder.arguments, isNull);
 
       builder = SqlBuilder.query('test',
@@ -59,6 +68,16 @@ void main() {
           conflictAlgorithm: ConflictAlgorithm.ignore);
       expect(builder.sql, 'INSERT OR IGNORE INTO test (value) VALUES (?)');
       expect(builder.arguments, <int>[1]);
+
+      // no escape yet
+      builder = SqlBuilder.insert('test', <String, dynamic>{'value:': 1});
+      expect(builder.sql, 'INSERT INTO test (value:) VALUES (?)');
+      expect(builder.arguments, <int>[1]);
+
+      // escape
+      builder = SqlBuilder.insert('table', <String, dynamic>{'table': 1});
+      expect(builder.sql, 'INSERT INTO "table" ("table") VALUES (?)');
+      expect(builder.arguments, <int>[1]);
     });
 
     test('update', () {
@@ -80,6 +99,16 @@ void main() {
       builder = SqlBuilder.update('test', <String, dynamic>{'value': 1},
           where: 'a = ? AND b = ?', whereArgs: <dynamic>['some_test', 1]);
       expect(builder.arguments, <dynamic>[1, 'some_test', 1]);
+
+      // no escape yet
+      builder = SqlBuilder.update('test:', <String, dynamic>{'value:': 1});
+      expect(builder.sql, 'UPDATE test: SET value: = ?');
+      expect(builder.arguments, <int>[1]);
+
+      // escape
+      builder = SqlBuilder.update('test:', <String, dynamic>{'table': 1});
+      expect(builder.sql, 'UPDATE test: SET "table" = ?');
+      expect(builder.arguments, <int>[1]);
     });
 
     test('query', () {
@@ -113,9 +142,31 @@ void main() {
       expect(escapeName(null), null);
       expect(escapeName('group'), '"group"');
       expect(escapeName('dummy'), 'dummy');
+      expect(escapeName('"dummy"'), '"dummy"');
+      expect(escapeName('semicolumn:'), 'semicolumn:'); // for now no escape
+      expect(
+          escapeName(
+              'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789'),
+          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789');
 
       for (var name in escapeNames) {
         expect(escapeName(name), '"$name"');
+      }
+    });
+
+    test('escapeEntityName', () {
+      expect(escapeEntityName(null), null);
+      expect(escapeEntityName('group'), '"group"');
+      expect(escapeEntityName('dummy'), 'dummy');
+      expect(escapeEntityName('"dummy"'), '""dummy""');
+      expect(escapeEntityName('semicolumn:'), '"semicolumn:"');
+      expect(
+          escapeEntityName(
+              'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789'),
+          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789');
+
+      for (var name in escapeNames) {
+        expect(escapeEntityName(name), '"$name"');
       }
     });
 

@@ -8,6 +8,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
 import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:synchronized/synchronized.dart';
+export 'package:sqflite_common/sqflite_dev.dart';
 
 /// Verify a condition in a test.
 bool verify(bool condition, [String message]) {

@@ -102,5 +102,17 @@ SELECT s FROM x WHERE ind=0;
           ]);
       await db.close();
     });
+
+    test('Weird column name', () async {
+      final db = await factory.openDatabase(inMemoryDatabasePath);
+      await db.execute('CREATE TABLE Test ("COUNT(*)" INTEGER)');
+
+      var map = {'COUNT(*)': 1};
+      await db.insert(
+          'Test', map.map((key, value) => MapEntry('"$key"', value)));
+
+      await db.execute('CREATE TABLE Test2 (\'""\' INTEGER)');
+      await db.close();
+    });
   });
 }
