@@ -11,7 +11,6 @@ import 'sqlite_api.dart';
 
 export 'package:sqflite/sql.dart' show ConflictAlgorithm;
 export 'package:sqflite/src/compat.dart';
-export 'package:sqflite/src/factory_impl.dart' show databaseFactory;
 
 export 'sqlite_api.dart';
 
