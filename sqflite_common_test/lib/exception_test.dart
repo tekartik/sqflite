@@ -552,7 +552,7 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
-    test('Bind no argument (no iOS)', () async {
+    test('Bind no argument (no iOS/ffi)', () async {
       if (!Platform.isIOS) {
         // await utils.devSetDebugModeOn(true);
         var path = await context.initDeleteDb('bind_no_arg_failed.db');
@@ -569,7 +569,7 @@ void run(SqfliteTestContext context) {
 
         await db.close();
       }
-    });
+    }, skip: true);
 
     test('crash ios (no iOS)', () async {
       // This crashes natively on iOS...can't catch it yet
@@ -588,7 +588,7 @@ void run(SqfliteTestContext context) {
 
         await db.close();
       }
-    });
+    }, skip: true);
 
     test('Bind null argument', () async {
       // await utils.devSetDebugModeOn(true);
