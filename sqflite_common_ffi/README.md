@@ -91,7 +91,7 @@ Future main() async {
 
 ## Limitations
 
-* Primary intent was to support unit testing sqflite based code.
+* Primary intent was to support unit testing sqflite based code but the implementation works on Windows/Mac/Linux flutter desktop application
 * Database calls are made in a separate isolate,
 * Only `Uint8List` is accepted for blob since `List<int>` is not optimized
 * Multi-instance support (not common) is simulated
