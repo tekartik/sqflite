@@ -22,7 +22,7 @@ abstract class DatabaseException implements Exception {
     return false;
   }
 
-  /// True if the exception is a no such table exception
+  /// True if the exception is a duplicate column error
   bool isDuplicateColumnError([String column]) {
     if (_message != null) {
       var expected = 'duplicate column name: ';
