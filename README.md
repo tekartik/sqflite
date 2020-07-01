@@ -11,6 +11,7 @@ Supports iOS, Android and MacOS.
 * Automatic version management during open
 * Helpers for insert/query/update/delete queries
 * DB operation executed in a background thread on iOS and Android
+* Linux/Windows/DartVM support using [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi)
 
 ## Documentation
 

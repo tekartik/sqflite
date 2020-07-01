@@ -10,3 +10,4 @@
 * [Sqflite development](sqflite_dev_guide.md) guide
 * [Unit testing](testing.md) 
 * [External](external.md) documentation and tutorials
+* [Supports Windows and Linux](../../sqflite_common_ffi/doc/using_ffi_instead_of_sqflite.md)
