@@ -1,6 +1,6 @@
 # sqflite ffi
 
-[sqflite](https://pub.dev/packages/sqflite) based ffi implementation. Based on [`moor_ffi`](https://pub.dev/packages/moor_ffi). Thanks to [Simon Binder](https://github.com/simolus3)
+[sqflite](https://pub.dev/packages/sqflite) based ffi implementation. Based on [`sqlite3`](https://pub.dev/packages/sqlite3). Thanks to [Simon Binder](https://github.com/simolus3)
 
 It allows mocking sqflite during regular flutter unit test (i.e. not using the emulator/simulator).
 One goal is make it stricter than sqflite to encourage good practices.
