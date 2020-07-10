@@ -1,8 +1,8 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:moor_ffi/database.dart';
-import 'package:moor_ffi/open_helper.dart';
+import 'package:sqlite3/open.dart';
+import 'package:sqlite3/sqlite3.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/src/windows/setup_impl.dart';
 
@@ -22,5 +22,5 @@ void windowsInit() {
 
   // Force an open in the main isolate
   // Loading from an isolate seems to break on windows
-  Database.memory()..close();
+  sqlite3.openInMemory().dispose();
 }

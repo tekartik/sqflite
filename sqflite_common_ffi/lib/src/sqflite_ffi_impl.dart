@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
-import 'package:moor_ffi/database.dart' as ffi;
+import 'package:sqlite3/sqlite3.dart' as ffi;
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/src/constant.dart';
@@ -89,7 +89,7 @@ class SqfliteFfiDatabase {
     if (getUpdatedRows() == 0) {
       return null;
     }
-    var id = _ffiDb.getLastInsertId();
+    var id = _ffiDb.lastInsertRowId;
     if (logLevel >= sqfliteLogLevelSql) {
       print('$_prefix Inserted $id');
     }
@@ -102,7 +102,7 @@ class SqfliteFfiDatabase {
   /// Close the database.
   void close() {
     logResult(result: 'Closing database $this');
-    _ffiDb.close();
+    _ffiDb.dispose();
   }
 
   /// Handle execute.
@@ -115,7 +115,7 @@ class SqfliteFfiDatabase {
         preparedStatement.execute(sqlArguments);
         return null;
       } finally {
-        preparedStatement.close();
+        preparedStatement.dispose();
       }
     } else {
       _ffiDb.execute(sql);
@@ -148,7 +148,7 @@ class SqfliteFfiDatabase {
       logResult(result: 'Found ${result.length} rows');
       return packResult(result);
     } finally {
-      preparedStatement.close();
+      preparedStatement.dispose();
     }
   }
 
@@ -355,7 +355,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     ffi.Database ffiDb;
     try {
       if (path == inMemoryDatabasePath) {
-        ffiDb = ffi.Database.memory();
+        ffiDb = ffi.sqlite3.openInMemory();
       } else {
         if (readOnly) {
           // ignore: avoid_slow_async_io
@@ -371,7 +371,9 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
             } catch (_) {}
           }
         }
-        ffiDb = ffi.Database.open(path, readOnly: readOnly);
+        final mode =
+            readOnly ? ffi.OpenMode.readOnly : ffi.OpenMode.readWriteCreate;
+        ffiDb = ffi.sqlite3.open(path, mode: mode);
       }
     } on ffi.SqliteException catch (e) {
       throw wrapSqlException(e, code: 'open_failed');
@@ -721,7 +723,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 }
 
 /// Pack the result in the expected sqflite format.
-Map<String, dynamic> packResult(ffi.Result result) {
+Map<String, dynamic> packResult(ffi.ResultSet result) {
   var columns = result.columnNames;
   var rows = result.rows;
   // This is what sqflite expected

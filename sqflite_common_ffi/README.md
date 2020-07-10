@@ -1,6 +1,6 @@
 # sqflite ffi
 
-[sqflite](https://pub.dev/packages/sqflite) based ffi implementation. Based on [`moor_ffi`](https://pub.dev/packages/moor_ffi). Thanks to [Simon Binder](https://github.com/simolus3)
+[sqflite](https://pub.dev/packages/sqflite) based ffi implementation. Based on [`sqlite3`](https://pub.dev/packages/sqlite3). Thanks to [Simon Binder](https://github.com/simolus3)
 
 It allows mocking sqflite during regular flutter unit test (i.e. not using the emulator/simulator).
 One goal is make it stricter than sqflite to encourage good practices.
@@ -93,5 +93,4 @@ Future main() async {
 
 * Primary intent was to support unit testing sqflite based code but the implementation works on Windows/Mac/Linux flutter desktop application
 * Database calls are made in a separate isolate,
-* Only `Uint8List` is accepted for blob since `List<int>` is not optimized
 * Multi-instance support (not common) is simulated
