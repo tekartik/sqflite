@@ -1,6 +1,6 @@
 language: dart
 sudo: required
-dist: focal
+dist: bionic
 dart:
   - stable
   - beta
