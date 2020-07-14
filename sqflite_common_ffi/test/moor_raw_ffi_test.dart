@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 void main() {
-  test('moor_ffi simple test', () {
+  test('sqlite3 simple test', () {
     if (Platform.isWindows) {
       windowsInit();
     }

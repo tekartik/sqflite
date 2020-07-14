@@ -86,6 +86,9 @@ Advanced checks:
     return [super application:application didFinishLaunchingWithOptions:launchOptions];
   }
   ```
+- If it happens to Android release mode, make sure to [remove shrinkResources 
+  true and minifyEnabled true lines in build.gradle](https://github.com/tekartik/sqflite/issues/452#issuecomment-655602329) to solve the problem.
+
 Before raising this issue, try adding another well established plugin (the simplest being 
 `path_provider` or `shared_preferences`) to see if you get the error here as well.
 

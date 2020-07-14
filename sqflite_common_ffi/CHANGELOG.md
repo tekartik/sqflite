@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Use `sqlite3` instead of `moor_ffi`
+
 ## 1.0.0+4
 
 * Support extended result code exception

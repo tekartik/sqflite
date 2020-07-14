@@ -45,7 +45,7 @@ Future main() async {
 ```
 
 As a side note, `sqfliteFfiInit` is only made to be convenient during development. You can customize the setup (finding/loading the sqlite shared library) by
-following [moor_ffi](https://pub.dev/packages/moor_ffi) documentation.
+following [sqlite3](https://pub.dev/packages/sqlite3) documentation.
 
 As another note, `getDatabasesPath()` has a lame implementation on Linux and Windows.
 
