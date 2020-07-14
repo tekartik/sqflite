@@ -526,21 +526,6 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     var database = getDatabaseOrThrow();
     var sql = getSql();
     var sqlArguments = getSqlArguments();
-
-    /*
-    pre moor_ffi when read only was not supported
-    var writeAttempt = false;
-    // Handle some cases
-    // PRAGMA user_version =
-    if ((sql?.toLowerCase()?.trim()?.startsWith('pragma user_version =')) ??
-        false) {
-      writeAttempt = true;
-    }
-    if (writeAttempt && (database.readOnly ?? false)) {
-      throw SqfliteFfiException(
-          code: sqliteErrorCode, message: 'Database readonly');
-    }
-     */
     return database.handleExecute(sql: sql, sqlArguments: sqlArguments);
   }
 
