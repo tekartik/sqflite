@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.1.0+1
 
 * Use `sqlite3` instead of `moor_ffi`
 
