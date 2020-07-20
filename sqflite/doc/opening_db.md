@@ -58,7 +58,6 @@ _onCreate(Database db, int version) async {
   // Database is created, create the table
   await db.execute(
     "CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)");
-  }
   // populate data
   await db.insert(...);
 }
