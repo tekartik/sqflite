@@ -59,6 +59,7 @@ abstract class SqfliteTestContext {
   Future devSetDebugModeOn(bool on);
 }
 
+/// sqflite test context mixin.
 mixin SqfliteTestContextMixin implements SqfliteTestContext {
   /// FFI no supports Without row id on linux
   @override
@@ -94,6 +95,7 @@ mixin SqfliteTestContextMixin implements SqfliteTestContext {
       .setLogLevel(on ? sqfliteLogLevelVerbose : sqfliteLogLevelNone);
 }
 
+/// sqflite local test context mixin.
 mixin SqfliteLocalTestContextMixin implements SqfliteTestContext {
   @override
   Future<String> createDirectory(String path) async {
@@ -121,6 +123,7 @@ mixin SqfliteLocalTestContextMixin implements SqfliteTestContext {
     return path;
   }
 
+  /// Fix directory path relative to the databases path if possible.
   Future<String> fixDirectoryPath(String path) async {
     if (path == null) {
       path = await databaseFactory.getDatabasesPath();

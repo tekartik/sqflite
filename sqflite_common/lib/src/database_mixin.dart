@@ -203,7 +203,10 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
     return _rawDelete(builder.sql, builder.arguments);
   }
 }
+
+/// Sqflite database mixin.
 mixin SqfliteDatabaseMixin implements SqfliteDatabase {
+  /// Invoke native method and wrap exception.
   Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]) =>
       factory.wrapDatabaseException(() => invokeMethod(method, arguments));
 
@@ -212,9 +215,11 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   OpenDatabaseOptions options;
 
+  /// The factory.
   SqfliteDatabaseFactory get factory => openHelper.factory;
 
-  bool get readOnly => openHelper?.options?.readOnly == true;
+  /// try if open in read-only mode.
+  bool get readOnly => openHelper?.options?.readOnly ?? false;
 
   @override
   SqfliteDatabase get db => this;
@@ -252,6 +257,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// Set when parsing BEGIN and COMMIT/ROLLBACK
   bool inTransaction = false;
 
+  /// Base database map parameter.
   static Map<String, dynamic> getBaseDatabaseMethodArguments(int id) {
     final map = <String, dynamic>{
       paramId: id,
@@ -259,6 +265,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     return map;
   }
 
+  /// Base database map parameter in transaction.
   static Map<String, dynamic> getBaseDatabaseMethodArgumentsInTransaction(
       int id, bool inTransaction) {
     final map = getBaseDatabaseMethodArguments(id);
@@ -268,6 +275,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     return map;
   }
 
+  /// Base database map parameter.
   Map<String, dynamic> get baseDatabaseMethodArguments =>
       getBaseDatabaseMethodArguments(id);
 
@@ -283,6 +291,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     }
   }
 
+  /// Invoke the native method of the factory.
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
       factory.invokeMethod(method, arguments);
 
@@ -524,6 +533,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     return '$id $path';
   }
 
+  /// Open a database and returns its id.
   Future<int> openDatabase() async {
     final params = <String, dynamic>{paramPath: path};
     if (readOnly == true) {
