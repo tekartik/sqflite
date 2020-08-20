@@ -21,6 +21,7 @@ mixin SqfliteDatabaseFactoryMixin
   @override
   Future<T> wrapDatabaseException<T>(Future<T> Function() action) => action();
 
+  /// Invoke native method and wrap exception.
   Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]) =>
       wrapDatabaseException(() => invokeMethod(method, arguments));
 
@@ -150,6 +151,7 @@ mixin SqfliteDatabaseFactoryMixin
     return _databasesPath;
   }
 
+  /// Set the databases path.
   Future<void> setDatabasesPath(String path) async {
     _databasesPath = path;
   }
@@ -173,6 +175,7 @@ mixin SqfliteDatabaseFactoryMixin
     return (path != null) && (path != inMemoryDatabasePath);
   }
 
+  /// Debug information.
   Future<SqfliteDebugInfo> getDebugInfo() async {
     final info = SqfliteDebugInfo();
     final dynamic map =

@@ -1,3 +1,6 @@
+@TestOn('vm')
+library sqflite_common_ffi.test.sqlite3_raw_test;
+
 import 'dart:io';
 
 import 'package:sqflite_common_ffi/src/windows/setup.dart';
