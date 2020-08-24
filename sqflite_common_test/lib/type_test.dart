@@ -260,7 +260,7 @@ void run(SqfliteTestContext context) {
       } finally {
         await _data.db.close();
       }
-    }, solo: true);
+    });
 
     test('null', () async {
       // await Sqflite.devSetDebugModeOn(true);
