@@ -16,10 +16,13 @@
 
 ### Using `test_driver`
 
-From the `example` folder, you should be able to run some native tests using:
+Check [sqflite_test_app](../../sqflite_test_app/README.md).
+
+Also, from the `example` folder, you should be able to run some native tests using:
 
     flutter driver test_driver/main.dart
     
+
 ### Github Branches
 
 #### develop

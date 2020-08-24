@@ -1,6 +1,7 @@
-## 1.3.1
+## 1.3.1+1
 
 * add `databaseFactory` setter to change the default sqflite factory.
+* Fix empty Blob returned as null on MacOS/iOS
 
 ## 1.3.0+2
 
