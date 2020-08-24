@@ -305,6 +305,7 @@ static NSInteger _databaseOpenCount = 0;
 // Rewrite to handle empty bloc reported as null
 // refer to original FMResultSet.objectForColumnIndex, removed
 // when fixed in FMDB
+// See https://github.com/ccgus/fmdb/issues/350 for information
 - (id)rsObjectForColumn:(FMResultSet*)rs index:(int)columnIdx {
     FMStatement* _statement = [rs statement];
     if (columnIdx < 0 || columnIdx >= sqlite3_column_count([_statement statement])) {
