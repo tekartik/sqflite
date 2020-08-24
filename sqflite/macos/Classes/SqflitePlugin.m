@@ -187,7 +187,7 @@ static NSInteger _databaseOpenCount = 0;
         return nil;
     } else if ([value isKindOfClass:[FlutterStandardTypedData class]]) {
         FlutterStandardTypedData* typedData = (FlutterStandardTypedData*)value;
-        return [typedData data];
+        return typedData.data;
     } else if ([value isKindOfClass:[NSArray class]]) {
         // Assume array of number
         // slow...to optimize
@@ -302,6 +302,45 @@ static NSInteger _databaseOpenCount = 0;
     return true;
 }
 
+// Rewrite to handle empty bloc reported as null
+// refer to original FMResultSet.objectForColumnIndex, removed
+// when fixed in FMDB
+// See https://github.com/ccgus/fmdb/issues/350 for information
+- (id)rsObjectForColumn:(FMResultSet*)rs index:(int)columnIdx {
+    FMStatement* _statement = [rs statement];
+    if (columnIdx < 0 || columnIdx >= sqlite3_column_count([_statement statement])) {
+        return nil;
+    }
+    
+    int columnType = sqlite3_column_type([_statement statement], columnIdx);
+    
+    id returnValue = nil;
+    
+    if (columnType == SQLITE_INTEGER) {
+        returnValue = [NSNumber numberWithLongLong:[rs longLongIntForColumnIndex:columnIdx]];
+    }
+    else if (columnType == SQLITE_FLOAT) {
+        returnValue = [NSNumber numberWithDouble:[rs doubleForColumnIndex:columnIdx]];
+    }
+    else if (columnType == SQLITE_BLOB) {
+        returnValue = [rs dataForColumnIndex:columnIdx];
+        // Workaround, empty blob are reported as nil
+        if (returnValue == nil) {
+            return [NSData new];
+        }
+    }
+    else {
+        //default to a string for everything else
+        returnValue = [rs stringForColumnIndex:columnIdx];
+    }
+    
+    if (returnValue == nil) {
+        returnValue = [NSNull null];
+    }
+    
+    return returnValue;
+}
+
 //
 // query
 //
@@ -354,7 +393,7 @@ static NSInteger _databaseOpenCount = 0;
             }
             NSMutableArray* row = [NSMutableArray new];
             for (int i = 0; i < columnCount; i++) {
-                [row addObject:[SqflitePlugin fromSqlValue:[rs objectForColumnIndex:i]]];
+                [row addObject:[SqflitePlugin fromSqlValue:[self rsObjectForColumn:rs index:i]]];
             }
             [rows addObject:row];
         }

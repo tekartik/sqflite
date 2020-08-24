@@ -118,9 +118,11 @@ class TypeTestPage extends TestPage {
         await db
             .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value BLOB)');
       });
+      int id;
+      dynamic value;
       try {
         // insert text in blob
-        var id = await insertValue('simple text');
+        id = await insertValue('simple text');
         expect(await getValue(id), 'simple text');
 
         // UInt8List - default
@@ -165,6 +167,13 @@ class TypeTestPage extends TestPage {
             'SELECT * FROM Test WHERE hex(value) = ?', [Sqflite.hex(blob1234)]);
         expect(rows.length, 1);
         expect(rows[0]['id'], 3);
+
+        // Insert empty blob
+        final blobEmpty = Uint8List(0);
+        id = await insertValue(blobEmpty);
+        value = await getValue(id);
+        expect(value, const TypeMatcher<Uint8List>());
+        expect(value, isEmpty);
       } finally {
         await data.db.close();
       }

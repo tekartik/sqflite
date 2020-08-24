@@ -175,16 +175,6 @@ void run(SqfliteTestContext context) {
       int id;
       dynamic value;
       try {
-        // Insert empty blob
-        final blobEmpty = Uint8List(0);
-        id = await _insertValue(blobEmpty);
-        value = await _getValue(id);
-        expect(value, const TypeMatcher<Uint8List>());
-        expect(value, isEmpty);
-        // print(await _getValue(id));
-        // print('${(await _getValue(id)).length}');
-        expect(value, blobEmpty, reason: '${await _getValue(id)}');
-
         // insert text in blob
         id = await _insertValue('simple text');
         expect(await _getValue(id), 'simple text');
@@ -257,6 +247,23 @@ void run(SqfliteTestContext context) {
             <dynamic>[utils.hex(blob1234)]);
         expect(rows.length, context.strict ? 1 : 2);
         expect(rows.last['_id'], id);
+
+        // Insert empty blob
+        final blobEmpty = Uint8List(0);
+
+        id = await _data.db.rawInsert("INSERT INTO Test(value) VALUES ( X'' )");
+        blobRead = await _getValue(id);
+        expect(blobRead, const TypeMatcher<Uint8List>());
+        // print('${blobRead.length}');
+        expect(blobRead, blobEmpty, reason: '$blobRead');
+
+        id = await _insertValue(blobEmpty);
+        value = await _getValue(id);
+        expect(value, const TypeMatcher<Uint8List>());
+        expect(value, isEmpty);
+        // print(await _getValue(id));
+        // print('${(await _getValue(id)).length}');
+        expect(value, blobEmpty, reason: '${await _getValue(id)}');
       } finally {
         await _data.db.close();
       }
