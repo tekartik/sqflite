@@ -172,9 +172,21 @@ void run(SqfliteTestContext context) {
                 await db.execute(
                     'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value BLOB)');
               }));
+      int id;
+      dynamic value;
       try {
+        // Insert empty blob
+        final blobEmpty = Uint8List(0);
+        id = await _insertValue(blobEmpty);
+        value = await _getValue(id);
+        expect(value, const TypeMatcher<Uint8List>());
+        expect(value, isEmpty);
+        // print(await _getValue(id));
+        // print('${(await _getValue(id)).length}');
+        expect(value, blobEmpty, reason: '${await _getValue(id)}');
+
         // insert text in blob
-        var id = await _insertValue('simple text');
+        id = await _insertValue('simple text');
         expect(await _getValue(id), 'simple text');
 
         // null
@@ -188,9 +200,10 @@ void run(SqfliteTestContext context) {
         id = await _insertValue(blob);
         //print(await getValue(id));
         var result = (await _getValue(id)) as List;
-        print(result.runtimeType);
+        // print(result.runtimeType);
         // this is not true when sqflite server
-        expect(result is Uint8List, true);
+        expect(result, const TypeMatcher<Uint8List>());
+
         // expect(result is List, true);
         expect(result.length, 1);
         expect(result, [1]);
@@ -201,7 +214,7 @@ void run(SqfliteTestContext context) {
             .rawInsert("INSERT INTO Test(value) VALUES ( X'deadbeef' )");
         var blobRead = await _getValue(id);
         expect(blobRead, const TypeMatcher<Uint8List>());
-        print('${blobRead.length}');
+        // print('${blobRead.length}');
         expect(await _getValue(id), [0xDE, 0xAD, 0xBE, 0xEF],
             reason: '${await _getValue(id)}');
         // empty array not supported
@@ -211,15 +224,15 @@ void run(SqfliteTestContext context) {
 
         final blob1234 = Uint8List.fromList([1, 2, 3, 4]);
         id = await _insertValue(blob1234);
-        print(await _getValue(id));
-        print('${(await _getValue(id)).length}');
+        // print(await _getValue(id));
+        // print('${(await _getValue(id)).length}');
         expect(await _getValue(id), blob1234, reason: '${await _getValue(id)}');
 
         if (!context.strict) {
           final blob1234Int = [1, 2, 3, 4];
           id = await _insertValue(blob1234Int);
-          print(await _getValue(id));
-          print('${(await _getValue(id)).length}');
+          // print(await _getValue(id));
+          // print('${(await _getValue(id)).length}');
           expect(await _getValue(id), blob1234Int,
               reason: '${await _getValue(id)}');
         }
@@ -247,7 +260,7 @@ void run(SqfliteTestContext context) {
       } finally {
         await _data.db.close();
       }
-    });
+    }, solo: true);
 
     test('null', () async {
       // await Sqflite.devSetDebugModeOn(true);
