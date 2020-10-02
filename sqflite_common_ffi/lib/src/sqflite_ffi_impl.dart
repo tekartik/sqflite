@@ -2,16 +2,17 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
-import 'package:sqlite3/sqlite3.dart' as ffi;
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/src/constant.dart';
 import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
 import 'package:sqflite_common_ffi/src/sqflite_import.dart';
+import 'package:sqlite3/sqlite3.dart' as ffi;
 import 'package:synchronized/extension.dart';
 import 'package:synchronized/synchronized.dart';
 
+import 'database_tracker.dart';
 import 'import.dart';
 
 final _debug = false; // devWarning(true); // false
@@ -248,52 +249,6 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
       var ffiException = wrapAnyException(e);
       throw ffiException;
-      /*
-      if (e is ffi.SqliteException) {
-        var database = getDatabase();
-        var sql = getSql();
-        var sqlArguments = getSqlArguments();
-        var wrapped = wrapSqlException(e, details: <String, dynamic>{
-          'database': database.toDebugMap(),
-          'sql': sql,
-          'arguments': sqlArguments
-        });
-        // devPrint(wrapped);
-        throw wrapped;
-      }
-      var database = getDatabase();
-      var sql = getSql();
-      var sqlArguments = getSqlArguments();
-      if (_debug) {
-        print('$e in ${database?.toDebugMap()}');
-      }
-      String code;
-      String message;
-      Map<String, dynamic> details;
-      if (e is SqfliteFfiException) {
-        // devPrint('throwing $e');
-        code = e.code;
-        message = e.message;
-        details = e.details;
-      } else {
-        code = anyErrorCode;
-        message = e.toString();
-      }
-      if (_debug) {
-        print('handleError: $e');
-        print('stackTrace : $st');
-      }
-      throw SqfliteFfiException(
-          code: code,
-          message: message,
-          details: <String, dynamic>{
-            if (database != null) 'database': database.toDebugMap(),
-            if (sql != null) 'sql': sql,
-            if (sqlArguments != null) 'arguments': sqlArguments,
-            if (details != null) 'details': details,
-          });
-
-       */
     }
   }
 
@@ -374,6 +329,12 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
         final mode =
             readOnly ? ffi.OpenMode.readOnly : ffi.OpenMode.readWriteCreate;
         ffiDb = ffi.sqlite3.open(path, mode: mode);
+
+        // Handle hot-restart for single instance
+        // The dart code is killed but the native code remains
+        if (singleInstance) {
+          tracker.markOpened(ffiDb);
+        }
       }
     } on ffi.SqliteException catch (e) {
       throw wrapSqlException(e, code: 'open_failed');
@@ -399,6 +360,11 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     var database = getDatabaseOrThrow();
     if (database.singleInstance ?? false) {
       ffiSingleInstanceDbs.remove(database.path);
+
+      // Handle hot-restart for single instance
+      // The dart code is killed but the native code remains
+      // Remove the database from our cache
+      tracker.markClosed(database._ffiDb);
     }
     database.close();
   }
