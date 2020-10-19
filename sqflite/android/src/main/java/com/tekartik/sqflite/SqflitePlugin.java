@@ -31,7 +31,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 import static com.tekartik.sqflite.Constant.CMD_GET;
 import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
@@ -100,7 +99,8 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     //
     // Plugin registration.
     //
-    public static void registerWith(Registrar registrar) {
+    @SuppressWarnings("deprecation")
+    public static void registerWith(io.flutter.plugin.common.PluginRegistry.Registrar registrar) {
         SqflitePlugin sqflitePlugin = new SqflitePlugin();
         sqflitePlugin.onAttachedToEngine(registrar.context(), registrar.messenger());
     }
