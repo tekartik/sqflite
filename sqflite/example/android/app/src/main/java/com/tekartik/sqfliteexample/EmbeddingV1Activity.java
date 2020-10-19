@@ -9,14 +9,16 @@ import android.os.Bundle;
 import com.tekartik.sqflite.Constant;
 import com.tekartik.sqflite.SqflitePlugin;
 
-import dev.flutter.plugins.e2e.E2EPlugin;
+import dev.flutter.plugins.integration_test.IntegrationTestPlugin;
 import io.flutter.app.FlutterActivity;
 
 public class EmbeddingV1Activity extends FlutterActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        IntegrationTestPlugin.registerWith(
+                registrarFor("dev.flutter.plugins.integration_test.IntegrationTestPlugin"));
         SqflitePlugin.registerWith(registrarFor(Constant.PLUGIN_KEY));
-        E2EPlugin.registerWith(registrarFor("dev.flutter.plugins.e2e.E2EPlugin"));
     }
 }

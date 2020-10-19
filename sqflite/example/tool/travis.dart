@@ -2,7 +2,7 @@ import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
 import 'package:sqflite_example/utils.dart';
 
-import 'run_flutter_driver_test.dart' as driver;
+import 'run_integration_test.dart' as integration_test;
 
 Future<void> main() async {
   final shell = Shell();
@@ -10,13 +10,12 @@ Future<void> main() async {
   await shell.run('''
 
 flutter analyze
-flutter test
 
 ''');
 
   var exception;
   try {
-    await driver.main();
+    await integration_test.main();
   } catch (e) {
     exception = e;
   }
