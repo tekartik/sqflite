@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'sqflite'
-  s.version          = '0.0.1'
+  s.version          = '0.0.2'
   s.summary          = 'SQLite plugin.'
   s.description      = <<-DESC
 Accss SQLite database.
@@ -15,9 +15,9 @@ Accss SQLite database.
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'FMDB', '~> 2.7.2'
+  s.dependency 'FMDB', '>= 2.7.5'
 
-  s.platform = :ios, '8.0'
+  s.platform = :ios, '9.0'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
 end
 
