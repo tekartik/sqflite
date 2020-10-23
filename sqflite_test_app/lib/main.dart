@@ -1,4 +1,4 @@
-import 'main_io.dart' as impl if (dart.library.html) 'main_web.dart';
+import 'main_io.dart' if (dart.library.html) 'main_web.dart' as impl;
 
 Future<void> main() async {
   await impl.main();
