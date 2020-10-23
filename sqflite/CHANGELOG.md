@@ -1,6 +1,6 @@
 ## 1.3.2-dev.1
 
-* ios: Update FMDB to 2.7.5+
+* iOS/macOS: Update FMDB to 2.7.5+
 * android: Update gradle to 6.5
 
 ## 1.3.1+2
