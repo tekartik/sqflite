@@ -1040,7 +1040,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
     private class BgResult implements Result {
         // Caller handler
-        final Handler handler = new Handler();
+        final Handler handler = new Handler(Looper.getMainLooper());
         private final Result result;
 
         private BgResult(Result result) {
