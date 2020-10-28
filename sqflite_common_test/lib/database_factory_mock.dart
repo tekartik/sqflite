@@ -6,20 +6,27 @@ import 'package:sqflite_common/sqlite_api.dart';
 class DatabaseFactoryMock implements DatabaseFactory {
   @override
   Future<bool> databaseExists(String path) async {
-    return false;
+    throw UnimplementedError();
   }
 
   @override
-  Future<void> deleteDatabase(String path) async {}
+  Future<void> deleteDatabase(String path) async {
+    throw UnimplementedError();
+  }
 
   @override
   Future<String> getDatabasesPath() async {
-    return null;
+    throw UnimplementedError();
   }
 
   @override
-  Future<Database> openDatabase(String path, {OpenDatabaseOptions options}) {
-    return null;
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setDatabasesPath(String path) {
+    throw UnimplementedError();
   }
 }
 

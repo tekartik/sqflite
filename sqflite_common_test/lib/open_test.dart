@@ -11,7 +11,7 @@ import 'package:synchronized/synchronized.dart';
 export 'package:sqflite_common/sqflite_dev.dart';
 
 /// Verify a condition in a test.
-bool verify(bool condition, [String message]) {
+bool verify(bool condition, [String? message]) {
   message ??= 'verify failed';
   expect(condition, true, reason: message);
   return condition;
@@ -44,13 +44,13 @@ class _OpenCallbacks {
     };
 
     onUpgrade = (Database db, int oldVersion, int newVersion) {
-      verify(onConfigureCalled, 'onConfigure not called in onUpgrade');
+      verify(onConfigureCalled!, 'onConfigure not called in onUpgrade');
       verify(!onUpgradeCalled, 'onUpgradeCalled already called');
       onUpgradeCalled = true;
     };
 
     onDowngrade = (Database db, int oldVersion, int newVersion) {
-      verify(onConfigureCalled, 'onConfigure not called');
+      verify(onConfigureCalled!, 'onConfigure not called');
       verify(!onDowngradeCalled, 'onDowngrade already called');
       onDowngradeCalled = true;
     };
@@ -59,17 +59,17 @@ class _OpenCallbacks {
   }
 
   final DatabaseFactory databaseFactory;
-  bool onConfigureCalled;
-  bool onOpenCalled;
-  bool onCreateCalled;
-  bool onDowngradeCalled;
-  bool onUpgradeCalled;
+  bool? onConfigureCalled;
+  bool? onOpenCalled;
+  bool? onCreateCalled;
+  late bool onDowngradeCalled;
+  late bool onUpgradeCalled;
 
-  OnDatabaseCreateFn onCreate;
-  OnDatabaseConfigureFn onConfigure;
-  OnDatabaseVersionChangeFn onDowngrade;
-  OnDatabaseVersionChangeFn onUpgrade;
-  OnDatabaseOpenFn onOpen;
+  late OnDatabaseCreateFn onCreate;
+  OnDatabaseConfigureFn? onConfigure;
+  late OnDatabaseVersionChangeFn onDowngrade;
+  late OnDatabaseVersionChangeFn onUpgrade;
+  late OnDatabaseOpenFn onOpen;
 
   void reset() {
     onConfigureCalled = false;
@@ -79,13 +79,13 @@ class _OpenCallbacks {
     onUpgradeCalled = false;
   }
 
-  Future<Database> open(String path, {int version}) async {
+  Future<Database> open(String path, {required int version}) async {
     reset();
     return await databaseFactory.openDatabase(path,
         options: OpenDatabaseOptions(
             version: version,
             onCreate: onCreate,
-            onConfigure: onConfigure,
+            onConfigure: onConfigure!,
             onDowngrade: onDowngrade,
             onUpgrade: onUpgrade,
             onOpen: onOpen));
@@ -200,7 +200,7 @@ void run(SqfliteTestContext context) {
     // should fail
     var path = await context.initDeleteDb('open_no_version_on_create.db');
     verify(!(File(path).existsSync()));
-    Database db;
+    Database? db;
     try {
       db = await factory.openDatabase(path,
           options: OpenDatabaseOptions(onCreate: (Database db, int version) {
@@ -417,27 +417,27 @@ void run(SqfliteTestContext context) {
     var step = 1;
     var openCallbacks = _OpenCallbacks(factory);
     var db = await openCallbacks.open(path, version: 1);
-    verify(openCallbacks.onConfigureCalled, 'onConfiguredCalled $step');
-    verify(openCallbacks.onCreateCalled, 'onCreateCalled $step');
-    verify(openCallbacks.onOpenCalled, 'onOpenCalled $step');
+    verify(openCallbacks.onConfigureCalled!, 'onConfiguredCalled $step');
+    verify(openCallbacks.onCreateCalled!, 'onCreateCalled $step');
+    verify(openCallbacks.onOpenCalled!, 'onOpenCalled $step');
     verify(!openCallbacks.onUpgradeCalled, 'onUpdateCalled $step');
     verify(!openCallbacks.onDowngradeCalled, 'onDowngradCalled $step');
     await db.close();
 
     ++step;
     db = await openCallbacks.open(path, version: 3);
-    verify(openCallbacks.onConfigureCalled, 'onConfiguredCalled $step');
-    verify(!openCallbacks.onCreateCalled, 'onCreateCalled $step');
-    verify(openCallbacks.onOpenCalled, 'onOpenCalled $step');
+    verify(openCallbacks.onConfigureCalled!, 'onConfiguredCalled $step');
+    verify(!openCallbacks.onCreateCalled!, 'onCreateCalled $step');
+    verify(openCallbacks.onOpenCalled!, 'onOpenCalled $step');
     verify(openCallbacks.onUpgradeCalled, 'onUpdateCalled $step');
     verify(!openCallbacks.onDowngradeCalled, 'onDowngradCalled $step');
     await db.close();
 
     ++step;
     db = await openCallbacks.open(path, version: 2);
-    verify(openCallbacks.onConfigureCalled, 'onConfiguredCalled $step');
-    verify(!openCallbacks.onCreateCalled, 'onCreateCalled $step');
-    verify(openCallbacks.onOpenCalled, 'onOpenCalled $step');
+    verify(openCallbacks.onConfigureCalled!, 'onConfiguredCalled $step');
+    verify(!openCallbacks.onCreateCalled!, 'onCreateCalled $step');
+    verify(openCallbacks.onOpenCalled!, 'onOpenCalled $step');
     verify(!openCallbacks.onUpgradeCalled, 'onUpdateCalled $step');
     verify(openCallbacks.onDowngradeCalled, 'onDowngradCalled $step');
     await db.close();
@@ -451,7 +451,7 @@ void run(SqfliteTestContext context) {
         openCallbacks.onConfigureCalled = false;
       }
       configureCount++;
-      callback(db);
+      callback!(db);
     };
     ++step;
     db = await openCallbacks.open(path, version: 1);
@@ -596,7 +596,7 @@ void run(SqfliteTestContext context) {
       var path = join(databasesPath, 'demo_asset_example.db');
 
       // try opening (will work if it exists)
-      Database db;
+      Database? db;
       try {
         db = await factory.openDatabase(path,
             options: OpenDatabaseOptions(readOnly: true));
@@ -617,7 +617,7 @@ void run(SqfliteTestContext context) {
     for (var i = 0; i < 100; i++) {
       unawaited(helper.getDb());
     }
-    var db = await helper.getDb();
+    var db = await (helper.getDb() as FutureOr<Database>);
     await db.close();
   });
 
@@ -731,11 +731,11 @@ class Helper {
 
   /// Database path.
   final String path;
-  Database _db;
+  Database? _db;
   final _lock = Lock();
 
   /// Get the opened database.
-  Future<Database> getDb() async {
+  Future<Database?> getDb() async {
     if (_db == null) {
       await _lock.synchronized(() async {
         // Check again once entering the synchronized block

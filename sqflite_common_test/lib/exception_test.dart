@@ -740,8 +740,8 @@ void run(SqfliteTestContext context) {
         var db = await factory.openDatabase(inMemoryDatabasePath);
         await db.close();
       } finally {
-        await db1?.close();
-        await db2?.close();
+        await db1.close();
+        await db2.close();
       }
     }, skip: !supportsDeadLock);
 
@@ -770,8 +770,8 @@ void run(SqfliteTestContext context) {
         var db = await factory.openDatabase(inMemoryDatabasePath);
         await db.close();
       } finally {
-        await db1?.close();
-        await db2?.close();
+        await db1.close();
+        await db2.close();
       }
     }, skip: !supportsDeadLock);
   });

@@ -86,8 +86,8 @@ void run(SqfliteTestContext context) {
 
         Future _test(int i) async {
           await db.transaction((txn) async {
-            var count = utils
-                .firstIntValue(await txn.rawQuery('SELECT COUNT(*) FROM Test'));
+            var count = utils.firstIntValue(
+                await txn.rawQuery('SELECT COUNT(*) FROM Test'))!;
             await Future<dynamic>.delayed(const Duration(milliseconds: 40));
             await txn.rawInsert(
                 'INSERT INTO Test (name) VALUES (?)', <dynamic>['item $i']);
@@ -430,7 +430,7 @@ void run(SqfliteTestContext context) {
 
       // Count the records
       count = utils
-          .firstIntValue(await database.rawQuery('SELECT COUNT(*) FROM Test'));
+          .firstIntValue(await database.rawQuery('SELECT COUNT(*) FROM Test'))!;
       expect(count, 2);
 
       // Delete a record
@@ -547,7 +547,7 @@ void run(SqfliteTestContext context) {
           where: 'name = ?', whereArgs: <String>['item']);
       batch.delete('Test', where: 'name = ?', whereArgs: <dynamic>['item']);
       results = await batch.commit(noResult: true);
-      expect(results, null);
+      expect(results, []);
 
       await db.close();
     });
@@ -619,7 +619,7 @@ void run(SqfliteTestContext context) {
       // utils.devSetDebugModeOn(true);
       // this fails on iOS
 
-      Database db;
+      late Database db;
       try {
         var path = await context.initDeleteDb('without_rowid.db');
         db = await factory.openDatabase(path);
@@ -656,7 +656,7 @@ void run(SqfliteTestContext context) {
           {'name': 'test'}
         ]);
       } finally {
-        await db?.close();
+        await db.close();
       }
     });
 

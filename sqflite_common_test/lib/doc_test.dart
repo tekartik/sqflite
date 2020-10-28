@@ -15,9 +15,9 @@ void run(SqfliteTestContext context) {
       //await Sqflite.setDebugModeOn(true);
 
       // Our database path
-      String path;
+      late String path;
       // Our database once opened
-      Database db;
+      Database? db;
 
       try {
         /// Let's use FOREIGN KEY CONSTRAIN
@@ -49,7 +49,7 @@ void run(SqfliteTestContext context) {
                   onConfigure: onConfigure,
                   onDowngrade: onDatabaseDowngradeDelete));
 
-          await db.close();
+          await db!.close();
           db = null;
         }
 
@@ -110,16 +110,16 @@ void run(SqfliteTestContext context) {
                   },
                   onDowngrade: onDatabaseDowngradeDelete));
 
-          await db.close();
+          await db!.close();
           db = null;
         }
 
         Future _readTest() async {
           db ??= await factory.openDatabase(path);
-          expect(await db.query('Company'), [
+          expect(await db!.query('Company'), [
             {'name': 'Watch', 'description': 'Black Wristatch', 'id': 1}
           ]);
-          expect(await db.query('Employee'), [
+          expect(await db!.query('Employee'), [
             {'name': '1st Employee', 'companyId': 1, 'id': 1}
           ]);
         }
@@ -127,11 +127,11 @@ void run(SqfliteTestContext context) {
         Future _test() async {
           db = await factory.openDatabase(path);
           try {
-            var companyId = await db.insert('Company', <String, dynamic>{
+            var companyId = await db!.insert('Company', <String, dynamic>{
               'name': 'Watch',
               'description': 'Black Wristatch'
             });
-            await db.insert('Employee', <String, dynamic>{
+            await db!.insert('Employee', <String, dynamic>{
               'name': '1st Employee',
               'companyId': companyId
             });
@@ -227,7 +227,6 @@ CREATE TABLE Product (
         };
         await db.insert('Product', map);
         await db.close();
-        db = null;
       }
 
       {
@@ -258,7 +257,6 @@ CREATE TABLE Product (
         };
         await db.insert('Product', map);
         await db.close();
-        db = null;
       }
     });
     test('upsert', () async {
@@ -322,7 +320,6 @@ CREATE TABLE Product (
         var result = await db.query('Product');
         expect(result.length, 1, reason: 'list $result');
         await db.close();
-        db = null;
       }
     });
 
@@ -380,7 +377,6 @@ CREATE TABLE Product (
         var result = await db.query('Product');
         expect(result.length, 1, reason: 'list $result');
         await db.close();
-        db = null;
       }
     });
   });
@@ -389,10 +385,10 @@ CREATE TABLE Product (
 /// Test product.
 class Product {
   /// id.
-  String id;
+  String? id;
 
   /// title.
-  String title;
+  String? title;
 
   /// Export as a map.
   Map<String, dynamic> toMap() {

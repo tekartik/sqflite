@@ -7,6 +7,7 @@ import 'package:sqflite_common_ffi/src/constant.dart';
 import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
 import 'package:sqflite_common_ffi/src/sqflite_import.dart';
+import 'package:sqflite_common/src/mixin/constant.dart'; // ignore: implementation_imports
 import 'package:sqlite3/sqlite3.dart' as ffi;
 import 'package:synchronized/extension.dart';
 import 'package:synchronized/synchronized.dart';
@@ -224,13 +225,13 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Main handling.
-  Future<dynamic?> handleImpl() async {
+  Future<dynamic> handleImpl() async {
     // devPrint('$this');
     try {
       if (_debug) {
         print('handle $this');
       }
-      dynamic? result = await rawHandle();
+      dynamic result = await rawHandle();
 
       if (_debug) {
         print('result: $result');
@@ -251,7 +252,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Handle a method call
-  Future<dynamic?> rawHandle() async {
+  Future<dynamic> rawHandle() async {
     switch (method) {
       case 'openDatabase':
         return await handleOpenDatabase();
@@ -305,7 +306,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
         return database;
       }
     }
-    ffi.Database ffiDb;
+    ffi.Database? ffiDb;
     try {
       if (path == inMemoryDatabasePath) {
         ffiDb = ffi.sqlite3.openInMemory();
@@ -381,8 +382,11 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Find the database.
   SqfliteFfiDatabase? getDatabase() {
     var id = getDatabaseId();
-    var database = ffiDbs[id!];
-    return database;
+    if (id != null) {
+      var database = ffiDbs[id];
+      return database;
+    }
+    return null;
   }
 
   /// Get the id from the arguments.
@@ -394,7 +398,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Get the sql command.
-  String getSql() {
+  String? getSql() {
     var sql = arguments['sql'] as String;
     return sql;
   }
@@ -469,7 +473,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Handle query.
   Future handleQuery() async {
     var database = getDatabaseOrThrow();
-    var sql = getSql();
+    var sql = getSql()!;
     var sqlArguments = getSqlArguments();
     return database.handleQuery(sqlArguments: sqlArguments, sql: sql);
   }
@@ -488,7 +492,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Handle execute.
   Future handleExecute() async {
     var database = getDatabaseOrThrow();
-    var sql = getSql();
+    var sql = getSql()!;
     var sqlArguments = getSqlArguments();
     return database.handleExecute(sql: sql, sqlArguments: sqlArguments);
   }
@@ -591,7 +595,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       }
 
       switch (operation.method) {
-        case 'insert':
+        case methodInsert:
           {
             try {
               await database.handleExecute(
@@ -605,7 +609,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
             break;
           }
-        case 'execute':
+        case methodExecute:
           {
             try {
               await database.handleExecute(
@@ -617,11 +621,11 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
             break;
           }
-        case 'query':
+        case methodQuery:
           {
             try {
               var result = await database.handleQuery(
-                  sql: operation.sql!, sqlArguments: operation.sqlArguments!);
+                  sql: operation.sql!, sqlArguments: operation.sqlArguments);
               addResult(result);
             } catch (e) {
               addError(e);
@@ -629,7 +633,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
             break;
           }
-        case 'update':
+        case methodUpdate:
           {
             try {
               await database.handleExecute(

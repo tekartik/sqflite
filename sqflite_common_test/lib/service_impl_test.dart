@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:meta/meta.dart';
 import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart'; // ignore: implementation_imports
@@ -12,7 +11,7 @@ import 'src/sqflite_import.dart';
 /// Service delegating storing invocations.
 class FactoryServiceDelegate with SqfliteDatabaseFactoryMixin {
   /// Factory delegate storing logs
-  FactoryServiceDelegate({@required DatabaseFactory factory})
+  FactoryServiceDelegate({required DatabaseFactory factory})
       : _factory = factory as SqfliteDatabaseFactory;
 
   final _ins = <dynamic>[];
@@ -39,7 +38,7 @@ class FactoryServiceDelegate with SqfliteDatabaseFactoryMixin {
     try {
       result = await _factory.invokeMethod<T>(method, arguments);
     } catch (e) {
-      _outs.add(<String, dynamic>{'error': e?.toString()});
+      _outs.add(<String, dynamic>{'error': e.toString()});
       rethrow;
     }
     _outs.add(result);
@@ -58,9 +57,9 @@ class FactoryServiceDelegate with SqfliteDatabaseFactoryMixin {
 void run(SqfliteTestContext context) {
   var factory = FactoryServiceDelegate(factory: context.databaseFactory);
 
-  int getId(dynamic item) {
+  int? getId(dynamic item) {
     if (item is Map) {
-      return item['id'] as int;
+      return item['id'] as int?;
     }
     return null;
   }

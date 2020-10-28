@@ -423,7 +423,7 @@ INSERT INTO test (value) VALUES (10);
         'CREATE INDEX groups_id ON groups ( service_id )',
       );
     } finally {
-      await db?.close();
+      await db.close();
     }
   }, skip: '5.0 crashes');
 
@@ -440,7 +440,7 @@ INSERT INTO test (value) VALUES (10);
         'CREATE INDEX `groups_id` ON groups ( `id` ASC )',
       );
     } finally {
-      await db?.close();
+      await db.close();
     }
   });
 
@@ -457,7 +457,7 @@ INSERT INTO test (value) VALUES (10);
         'CREATE INDEX `groups_id` ON groups ( `id` ASC )',
       );
     } finally {
-      await db?.close();
+      await db.close();
     }
   });
 
@@ -475,7 +475,7 @@ INSERT INTO test (value) VALUES (10);
       expect(
           utils.firstIntValue(await db.query(table, columns: ['COUNT(*)'])), 1);
     } finally {
-      await db?.close();
+      await db.close();
     }
   });
 
@@ -490,7 +490,7 @@ INSERT INTO test (value) VALUES (10);
   test('open_close_transaction', () async {
     // Sqflite.devSetDebugModeOn(true);
     // Try to insert string with quote
-    Database db;
+    late Database db;
     try {
       var path = await context.initDeleteDb('open_close_transaction.db');
       db = await factory.openDatabase(path);
@@ -501,12 +501,12 @@ INSERT INTO test (value) VALUES (10);
       } on DatabaseException catch (_) {}
       db = await factory.openDatabase(path);
     } finally {
-      await db?.close();
+      await db.close();
     }
   });
 
   test('read_only', () async {
-    Database db;
+    late Database db;
     try {
       var path = await context.initDeleteDb('read_only.db');
       db = await factory.openDatabase(path);
@@ -524,7 +524,7 @@ INSERT INTO test (value) VALUES (10);
       } on DatabaseException catch (_) {}
       db = await factory.openDatabase(path);
     } finally {
-      await db?.close();
+      await db.close();
     }
   });
 

@@ -8,7 +8,7 @@ import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
 class _Data {
-  Database db;
+  late Database db;
 }
 
 final _Data _data = _Data();
