@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 const channel = MethodChannel('com.tekartik.sqflite');
 
 class MockMethodCall {
-  String expectedMethod;
+  String? expectedMethod;
   dynamic expectedArguments;
   dynamic response;
 
@@ -23,7 +23,7 @@ class MockScenario {
         .toList(growable: false);
   }
 
-  List<MockMethodCall> methodsCalls;
+  late List<MockMethodCall> methodsCalls;
   var index = 0;
   dynamic exception;
 
@@ -82,7 +82,7 @@ void main() {
         [
           'query',
           {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
-          null
+          {}
         ],
         [
           'execute',
@@ -97,7 +97,7 @@ void main() {
         [
           'query',
           {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
-          null
+          {}
         ],
         [
           'execute',

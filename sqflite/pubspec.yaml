@@ -2,10 +2,10 @@ name: sqflite
 homepage: https://github.com/tekartik/sqflite/tree/master/sqflite
 description: Flutter plugin for SQLite, a self-contained, high-reliability,
   embedded, SQL database engine.
-version: 1.3.2-dev.1
+version: 1.3.2
 
 environment:
-  sdk: '>=2.10.2 <3.0.0'
+  sdk: '>=2.11.0-0 <3.0.0'
   flutter: ">=1.22.2 <2.0.0"
 
 flutter:
@@ -33,3 +33,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   test_api:
+
+# Temp for nnbd support
+dependency_overrides:
+  sqflite_common:
+    path: ../sqflite_common

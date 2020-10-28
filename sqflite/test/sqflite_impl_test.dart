@@ -11,7 +11,7 @@ void main() {
     const channel = MethodChannel('com.tekartik.sqflite');
 
     final log = <MethodCall>[];
-    String response;
+    String? response;
 
     channel.setMockMethodCallHandler((MethodCall methodCall) async {
       log.add(methodCall);

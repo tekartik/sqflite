@@ -11,7 +11,7 @@ void main() {
     const channel = MethodChannel('com.tekartik.sqflite');
 
     final log = <MethodCall>[];
-    String response;
+    String? response;
 
     channel.setMockMethodCallHandler((MethodCall methodCall) async {
       log.add(methodCall);
@@ -120,15 +120,17 @@ void main() {
       } on FormatException catch (_) {}
     });
 
+    /*
     test('open null', () async {
-      AssertionError exception;
+      AssertionError? exception;
       try {
-        await openDatabase(null);
+        await openDatabase(null!);
       } on AssertionError catch (e) {
         exception = e;
       }
       expect(exception, isNotNull);
     });
+     */
 
     test('databaseFactory', () {
       final originalDefaultFactory = databaseFactory;

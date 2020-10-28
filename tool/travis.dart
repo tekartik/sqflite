@@ -15,6 +15,7 @@ Future main() async {
         '--enable-experiment=non-nullable --no-sound-null-safety';
 
     for (var dir in [
+      'sqflite',
       'sqflite_common',
       'sqflite_common_ffi',
     ]) {
@@ -30,7 +31,6 @@ Future main() async {
   } else {
     for (var dir in [
       'sqflite/example',
-      'sqflite',
       'sqflite_test_app',
     ]) {
       shell = shell.pushd(dir);

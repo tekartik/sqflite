@@ -11,5 +11,5 @@ Future<void> main() async {
     return result;
   });
   final db = await factory.openDatabase(inMemoryDatabasePath);
-  await db?.getVersion();
+  await db.getVersion();
 }

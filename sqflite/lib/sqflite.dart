@@ -57,7 +57,7 @@ class Sqflite {
 
   /// helper to get the first int value in a query
   /// Useful for COUNT(*) queries
-  static int firstIntValue(List<Map<String, dynamic>> list) =>
+  static int? firstIntValue(List<Map<String, dynamic>> list) =>
       utils.firstIntValue(list);
 
   /// Utility to encode a blob to allow blob query using
@@ -67,8 +67,8 @@ class Sqflite {
   /// Sqlite has a dead lock warning feature that will print some text
   /// after 10s, you can override the default behavior
   static void setLockWarningInfo(
-      {Duration duration, void Function() callback}) {
-    utils.setLockWarningInfo(duration: duration, callback: callback);
+      {Duration? duration, void Function()? callback}) {
+    utils.setLockWarningInfo(duration: duration!, callback: callback!);
   }
 }
 
@@ -125,12 +125,12 @@ class Sqflite {
 /// parameters such as callbacks for that invocation.
 ///
 Future<Database> openDatabase(String path,
-    {int version,
-    OnDatabaseConfigureFn onConfigure,
-    OnDatabaseCreateFn onCreate,
-    OnDatabaseVersionChangeFn onUpgrade,
-    OnDatabaseVersionChangeFn onDowngrade,
-    OnDatabaseOpenFn onOpen,
+    {int? version,
+    OnDatabaseConfigureFn? onConfigure,
+    OnDatabaseCreateFn? onCreate,
+    OnDatabaseVersionChangeFn? onUpgrade,
+    OnDatabaseVersionChangeFn? onDowngrade,
+    OnDatabaseOpenFn? onOpen,
     bool readOnly = false,
     bool singleInstance = true}) {
   final options = OpenDatabaseOptions(
@@ -158,7 +158,7 @@ Future<Database> openReadOnlyDatabase(String path) =>
 ///
 /// On iOS, it is the Documents directory
 ///
-Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();
+Future<String?> getDatabasesPath() => databaseFactory.getDatabasesPath();
 
 ///
 /// Delete the database at the given path.

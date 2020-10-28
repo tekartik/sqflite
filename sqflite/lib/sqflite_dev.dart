@@ -8,7 +8,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// Test only.
 ///
 @visibleForTesting
-void setMockDatabaseFactory(DatabaseFactory factory) {
+void setMockDatabaseFactory(DatabaseFactory? factory) {
   // ignore: invalid_use_of_visible_for_testing_member
-  sqfliteDatabaseFactory = factory as SqfliteDatabaseFactory;
+  sqfliteDatabaseFactory = factory as SqfliteDatabaseFactory?;
 }

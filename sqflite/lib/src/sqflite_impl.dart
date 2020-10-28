@@ -14,4 +14,4 @@ final supportsConcurrency = false;
 
 /// Invoke a native method
 Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
-    channel.invokeMethod<T>(method, arguments);
+    channel.invokeMethod<T>(method, arguments) as Future<T>;

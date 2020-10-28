@@ -7,7 +7,7 @@ import 'package:sqflite/src/sqflite_import.dart';
 import 'package:sqflite/src/exception_impl.dart' as impl;
 import 'package:sqflite/src/sqflite_impl.dart' as impl;
 
-SqfliteDatabaseFactory _databaseFactory;
+SqfliteDatabaseFactory? _databaseFactory;
 
 /// sqflite Default factory
 DatabaseFactory get databaseFactory => sqfliteDatabaseFactory;
@@ -18,7 +18,7 @@ DatabaseFactory get databaseFactory => sqfliteDatabaseFactory;
 /// will have this factory as the default for all operations.
 ///
 /// This setter must be call only once, before any other calls to sqflite.
-set databaseFactory(DatabaseFactory databaseFactory) {
+set databaseFactory(DatabaseFactory? databaseFactory) {
   // Warn when changing. might throw in the future
   if (databaseFactory != null) {
     if (!(databaseFactory is SqfliteDatabaseFactory)) {
@@ -36,7 +36,7 @@ will have this factory as the default for all operations.
 *** sqflite warning ***
 ''');
     }
-    sqfliteDatabaseFactory = databaseFactory as SqfliteDatabaseFactory;
+    sqfliteDatabaseFactory = databaseFactory;
   } else {
     /// Will use the plugin sqflite factory
     sqfliteDatabaseFactory = null;
@@ -58,7 +58,7 @@ SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
 ///
 /// Will be removed in 2.0.0
 @Deprecated('Use databaseFactory')
-set sqlfliteDatabaseFactory(SqfliteDatabaseFactory databaseFactory) =>
+set sqlfliteDatabaseFactory(SqfliteDatabaseFactory? databaseFactory) =>
     _databaseFactory = databaseFactory;
 
 /// sqflite Default factory
@@ -68,7 +68,7 @@ SqfliteDatabaseFactory get sqfliteDatabaseFactory =>
 
 /// Change the default factory. test only.
 @visibleForTesting
-set sqfliteDatabaseFactory(SqfliteDatabaseFactory databaseFactory) =>
+set sqfliteDatabaseFactory(SqfliteDatabaseFactory? databaseFactory) =>
     _databaseFactory = databaseFactory;
 
 /// Factory implementation
