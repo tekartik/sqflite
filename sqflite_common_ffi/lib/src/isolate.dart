@@ -1,6 +1,6 @@
 import 'dart:isolate';
 
-import 'package:meta/meta.dart';
+import 'package:sqflite_common_ffi/src/import.dart';
 import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
 
@@ -11,7 +11,7 @@ bool _debug = false; // devWarning(true); // false;
 /// Sqflite isolate.
 class SqfliteIsolate {
   /// Sqflite isolate.
-  SqfliteIsolate({@required this.sendPort});
+  SqfliteIsolate({required this.sendPort});
 
   /// Our send port.
   final SendPort sendPort;
@@ -37,9 +37,9 @@ class SqfliteIsolate {
       var error = response['error'];
       if (error is Map) {
         throw SqfliteFfiException(
-            code: error['code'] as String,
+            code: error['code'] as String?,
             message: error['message'] as String,
-            details: (error['details'] as Map)?.cast<String, dynamic>(),
+            details: (error['details'] as Map?)?.cast<String, dynamic>(),
             resultCode: error['resultCode'] as int);
       }
       return response['result'];
@@ -81,14 +81,14 @@ Future _isolate(SendPort sendPort) async {
     if (msg is Map) {
       var sendPort = msg['sendPort'];
       if (sendPort is SendPort) {
-        var method = msg['method'] as String;
+        var method = msg['method'] as String?;
         if (method != null) {
           try {
             var arguments = msg['arguments'];
             var methodCall = FfiMethodCall(method, arguments);
             var result = await methodCall.handleImpl();
             sendPort.send({'result': result});
-          } catch (e) {
+          } catch (e, st) {
             var error = <String, dynamic>{};
             if (e is SqfliteFfiException) {
               error['code'] = e.code;
@@ -98,6 +98,9 @@ Future _isolate(SendPort sendPort) async {
             } else {
               // should not happen
               error['message'] = e.toString();
+            }
+            if (isDebug) {
+              error['stackTrace'] = st.toString();
             }
             sendPort.send({'error': error});
           }

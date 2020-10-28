@@ -11,7 +11,7 @@ class FfiMethodCall
 {
   /// Creates a [MethodCall] representing the invocation of [method] with the
   /// specified [arguments].
-  const FfiMethodCall(this.method, [this.arguments]) : assert(method != null);
+  const FfiMethodCall(this.method, [this.arguments]);
 
   /// The name of the method to be called.
   final String method;
@@ -19,7 +19,7 @@ class FfiMethodCall
   /// The arguments for the method.
   ///
   /// Must be a valid value for the [MethodCodec] used.
-  final dynamic arguments;
+  final dynamic? arguments;
 
   @override
   String toString() => '$runtimeType($method, $arguments)';

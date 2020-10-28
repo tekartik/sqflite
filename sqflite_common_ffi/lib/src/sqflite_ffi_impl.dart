@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/src/constant.dart';
@@ -13,7 +12,6 @@ import 'package:synchronized/extension.dart';
 import 'package:synchronized/synchronized.dart';
 
 import 'database_tracker.dart';
-import 'import.dart';
 
 final _debug = false; // devWarning(true); // false
 // final _useIsolate = true; // devWarning(true); // true the default!
@@ -24,7 +22,7 @@ String _prefix = '[sqflite]';
 var ffiDbs = <int, SqfliteFfiDatabase>{};
 
 /// By path
-var ffiSingleInstanceDbs = <String, SqfliteFfiDatabase>{};
+var ffiSingleInstanceDbs = <String?, SqfliteFfiDatabase>{};
 
 var _lastFfiId = 0;
 
@@ -34,23 +32,23 @@ int logLevel = sqfliteLogLevelNone;
 /// Ffi operation.
 class SqfliteFfiOperation {
   /// Method.
-  String method;
+  String? method;
 
   /// SQL command.
-  String sql;
+  String? sql;
 
   /// SQL arguments.
-  List sqlArguments;
+  List? sqlArguments;
 }
 
 /// Ffi database
 class SqfliteFfiDatabase {
   /// ffi database.
   SqfliteFfiDatabase(this.id, this._ffiDb,
-      {@required this.singleInstance,
-      @required this.path,
-      @required this.readOnly,
-      @required this.logLevel}) {
+      {required this.singleInstance,
+      required this.path,
+      required this.readOnly,
+      required this.logLevel}) {
     ffiDbs[id] = this;
   }
 
@@ -61,7 +59,7 @@ class SqfliteFfiDatabase {
   final bool singleInstance;
 
   /// Path.
-  final String path;
+  final String? path;
 
   /// If read-only
   final bool readOnly;
@@ -84,7 +82,7 @@ class SqfliteFfiDatabase {
   }
 
   /// Last insert id.
-  int getLastInsertId() {
+  int? getLastInsertId() {
     // Check the row count first, if 0 it means no insert
     // Fix issue #402
     if (getUpdatedRows() == 0) {
@@ -107,13 +105,13 @@ class SqfliteFfiDatabase {
   }
 
   /// Handle execute.
-  Future handleExecute({String sql, List sqlArguments}) async {
+  Future handleExecute({required String sql, List? sqlArguments}) async {
     logSql(sql: sql, sqlArguments: sqlArguments);
     //database.ffiDb.execute(sql);
     if (sqlArguments?.isNotEmpty ?? false) {
       var preparedStatement = _ffiDb.prepare(sql);
       try {
-        preparedStatement.execute(sqlArguments);
+        preparedStatement.execute(sqlArguments as List<Object>);
         return null;
       } finally {
         preparedStatement.dispose();
@@ -124,14 +122,14 @@ class SqfliteFfiDatabase {
   }
 
   /// Log the result if needed.
-  void logResult({String result}) {
+  void logResult({String? result}) {
     if (result != null && (logLevel >= sqfliteLogLevelSql)) {
       print('$_prefix $result');
     }
   }
 
   /// Log the sql statement if needed.
-  void logSql({String sql, List sqlArguments, String result}) {
+  void logSql({required String sql, List? sqlArguments, String? result}) {
     if (logLevel >= sqfliteLogLevelSql) {
       print(
           '$_prefix $sql${(sqlArguments?.isNotEmpty ?? false) ? ' $sqlArguments' : ''}');
@@ -140,12 +138,12 @@ class SqfliteFfiDatabase {
   }
 
   /// Query handling.
-  Future handleQuery({String sql, List sqlArguments}) async {
+  Future handleQuery({required String sql, List? sqlArguments}) async {
     var preparedStatement = _ffiDb.prepare(sql);
 
     try {
       logSql(sql: sql, sqlArguments: sqlArguments);
-      var result = preparedStatement.select(sqlArguments);
+      var result = preparedStatement.select(sqlArguments as List<Object>);
       logResult(result: 'Found ${result.length} rows');
       return packResult(result);
     } finally {
@@ -181,7 +179,7 @@ class _MultiInstanceLocker {
   final String path;
 
   @override
-  int get hashCode => path?.hashCode ?? 0;
+  int get hashCode => path.hashCode;
 
   @override
   bool operator ==(other) {
@@ -196,7 +194,7 @@ class _MultiInstanceLocker {
 extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Locked per instance unless in memory.
   Future<T> synchronized<T>(Future<T> Function() action) async {
-    var path = getPath() ?? getDatabase()?.path;
+    var path = (getPath() ?? getDatabase()?.path!)!;
     if (isInMemory(path)) {
       return await action();
     }
@@ -211,7 +209,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       e.sqlArguments ??= getSqlArguments();
       if (e.database != null || e.sql != null || e.sqlArguments != null) {
         e.details ??= <String, dynamic>{
-          if (e.database != null) 'database': e.database.toDebugMap(),
+          if (e.database != null) 'database': e.database!.toDebugMap(),
           if (e.sql != null) 'sql': e.sql,
           if (e.sqlArguments != null) 'arguments': e.sqlArguments
         };
@@ -221,18 +219,18 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       return wrapAnyException(wrapSqlException(e));
     } else {
       return wrapAnyException(
-          SqfliteFfiException(code: anyErrorCode, message: e?.toString()));
+          SqfliteFfiException(code: anyErrorCode, message: e.toString()));
     }
   }
 
   /// Main handling.
-  Future handleImpl() async {
+  Future<dynamic?> handleImpl() async {
     // devPrint('$this');
     try {
       if (_debug) {
         print('handle $this');
       }
-      dynamic result = await rawHandle();
+      dynamic? result = await rawHandle();
 
       if (_debug) {
         print('result: $result');
@@ -253,7 +251,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Handle a method call
-  Future<dynamic> rawHandle() async {
+  Future<dynamic?> rawHandle() async {
     switch (method) {
       case 'openDatabase':
         return await handleOpenDatabase();
@@ -295,8 +293,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     var path = arguments['path'] as String;
 
     //devPrint('opening $path');
-    var singleInstance = (arguments['singleInstance'] as bool) ?? false;
-    var readOnly = (arguments['readOnly'] as bool) ?? false;
+    var singleInstance = (arguments['singleInstance'] as bool?) ?? false;
+    var readOnly = (arguments['readOnly'] as bool?) ?? false;
     if (singleInstance) {
       var database = ffiSingleInstanceDbs[path];
       if (database != null) {
@@ -358,7 +356,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Handle close database.
   Future handleCloseDatabase() async {
     var database = getDatabaseOrThrow();
-    if (database.singleInstance ?? false) {
+    if (database.singleInstance) {
       ffiSingleInstanceDbs.remove(database.path);
 
       // Handle hot-restart for single instance
@@ -381,16 +379,16 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Find the database.
-  SqfliteFfiDatabase getDatabase() {
+  SqfliteFfiDatabase? getDatabase() {
     var id = getDatabaseId();
-    var database = ffiDbs[id];
+    var database = ffiDbs[id!];
     return database;
   }
 
   /// Get the id from the arguments.
-  int getDatabaseId() {
+  int? getDatabaseId() {
     if (arguments is Map) {
-      return arguments['id'] as int;
+      return arguments['id'] as int?;
     }
     return null;
   }
@@ -407,10 +405,10 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Return the path argument if any
-  String getPath() {
+  String? getPath() {
     var arguments = this.arguments;
     if (arguments is Map) {
-      var path = arguments['path'] as String;
+      var path = arguments['path'] as String?;
       if ((path != null) && !isInMemory(path) && isRelative(path)) {
         path = join(getDatabasesPath(), path);
       }
@@ -420,10 +418,10 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Check the arguments
-  List getSqlArguments() {
+  List? getSqlArguments() {
     var arguments = this.arguments;
     if (arguments != null) {
-      var sqlArguments = arguments['arguments'] as List;
+      var sqlArguments = arguments['arguments'] as List?;
       if (sqlArguments != null) {
         // Check the argument, make it stricter
         for (var argument in sqlArguments) {
@@ -444,7 +442,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Get the no result argument.
   bool getNoResult() {
-    var noResult = arguments['noResult'] as bool;
+    var noResult = arguments['noResult'] as bool?;
     return noResult ?? false;
   }
 
@@ -452,7 +450,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   ///
   // 'continueOnError': true
   bool getContinueOnError() {
-    var continueOnError = arguments['continueOnError'] as bool;
+    var continueOnError = arguments['continueOnError'] as bool?;
     return continueOnError ?? false;
   }
 
@@ -461,8 +459,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     var operations = <SqfliteFfiOperation>[];
     arguments['operations'].cast<Map>().forEach((operationArgument) {
       operations.add(SqfliteFfiOperation()
-        ..sql = operationArgument['sql'] as String
-        ..sqlArguments = operationArgument['arguments'] as List
+        ..sql = operationArgument['sql'] as String?
+        ..sqlArguments = operationArgument['arguments'] as List?
         ..method = operationArgument['method'] as String);
     });
     return operations;
@@ -478,7 +476,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Wrap SQL exception.
   SqfliteFfiException wrapSqlException(ffi.SqliteException e,
-      {String code, Map<String, dynamic> details}) {
+      {String? code, Map<String, dynamic>? details}) {
     return SqfliteFfiException(
         // Hardcoded
         code: sqliteErrorCode,
@@ -498,7 +496,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Handle options.
   Future handleOptions() async {
     if (arguments is Map) {
-      logLevel = (arguments['logLevel'] as int) ?? sqfliteLogLevelNone;
+      logLevel = (arguments['logLevel'] as int?) ?? sqfliteLogLevelNone;
     }
     return null;
   }
@@ -514,7 +512,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Handle insert.
   Future handleInsert() async {
     var database = getDatabaseOrThrow();
-    if (database.readOnly ?? false) {
+    if (database.readOnly) {
       throw SqfliteFfiException(
           code: sqliteErrorCode, message: 'Database readonly');
     }
@@ -531,7 +529,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Handle udpate.
   Future handleUpdate() async {
     var database = getDatabaseOrThrow();
-    if (database.readOnly ?? false) {
+    if (database.readOnly) {
       throw SqfliteFfiException(
           code: sqliteErrorCode, message: 'Database readonly');
     }
@@ -548,7 +546,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     //devPrint(arguments);
     var database = getDatabaseOrThrow();
     var operations = getOperations();
-    List<Map<String, dynamic>> results;
+    List<Map<String, dynamic>>? results;
     var noResult = getNoResult();
     var continueOnError = getContinueOnError();
     if (!noResult) {
@@ -570,7 +568,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
       void addResult(dynamic result) {
         if (!noResult) {
-          results.add(<String, dynamic>{'result': result});
+          results!.add(<String, dynamic>{'result': result});
         }
       }
 
@@ -583,7 +581,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
         if (continueOnError) {
           if (!noResult) {
-            results.add(getErrorMap(wrap(e)));
+            results!.add(getErrorMap(wrap(e)));
           }
         } else {
           throw wrapAnyException(e)
@@ -597,7 +595,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
           {
             try {
               await database.handleExecute(
-                  sql: operation.sql, sqlArguments: operation.sqlArguments);
+                  sql: operation.sql!, sqlArguments: operation.sqlArguments);
               if (!noResult) {
                 addResult(database.getLastInsertId());
               }
@@ -611,7 +609,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
           {
             try {
               await database.handleExecute(
-                  sql: operation.sql, sqlArguments: operation.sqlArguments);
+                  sql: operation.sql!, sqlArguments: operation.sqlArguments);
               addResult(null);
             } catch (e) {
               addError(e);
@@ -623,7 +621,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
           {
             try {
               var result = await database.handleQuery(
-                  sql: operation.sql, sqlArguments: operation.sqlArguments);
+                  sql: operation.sql!, sqlArguments: operation.sqlArguments!);
               addResult(result);
             } catch (e) {
               addError(e);
@@ -635,7 +633,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
           {
             try {
               await database.handleExecute(
-                  sql: operation.sql, sqlArguments: operation.sqlArguments);
+                  sql: operation.sql!, sqlArguments: operation.sqlArguments);
               if (!noResult) {
                 addResult(database.getUpdatedRows());
               }
@@ -668,7 +666,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
     // Ignore failure
     try {
-      await File(path).delete();
+      await File(path!).delete();
     } catch (_) {}
   }
 }

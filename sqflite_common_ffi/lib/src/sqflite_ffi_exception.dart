@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_impl.dart';
 import 'package:sqflite_common_ffi/src/sqflite_import.dart';
 
@@ -6,28 +5,28 @@ import 'package:sqflite_common_ffi/src/sqflite_import.dart';
 class SqfliteFfiException extends SqfliteDatabaseException {
   /// Ffi exception.
   SqfliteFfiException(
-      {@required this.code,
-      @required String message,
+      {required this.code,
+      required String message,
       this.details,
-      int resultCode})
+      int? resultCode})
       : super(message, details, resultCode: resultCode);
 
   /// The database.
-  SqfliteFfiDatabase database;
+  SqfliteFfiDatabase? database;
 
   /// SQL statement.
-  String sql;
+  String? sql;
 
   /// SQL arguments.
-  List<dynamic> sqlArguments;
+  List<dynamic>? sqlArguments;
 
   /// Error code.
-  final String code;
+  final String? code;
 
   /// Error details.
-  Map<String, dynamic> details;
+  Map<String, dynamic>? details;
 
-  int get _resultCode => getResultCode();
+  int? get _resultCode => getResultCode();
 
   @override
   String toString() {

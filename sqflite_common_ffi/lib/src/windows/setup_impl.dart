@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:path/path.dart';
 
 /// Build a file path.
-String toFilePath(String parent, String path, {bool windows}) {
+String toFilePath(String parent, String path, {bool? windows}) {
   var uri = Uri.parse(path);
   path = uri.toFilePath(windows: windows);
   if (isRelative(path)) {
@@ -14,8 +14,8 @@ String toFilePath(String parent, String path, {bool windows}) {
 }
 
 /// Find our package path in the current project
-String findPackagePath(String currentPath, {bool windows}) {
-  String findPath(File file) {
+String? findPackagePath(String currentPath, {bool? windows}) {
+  String? findPath(File file) {
     var lines = LineSplitter.split(file.readAsStringSync());
     for (var line in lines) {
       var parts = line.split(':');

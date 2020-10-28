@@ -1,6 +1,6 @@
 // environment utils
 
-bool _isRelease;
+bool? _isRelease;
 
 // http://stackoverflow.com/questions/29592826/detect-during-runtime-whether-the-application-is-in-release-mode-or-not
 
@@ -13,7 +13,7 @@ bool get isRelease {
       return true;
     }());
   }
-  return _isRelease;
+  return _isRelease!;
 }
 
 /// Check whether running in debug mode

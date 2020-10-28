@@ -4,7 +4,7 @@ description: sqflite ffi based implementation, for desktop and units tests.
 version: 1.1.1
 
 environment:
-  sdk: ">=2.8.0 <3.0.0"
+  sdk: ">=2.11.0-0 <3.0.0"
 
 dependencies:
   sqlite3: '>=0.1.6 <1.0.0'
@@ -17,3 +17,8 @@ dev_dependencies:
   pedantic:
   test:
   process_run: '>=0.10.7'
+
+# Temp for nnbd support
+dependency_overrides:
+  sqflite_common:
+    path: ../sqflite_common

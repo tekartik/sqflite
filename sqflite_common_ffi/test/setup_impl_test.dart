@@ -25,7 +25,7 @@ void main() {
     });
     test('findPackagePath', () {
       // Find our path
-      var path = findPackagePath(Directory.current.path);
+      var path = findPackagePath(Directory.current.path)!;
       // devPrint(path);
       expect(Directory(path).existsSync(), isTrue);
       expect(File(packageGetSqlite3DllPath(path)).existsSync(), isTrue);

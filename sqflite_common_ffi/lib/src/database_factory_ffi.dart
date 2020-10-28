@@ -6,7 +6,7 @@ import 'package:synchronized/synchronized.dart';
 
 import 'isolate.dart';
 
-DatabaseFactory _databaseFactoryFfiImpl;
+DatabaseFactory? _databaseFactoryFfiImpl;
 
 /// The Ffi database factory.
 DatabaseFactory get databaseFactoryFfiImpl =>
@@ -19,7 +19,7 @@ DatabaseFactory get databaseFactoryFfiImpl =>
 
 bool _debug = false; // devWarning(true);
 
-SqfliteIsolate _isolate;
+SqfliteIsolate? _isolate;
 final _isolateLock = Lock();
 
 /// Extension on MethodCall
@@ -51,6 +51,6 @@ extension FfiMethodCallHandler on FfiMethodCall {
         _isolate ??= await createIsolate();
       });
     }
-    return await _isolate.handle(this);
+    return await _isolate!.handle(this);
   }
 }
