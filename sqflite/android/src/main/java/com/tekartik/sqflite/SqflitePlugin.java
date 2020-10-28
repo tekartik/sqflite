@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
 
@@ -1040,7 +1041,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
     private class BgResult implements Result {
         // Caller handler
-        final Handler handler = new Handler();
+        final Handler handler = new Handler(Looper.getMainLooper());
         private final Result result;
 
         private BgResult(Result result) {
