@@ -18,7 +18,7 @@ void main() {
 
 /// Mock the result based on the method used
 dynamic? mockResult(String method) {
-  print(method);
+  // print(method);
   switch (method) {
     case methodOpenDatabase:
       return 1;
@@ -215,14 +215,14 @@ void run() {
             as MockDatabase;
         await db.execute('BEGIN TRANSACTION');
         await db.close();
-        expect(
-            db.methods, <String>['openDatabase', 'execute', 'closeDatabase']);
+        expect(db.methods,
+            <String>['openDatabase', 'execute', 'execute', 'closeDatabase']);
         expect(db.argumentsLists.first, <String, dynamic>{
           'path': absolute(join(await mockDatabaseFactory.getDatabasesPath(),
               'rollback_transaction.db')),
           'singleInstance': false
         });
-        expect(db.argumentsLists[1], <String, dynamic>{
+        expect(db.argumentsLists[2], <String, dynamic>{
           'sql': 'ROLLBACK',
           'arguments': null,
           'id': 1,
@@ -528,7 +528,7 @@ void run() {
 
         await Future.wait<dynamic>(<Future<dynamic>>[future1, future2]);
         // check ready
-        await db.transaction<dynamic>(((_) => null!));
+        await db.transaction<void>(((_) async {}));
       });
 
       test('concurrent 2', () async {
@@ -613,7 +613,7 @@ void run() {
 
         await Future.wait<dynamic>(<Future<dynamic>>[future1, future2]);
         // check ready
-        await db.transaction<dynamic>(((_) => null!));
+        await db.transaction<void>(((_) async {}));
       });
 
       test('concurrent 2', () async {
@@ -661,7 +661,7 @@ void run() {
 
         await Future.wait<dynamic>(<Future<dynamic>>[future1, future2]);
         // check ready
-        await db.transaction<dynamic>(((_) => null!));
+        await db.transaction<void>(((_) async {}));
       });
     });
 

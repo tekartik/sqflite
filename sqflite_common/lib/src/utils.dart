@@ -28,7 +28,6 @@ bool debugModeOn = false;
 /// True if entering, false if leaving, null otherwise.
 bool? getSqlInTransactionArgument(String sql) {
   final lowerSql = sql.trim().toLowerCase();
-
   if (lowerSql.startsWith('begin')) {
     return true;
   } else if (lowerSql.startsWith('commit') || lowerSql.startsWith('rollback')) {

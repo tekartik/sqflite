@@ -81,7 +81,7 @@ void main() {
         [
           'query',
           {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
-          null
+          {}
         ],
         [
           'execute',
@@ -96,7 +96,7 @@ void main() {
         [
           'query',
           {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
-          null
+          {}
         ],
         [
           'execute',

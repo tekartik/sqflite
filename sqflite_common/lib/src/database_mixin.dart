@@ -367,7 +367,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         inTransactionChange = false;
         inTransaction = false;
       }
-
       return invokeExecute<T>(sql, arguments,
           inTransactionChange: inTransactionChange);
     });
@@ -585,7 +584,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// rollback any pending transaction if needed
   Future<void> _closeDatabase(int? databaseId) async {
     await _closeLock.synchronized(() async {
-      // devPrint('_closeDatabase closing $databaseId');
+      // devPrint('_closeDatabase closing $databaseId inTransaction $inTransaction isClosed $isClosed readOnly $readOnly');
       if (!isClosed) {
         // Mark as closed now
         isClosed = true;
@@ -594,7 +593,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           // Grab lock to prevent future access
           // At least we know no other request will be ran
           try {
-            await txnWriteSynchronized(txn!, (Transaction? txn) async {
+            await txnWriteSynchronized(txn, (Transaction? txn) async {
               // Special trick to cancel any pending transaction
               try {
                 await invokeExecute<dynamic>('ROLLBACK', null,
@@ -603,7 +602,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
                 // devPrint('rollback error $_');
               }
             });
-          } catch (_) {}
+          } catch (e) {
+            print('Error $e before rollback');
+          }
         }
 
         // close for good

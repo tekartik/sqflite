@@ -55,7 +55,7 @@ dynamic fromRawOperationResult(Map<dynamic, dynamic> rawOperationResultMap) {
 }
 
 /// Native result to a map list as expected by the sqflite API
-List<Map<String, dynamic>> queryResultToList(dynamic? queryResult) {
+List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
   if (queryResult is Map) {
     return queryResultSetFromMap(queryResult);
   }
