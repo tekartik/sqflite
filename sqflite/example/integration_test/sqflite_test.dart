@@ -9,21 +9,13 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_example/src/common_import.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('sqflite', () {
     group('open', () {
-      test('open null', () async {
-        var exception;
-        try {
-          await openDatabase(null!);
-        } catch (e) {
-          exception = e;
-        }
-        expect(exception, isNotNull);
-      });
       test('missing directory', () async {
         //await devVerbose();
         var path = join('test_missing_sub_dir', 'simple.db');
@@ -87,12 +79,13 @@ void main() {
     /// An empty file is a valid empty sqlite file
     Future<bool> isDatabase(String path) async {
       var isDatabase = false;
-      var db = await openReadOnlyDatabase(path);
+      Database? db;
       try {
+        db = await openReadOnlyDatabase(path);
         await db.getVersion();
         isDatabase = true;
       } catch (_) {} finally {
-        await db.close();
+        await db?.close();
       }
       return isDatabase;
     }

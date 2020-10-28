@@ -1,0 +1,10 @@
+# Defines a default set of lint rules enforced for
+# projects at Google. For details and rationale,
+# see https://github.com/dart-lang/pedantic#enabled-lints.
+include: package:pedantic/analysis_options.yaml
+
+analyzer:
+  enable-experiment:
+    - non-nullable
+  strong-mode:
+    implicit-casts: false

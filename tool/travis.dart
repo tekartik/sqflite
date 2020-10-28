@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:process_run/shell.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -18,6 +20,9 @@ Future main() async {
       'sqflite',
       'sqflite_common',
       'sqflite_common_ffi',
+      'sqflite/example',
+      'sqflite_test_app',
+      'sqflite_common_test',
     ]) {
       shell = shell.pushd(dir);
       await shell.run('''
@@ -29,31 +34,6 @@ Future main() async {
       shell = shell.popd();
     }
   } else {
-    for (var dir in [
-      'sqflite/example',
-      'sqflite_test_app',
-    ]) {
-      shell = shell.pushd(dir);
-      await shell.run('''
-    
-    flutter packages get
-    dart tool/travis.dart
-    
-        ''');
-      shell = shell.popd();
-    }
-
-    for (var dir in [
-      'sqflite_common_test',
-    ]) {
-      shell = shell.pushd(dir);
-      await shell.run('''
-    
-    pub get
-    dart tool/travis.dart
-    
-        ''');
-      shell = shell.popd();
-    }
+    stderr.writeln('ci test skipped for $dartVersion');
   }
 }

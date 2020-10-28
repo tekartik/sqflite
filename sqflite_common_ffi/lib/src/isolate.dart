@@ -37,7 +37,7 @@ class SqfliteIsolate {
       var error = response['error'];
       if (error is Map) {
         throw SqfliteFfiException(
-            code: error['code'] as String?,
+            code: error['code'] as String,
             message: error['message'] as String,
             details: (error['details'] as Map?)?.cast<String, dynamic>(),
             resultCode: error['resultCode'] as int);

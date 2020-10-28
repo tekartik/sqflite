@@ -15,8 +15,8 @@ Future main() async {
     await linux_setup.main();
   }
 
-  final enableNnbd = dartVersion > Version(2, 11, 0, pre: '0');
-  if (enableNnbd) {
+  final nnbdEnabled = dartVersion > Version(2, 11, 0, pre: '0');
+  if (nnbdEnabled) {
     // Temp dart extra option. To remove once nnbd supported on stable without flags
     final dartExtraOptions = '--enable-experiment=non-nullable';
     // Needed for run and test

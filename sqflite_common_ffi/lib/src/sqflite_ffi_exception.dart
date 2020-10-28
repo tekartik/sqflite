@@ -21,7 +21,7 @@ class SqfliteFfiException extends SqfliteDatabaseException {
   List<dynamic>? sqlArguments;
 
   /// Error code.
-  final String? code;
+  final String code;
 
   /// Error details.
   Map<String, dynamic>? details;

@@ -2,7 +2,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
 import 'package:sqflite_common/src/method_call.dart';
 
-DatabaseFactory _databaseFactoryWebImpl;
+DatabaseFactory? _databaseFactoryWebImpl;
 
 /// The Ffi database factory.
 DatabaseFactory get databaseFactoryWeb =>

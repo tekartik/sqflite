@@ -161,7 +161,7 @@ void run(SqfliteTestContext context) {
       try {
         await db.execute('ALTER TABLE Test ADD COLUMN name TEXT');
       } on DatabaseException catch (e) {
-        // devPrint(e);
+        // Integration test, not handled yet
         // Ffi: SqfliteFfiException(sqlite_error1, , SqliteException(1): duplicate column name: name} DatabaseException(SqliteException(1): duplicate column name: name) sql 'ALTER TABLE Test ADD COLUMN name TEXT' {details: {database: {path: :memory:, id: 1, readOnly: false, singleInstance: true}, sql: ALTER TABLE Test ADD COLUMN name TEXT}}
         // Android DatabaseException(duplicate column name: name (code 1 SQLITE_ERROR): , while compiling: ALTER TABLE Test ADD COLUMN name TEXT) sql 'ALTER TABLE Test ADD COLUMN name TEXT' args []}
         expect(e.getResultCode(), 1, reason: 'error $e');

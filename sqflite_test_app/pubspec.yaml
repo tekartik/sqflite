@@ -14,7 +14,7 @@ description: sqflite test application.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.8.0-0 <3.0.0"
+  sdk: ">=2.10.0-0 <3.0.0"
 
 dependencies:
   flutter:
@@ -34,6 +34,7 @@ dev_dependencies:
     sdk: flutter
   flutter_driver:
     sdk: flutter
+  integration_test:
   sqflite_common_test:
     path: ../sqflite_common_test
   test:
