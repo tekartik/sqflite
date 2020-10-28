@@ -25,7 +25,7 @@ abstract class SqfliteDatabaseFactory
   void removeDatabaseOpenHelper(String path);
 
   @override
-  Future<Database> openDatabase(String path, {OpenDatabaseOptions options});
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options});
 
   /// Close the database.
   ///

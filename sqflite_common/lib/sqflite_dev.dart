@@ -11,7 +11,7 @@ extension SqfliteDatabaseFactoryDev on DatabaseFactory {
   /// Deprecated for temp usage only
   @deprecated
   Future<void> setLogLevel(int logLevel) async {
-    await setOptions(SqfliteOptions(logLevel: logLevel ?? sqfliteLogLevelNone));
+    await setOptions(SqfliteOptions(logLevel: logLevel));
   }
 
   /// Testing only.
@@ -26,7 +26,7 @@ extension SqfliteDatabaseFactoryDev on DatabaseFactory {
   /// Compat set Databases path.
   ///
   /// setDatabasesPath will be exported later (post 1.3.0)
-  Future setDatabasesPath(String path) async {
+  Future setDatabasesPath(String? path) async {
     await (this as SqfliteDatabaseFactoryMixin).setDatabasesPath(path);
   }
 }

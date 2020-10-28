@@ -3,6 +3,8 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/constant.dart';
 import 'package:sqflite_common/src/mixin/factory.dart';
 
+import 'src_mixin_test.dart';
+
 void main() {
   group('mixin_factory', () {
     test('public', () {
@@ -15,7 +17,7 @@ void main() {
       final methods = <String>[];
       final factory = buildDatabaseFactory(
           invokeMethod: (String method, [dynamic arguments]) async {
-        dynamic result;
+        final dynamic? result = mockResult(method);
         methods.add(method);
         return result;
       });

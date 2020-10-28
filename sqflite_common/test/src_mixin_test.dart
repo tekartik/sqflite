@@ -11,19 +11,31 @@ import 'package:sqflite_common/src/open_options.dart';
 import 'package:sqflite_common/utils/utils.dart';
 
 void main() {
-  group('mixin_flutter', () {
+  group('src_mixin', () {
     run();
   });
 }
 
+/// Mock the result based on the method used
+dynamic? mockResult(String method) {
+  print(method);
+  switch (method) {
+    case methodOpenDatabase:
+      return 1;
+    case methodQuery:
+      return <String, dynamic>{};
+  }
+  return null;
+}
+
 class MockDatabase extends SqfliteDatabaseBase {
-  MockDatabase(SqfliteDatabaseOpenHelper openHelper, [String name])
+  MockDatabase(SqfliteDatabaseOpenHelper openHelper, [String name = 'mock'])
       : super(openHelper, name);
 
-  int version;
+  int? version;
   List<String> methods = <String>[];
-  List<String> sqls = <String>[];
-  List<Map<String, dynamic>> argumentsLists = <Map<String, dynamic>>[];
+  List<String?> sqls = <String?>[];
+  List<Map<String, dynamic>?> argumentsLists = <Map<String, dynamic>?>[];
 
   @override
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
@@ -36,16 +48,16 @@ class MockDatabase extends SqfliteDatabaseBase {
         final operations =
             arguments[paramOperations] as List<Map<String, dynamic>>;
         for (var operation in operations) {
-          final sql = operation[paramSql] as String;
+          final sql = operation[paramSql] as String?;
           sqls.add(sql);
         }
       } else {
-        final sql = arguments[paramSql] as String;
+        final sql = arguments[paramSql] as String?;
         sqls.add(sql);
 
         // Basic version handling
         if (sql?.startsWith('PRAGMA user_version = ') == true) {
-          version = int.tryParse(sql.split(' ').last);
+          version = int.tryParse(sql!.split(' ').last);
         } else if (sql == 'PRAGMA user_version') {
           return <Map<String, dynamic>>[
             <String, dynamic>{'user_version': version}
@@ -57,7 +69,7 @@ class MockDatabase extends SqfliteDatabaseBase {
       sqls.add(null);
     }
     //devPrint('$method $arguments');
-    return null;
+    return mockResult(method) as T;
   }
 }
 
@@ -67,32 +79,30 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   final Map<String, MockDatabase> databases = <String, MockDatabase>{};
 
   @override
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]) {
+  Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
     methods.add(method);
     argumentsList.add(arguments);
-    return null;
+    return mockResult(method) as T;
   }
 
   SqfliteDatabase newEmptyDatabase() {
-    final helper = SqfliteDatabaseOpenHelper(this, null, OpenDatabaseOptions());
-    final db = helper.newDatabase(null);
+    final path = 'empty';
+    final helper = SqfliteDatabaseOpenHelper(this, path, OpenDatabaseOptions());
+    final db = helper.newDatabase(path)..id = 1;
     return db;
   }
 
   @override
   SqfliteDatabase newDatabase(
       SqfliteDatabaseOpenHelper openHelper, String path) {
-    if (path != null) {
-      final existing = databases[path];
-      final db = MockDatabase(openHelper, path);
-      // Copy version
-      db.version = existing?.version;
-      // Last replaces
-      databases[path] = db;
+    final existing = databases[path];
+    final db = MockDatabase(openHelper, path);
+    // Copy version
+    db.version = existing?.version;
+    // Last replaces
+    databases[path] = db;
 
-      return db;
-    }
-    return MockDatabase(openHelper, path);
+    return db;
   }
 
   @override
@@ -105,9 +115,9 @@ class MockDatabaseFactoryEmpty extends SqfliteDatabaseFactoryBase {
   final List<String> methods = <String>[];
 
   @override
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]) {
+  Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
     methods.add(method);
-    return null;
+    return mockResult(method) as T;
   }
 }
 
@@ -205,17 +215,17 @@ void run() {
             as MockDatabase;
         await db.execute('BEGIN TRANSACTION');
         await db.close();
-        expect(db.methods,
-            <String>['openDatabase', 'execute', 'execute', 'closeDatabase']);
+        expect(
+            db.methods, <String>['openDatabase', 'execute', 'closeDatabase']);
         expect(db.argumentsLists.first, <String, dynamic>{
           'path': absolute(join(await mockDatabaseFactory.getDatabasesPath(),
               'rollback_transaction.db')),
           'singleInstance': false
         });
-        expect(db.argumentsLists[2], <String, dynamic>{
+        expect(db.argumentsLists[1], <String, dynamic>{
           'sql': 'ROLLBACK',
           'arguments': null,
-          'id': null,
+          'id': 1,
           'inTransaction': false
         });
       });
@@ -239,7 +249,7 @@ void run() {
             )) as MockDatabase;
         await db.close();
 
-        expect(db.sqls, <String>[
+        expect(db.sqls, <String?>[
           null,
           'PRAGMA user_version',
           'BEGIN EXCLUSIVE',
@@ -256,7 +266,7 @@ void run() {
         await db.close();
 
         // Re-opening, no transaction is created
-        expect(db.sqls, <String>[null, 'PRAGMA user_version', null]);
+        expect(db.sqls, <String?>[null, 'PRAGMA user_version', null]);
       });
     });
     group('openTransaction', () {
@@ -283,7 +293,7 @@ void run() {
           'execute',
           'closeDatabase'
         ]);
-        expect(db.sqls, <String>[
+        expect(db.sqls, <String?>[
           null,
           'PRAGMA user_version',
           'BEGIN EXCLUSIVE',
@@ -308,7 +318,7 @@ void run() {
                 })) as MockDatabase;
 
         await db.close();
-        expect(db.sqls, <String>[
+        expect(db.sqls, <String?>[
           null,
           'test1',
           'BEGIN IMMEDIATE',
@@ -335,7 +345,7 @@ void run() {
                 })) as MockDatabase;
 
         await db.close();
-        expect(db.sqls, <String>[
+        expect(db.sqls, <String?>[
           null,
           'PRAGMA user_version',
           'BEGIN EXCLUSIVE',
@@ -359,7 +369,7 @@ void run() {
                   batch.execute('test1');
                   await batch.commit();
                 },
-                onCreate: (Database db, _) async {
+                onCreate: (db, _) async {
                   final batch = db.batch();
                   batch.execute('test2');
                   await batch.commit(noResult: true);
@@ -371,7 +381,7 @@ void run() {
                 })) as MockDatabase;
 
         await db.close();
-        expect(db.sqls, <String>[
+        expect(db.sqls, <String?>[
           null,
           'BEGIN IMMEDIATE',
           'test1',
@@ -396,7 +406,7 @@ void run() {
           <String, dynamic>{
             'sql': 'BEGIN IMMEDIATE',
             'arguments': null,
-            'id': null,
+            'id': 1,
             'inTransaction': true
           },
           <String, dynamic>{
@@ -407,25 +417,25 @@ void run() {
                 'arguments': null
               }
             ],
-            'id': null
+            'id': 1
           },
           <String, dynamic>{
             'sql': 'COMMIT',
             'arguments': null,
-            'id': null,
+            'id': 1,
             'inTransaction': false
           },
-          {'sql': 'PRAGMA user_version', 'arguments': null, 'id': null},
+          {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
           <String, dynamic>{
             'sql': 'BEGIN EXCLUSIVE',
             'arguments': null,
             'inTransaction': true,
-            'id': null
+            'id': 1
           },
           <String, dynamic>{
             'sql': 'PRAGMA user_version',
             'arguments': null,
-            'id': null
+            'id': 1
           },
           <String, dynamic>{
             'operations': <Map<String, dynamic>>[
@@ -435,24 +445,24 @@ void run() {
                 'arguments': null
               }
             ],
-            'id': null,
+            'id': 1,
             'noResult': true
           },
           <String, dynamic>{
             'sql': 'PRAGMA user_version = 1',
             'arguments': null,
-            'id': null
+            'id': 1
           },
           <String, dynamic>{
             'sql': 'COMMIT',
             'arguments': null,
-            'id': null,
+            'id': 1,
             'inTransaction': false
           },
           <String, dynamic>{
             'sql': 'BEGIN IMMEDIATE',
             'arguments': null,
-            'id': null,
+            'id': 1,
             'inTransaction': true,
           },
           <String, dynamic>{
@@ -463,16 +473,16 @@ void run() {
                 'arguments': null
               }
             ],
-            'id': null,
+            'id': 1,
             'continueOnError': true
           },
           <String, dynamic>{
             'sql': 'COMMIT',
             'arguments': null,
-            'id': null,
+            'id': 1,
             'inTransaction': false
           },
-          <String, dynamic>{'id': null}
+          <String, dynamic>{'id': 1}
         ]);
       });
     });
@@ -518,7 +528,7 @@ void run() {
 
         await Future.wait<dynamic>(<Future<dynamic>>[future1, future2]);
         // check ready
-        await db.transaction<dynamic>((_) => null);
+        await db.transaction<dynamic>(((_) => null!));
       });
 
       test('concurrent 2', () async {
@@ -603,7 +613,7 @@ void run() {
 
         await Future.wait<dynamic>(<Future<dynamic>>[future1, future2]);
         // check ready
-        await db.transaction<dynamic>((_) => null);
+        await db.transaction<dynamic>(((_) => null!));
       });
 
       test('concurrent 2', () async {
@@ -651,7 +661,7 @@ void run() {
 
         await Future.wait<dynamic>(<Future<dynamic>>[future1, future2]);
         // check ready
-        await db.transaction<dynamic>((_) => null);
+        await db.transaction<dynamic>(((_) => null!));
       });
     });
 
@@ -675,7 +685,7 @@ void run() {
           'execute',
           'closeDatabase'
         ]);
-        expect(db.sqls, <String>[
+        expect(db.sqls, <String?>[
           null,
           'BEGIN IMMEDIATE',
           'test',
@@ -708,7 +718,7 @@ void run() {
           'closeDatabase'
         ]);
         expect(db.sqls,
-            <String>[null, 'BEGIN IMMEDIATE', 'test', 'test', 'COMMIT', null]);
+            <String?>[null, 'BEGIN IMMEDIATE', 'test', 'test', 'COMMIT', null]);
       });
     });
 

@@ -3,11 +3,11 @@ import 'package:sqflite_common/src/utils.dart' as impl;
 
 /// helper to get the first int value in a query
 /// Useful for COUNT(*) queries
-int firstIntValue(List<Map<String, dynamic>> list) {
-  if (list != null && list.isNotEmpty) {
+int? firstIntValue(List<Map<String, dynamic>> list) {
+  if (list.isNotEmpty) {
     final firstRow = list.first;
     if (firstRow.isNotEmpty) {
-      return parseInt(firstRow.values?.first);
+      return parseInt(firstRow.values.first);
     }
   }
   return null;
@@ -30,20 +30,20 @@ String hex(List<int> bytes) {
 ///
 /// Used internally.
 @deprecated
-void Function() get lockWarningCallback => impl.lockWarningCallback;
+void Function()? get lockWarningCallback => impl.lockWarningCallback;
 
 /// Deprecated since 1.1.7+.
 @deprecated
-set lockWarningCallback(void Function() callback) =>
+set lockWarningCallback(void Function()? callback) =>
     impl.lockWarningCallback = callback;
 
 /// Deprecated since 1.1.7+.
 @deprecated
-Duration get lockWarningDuration => impl.lockWarningDuration;
+Duration? get lockWarningDuration => impl.lockWarningDuration;
 
 /// Deprecated since 1.1.7+.
 @deprecated
-set lockWarningDuration(Duration duration) =>
+set lockWarningDuration(Duration? duration) =>
     impl.lockWarningDuration = duration;
 
 /// Change database lock behavior mechanism.
@@ -51,7 +51,7 @@ set lockWarningDuration(Duration duration) =>
 /// Default behavior is to print a message if a command hangs for more than
 /// 10 seconds. Set en empty callback (not null) to prevent it from being
 /// displayed.
-void setLockWarningInfo({Duration duration, void Function() callback}) {
+void setLockWarningInfo({Duration? duration, void Function()? callback}) {
   impl.lockWarningDuration = duration ?? impl.lockWarningDuration;
   impl.lockWarningCallback = callback ?? impl.lockWarningCallback;
 }

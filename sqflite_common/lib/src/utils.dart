@@ -1,7 +1,7 @@
 import 'constant.dart' as constant;
 
 /// Try to convert anything (int, String) to an int.
-int parseInt(Object object) {
+int? parseInt(Object? object) {
   if (object is int) {
     return object;
   } else if (object is String) {
@@ -26,16 +26,13 @@ void devPrint(Object object) {
 bool debugModeOn = false;
 
 /// True if entering, false if leaving, null otherwise.
-bool getSqlInTransactionArgument(String sql) {
-  if (sql != null) {
-    final lowerSql = sql.trim().toLowerCase();
+bool? getSqlInTransactionArgument(String sql) {
+  final lowerSql = sql.trim().toLowerCase();
 
-    if (lowerSql.startsWith('begin')) {
-      return true;
-    } else if (lowerSql.startsWith('commit') ||
-        lowerSql.startsWith('rollback')) {
-      return false;
-    }
+  if (lowerSql.startsWith('begin')) {
+    return true;
+  } else if (lowerSql.startsWith('commit') || lowerSql.startsWith('rollback')) {
+    return false;
   }
   return null;
 }
@@ -45,12 +42,12 @@ bool getSqlInTransactionArgument(String sql) {
 /// Non final for changing it during testing.
 ///
 /// If a database called is delayed by this duration, a print will happen.
-Duration lockWarningDuration = constant.lockWarningDurationDefault;
+Duration? lockWarningDuration = constant.lockWarningDurationDefault;
 
 /// Default lock warning callback.
 ///
 /// Use [setLockWarningInfo] instead.
-void Function() lockWarningCallback = () {
+void Function()? lockWarningCallback = () {
   print('Warning database has been locked for $lockWarningDuration. '
       'Make sure you always use the transaction object for database operations during a transaction');
 };

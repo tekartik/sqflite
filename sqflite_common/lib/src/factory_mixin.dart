@@ -23,14 +23,11 @@ mixin SqfliteDatabaseFactoryMixin
 
   /// Invoke native method and wrap exception.
   Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]) =>
-      wrapDatabaseException(() => invokeMethod(method, arguments));
+      wrapDatabaseException<T>(() => invokeMethod(method, arguments));
 
   /// Open helpers for single instances only.
   Map<String, SqfliteDatabaseOpenHelper> databaseOpenHelpers =
       <String, SqfliteDatabaseOpenHelper>{};
-
-  /// Helper for null path database.
-  SqfliteDatabaseOpenHelper nullDatabaseOpenHelper;
 
   // open lock mechanism
   @override
@@ -45,11 +42,7 @@ mixin SqfliteDatabaseFactoryMixin
 
   @override
   void removeDatabaseOpenHelper(String path) {
-    if (path == null) {
-      nullDatabaseOpenHelper = null;
-    } else {
-      databaseOpenHelpers.remove(path);
-    }
+    databaseOpenHelpers.remove(path);
   }
 
   // Close an instance of the database
@@ -58,39 +51,31 @@ mixin SqfliteDatabaseFactoryMixin
     // Global factory lock during close
     return lock.synchronized(() async {
       await (database as SqfliteDatabaseMixin)
-          .openHelper
+          .openHelper!
           .closeDatabase(database);
-      if (database?.options?.singleInstance != false) {
+      if (database.options?.singleInstance != false) {
         removeDatabaseOpenHelper(database.path);
       }
     });
   }
 
   @override
-  Future<Database> openDatabase(String path, {OpenDatabaseOptions options}) {
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options}) {
     // Global factory lock during open
     return lock.synchronized(() async {
       path = await fixPath(path);
       options ??= SqfliteOpenDatabaseOptions();
 
       if (options?.singleInstance != false) {
-        SqfliteDatabaseOpenHelper getExistingDatabaseOpenHelper(String path) {
-          if (path != null) {
-            return databaseOpenHelpers[path];
-          } else {
-            return nullDatabaseOpenHelper;
-          }
+        SqfliteDatabaseOpenHelper? getExistingDatabaseOpenHelper(String path) {
+          return databaseOpenHelpers[path];
         }
 
-        void setDatabaseOpenHelper(SqfliteDatabaseOpenHelper helper) {
-          if (path == null) {
-            nullDatabaseOpenHelper = helper;
+        void setDatabaseOpenHelper(SqfliteDatabaseOpenHelper? helper) {
+          if (helper == null) {
+            databaseOpenHelpers.remove(path);
           } else {
-            if (helper == null) {
-              databaseOpenHelpers.remove(path);
-            } else {
-              databaseOpenHelpers[path] = helper;
-            }
+            databaseOpenHelpers[path] = helper;
           }
         }
 
@@ -102,7 +87,8 @@ mixin SqfliteDatabaseFactoryMixin
           setDatabaseOpenHelper(databaseOpenHelper);
         }
         try {
-          return await databaseOpenHelper.openDatabase();
+          return await (databaseOpenHelper!.openDatabase()
+              as FutureOr<Database>);
         } catch (e) {
           // If first open fail remove the reference
           if (firstOpen) {
@@ -113,7 +99,7 @@ mixin SqfliteDatabaseFactoryMixin
       } else {
         final databaseOpenHelper =
             SqfliteDatabaseOpenHelper(this, path, options);
-        return await databaseOpenHelper.openDatabase();
+        return await (databaseOpenHelper.openDatabase() as FutureOr<Database>);
       }
     });
   }
@@ -136,12 +122,12 @@ mixin SqfliteDatabaseFactoryMixin
         methodDatabaseExists, <String, dynamic>{paramPath: path});
   }
 
-  String _databasesPath;
+  String? _databasesPath;
 
   @override
-  Future<String> getDatabasesPath() async {
+  Future<String?> getDatabasesPath() async {
     if (_databasesPath == null) {
-      final path = await safeInvokeMethod<String>(methodGetDatabasesPath);
+      final path = await safeInvokeMethod<String?>(methodGetDatabasesPath);
 
       if (path == null) {
         throw SqfliteDatabaseException('getDatabasesPath is null', null);
@@ -152,18 +138,17 @@ mixin SqfliteDatabaseFactoryMixin
   }
 
   /// Set the databases path.
-  Future<void> setDatabasesPath(String path) async {
+  Future<void> setDatabasesPath(String? path) async {
     _databasesPath = path;
   }
 
   /// path must be non null
   Future<String> fixPath(String path) async {
-    assert(path != null, 'path cannot be null');
     if (path == inMemoryDatabasePath) {
       // nothing
     } else {
       if (isRelative(path)) {
-        path = join(await getDatabasesPath(), path);
+        path = join(await (getDatabasesPath() as FutureOr<String>), path);
       }
       path = absolute(normalize(path));
     }
@@ -172,7 +157,7 @@ mixin SqfliteDatabaseFactoryMixin
 
   /// True if it is a real path
   bool isPath(String path) {
-    return (path != null) && (path != inMemoryDatabasePath);
+    return (path != inMemoryDatabasePath);
   }
 
   /// Debug information.
@@ -184,15 +169,15 @@ mixin SqfliteDatabaseFactoryMixin
     if (databasesMap is Map) {
       info.databases = databasesMap.map((dynamic id, dynamic info) {
         final dbInfo = SqfliteDatabaseDebugInfo();
-        final databaseId = id?.toString();
+        final databaseId = id.toString();
 
         if (info is Map) {
-          dbInfo?.fromMap(info);
+          dbInfo.fromMap(info);
         }
         return MapEntry<String, SqfliteDatabaseDebugInfo>(databaseId, dbInfo);
       });
     }
-    info.logLevel = map[paramLogLevel] as int;
+    info.logLevel = map[paramLogLevel] as int?;
     return info;
   }
 }
@@ -207,19 +192,19 @@ const String paramDatabases = 'databases';
 /// Debug information
 class SqfliteDatabaseDebugInfo {
   /// Database path
-  String path;
+  String? path;
 
   /// Whether the database was open as a single instance
-  bool singleInstance;
+  bool? singleInstance;
 
   /// Log level
-  int logLevel;
+  int? logLevel;
 
   /// Deserializer
   void fromMap(Map<dynamic, dynamic> map) {
     path = map[paramPath]?.toString();
-    singleInstance = map[paramSingleInstance] as bool;
-    logLevel = map[paramLogLevel] as int;
+    singleInstance = map[paramSingleInstance] as bool?;
+    logLevel = map[paramLogLevel] as int?;
   }
 
   /// Debug formatting helper
@@ -241,16 +226,16 @@ class SqfliteDatabaseDebugInfo {
 /// Internal debug info
 class SqfliteDebugInfo {
   /// List of databases
-  Map<String, SqfliteDatabaseDebugInfo> databases;
+  Map<String, SqfliteDatabaseDebugInfo>? databases;
 
   /// global log level (set for new opened databases)
-  int logLevel;
+  int? logLevel;
 
   /// Debug formatting helper
   Map<String, dynamic> toDebugMap() {
     final map = <String, dynamic>{};
     if (databases != null) {
-      map[paramDatabases] = databases.map(
+      map[paramDatabases] = databases!.map(
           (String key, SqfliteDatabaseDebugInfo dbInfo) =>
               MapEntry<String, Map<String, dynamic>>(key, dbInfo.toDebugMap()));
     }

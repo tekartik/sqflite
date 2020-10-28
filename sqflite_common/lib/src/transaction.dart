@@ -17,7 +17,7 @@ class SqfliteTransaction
   SqfliteDatabase get db => database;
 
   /// True if a transaction is successfull
-  bool successful;
+  bool? successful;
 
   @override
   SqfliteTransaction get txn => this;

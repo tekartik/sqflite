@@ -5,8 +5,7 @@ import 'package:meta/meta.dart';
 class SqfliteMethodCall {
   /// Creates a [MethodCall] representing the invocation of [method] with the
   /// specified [arguments].
-  const SqfliteMethodCall(this.method, [this.arguments])
-      : assert(method != null);
+  const SqfliteMethodCall(this.method, [this.arguments]);
 
   /// Build from a map.
   factory SqfliteMethodCall.fromMap(Map map) {

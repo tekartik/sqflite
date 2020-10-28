@@ -3,7 +3,7 @@ import 'package:sqflite_common/src/mixin/factory.dart';
 import 'package:test/test.dart';
 
 class MockMethodCall {
-  String expectedMethod;
+  String? expectedMethod;
   dynamic expectedArguments;
   dynamic response;
 
@@ -22,7 +22,7 @@ class MockScenario {
   }
 
   final DatabaseFactory factory;
-  List<MockMethodCall> methodsCalls;
+  late List<MockMethodCall> methodsCalls;
   var index = 0;
   dynamic exception;
 
@@ -33,7 +33,7 @@ class MockScenario {
 }
 
 MockScenario startScenario(List<List> data) {
-  MockScenario scenario;
+  late MockScenario scenario;
   final databaseFactoryMock = buildDatabaseFactory(
       invokeMethod: (String method, [dynamic arguments]) async {
     final index = scenario.index++;

@@ -28,9 +28,9 @@ QueryResultSet queryResultSetFromMap(Map<dynamic, dynamic> queryResultSetMap) {
 /// Native exception wrapper
 DatabaseException databaseExceptionFromOperationError(
     Map<dynamic, dynamic> errorMap) {
-  final message = errorMap[paramErrorMessage] as String;
+  final message = errorMap[paramErrorMessage] as String?;
   return SqfliteDatabaseException(message, errorMap[paramErrorData],
-      resultCode: errorMap[paramErrorResultCode] as int);
+      resultCode: errorMap[paramErrorResultCode] as int?);
 }
 
 /// A batch operation result is either
@@ -39,7 +39,7 @@ DatabaseException databaseExceptionFromOperationError(
 /// {'error':...}
 dynamic fromRawOperationResult(Map<dynamic, dynamic> rawOperationResultMap) {
   final errorMap =
-      rawOperationResultMap[constant.paramError] as Map<dynamic, dynamic>;
+      rawOperationResultMap[constant.paramError] as Map<dynamic, dynamic>?;
   if (errorMap != null) {
     return databaseExceptionFromOperationError(errorMap);
   }
@@ -55,12 +55,7 @@ dynamic fromRawOperationResult(Map<dynamic, dynamic> rawOperationResultMap) {
 }
 
 /// Native result to a map list as expected by the sqflite API
-List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
-  // New 0.7.1 format
-  // devPrint('queryResultToList: $queryResult');
-  if (queryResult == null) {
-    return null;
-  }
+List<Map<String, dynamic>> queryResultToList(dynamic? queryResult) {
   if (queryResult is Map) {
     return queryResultSetFromMap(queryResult);
   }
@@ -78,29 +73,30 @@ List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
 /// Query native result
 class QueryResultSet extends ListBase<Map<String, dynamic>> {
   /// Creates a result set from a native column/row values
-  QueryResultSet(List<dynamic> rawColumns, List<dynamic> rawRows) {
+  QueryResultSet(List<dynamic>? rawColumns, List<dynamic>? rawRows) {
     _columns = rawColumns?.cast<String>();
     _rows = rawRows?.cast<List<dynamic>>();
+
     if (_columns != null) {
       _columnIndexMap = <String, int>{};
 
-      for (var i = 0; i < _columns.length; i++) {
-        _columnIndexMap[_columns[i]] = i;
+      for (var i = 0; i < _columns!.length; i++) {
+        _columnIndexMap[_columns![i]] = i;
       }
     }
   }
 
-  List<List<dynamic>> _rows;
-  List<String> _columns;
-  List<String> _keys;
-  Map<String, int> _columnIndexMap;
+  List<List<dynamic>>? _rows;
+  List<String>? _columns;
+  List<String>? _keys;
+  late Map<String, int> _columnIndexMap;
 
   @override
   int get length => _rows?.length ?? 0;
 
   @override
   Map<String, dynamic> operator [](int index) {
-    return QueryRow(this, _rows[index]);
+    return QueryRow(this, _rows![index]);
   }
 
   @override
@@ -114,12 +110,12 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
   }
 
   /// Get the column index for a give column name
-  int columnIndex(String name) {
-    return _columnIndexMap[name];
+  int? columnIndex(String? name) {
+    return _columnIndexMap[name!];
   }
 
   /// Remove duplicated
-  List<String> get keys => _keys ??= _columns.toSet().toList(growable: false);
+  List<String> get keys => _keys ??= _columns!.toSet().toList(growable: false);
 }
 
 /// Query Row wrapper
@@ -134,8 +130,8 @@ class QueryRow extends MapBase<String, dynamic> {
   final List<dynamic> row;
 
   @override
-  dynamic operator [](Object key) {
-    final stringKey = key as String;
+  dynamic operator [](Object? key) {
+    final stringKey = key as String?;
     final columnIndex = queryResultSet.columnIndex(stringKey);
     if (columnIndex != null) {
       return row[columnIndex];
@@ -157,7 +153,7 @@ class QueryRow extends MapBase<String, dynamic> {
   Iterable<String> get keys => queryResultSet.keys;
 
   @override
-  dynamic remove(Object key) {
+  dynamic remove(Object? key) {
     throw UnsupportedError('read-only');
   }
 }

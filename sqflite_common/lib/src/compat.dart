@@ -14,13 +14,13 @@ class SqfliteOptions {
 
   // true =<0.7.0
   /// deprecated
-  bool queryAsMapList;
+  bool? queryAsMapList;
 
   /// deprecated
-  int androidThreadPriority;
+  int? androidThreadPriority;
 
   /// deprecated
-  int logLevel;
+  int? logLevel;
 
   /// deprecated
   Map<String, dynamic> toMap() {

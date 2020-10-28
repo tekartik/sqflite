@@ -46,11 +46,12 @@ void main() {
 
     test('insert', () {
       try {
-        SqlBuilder.insert('test', null);
+        SqlBuilder.insert('test', <String, dynamic>{});
         fail('should fail, no nullColumnHack');
       } on ArgumentError catch (_) {}
 
-      var builder = SqlBuilder.insert('test', null, nullColumnHack: 'value');
+      var builder = SqlBuilder.insert('test', <String, dynamic>{},
+          nullColumnHack: 'value');
       expect(builder.sql, 'INSERT INTO test (value) VALUES (NULL)');
       expect(builder.arguments, isNull);
 
@@ -82,7 +83,7 @@ void main() {
 
     test('update', () {
       try {
-        SqlBuilder.update('test', null);
+        SqlBuilder.update('test', <String, dynamic>{});
         fail('should fail, no values');
       } on ArgumentError catch (_) {}
 
@@ -129,7 +130,7 @@ void main() {
     });
 
     test('isEscapedName', () {
-      expect(isEscapedName(null), false);
+      //expect(isEscapedName(null), false);
       expect(isEscapedName('group'), false);
       expect(isEscapedName("'group'"), false);
       expect(isEscapedName('"group"'), true);
@@ -139,7 +140,7 @@ void main() {
     });
 
     test('escapeName', () {
-      expect(escapeName(null), null);
+      // expect(escapeName(null!), null);
       expect(escapeName('group'), '"group"');
       expect(escapeName('dummy'), 'dummy');
       expect(escapeName('"dummy"'), '"dummy"');
@@ -155,7 +156,7 @@ void main() {
     });
 
     test('escapeEntityName', () {
-      expect(escapeEntityName(null), null);
+      // expect(escapeEntityName(null!), null);
       expect(escapeEntityName('group'), '"group"');
       expect(escapeEntityName('dummy'), 'dummy');
       expect(escapeEntityName('"dummy"'), '""dummy""');
@@ -171,7 +172,7 @@ void main() {
     });
 
     test('unescapeName', () {
-      expect(unescapeName(null), null);
+      // expect(unescapeName(null!), null);
 
       expect(unescapeName('dummy'), 'dummy');
       expect(unescapeName("'dummy'"), "'dummy'");

@@ -61,7 +61,7 @@ class SqlBuilder {
   /// @param whereArgs You may include ?s in the where clause, which
   ///            will be replaced by the values from whereArgs. The values
   ///            will be bound as Strings.
-  SqlBuilder.delete(String table, {String where, List<dynamic> whereArgs}) {
+  SqlBuilder.delete(String table, {String? where, List<dynamic>? whereArgs}) {
     checkWhereArgs(whereArgs);
     final delete = StringBuffer();
     delete.write('DELETE FROM ');
@@ -95,15 +95,15 @@ class SqlBuilder {
   /// @param limit Limits the number of rows returned by the query,
   ///            formatted as LIMIT clause. Passing null denotes no LIMIT clause.
   SqlBuilder.query(String table,
-      {bool distinct,
-      List<String> columns,
-      String where,
-      List<dynamic> whereArgs,
-      String groupBy,
-      String having,
-      String orderBy,
-      int limit,
-      int offset}) {
+      {bool? distinct,
+      List<String>? columns,
+      String? where,
+      List<dynamic>? whereArgs,
+      String? groupBy,
+      String? having,
+      String? orderBy,
+      int? limit,
+      int? offset}) {
     if (groupBy == null && having != null) {
       throw ArgumentError(
           'HAVING clauses are only permitted when using a groupBy clause');
@@ -145,7 +145,7 @@ class SqlBuilder {
   /// @values this map contains the initial column values for the row. The keys should be the column names and the values the column values
 
   SqlBuilder.insert(String table, Map<String, dynamic> values,
-      {String nullColumnHack, ConflictAlgorithm conflictAlgorithm}) {
+      {String? nullColumnHack, ConflictAlgorithm? conflictAlgorithm}) {
     final insert = StringBuffer();
     insert.write('INSERT');
     if (conflictAlgorithm != null) {
@@ -155,8 +155,8 @@ class SqlBuilder {
     insert.write(_escapeName(table));
     insert.write(' (');
 
-    List<dynamic> bindArgs;
-    final size = (values != null) ? values.length : 0;
+    List<dynamic>? bindArgs;
+    final size = values.length;
 
     if (size > 0) {
       final sbValues = StringBuffer(') VALUES (');
@@ -175,7 +175,7 @@ class SqlBuilder {
           sbValues.write('NULL');
         } else {
           checkNonNullValue(value);
-          bindArgs.add(value);
+          bindArgs!.add(value);
           sbValues.write('?');
         }
       });
@@ -205,10 +205,10 @@ class SqlBuilder {
   /// @param conflictAlgorithm for update conflict resolver
 
   SqlBuilder.update(String table, Map<String, dynamic> values,
-      {String where,
-      List<dynamic> whereArgs,
-      ConflictAlgorithm conflictAlgorithm}) {
-    if (values == null || values.isEmpty) {
+      {String? where,
+      List<dynamic>? whereArgs,
+      ConflictAlgorithm? conflictAlgorithm}) {
+    if (values.isEmpty) {
       throw ArgumentError('Empty values');
     }
     checkWhereArgs(whereArgs);
@@ -248,17 +248,17 @@ class SqlBuilder {
   }
 
   /// The resulting SQL command.
-  String sql;
+  late String sql;
 
   /// The arguments list;
-  List<dynamic> arguments;
+  List<dynamic>? arguments;
 
   /// Used during build if there was a name with an escaped keyword.
   bool hasEscape = false;
 
   String _escapeName(String name) => escapeName(name);
 
-  void _writeClause(StringBuffer s, String name, String clause) {
+  void _writeClause(StringBuffer s, String name, String? clause) {
     if (clause != null) {
       s.write(name);
       s.write(clause);
@@ -273,12 +273,10 @@ class SqlBuilder {
     for (var i = 0; i < n; i++) {
       final column = columns[i];
 
-      if (column != null) {
-        if (i > 0) {
-          s.write(', ');
-        }
-        s.write(_escapeName(column));
+      if (i > 0) {
+        s.write(', ');
       }
+      s.write(_escapeName(column));
     }
     s.write(' ');
   }
@@ -286,8 +284,8 @@ class SqlBuilder {
 
 /// True if a name had been escaped already.
 bool isEscapedName(String name) {
-  if (name != null && name.length >= 2) {
-    final codeUnits = name?.codeUnits;
+  if (name.length >= 2) {
+    final codeUnits = name.codeUnits;
     if (_areCodeUnitsEscaped(codeUnits)) {
       return escapeNames
           .contains('${name.substring(1, name.length - 1).toLowerCase()}');
@@ -305,9 +303,6 @@ String _doEscape(String name) => '"$name"';
 /// i.e. if it is an identified it will be surrounded by " (double-quote)
 /// Only some name belonging to keywords can be escaped
 String escapeName(String name) {
-  if (name == null) {
-    return name;
-  }
   if (escapeNames.contains(name.toLowerCase())) {
     return _doEscape(name);
   }
@@ -326,9 +321,6 @@ String unescapeName(String name) {
 ///
 /// Only for insert and update keys
 String escapeEntityName(String name) {
-  if (name == null) {
-    return name;
-  }
   if (_entityNameNeedEscape(name)) {
     return _doEscape(name);
   }
@@ -363,7 +355,7 @@ bool _isAlphaOrUnderscore(int codeUnit) =>
 
 /// True if already escaped
 bool _areCodeUnitsEscaped(List<int> codeUnits) {
-  if (codeUnits?.isNotEmpty ?? false) {
+  if (codeUnits.isNotEmpty) {
     final first = codeUnits.first;
     switch (first) {
       case _doubleQuote:
@@ -401,7 +393,7 @@ bool _entityNameNeedEscape(String name) {
 
 /// Unescape a table or column name.
 String unescapeValueKeyName(String name) {
-  final codeUnits = name?.codeUnits;
+  final codeUnits = name.codeUnits;
   if (_areCodeUnitsEscaped(codeUnits)) {
     return name.substring(1, name.length - 1);
   }

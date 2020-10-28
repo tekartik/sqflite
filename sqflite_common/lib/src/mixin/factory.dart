@@ -25,7 +25,7 @@ class _SqfliteDatabaseFactoryImpl
 ///
 /// To use to enable running without flutter plugins (unit test)
 DatabaseFactory buildDatabaseFactory(
-    {Future<dynamic> Function(String method, [dynamic arguments])
+    {required Future<dynamic> Function(String method, [dynamic arguments])
         invokeMethod}) {
   final DatabaseFactory impl = _SqfliteDatabaseFactoryImpl(invokeMethod);
   return impl;
