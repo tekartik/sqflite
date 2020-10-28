@@ -522,8 +522,8 @@ class ExceptionTestPage extends TestPage {
           await db2.execute('ROLLBACK');
         } catch (_) {}
       } finally {
-        await db1?.close();
-        await db2?.close();
+        await db1.close();
+        await db2.close();
       }
     });
   }

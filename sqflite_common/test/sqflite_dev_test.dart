@@ -1,5 +1,6 @@
 import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common/src/constant.dart';
 import 'package:sqflite_common/src/method_call.dart';
 import 'package:sqflite_common/src/mixin/factory.dart';
 import 'package:test/test.dart';
@@ -8,6 +9,9 @@ var logs = <SqfliteMethodCall>[];
 var databaseFactoryMock =
     buildDatabaseFactory(invokeMethod: (method, [arguments]) async {
   logs.add(SqfliteMethodCall(method, arguments));
+  if (method == methodGetDatabasesPath) {
+    return 'mock_path';
+  }
 });
 void main() {
   test('simple sqflite example', () async {
@@ -22,9 +26,13 @@ void main() {
     ]);
   });
   test('databasesPath', () async {
-    await databaseFactoryMock.setDatabasesPath('.');
-    final path = await databaseFactoryMock.getDatabasesPath();
-    expect(path, '.');
-    await databaseFactoryMock.setDatabasesPath(null);
+    final oldDatabasePath = await databaseFactoryMock.getDatabasesPath();
+    try {
+      await databaseFactoryMock.setDatabasesPath('.');
+      final path = await databaseFactoryMock.getDatabasesPath();
+      expect(path, '.');
+    } finally {
+      await databaseFactoryMock.setDatabasesPath(oldDatabasePath);
+    }
   });
 }

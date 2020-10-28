@@ -9,7 +9,7 @@ class ItemWidget extends StatefulWidget {
   ItemWidget(this.item, this.onTap, {this.summary});
 
   /// item summary.
-  final String summary;
+  final String? summary;
 
   /// item data.
   final Item item;
@@ -24,8 +24,8 @@ class ItemWidget extends StatefulWidget {
 class _ItemWidgetState extends State<ItemWidget> {
   @override
   Widget build(BuildContext context) {
-    IconData icon;
-    Color color;
+    IconData? icon;
+    Color? color;
 
     switch (widget.item.state) {
       case ItemState.none:
@@ -52,7 +52,7 @@ class _ItemWidgetState extends State<ItemWidget> {
           onPressed: null, // null disables the button
         )),
         title: Text(widget.item.name),
-        subtitle: widget.summary != null ? Text(widget.summary) : null,
+        subtitle: widget.summary != null ? Text(widget.summary!) : null,
         onTap: _onTap);
   }
 

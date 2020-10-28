@@ -10,7 +10,7 @@ class MainItem {
   String description;
 
   /// Page route.
-  String route;
+  String? route;
 }
 
 /// Main route item.
@@ -25,5 +25,5 @@ class MainRouteItem {
   String description;
 
   /// Page route.
-  MainRouteItem route;
+  MainRouteItem? route;
 }

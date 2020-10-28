@@ -43,7 +43,7 @@ class TestPage extends StatefulWidget {
   }
 
   /// Thrown an exception
-  void fail([String message]) {
+  void fail([String? message]) {
     throw Exception(message ?? 'should fail');
   }
 
@@ -52,7 +52,7 @@ class TestPage extends StatefulWidget {
 }
 
 /// Verify a condition.
-bool verify(bool condition, [String message]) {
+bool? verify(bool? condition, [String? message]) {
   message ??= 'verify failed';
   expect(condition, true, reason: message);
   /*
@@ -71,7 +71,7 @@ abstract class Group {
   /// List of tests.
   List<Test> get tests;
 
-  bool _hasSolo;
+  bool? _hasSolo;
   final _tests = <Test>[];
 
   /// Add a test.
@@ -90,7 +90,7 @@ abstract class Group {
   }
 
   /// true if it has solo or contains item with solo feature
-  bool get hasSolo => _hasSolo;
+  bool? get hasSolo => _hasSolo;
 }
 
 class _TestPageState extends State<TestPage> with Group {
@@ -113,7 +113,7 @@ class _TestPageState extends State<TestPage> with Group {
     for (var test in _tests) {
       var item = Item('${test.name}');
 
-      int position;
+      late int position;
       setState(() {
         position = items.length;
         items.add(item);

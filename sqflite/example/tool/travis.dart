@@ -13,7 +13,7 @@ flutter analyze
 
 ''');
 
-  var exception;
+  Object? exception;
   try {
     await integration_test.main();
   } catch (e) {

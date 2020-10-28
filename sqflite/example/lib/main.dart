@@ -97,7 +97,7 @@ class _MyAppState extends State<MyApp> {
 /// App home menu page.
 class MyHomePage extends StatefulWidget {
   /// App home menu page.
-  MyHomePage({Key key, this.title}) : super(key: key) {
+  MyHomePage({Key? key, this.title}) : super(key: key) {
     _items.add(
         MainItem('Raw tests', 'Raw SQLite operations', route: testRawRoute));
     _items.add(MainItem('Open tests', 'Open onCreate/onUpgrade/onDowngrade',
@@ -128,20 +128,20 @@ class MyHomePage extends StatefulWidget {
   final List<MainItem> _items = [];
 
   /// Page title.
-  final String title;
+  final String? title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-String _debugAutoStartRouteName;
+String? _debugAutoStartRouteName;
 
 /// (debug) set the route to start with.
-String get debugAutoStartRouteName => _debugAutoStartRouteName;
+String? get debugAutoStartRouteName => _debugAutoStartRouteName;
 
 /// Deprecated to avoid calls
 @deprecated
-set debugAutoStartRouteName(String routeName) =>
+set debugAutoStartRouteName(String? routeName) =>
     _debugAutoStartRouteName = routeName;
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -159,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
           // await Navigator.of(context).pushNamed(testExpRoute);
           // await Navigator.of(context).pushNamed(testRawRoute);
-          var future = Navigator.of(context).pushNamed(debugAutoStartRouteName);
+          var future = Navigator.of(context)!.pushNamed(debugAutoStartRouteName!);
           // ignore: deprecated_member_use_from_same_package
           debugAutoStartRouteName = null;
           await future;
@@ -184,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _itemBuilder(BuildContext context, int index) {
     return MainItemWidget(widget._items[index], (MainItem item) {
-      Navigator.of(context).pushNamed(item.route);
+      Navigator.of(context)!.pushNamed(item.route!);
     });
   }
 }

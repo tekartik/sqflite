@@ -421,7 +421,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   }
 
   @override
-  Future<List<dynamic>?> txnApplyBatch(
+  Future<List<dynamic?>> txnApplyBatch(
       SqfliteTransaction txn, SqfliteBatch batch,
       {bool? noResult, bool? continueOnError}) {
     return txnWriteSynchronized(txn, (_) async {
@@ -438,7 +438,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
       // Typically when noResult is true
       if (results == null) {
-        return null;
+        return [];
       }
       // dart2 - wrap if we need to support more results than just int
       return BatchResults.from(results);

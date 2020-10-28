@@ -132,14 +132,19 @@ class MockInvalidFactory extends DatabaseFactory {
   Future<void> deleteDatabase(String path) async {}
 
   @override
-  Future<String?> getDatabasesPath() async {
-    return null;
+  Future<String> getDatabasesPath() async {
+    throw UnimplementedError();
   }
 
   @override
   Future<Database> openDatabase(String path,
       {OpenDatabaseOptions? options}) async {
     throw UnimplementedError('openDatabase');
+  }
+
+  @override
+  Future<void> setDatabasesPath(String path) {
+    throw UnimplementedError();
   }
 }
 

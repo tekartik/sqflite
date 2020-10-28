@@ -8,7 +8,7 @@ import 'package:sqflite/sqflite.dart';
 import 'test_page.dart';
 
 class _Data {
-  Database db;
+  late Database db;
 }
 
 /// Type test page.

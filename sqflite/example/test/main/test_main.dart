@@ -10,5 +10,5 @@ Future main() async {
   // debugAutoStartRouteName = testTypeRoute;
   // debugAutoStartRouteName = testExpRoute;
 
-  await app.main();
+  app.main();
 }

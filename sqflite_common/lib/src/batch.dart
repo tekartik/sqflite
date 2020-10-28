@@ -120,10 +120,10 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   final SqfliteDatabase database;
 
   @override
-  Future<List<dynamic>?> commit(
+  Future<List<dynamic>> commit(
       {bool? exclusive, bool? noResult, bool? continueOnError}) {
     database.checkNotClosed();
-    return database.transaction<List<dynamic>?>((Transaction txn) {
+    return database.transaction<List<dynamic>>((Transaction txn) {
       final sqfliteTransaction = txn as SqfliteTransaction;
       return database.txnApplyBatch(sqfliteTransaction, this,
           noResult: noResult, continueOnError: continueOnError);
@@ -140,7 +140,7 @@ class SqfliteTransactionBatch extends SqfliteBatch {
   final SqfliteTransaction transaction;
 
   @override
-  Future<List<dynamic>?> commit(
+  Future<List<dynamic>> commit(
       {bool? exclusive, bool? noResult, bool? continueOnError}) {
     if (exclusive != null) {
       throw ArgumentError.value(exclusive, 'exclusive',

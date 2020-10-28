@@ -18,7 +18,10 @@ abstract class DatabaseFactory {
   Future<Database> openDatabase(String path, {OpenDatabaseOptions? options});
 
   /// Get the default databases location path
-  Future<String?> getDatabasesPath();
+  Future<String> getDatabasesPath();
+
+  /// Set the default databases location path
+  Future<void> setDatabasesPath(String path);
 
   /// Delete a database if it exists
   Future<void> deleteDatabase(String path);
@@ -347,7 +350,7 @@ abstract class Batch {
   /// (we are already in a transaction) or if the batch was created in a
   /// transaction it will only be commited when
   /// the transaction is commited ([exclusive] is not used then)
-  Future<List<dynamic>?> commit(
+  Future<List<dynamic?>> commit(
       {bool? exclusive, bool? noResult, bool? continueOnError});
 
   /// See [Database.rawInsert]

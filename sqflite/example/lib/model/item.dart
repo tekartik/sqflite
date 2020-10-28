@@ -35,7 +35,7 @@ class MenuItem extends Item {
   }
 
   /// Summary.
-  String summary;
+  String? summary;
 
   /// Run the item.
   Future run() {

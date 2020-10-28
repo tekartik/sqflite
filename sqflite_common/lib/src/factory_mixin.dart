@@ -125,7 +125,7 @@ mixin SqfliteDatabaseFactoryMixin
   String? _databasesPath;
 
   @override
-  Future<String?> getDatabasesPath() async {
+  Future<String> getDatabasesPath() async {
     if (_databasesPath == null) {
       final path = await safeInvokeMethod<String?>(methodGetDatabasesPath);
 
@@ -134,10 +134,11 @@ mixin SqfliteDatabaseFactoryMixin
       }
       _databasesPath = path;
     }
-    return _databasesPath;
+    return _databasesPath!;
   }
 
   /// Set the databases path.
+  @override
   Future<void> setDatabasesPath(String? path) async {
     _databasesPath = path;
   }
@@ -148,7 +149,7 @@ mixin SqfliteDatabaseFactoryMixin
       // nothing
     } else {
       if (isRelative(path)) {
-        path = join(await (getDatabasesPath() as FutureOr<String>), path);
+        path = join(await getDatabasesPath(), path);
       }
       path = absolute(normalize(path));
     }

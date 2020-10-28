@@ -3,7 +3,7 @@ import 'dart:async';
 /// Test definition.
 class Test {
   /// Test definition.
-  Test(this.name, this.fn, {bool solo, bool skip})
+  Test(this.name, this.fn, {bool? solo, bool? skip})
       : solo = solo == true,
         skip = skip == true;
 

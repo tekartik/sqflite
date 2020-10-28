@@ -23,19 +23,19 @@ class Todo {
 
   /// Read from a record.
   Todo.fromMap(Map map) {
-    id = map[columnId] as int;
-    title = map[columnTitle] as String;
+    id = map[columnId] as int?;
+    title = map[columnTitle] as String?;
     done = map[columnDone] == 1;
   }
 
   /// id.
-  int id;
+  int? id;
 
   /// title.
-  String title;
+  String? title;
 
   /// done.
-  bool done;
+  bool? done;
 
   /// Convert to a record.
   Map<String, dynamic> toMap() {
@@ -53,7 +53,7 @@ class Todo {
 /// Todo provider.
 class TodoProvider {
   /// The database when opened.
-  Database db;
+  late Database db;
 
   /// Open the database.
   Future open(String path) async {
@@ -75,7 +75,7 @@ create table $tableTodo (
   }
 
   /// Get a todo.
-  Future<Todo> getTodo(int id) async {
+  Future<Todo?> getTodo(int id) async {
     List<Map> maps = await db.query(tableTodo,
         columns: [columnId, columnDone, columnTitle],
         where: '$columnId = ?',
@@ -126,14 +126,14 @@ class TodoTestPage extends TestPage {
       expect(todo.id, 1);
 
       expect(await todoProvider.getTodo(0), null);
-      todo = await todoProvider.getTodo(1);
+      todo = await (todoProvider.getTodo(1) as FutureOr<Todo>);
       expect(todo.id, 1);
       expect(todo.title, 'test');
       expect(todo.done, false);
 
       todo.done = true;
       expect(await todoProvider.update(todo), 1);
-      todo = await todoProvider.getTodo(1);
+      todo = await (todoProvider.getTodo(1) as FutureOr<Todo>);
       expect(todo.id, 1);
       expect(todo.title, 'test');
       expect(todo.done, true);
