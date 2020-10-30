@@ -1,0 +1,58 @@
+# See https://www.dartlang.org/guides/libraries/private-files
+
+# Files and directories created by pub
+.dart_tool/
+.packages
+.pub/
+build/
+# If you're building an application, you may want to check-in your pubspec.lock
+pubspec.lock
+
+# Directory created by dartdoc
+/doc/api/
+
+# flutter root folder wrongly created
+/ios
+/android
+.symlinks
+
+# IDE
+.idea/
+*.iml
+.vscode/
+/sqflite/example/.flutter-plugins-dependencies
+
+# Copied from flutter plugins
+.DS_Store
+.atom/
+flutter_export_environment.sh
+
+Podfile
+Podfile.lock
+Pods/
+.symlinks/
+**/Flutter/App.framework/
+**/Flutter/Flutter.framework/
+**/Flutter/Generated.xcconfig
+**/Flutter/flutter_assets/
+ServiceDefinitions.json
+xcuserdata/
+*.xcworkspace
+**/DerivedData/
+
+local.properties
+keystore.properties
+.gradle/
+gradlew
+gradlew.bat
+gradle-wrapper.jar
+.flutter-plugins-dependencies
+
+GeneratedPluginRegistrant.h
+GeneratedPluginRegistrant.m
+GeneratedPluginRegistrant.java
+.flutter-plugins
+
+.project
+.classpath
+.settings
