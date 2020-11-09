@@ -15,6 +15,7 @@ abstract class SqfliteDatabaseFactory
   //Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]);
 
   /// open lock mechanism.
+  @deprecated
   final Lock lock = Lock();
 
   /// Create a new database object.
