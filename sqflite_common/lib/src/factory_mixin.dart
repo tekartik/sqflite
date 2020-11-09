@@ -14,6 +14,23 @@ import 'package:synchronized/synchronized.dart';
 /// Base factory implementation
 abstract class SqfliteDatabaseFactoryBase with SqfliteDatabaseFactoryMixin {}
 
+/// Named lock, unique by name and its private class
+class _NamedLock {
+  factory _NamedLock(String name) {
+    // Add to cache, create if needed
+    return cacheLocks[name] ??= _NamedLock._(name, Lock(reentrant: true));
+  }
+
+  _NamedLock._(this.name, this.lock);
+
+  // Global cache per db name
+  // Remain allocated forever but that is fine.
+  static final cacheLocks = <String, _NamedLock>{};
+
+  final String name;
+  final Lock lock;
+}
+
 /// Common factory mixin
 mixin SqfliteDatabaseFactoryMixin
     implements SqfliteDatabaseFactory, SqfliteInvokeHandler {
@@ -32,9 +49,14 @@ mixin SqfliteDatabaseFactoryMixin
   /// Helper for null path database.
   SqfliteDatabaseOpenHelper nullDatabaseOpenHelper;
 
+  // To deprecate
   // open lock mechanism
   @override
+  @deprecated
   final Lock lock = Lock(reentrant: true);
+
+  /// Avoid concurrent open operation on the same database
+  Lock _getDatabaseOpenLock(String path) => _NamedLock(path).lock;
 
   @override
   @override
@@ -55,7 +77,8 @@ mixin SqfliteDatabaseFactoryMixin
   // Close an instance of the database
   @override
   Future<void> closeDatabase(SqfliteDatabase database) {
-    // Global factory lock during close
+    // Lock per database name
+    final lock = _getDatabaseOpenLock(database.path);
     return lock.synchronized(() async {
       await (database as SqfliteDatabaseMixin)
           .openHelper
@@ -67,10 +90,12 @@ mixin SqfliteDatabaseFactoryMixin
   }
 
   @override
-  Future<Database> openDatabase(String path, {OpenDatabaseOptions options}) {
-    // Global factory lock during open
+  Future<Database> openDatabase(String path,
+      {OpenDatabaseOptions options}) async {
+    path = await fixPath(path);
+    // Lock per database name
+    final lock = _getDatabaseOpenLock(path);
     return lock.synchronized(() async {
-      path = await fixPath(path);
       options ??= SqfliteOpenDatabaseOptions();
 
       if (options?.singleInstance != false) {
@@ -120,8 +145,10 @@ mixin SqfliteDatabaseFactoryMixin
 
   @override
   Future<void> deleteDatabase(String path) async {
+    path = await fixPath(path);
+    // Lock per database name
+    final lock = _getDatabaseOpenLock(path);
     return lock.synchronized(() async {
-      path = await fixPath(path);
       // Handle already single instance open database
       removeDatabaseOpenHelper(path);
       return safeInvokeMethod<void>(
@@ -156,10 +183,15 @@ mixin SqfliteDatabaseFactoryMixin
     _databasesPath = path;
   }
 
+  /// True if a database path is in memory
+  static bool isInMemoryDatabasePath(String path) {
+    return path == inMemoryDatabasePath;
+  }
+
   /// path must be non null
   Future<String> fixPath(String path) async {
     assert(path != null, 'path cannot be null');
-    if (path == inMemoryDatabasePath) {
+    if (isInMemoryDatabasePath(path)) {
       // nothing
     } else {
       if (isRelative(path)) {
@@ -170,9 +202,10 @@ mixin SqfliteDatabaseFactoryMixin
     return path;
   }
 
-  /// True if it is a real path
+  /// True if it is a real path. Unused?
+  @deprecated
   bool isPath(String path) {
-    return (path != null) && (path != inMemoryDatabasePath);
+    return (path != null) && (!isInMemoryDatabasePath(path));
   }
 
   /// Debug information.
