@@ -1,3 +1,7 @@
+## 1.0.3-dev.1
+
+* Don't lock globally during open but lock per database full path.
+ 
 ## 1.0.2+1
 
 * Don't create a transaction during openDatabase if not needed.
