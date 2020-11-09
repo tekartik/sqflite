@@ -92,7 +92,7 @@ void main() {
         return;
       }
       if (await pathPubspecAddDependency(dir, 'sqflite')) {
-        await shell.run('dart pub get');
+        await shell.run('flutter pub get');
         await _runCi();
       }
     }, timeout: const Timeout(Duration(minutes: 10)));
@@ -109,12 +109,12 @@ void main() {
         return;
       }
       if (await pathPubspecRemoveDependency(dir, 'sqflite')) {
-        await shell.run('dart pub get');
+        await shell.run('flutter pub get');
       }
 
       if (await pathPubspecAddDependency(dir, 'sqflite',
           dependencyLines: dependencyLines)) {
-        await shell.run('dart pub get');
+        await shell.run('flutter pub get');
         await _runCi();
       }
     }, timeout: const Timeout(Duration(minutes: 10)));
