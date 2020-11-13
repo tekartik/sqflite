@@ -56,3 +56,6 @@ GeneratedPluginRegistrant.java
 .project
 .classpath
 .settings
+
+# Local files
+.local/
