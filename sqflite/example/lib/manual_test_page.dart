@@ -222,6 +222,7 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
               var db = await _openDatabase();
               var result = await firstIntValue(
                   await db.query('test', columns: ['COUNT(*)']));
+              // ignore: deprecated_member_use
               Scaffold.of(context).showSnackBar(SnackBar(
                 content: Text('$result records'),
                 duration: Duration(milliseconds: 700),

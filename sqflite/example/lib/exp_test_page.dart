@@ -452,7 +452,7 @@ CREATE TABLE test (
                 where: 'name = \'Test\' and type = \'table\''),
             1);
       } finally {
-        db.close();
+        await db.close();
       }
     });
 
@@ -468,7 +468,7 @@ CREATE TABLE test (
                 where: 'name = \'Test\' and type = \'table\''),
             1);
       } finally {
-        db.close();
+        await db.close();
       }
     });
 
