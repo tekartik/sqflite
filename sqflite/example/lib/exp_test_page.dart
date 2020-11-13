@@ -438,6 +438,40 @@ CREATE TABLE test (
       }
     });
 
+    test('Defensive mode', () async {
+      // This shold succeed even on on iOS 14
+      var db = await openDatabase(inMemoryDatabasePath);
+      try {
+        await db.execute('CREATE TABLE Test(value TEXT)');
+        // Workaround for iOS 14
+        await db.execute('PRAGMA sqflite -- db_config_defensive_off');
+        await db.execute('PRAGMA writable_schema = ON');
+        expect(
+            await db.update(
+                'sqlite_master', {'sql': 'CREATE TABLE Test(value BLOB)'},
+                where: 'name = \'Test\' and type = \'table\''),
+            1);
+      } finally {
+        await db.close();
+      }
+    });
+
+    test('Defensive mode (should fail on iOS 14)', () async {
+      // This shold fail on iOS 14
+      var db = await openDatabase(inMemoryDatabasePath);
+      try {
+        await db.execute('CREATE TABLE Test(value TEXT)');
+        await db.execute('PRAGMA writable_schema = ON');
+        expect(
+            await db.update(
+                'sqlite_master', {'sql': 'CREATE TABLE Test(value BLOB)'},
+                where: 'name = \'Test\' and type = \'table\''),
+            1);
+      } finally {
+        await db.close();
+      }
+    });
+
     test('Issue#206', () async {
       //await Sqflite.devSetDebugModeOn(true);
       var path = await initDeleteDb('issue_206.db');
