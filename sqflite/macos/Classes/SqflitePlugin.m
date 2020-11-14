@@ -65,6 +65,8 @@ NSString *const SqfliteParamErrorCode = @"code";
 NSString *const SqfliteParamErrorMessage = @"message";
 NSString *const SqfliteParamErrorData = @"data";
 
+// iOS workaround bug #214
+NSString *const SqfliteSqlPragmaSqliteDefensiveOff = @"PRAGMA sqflite -- db_config_defensive_off";
 
 @interface SqfliteDatabase : NSObject
 
@@ -267,9 +269,17 @@ static NSInteger _databaseOpenCount = 0;
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     NSNumber* inTransaction = [operation getInTransactionArgument];
+    
+    // Handle Hardcoded workarounds
+    // Handle issue #525
+    if ([SqfliteSqlPragmaSqliteDefensiveOff isEqualToString:sql]) {
+        sqlite3_db_config(db.sqliteHandle, SQLITE_DBCONFIG_DEFENSIVE, 0, 0);
+    }
+    
     BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
+        return true;
     }
     
     BOOL success;

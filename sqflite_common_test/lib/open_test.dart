@@ -719,6 +719,92 @@ void run(SqfliteTestContext context) {
       await db.close();
     }
   });
+
+  test('multiple open different database', () async {
+    // await context.devSetDebugModeOn(true);
+    var path1 = await context.initDeleteDb('multiple_open_1.db');
+    var path2 = await context.initDeleteDb('multiple_open_2.db');
+
+    var onCreateCompleter1 = Completer();
+    var onCreateCompleter2 = Completer();
+
+    Database db1;
+    Database db2;
+
+    try {
+      // Don't wait here
+      var futureDb1 = factory.openDatabase(path1,
+          options: OpenDatabaseOptions(
+              version: 1,
+              onCreate: (db, version) async {
+                // wait for db2
+                await onCreateCompleter2.future;
+                // mark as called
+                onCreateCompleter1.complete();
+              }));
+      db2 = await factory.openDatabase(path2,
+          options: OpenDatabaseOptions(
+              version: 1,
+              onCreate: (db, version) async {
+                // mark as called
+                onCreateCompleter2.complete();
+                // wait for db1;
+                await onCreateCompleter1.future;
+              }));
+      db1 = await futureDb1;
+      await onCreateCompleter1.future;
+      await onCreateCompleter2.future;
+    } finally {
+      await db1?.close();
+      await db2?.close();
+    }
+  });
+
+  test('multiple open same database', () async {
+    // await context.devSetDebugModeOn(true);
+    var path1 = await context.initDeleteDb('multiple_open_same.db');
+    var path2 = path1;
+
+    var onCreateCompleter1 = Completer();
+    var onCreateCompleter2 = Completer();
+
+    Database db1;
+    Database db2;
+
+    try {
+      // Don't wait here
+      var futureDb1 = factory.openDatabase(path1,
+          options: OpenDatabaseOptions(
+              version: 1,
+              onCreate: (db, version) async {
+                // wait for db2
+                try {
+                  await onCreateCompleter2.future
+                      .timeout(const Duration(milliseconds: 1000));
+                  fail('should fail before with a timeout exception');
+                } on TimeoutException catch (_) {
+                  // expected
+                }
+                // mark as called
+                onCreateCompleter1.complete();
+              }));
+      db2 = await factory.openDatabase(path2,
+          options: OpenDatabaseOptions(
+              version: 1,
+              onCreate: (db, version) async {
+                fail('should never be called');
+              },
+              onOpen: (db) {
+                fail('should never be called');
+              }));
+      db1 = await futureDb1;
+      // same db!
+      expect(db1, db2);
+      await onCreateCompleter1.future;
+    } finally {
+      await db1?.close();
+    }
+  });
 }
 
 /// Open helper.
