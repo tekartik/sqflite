@@ -247,6 +247,12 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
                   await _closeDatabase();
                 },
               ),
+              menuItem(
+                'Delete database',
+                () async {
+                  await databaseFactory.deleteDatabase(widget.dbName);
+                },
+              ),
             ];
             return ListView(
               children: items,
