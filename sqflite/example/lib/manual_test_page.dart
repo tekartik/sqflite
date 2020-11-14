@@ -224,7 +224,7 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
                   await db.query('test', columns: ['COUNT(*)']));
               // Temp for nnbd successfull lint
               // ignore: deprecated_member_use
-              Scaffold.of(context)!.showSnackBar(SnackBar(
+              Scaffold.of(context).showSnackBar(SnackBar(
                 content: Text('$result records'),
                 duration: Duration(milliseconds: 700),
               ));

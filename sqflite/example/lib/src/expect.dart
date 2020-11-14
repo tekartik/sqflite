@@ -23,7 +23,7 @@ class TestFailure {
 /// upon failures in [expect].
 @Deprecated('Will be removed in 0.13.0.')
 typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
-    String reason, Map matchState, bool verbose);
+    String? reason, Map matchState, bool verbose);
 
 /// Assert that [actual] matches [matcher].
 ///
@@ -112,7 +112,7 @@ Future _expect(actual, matcher,
   } catch (e, trace) {
     reason ??= '$e at $trace';
   }
-  fail(formatter(actual, matcher as Matcher, reason!, matchState, verbose));
+  fail(formatter(actual, matcher as Matcher, reason, matchState, verbose));
 }
 
 /// Convenience method for throwing a new [TestFailure] with the provided

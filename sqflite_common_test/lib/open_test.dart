@@ -728,8 +728,8 @@ void run(SqfliteTestContext context) {
     var onCreateCompleter1 = Completer();
     var onCreateCompleter2 = Completer();
 
-    Database db1;
-    Database db2;
+    Database? db1;
+    Database? db2;
 
     try {
       // Don't wait here
@@ -768,7 +768,7 @@ void run(SqfliteTestContext context) {
     var onCreateCompleter1 = Completer();
     var onCreateCompleter2 = Completer();
 
-    Database db1;
+    Database? db1;
     Database db2;
 
     try {
