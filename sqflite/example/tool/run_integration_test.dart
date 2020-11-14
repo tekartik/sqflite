@@ -1,3 +1,8 @@
+//
+// @dart = 2.9
+//
+// This is to allow running this file without null experiment
+// In the future, remove this 2.9 command and run using: dart --enable-experiment=non-nullable --no-sound-null-safety run tool/travis.dart
 import 'package:process_run/shell.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -5,7 +10,7 @@ Future<void> main() async {
   await runIntegrationTest();
 }
 
-Future<void> runIntegrationTest({String? deviceId}) async {
+Future<void> runIntegrationTest({String deviceId}) async {
   final shell = Shell();
 
   final nnbdEnabled = dartVersion > Version(2, 11, 0, pre: '0');

@@ -1,41 +1,27 @@
+//
+// @dart = 2.9
+//
+// This is to allow running this file without null experiment
+// In the future, remove this 2.9 comment or run using: dart --enable-experiment=non-nullable --no-sound-null-safety run tool/travis.dart
+
 import 'package:process_run/shell.dart';
-//import 'package:dev_test/package.dart';
+import 'package:dev_test/package.dart';
 
 Future main() async {
-  // await packageRunCi('.');
-
   var shell = Shell();
 
   await shell.run('flutter doctor');
 
-  /*
   for (var dir in [
-    'sqflite/example',
-    'sqflite',
-    'sqflite_test_app',
-  ]) {
-    shell = shell.pushd(dir);
-    await shell.run('''
-    
-    flutter packages get
-    dart tool/travis.dart
-    
-        ''');
-    shell = shell.popd();
-  }
-  */
-  for (var dir in [
+    // 'sqflite/example',
+    // 'sqflite',
+    // 'sqflite_test_app',
     'sqflite_common',
-    // 'sqflite_common_test',
-    // 'sqflite_common_ffi',
+    'sqflite_common_test',
+    'sqflite_common_ffi',
   ]) {
     shell = shell.pushd(dir);
-    await shell.run('''
-    
-    pub get
-    dart tool/travis.dart
-    
-        ''');
+    await packageRunCi(dir);
     shell = shell.popd();
   }
 }

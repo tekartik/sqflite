@@ -1,4 +1,8 @@
-// To run using: dart --enable-experiment=non-nullable --no-sound-null-safety run tool/travis.dart
+//
+// @dart = 2.9
+//
+// This is to allow running this file without null experiment
+// In the future, remove this 2.9 command and run using: dart --enable-experiment=non-nullable --no-sound-null-safety run tool/travis.dart
 import 'dart:io';
 
 import 'package:http/io_client.dart';
@@ -17,12 +21,14 @@ Future<void> main() async {
     final dartRunExtraOptions =
         '--enable-experiment=non-nullable --no-sound-null-safety';
 
+    // Remove temporarily options that failed on flutter test
+    // final testOptions = '--no-pub --coverage';
+    final testOptions = '';
     await shell.run('''
 
 flutter format --set-exit-if-changed lib test tool
 flutter analyze --no-current-package lib test tool
-flutter test $dartRunExtraOptions --no-pub --coverage
-
+flutter test $dartRunExtraOptions $testOptions
 ''');
 
     try {
@@ -38,7 +44,7 @@ flutter test $dartRunExtraOptions --no-pub --coverage
 
     if (travisDartChannel == 'stable') {
       if (codeCovToken != null) {
-        late String bashFilePath;
+        String bashFilePath;
         try {
           final dir = await Directory.systemTemp.createTemp('sqflite');
           bashFilePath = join(dir.path, 'codecov.bash');

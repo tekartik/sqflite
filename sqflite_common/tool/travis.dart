@@ -1,4 +1,8 @@
-// To run using: dart --enable-experiment=non-nullable --no-sound-null-safety run tool/travis.dart
+//
+// @dart = 2.9
+//
+// This is to allow running this file without null experiment
+// In the future, remove this 2.9 comment or run using: dart --enable-experiment=non-nullable --no-sound-null-safety run tool/travis.dart
 
 import 'dart:io';
 
@@ -34,7 +38,7 @@ pub run $dartRunExtraOptions test
     if (travisDartChannel == 'stable') {
       stdout.writeln('Publishing coverage information.');
       if (codeCovToken != null) {
-        late String bashFilePath;
+        String bashFilePath;
         try {
           final dir = await Directory.systemTemp.createTemp('sqflite_common');
           bashFilePath = join(dir.path, 'codecov.bash');

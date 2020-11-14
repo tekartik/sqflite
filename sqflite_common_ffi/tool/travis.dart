@@ -1,3 +1,9 @@
+//
+// @dart = 2.9
+//
+// This is to allow running this file without null experiment
+// In the future, remove this 2.9 comment or run using: dart --enable-experiment=non-nullable --no-sound-null-safety run tool/travis.dart
+
 import 'dart:io';
 
 import 'package:process_run/shell.dart';
@@ -29,7 +35,7 @@ dartanalyzer $dartExtraOptions --fatal-warnings --fatal-infos .
 dartfmt -n --set-exit-if-changed .
 pub run $dartRunExtraOptions test -p vm
 
-# Remove chrom test - not working with NNBD: pub run $dartRunExtraOptions test -p chrome
+# Remove chrome test - not working with NNBD: pub run $dartRunExtraOptions test -p chrome
 
 ''');
   }

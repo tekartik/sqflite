@@ -9,4 +9,4 @@ before_script:
   - pub run tekartik_travis_ci_flutter:install
   - source $(pub run tekartik_travis_ci_flutter:env)
 script:
-  - dart tool/travis.dart
+  - dart run tool/travis.dart
