@@ -16,6 +16,3 @@ dev_dependencies:
     version: '>=0.1.0'
   process_run: '>=0.11.0+2'
   dev_test:
-
-dependency_overrides:
-  pedantic: '>=1.9.0 <3.0.0'

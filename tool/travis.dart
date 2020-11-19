@@ -13,20 +13,31 @@ Future main() async {
 
   await shell.run('flutter doctor');
 
-  final nnbdEnabled = dartVersion > Version(2, 11, 0, pre: '0');
+  final nnbdEnabled = dartVersion > Version(2, 12, 0, pre: '0');
   if (nnbdEnabled) {
     for (var dir in [
-      'sqflite',
       'sqflite_common',
       'sqflite_common_ffi',
-      'sqflite/example',
-      'sqflite_test_app',
       'sqflite_common_test',
     ]) {
       shell = shell.pushd(dir);
       await shell.run('''
     
     dart pub get
+    dart run tool/travis.dart
+    
+        ''');
+      shell = shell.popd();
+    }
+    for (var dir in [
+      'sqflite',
+      'sqflite/example',
+      'sqflite_test_app',
+    ]) {
+      shell = shell.pushd(dir);
+      await shell.run('''
+    
+    flutter pub get
     dart run tool/travis.dart
     
         ''');

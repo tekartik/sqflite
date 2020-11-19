@@ -13,27 +13,17 @@ import 'package:pub_semver/pub_semver.dart';
 Future<void> main() async {
   final shell = Shell();
 
-  final nnbdEnabled = dartVersion > Version(2, 11, 0, pre: '0');
+  final nnbdEnabled = dartVersion > Version(2, 12, 0, pre: '0');
   if (nnbdEnabled) {
-    // Temp dart extra option. To remove once nnbd supported on stable without flags
-    // final dartExtraOptions = '--enable-experiment=non-nullable';
-    // Needed for run and test
-    final dartRunExtraOptions =
-        '--enable-experiment=non-nullable --no-sound-null-safety';
-
-    // Remove temporarily options that failed on flutter test
-    // final testOptions = '--no-pub --coverage';
-    final testOptions = '';
     await shell.run('''
 
 flutter format --set-exit-if-changed lib test tool
 flutter analyze --no-current-package lib test tool
-flutter test $dartRunExtraOptions $testOptions
+flutter test
 ''');
 
     try {
-      await run('dart $dartRunExtraOptions test/no_flutter_main.dart',
-          verbose: false);
+      await run('dart test/no_flutter_main.dart', verbose: false);
     } catch (e) {
       stdout.writeln('error $e running test/no_flutter_main.dart');
     }

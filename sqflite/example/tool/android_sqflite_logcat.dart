@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:process_run/shell.dart';
 import 'package:sqflite_example/src/common_import.dart';
 
