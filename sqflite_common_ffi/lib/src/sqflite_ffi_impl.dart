@@ -144,7 +144,9 @@ class SqfliteFfiDatabase {
 
     try {
       logSql(sql: sql, sqlArguments: sqlArguments);
-      var result = preparedStatement.select(sqlArguments as List<Object>);
+
+      var result = preparedStatement
+          .select(sqlArguments?.cast<Object?>() ?? const <Object?>[]);
       logResult(result: 'Found ${result.length} rows');
       return packResult(result);
     } finally {

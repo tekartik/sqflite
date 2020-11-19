@@ -40,7 +40,7 @@ class SqfliteIsolate {
             code: error['code'] as String,
             message: error['message'] as String,
             details: (error['details'] as Map?)?.cast<String, dynamic>(),
-            resultCode: error['resultCode'] as int);
+            resultCode: error['resultCode'] as int?);
       }
       return response['result'];
     }
