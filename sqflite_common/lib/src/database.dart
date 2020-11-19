@@ -40,13 +40,13 @@ class SqfliteDatabaseOpenHelper {
   // Future<SqfliteDatabase> get databaseReady => _completer.future;
 
   /// Open or return the one opened.
-  Future<SqfliteDatabase?> openDatabase() async {
+  Future<SqfliteDatabase> openDatabase() async {
     if (!isOpen) {
       final database = newDatabase(path);
       await database.doOpen(options!);
       sqfliteDatabase = database;
     }
-    return sqfliteDatabase;
+    return sqfliteDatabase!;
   }
 
   /// Open the database if opened.

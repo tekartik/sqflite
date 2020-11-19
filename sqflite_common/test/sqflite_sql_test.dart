@@ -30,14 +30,16 @@ void main() {
             ],
             'id': 1
           },
-          null
+          1
         ],
         closeStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
-      await db.insert('test', {
-        'blob': Uint8List.fromList([1, 2, 3])
-      });
+      expect(
+          await db.insert('test', {
+            'blob': Uint8List.fromList([1, 2, 3])
+          }),
+          1);
       await db.close();
       scenario.end();
     });
@@ -52,13 +54,15 @@ void main() {
             'arguments': [1],
             'id': 1
           },
-          null
+          1
         ],
         closeStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
-      await db.insert('test', {'value': 1},
-          conflictAlgorithm: ConflictAlgorithm.ignore);
+      expect(
+          await db.insert('test', {'value': 1},
+              conflictAlgorithm: ConflictAlgorithm.ignore),
+          1);
       await db.close();
       scenario.end();
     });

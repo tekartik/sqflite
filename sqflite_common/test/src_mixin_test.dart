@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:test/test.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqlite_api.dart';
-
 import 'package:sqflite_common/src/constant.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/mixin.dart';
+import 'package:sqflite_common/src/mixin/dev_utils.dart'; // ignore: unused_import
 import 'package:sqflite_common/src/open_options.dart';
 import 'package:sqflite_common/utils/utils.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('src_mixin', () {
@@ -18,12 +18,18 @@ void main() {
 
 /// Mock the result based on the method used
 dynamic? mockResult(String method) {
-  // print(method);
+  // devPrint('$method');
   switch (method) {
     case methodOpenDatabase:
       return 1;
+    case methodInsert:
+      return 0;
+    case methodUpdate:
+      return 0;
     case methodQuery:
       return <String, dynamic>{};
+    case methodDatabaseExists:
+      return false;
   }
   return null;
 }
@@ -68,7 +74,6 @@ class MockDatabase extends SqfliteDatabaseBase {
       argumentsLists.add(null);
       sqls.add(null);
     }
-    //devPrint('$method $arguments');
     return mockResult(method) as T;
   }
 }
@@ -788,7 +793,7 @@ void run() {
       final path = 'test_exists.db';
       await mockDatabaseFactory.deleteDatabase(path);
       final exists = await mockDatabaseFactory.databaseExists(path);
-      expect(exists, isNull);
+      expect(exists, isFalse);
       final expectedPath =
           absolute(join(await mockDatabaseFactory.getDatabasesPath(), path));
       expect(mockDatabaseFactory.methods,

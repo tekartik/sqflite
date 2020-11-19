@@ -20,8 +20,8 @@ class Rows extends PluginList<Map<String, dynamic>> {
 
 /// Unpack the native results
 QueryResultSet queryResultSetFromMap(Map<dynamic, dynamic> queryResultSetMap) {
-  final columns = queryResultSetMap['columns'] as List<dynamic>;
-  final rows = queryResultSetMap['rows'] as List<dynamic>;
+  final columns = queryResultSetMap['columns'] as List<dynamic>?;
+  final rows = queryResultSetMap['rows'] as List<dynamic>?;
   return QueryResultSet(columns, rows);
 }
 

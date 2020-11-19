@@ -111,8 +111,7 @@ mixin SqfliteDatabaseFactoryMixin
           setDatabaseOpenHelper(databaseOpenHelper);
         }
         try {
-          return await (databaseOpenHelper!.openDatabase()
-              as FutureOr<Database>);
+          return await databaseOpenHelper!.openDatabase();
         } catch (e) {
           // If first open fail remove the reference
           if (firstOpen) {
@@ -123,7 +122,7 @@ mixin SqfliteDatabaseFactoryMixin
       } else {
         final databaseOpenHelper =
             SqfliteDatabaseOpenHelper(this, path, options);
-        return await (databaseOpenHelper.openDatabase() as FutureOr<Database>);
+        return await databaseOpenHelper.openDatabase();
       }
     });
   }
