@@ -15,7 +15,7 @@ void _checkArg(dynamic arg) {
 *** WARNING ***
 
 Invalid argument $arg with type $type.
-Only num, String and Uint8List are supported. See https://github.com/tekartik/sqflite_common/blob/master/sqflite_common/doc/supported_types.md for details
+Only num, String and Uint8List are supported. See https://github.com/tekartik/sqflite/blob/master/sqflite/doc/supported_types.md for details
 
 This will throw an exception in the future. For now it is displayed once per type.
 
