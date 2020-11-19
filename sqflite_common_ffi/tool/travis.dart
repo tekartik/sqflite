@@ -31,5 +31,7 @@ dart test -p vm,chrome
 
 
 ''');
+  } else {
+    stderr.writeln('nnbd tests skipped on dart $dartVersion');
   }
 }

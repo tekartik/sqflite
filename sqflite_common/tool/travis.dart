@@ -50,5 +50,7 @@ dart test
       stdout
           .writeln('No code coverage for non-stable dart version $dartVersion');
     }
+  } else {
+    stderr.writeln('nnbd tests skipped on dart $dartVersion');
   }
 }

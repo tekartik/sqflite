@@ -617,7 +617,7 @@ void run(SqfliteTestContext context) {
     for (var i = 0; i < 100; i++) {
       unawaited(helper.getDb());
     }
-    var db = await (helper.getDb() as FutureOr<Database>);
+    var db = (await helper.getDb())!;
     await db.close();
   });
 

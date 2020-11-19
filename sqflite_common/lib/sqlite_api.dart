@@ -34,43 +34,59 @@ abstract class DatabaseFactory {
 /// Common API for [Database] and [Transaction] to execute SQL commands
 ///
 abstract class DatabaseExecutor {
-  /// Execute an SQL query with no return value
+  /// Execute an SQL query with no return value.
   Future<void> execute(String sql, [List<dynamic>? arguments]);
 
-  /// Execute a raw SQL INSERT query
+  /// Execute a raw SQL INSERT query.
   ///
-  /// Returns the last inserted record id
+  /// Returns the last inserted record id.
+  ///
+  /// 0 could be returned for some specific conflict algorithms if not inserted.
   Future<int> rawInsert(String sql, [List<dynamic>? arguments]);
 
-  /// INSERT helper
+  /// SQL INSERT helper.
+  ///
+  /// Execute an SQL INSERT query.
+  ///
+  /// Returns the last inserted record id.
+  ///
+  /// 0 could be returned for some specific conflict algorithms if not inserted.
   Future<int> insert(String table, Map<String, dynamic> values,
       {String? nullColumnHack, ConflictAlgorithm? conflictAlgorithm});
 
-  /// Helper to query a table
+  /// Helper to query a table.
   ///
-  /// @param distinct true if you want each row to be unique, false otherwise.
-  /// @param table The table names to compile the query against.
-  /// @param columns A list of which columns to return. Passing null will
+  /// [distinct] : true if you want each row to be unique, false otherwise.
+  ///
+  /// [table]: The table names to compile the query against.
+  ///
+  /// [columns]: A list of which columns to return. Passing null will
   ///            return all columns, which is discouraged to prevent reading
   ///            data from storage that isn't going to be used.
-  /// @param where A filter declaring which rows to return, formatted as an SQL
+  ///
+  /// [where]: A filter declaring which rows to return, formatted as an SQL
   ///            WHERE clause (excluding the WHERE itself). Passing null will
   ///            return all rows for the given URL.
-  /// @param groupBy A filter declaring how to group rows, formatted as an SQL
+  ///
+  /// [groupBy]: A filter declaring how to group rows, formatted as an SQL
   ///            GROUP BY clause (excluding the GROUP BY itself). Passing null
   ///            will cause the rows to not be grouped.
-  /// @param having A filter declare which row groups to include in the cursor,
+  ///
+  /// [having]: A filter declare which row groups to include in the cursor,
   ///            if row grouping is being used, formatted as an SQL HAVING
   ///            clause (excluding the HAVING itself). Passing null will cause
   ///            all row groups to be included, and is required when row
   ///            grouping is not being used.
-  /// @param orderBy How to order the rows, formatted as an SQL ORDER BY clause
+  ///
+  /// [orderBy]: How to order the rows, formatted as an SQL ORDER BY clause
   ///            (excluding the ORDER BY itself). Passing null will use the
   ///            default sort order, which may be unordered.
-  /// @param limit Limits the number of rows returned by the query,
-  /// @param offset starting index,
-
-  /// @return the items found
+  ///
+  /// [limit]: Limits the number of rows returned by the query,
+  ///
+  /// [offset]: starting index.
+  ///
+  /// returns the items found.
   Future<List<Map<String, dynamic>>> query(String table,
       {bool? distinct,
       List<String>? columns,
@@ -82,15 +98,15 @@ abstract class DatabaseExecutor {
       int? limit,
       int? offset});
 
-  /// Execute a raw SQL SELECT query
+  /// Execute a raw SQL SELECT query.
   ///
-  /// Returns a list of rows that were found
+  /// Returns a list of rows that were found.
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
       [List<dynamic>? arguments]);
 
-  /// Execute a raw SQL UPDATE query
+  /// Execute a raw SQL UPDATE query.
   ///
-  /// Returns the number of changes made
+  /// Returns the number of changes made.
   Future<int> rawUpdate(String sql, [List<dynamic>? arguments]);
 
   /// Convenience method for updating rows in the database.

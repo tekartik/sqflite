@@ -18,8 +18,6 @@ analyzer:
     # Ignore errors like
     # 'super_goes_last' is a deprecated lint rule and should not be used • included_file_warning
     included_file_warning: ignore
-  enable-experiment:
-    - non-nullable
 
 linter:
   rules:

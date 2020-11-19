@@ -14,7 +14,7 @@ import 'package:synchronized/synchronized.dart';
 
 import 'database_tracker.dart';
 
-final _debug = false; // devWarning(true); // false
+final _debug = devWarning(true); // false
 // final _useIsolate = true; // devWarning(true); // true the default!
 
 String _prefix = '[sqflite]';
@@ -105,6 +105,10 @@ class SqfliteFfiDatabase {
     _ffiDb.dispose();
   }
 
+  List<Object?> _ffiArguments(List? sqlArguments) {
+    return sqlArguments?.cast<Object?>() ?? const <Object?>[];
+  }
+
   /// Handle execute.
   Future handleExecute({required String sql, List? sqlArguments}) async {
     logSql(sql: sql, sqlArguments: sqlArguments);
@@ -112,7 +116,7 @@ class SqfliteFfiDatabase {
     if (sqlArguments?.isNotEmpty ?? false) {
       var preparedStatement = _ffiDb.prepare(sql);
       try {
-        preparedStatement.execute(sqlArguments as List<Object>);
+        preparedStatement.execute(_ffiArguments(sqlArguments));
         return null;
       } finally {
         preparedStatement.dispose();
@@ -145,8 +149,7 @@ class SqfliteFfiDatabase {
     try {
       logSql(sql: sql, sqlArguments: sqlArguments);
 
-      var result = preparedStatement
-          .select(sqlArguments?.cast<Object?>() ?? const <Object?>[]);
+      var result = preparedStatement.select(_ffiArguments(sqlArguments));
       logResult(result: 'Found ${result.length} rows');
       return packResult(result);
     } finally {
@@ -401,7 +404,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Get the sql command.
   String? getSql() {
-    var sql = arguments['sql'] as String;
+    var sql = arguments['sql'] as String?;
     return sql;
   }
 
@@ -578,7 +581,10 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
         }
       }
 
-      void addError(dynamic e) {
+      void addError(dynamic e, [dynamic st]) {
+        if (_debug && st != null) {
+          print('stack: $st');
+        }
         SqfliteFfiException wrap(dynamic e) {
           return wrapAnyException(e)
             ..sql = operation.sql
@@ -605,8 +611,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
               if (!noResult) {
                 addResult(database.getLastInsertId());
               }
-            } catch (e) {
-              addError(e);
+            } catch (e, st) {
+              addError(e, st);
             }
 
             break;

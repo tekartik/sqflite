@@ -384,14 +384,18 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   /// for INSERT sql query
   /// returns the last inserted record id
+  ///
+  /// 0 returned instead of null
   @override
   Future<int> txnRawInsert(
       SqfliteTransaction? txn, String sql, List<dynamic>? arguments) {
-    return txnWriteSynchronized(txn, (_) {
-      return safeInvokeMethod<int>(
-          methodInsert,
-          <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
-            ..addAll(baseDatabaseMethodArguments));
+    return txnWriteSynchronized(txn, (_) async {
+      // The value could be null (for insert ignore). Return 0 in this case
+      return await safeInvokeMethod<int?>(
+              methodInsert,
+              <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
+                ..addAll(baseDatabaseMethodArguments)) ??
+          0;
     });
   }
 
