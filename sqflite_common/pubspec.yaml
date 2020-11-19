@@ -17,3 +17,4 @@ dev_dependencies:
   http:
   test: '>=1.16.0-nullsafety.10'
   test_api: '>=0.2.19-nullsafety.6'
+  pub_semver:

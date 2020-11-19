@@ -1,3 +1,7 @@
+## 2.0.0-nullsafety.0
+
+* `nnbd` support
+
 ## 1.3.2+1
 
 * iOS/macOS: Update FMDB to 2.7.5+

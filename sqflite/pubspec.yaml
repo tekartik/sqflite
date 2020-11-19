@@ -33,8 +33,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   test_api:
+  pub_semver:
 
 # Temp for nnbd support
-dependency_overrides:
-  sqflite_common:
-    path: ../sqflite_common
+# dependency_overrides:
+#  sqflite_common:
+#    path: ../sqflite_common
