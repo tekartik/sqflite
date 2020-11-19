@@ -126,14 +126,14 @@ class TodoTestPage extends TestPage {
       expect(todo.id, 1);
 
       expect(await todoProvider.getTodo(0), null);
-      todo = await (todoProvider.getTodo(1) as FutureOr<Todo>);
+      todo = (await todoProvider.getTodo(1))!;
       expect(todo.id, 1);
       expect(todo.title, 'test');
       expect(todo.done, false);
 
       todo.done = true;
       expect(await todoProvider.update(todo), 1);
-      todo = await (todoProvider.getTodo(1) as FutureOr<Todo>);
+      todo = (await todoProvider.getTodo(1))!;
       expect(todo.id, 1);
       expect(todo.title, 'test');
       expect(todo.done, true);

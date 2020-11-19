@@ -411,21 +411,22 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     });
   }
 
-  /// for INSERT sql query
-  /// returns the last inserted record id
+  /// for Update sql query
+  /// returns the update count
   @override
   Future<int> txnRawUpdate(
       SqfliteTransaction? txn, String sql, List<dynamic>? arguments) {
-    return txnWriteSynchronized(txn, (_) {
-      return safeInvokeMethod<int>(
+    return txnWriteSynchronized(txn, (_) async {
+      final result = await safeInvokeMethod<int?>(
           methodUpdate,
           <String, dynamic>{paramSql: sql, paramSqlArguments: arguments}
             ..addAll(baseDatabaseMethodArguments));
+      return result ?? 0;
     });
   }
 
   @override
-  Future<List<dynamic?>> txnApplyBatch(
+  Future<List<dynamic>> txnApplyBatch(
       SqfliteTransaction txn, SqfliteBatch batch,
       {bool? noResult, bool? continueOnError}) {
     return txnWriteSynchronized(txn, (_) async {
@@ -442,7 +443,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
       // Typically when noResult is true
       if (results == null) {
-        return [];
+        return <dynamic>[];
       }
       // dart2 - wrap if we need to support more results than just int
       return BatchResults.from(results);

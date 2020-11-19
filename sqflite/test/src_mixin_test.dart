@@ -17,13 +17,19 @@ void main() {
 }
 
 /// Mock the result based on the method used
-dynamic? mockResult(String method) {
-  // print(method);
+dynamic mockResult(String method) {
+  // devPrint('$method');
   switch (method) {
     case methodOpenDatabase:
       return 1;
+    case methodInsert:
+      return 0;
+    case methodUpdate:
+      return 0;
     case methodQuery:
       return <String, dynamic>{};
+    case methodDatabaseExists:
+      return false;
   }
   return null;
 }
@@ -801,7 +807,7 @@ void run() {
       final path = 'test_exists.db';
       await mockDatabaseFactory.deleteDatabase(path);
       final exists = await mockDatabaseFactory.databaseExists(path);
-      expect(exists, isNull);
+      expect(exists, isFalse);
       final expectedPath =
           absolute(join(await mockDatabaseFactory.getDatabasesPath(), path));
       expect(mockDatabaseFactory.methods,

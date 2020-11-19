@@ -1,5 +1,6 @@
 name: sqflite_test_app
 description: sqflite test application.
+publish_to: none
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -11,10 +12,10 @@ description: sqflite test application.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 1.1.0
 
 environment:
-  sdk: '>=2.11.0-0 <3.0.0'
+  sdk: '>=2.12.0-29 <3.0.0'
 
 dependencies:
   flutter:
@@ -37,7 +38,7 @@ dev_dependencies:
   integration_test:
   sqflite_common_test:
     path: ../sqflite_common_test
-  test: any
+  test: '>=1.16.0-nullsafety.10'
   process_run: '>=0.11.0+2'
   sqlite3_flutter_libs:
 

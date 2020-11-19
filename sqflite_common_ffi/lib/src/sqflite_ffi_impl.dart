@@ -14,7 +14,7 @@ import 'package:synchronized/synchronized.dart';
 
 import 'database_tracker.dart';
 
-final _debug = devWarning(true); // false
+final _debug = false; // devWarning(true); // false
 // final _useIsolate = true; // devWarning(true); // true the default!
 
 String _prefix = '[sqflite]';

@@ -366,7 +366,7 @@ abstract class Batch {
   /// (we are already in a transaction) or if the batch was created in a
   /// transaction it will only be commited when
   /// the transaction is commited ([exclusive] is not used then)
-  Future<List<dynamic?>> commit(
+  Future<List<dynamic>> commit(
       {bool? exclusive, bool? noResult, bool? continueOnError});
 
   /// See [Database.rawInsert]

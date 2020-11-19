@@ -4,10 +4,6 @@
 include: package:pedantic/analysis_options.yaml
 
 analyzer:
-  strong-mode:
-    implicit-casts: false
-    # implicit-dynamic: false
-
   errors:
     # treat missing required parameters as a warning (not a hint)
     missing_required_param: warning
@@ -18,8 +14,6 @@ analyzer:
     # Ignore errors like
     # 'super_goes_last' is a deprecated lint rule and should not be used • included_file_warning
     included_file_warning: ignore
-  enable-experiment:
-    - non-nullable
 
 linter:
   rules:

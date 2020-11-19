@@ -81,7 +81,7 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
   Future<void> endTransaction(SqfliteTransaction txn);
 
   /// Commit a batch.
-  Future<List<dynamic?>> txnApplyBatch(
+  Future<List<dynamic>> txnApplyBatch(
       SqfliteTransaction txn, SqfliteBatch batch,
       {bool? noResult, bool? continueOnError});
 

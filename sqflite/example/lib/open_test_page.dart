@@ -657,7 +657,7 @@ class OpenTestPage extends TestPage {
         // ignore: unawaited_futures
         helper.getDb();
       }
-      var db = await (helper.getDb() as FutureOr<Database>);
+      var db = await helper.getDb();
       await db.close();
     });
 
@@ -930,13 +930,13 @@ class Helper {
   final _lock = Lock();
 
   /// Open the database if not done.
-  Future<Database?> getDb() async {
+  Future<Database> getDb() async {
     if (_db == null) {
       await _lock.synchronized(() async {
         // Check again once entering the synchronized block
         _db ??= await openDatabase(path);
       });
     }
-    return _db;
+    return _db!;
   }
 }

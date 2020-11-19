@@ -17,7 +17,7 @@ void main() {
       final methods = <String>[];
       final factory = buildDatabaseFactory(
           invokeMethod: (String method, [dynamic arguments]) async {
-        final dynamic? result = mockResult(method);
+        final dynamic result = mockResult(method);
         methods.add(method);
         return result;
       });

@@ -111,7 +111,7 @@ class BatchTestPage extends TestPage {
           where: 'name = ?', whereArgs: <String>['item']);
       batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
       results = await batch.commit(noResult: true);
-      expect(results, null);
+      expect(results, []);
 
       await db.close();
     });

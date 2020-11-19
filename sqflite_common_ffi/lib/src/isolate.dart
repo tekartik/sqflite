@@ -6,7 +6,7 @@ import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
 
 import 'sqflite_ffi_impl.dart';
 
-bool _debug = devWarning(true); // false;
+bool _debug = false; // devWarning(true); // false;
 
 /// Sqflite isolate.
 class SqfliteIsolate {

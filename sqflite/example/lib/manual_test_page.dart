@@ -169,10 +169,10 @@ class MultipleDbTestPage extends StatelessWidget {
 /// Simple db test page.
 class SimpleDbTestPage extends StatefulWidget {
   /// Simple db test page.
-  const SimpleDbTestPage({Key? key, this.dbName}) : super(key: key);
+  const SimpleDbTestPage({Key? key, required this.dbName}) : super(key: key);
 
   /// db name.
-  final String? dbName;
+  final String dbName;
 
   @override
   _SimpleDbTestPageState createState() => _SimpleDbTestPageState();
@@ -183,7 +183,7 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
 
   Future<Database> _openDatabase() async {
     // await Sqflite.devSetOptions(SqfliteOptions(logLevel: sqfliteLogLevelVerbose));
-    return database ??= await databaseFactory.openDatabase(widget.dbName!,
+    return database ??= await databaseFactory.openDatabase(widget.dbName,
         options: OpenDatabaseOptions(
             version: 1,
             onCreate: (db, version) async {

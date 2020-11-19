@@ -17,7 +17,7 @@ void main() {
 }
 
 /// Mock the result based on the method used
-dynamic? mockResult(String method) {
+dynamic mockResult(String method) {
   // devPrint('$method');
   switch (method) {
     case methodOpenDatabase:
