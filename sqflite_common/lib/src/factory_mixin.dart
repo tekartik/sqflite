@@ -136,7 +136,7 @@ mixin SqfliteDatabaseFactoryMixin
       // Handle already single instance open database
       removeDatabaseOpenHelper(path);
       return safeInvokeMethod<void>(
-          methodDeleteDatabase, <String, dynamic>{paramPath: path});
+          methodDeleteDatabase, <String, Object?>{paramPath: path});
     });
   }
 
@@ -144,7 +144,7 @@ mixin SqfliteDatabaseFactoryMixin
   Future<bool> databaseExists(String path) async {
     path = await fixPath(path);
     return safeInvokeMethod<bool>(
-        methodDatabaseExists, <String, dynamic>{paramPath: path});
+        methodDatabaseExists, <String, Object?>{paramPath: path});
   }
 
   String? _databasesPath;
@@ -196,7 +196,7 @@ mixin SqfliteDatabaseFactoryMixin
   Future<SqfliteDebugInfo> getDebugInfo() async {
     final info = SqfliteDebugInfo();
     final dynamic map =
-        await safeInvokeMethod(methodDebug, <String, dynamic>{'cmd': 'get'});
+        await safeInvokeMethod(methodDebug, <String, Object?>{'cmd': 'get'});
     final dynamic databasesMap = map[paramDatabases];
     if (databasesMap is Map) {
       info.databases = databasesMap.map((dynamic id, dynamic info) {
@@ -240,8 +240,8 @@ class SqfliteDatabaseDebugInfo {
   }
 
   /// Debug formatting helper
-  Map<String, dynamic> toDebugMap() {
-    final map = <String, dynamic>{
+  Map<String, Object?> toDebugMap() {
+    final map = <String, Object?>{
       paramPath: path,
       paramSingleInstance: singleInstance
     };
@@ -264,12 +264,12 @@ class SqfliteDebugInfo {
   int? logLevel;
 
   /// Debug formatting helper
-  Map<String, dynamic> toDebugMap() {
-    final map = <String, dynamic>{};
+  Map<String, Object?> toDebugMap() {
+    final map = <String, Object?>{};
     if (databases != null) {
       map[paramDatabases] = databases!.map(
           (String key, SqfliteDatabaseDebugInfo dbInfo) =>
-              MapEntry<String, Map<String, dynamic>>(key, dbInfo.toDebugMap()));
+              MapEntry<String, Map<String, Object?>>(key, dbInfo.toDebugMap()));
     }
     if ((logLevel ?? sqfliteLogLevelNone) > sqfliteLogLevelNone) {
       map[paramLogLevel] = logLevel;

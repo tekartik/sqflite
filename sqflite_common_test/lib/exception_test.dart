@@ -26,8 +26,7 @@ void run(SqfliteTestContext context) {
       var hasFailed = false;
       try {
         await db.transaction((txn) async {
-          await txn.rawInsert(
-              'INSERT INTO Test (name) VALUES (?)', <dynamic>['item']);
+          await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item']);
           var afterCount = utils
               .firstIntValue(await txn.rawQuery('SELECT COUNT(*) FROM Test'));
           expect(afterCount, 1);
@@ -58,7 +57,7 @@ void run(SqfliteTestContext context) {
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
       var batch = db.batch();
-      batch.rawInsert('INSERT INTO Test (name) VALUES (?)', <dynamic>['item']);
+      batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item']);
       batch.execute('DUMMY CALL');
 
       var hasFailed = true;
@@ -103,7 +102,7 @@ void run(SqfliteTestContext context) {
       }
 
       try {
-        await db.rawQuery('malformed query with args ?', <dynamic>[1]);
+        await db.rawQuery('malformed query with args ?', [1]);
         fail('should fail'); // should fail before
       } on DatabaseException catch (e) {
         verify(e.isSyntaxError());
@@ -223,10 +222,10 @@ void run(SqfliteTestContext context) {
               onCreate: (db, version) {
                 db.execute('CREATE TABLE Test (name TEXT UNIQUE)');
               }));
-      await db.insert('Test', <String, dynamic>{'name': 'test1'});
+      await db.insert('Test', <String, Object?>{'name': 'test1'});
 
       try {
-        await db.insert('Test', <String, dynamic>{'name': 'test1'});
+        await db.insert('Test', <String, Object?>{'name': 'test1'});
         fail('should fail');
       } on DatabaseException catch (e) {
         // iOS: Error Domain=FMDatabase Code=19 'UNIQUE constraint failed: Test.name' UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name}) s
@@ -249,9 +248,9 @@ void run(SqfliteTestContext context) {
                 db.execute(
                     'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL)');
               }));
-      await db.insert('Test', <String, dynamic>{'id': 1, 'name': 'test1'});
+      await db.insert('Test', <String, Object?>{'id': 1, 'name': 'test1'});
       try {
-        await db.insert('Test', <String, dynamic>{'id': 1});
+        await db.insert('Test', <String, Object?>{'id': 1});
         fail('should fail');
       } on DatabaseException catch (e) {
         print(e);
@@ -273,10 +272,10 @@ void run(SqfliteTestContext context) {
               onCreate: (db, version) {
                 db.execute('CREATE TABLE Test (name TEXT PRIMARY KEY)');
               }));
-      await db.insert('Test', <String, dynamic>{'name': 'test1'});
+      await db.insert('Test', <String, Object?>{'name': 'test1'});
 
       try {
-        await db.insert('Test', <String, dynamic>{'name': 'test1'});
+        await db.insert('Test', <String, Object?>{'name': 'test1'});
         fail('should fail');
       } on DatabaseException catch (e) {
         // iOS: DatabaseException(Error Domain=FMDatabase Code=1555 "UNIQUE constraint failed: Test.name"
@@ -289,7 +288,7 @@ void run(SqfliteTestContext context) {
 
       // try in batch
       var batch = db.batch();
-      batch.insert('Test', <String, dynamic>{'name': 'test1'});
+      batch.insert('Test', <String, Object?>{'name': 'test1'});
       try {
         await batch.commit();
         fail('should fail');
@@ -303,9 +302,9 @@ void run(SqfliteTestContext context) {
       }
 
       // update
-      await db.insert('Test', <String, dynamic>{'name': 'test2'});
+      await db.insert('Test', <String, Object?>{'name': 'test2'});
       try {
-        await db.update('Test', <String, dynamic>{'name': 'test1'},
+        await db.update('Test', <String, Object?>{'name': 'test1'},
             where: 'name = "test2"');
         fail('should fail');
       } on DatabaseException catch (e) {
@@ -353,7 +352,7 @@ void run(SqfliteTestContext context) {
 
       try {
         var batch = db.batch();
-        batch.rawQuery('malformed query with args ?', <dynamic>[1]);
+        batch.rawQuery('malformed query with args ?', [1]);
         await batch.commit();
         fail('should fail'); // should fail before
       } on DatabaseException catch (e) {
@@ -560,12 +559,11 @@ void run(SqfliteTestContext context) {
 
         await db.execute('CREATE TABLE Test (name TEXT)');
 
-        await db
-            .rawInsert('INSERT INTO Test (name) VALUES (\'?\')', <dynamic>[]);
+        await db.rawInsert('INSERT INTO Test (name) VALUES (\'?\')', []);
 
-        await db.rawQuery('SELECT * FROM Test WHERE name = ?', <dynamic>[]);
+        await db.rawQuery('SELECT * FROM Test WHERE name = ?', []);
 
-        await db.rawDelete('DELETE FROM Test WHERE name = ?', <dynamic>[]);
+        await db.rawDelete('DELETE FROM Test WHERE name = ?', []);
 
         await db.close();
       }
@@ -581,10 +579,9 @@ void run(SqfliteTestContext context) {
 
         await db.execute('CREATE TABLE Test (name TEXT)');
 
-        await db
-            .rawInsert('INSERT INTO Test (name) VALUES (\'?\')', <dynamic>[]);
+        await db.rawInsert('INSERT INTO Test (name) VALUES (\'?\')', []);
 
-        await db.rawQuery('SELECT * FROM Test WHERE name = ?', <dynamic>[]);
+        await db.rawQuery('SELECT * FROM Test WHERE name = ?', []);
 
         await db.close();
       }
@@ -598,6 +595,8 @@ void run(SqfliteTestContext context) {
       await db.execute('CREATE TABLE Test (name TEXT)');
 
       //await db.rawInsert('INSERT INTO Test (name) VALUES (\'?\')', [null]);
+      // nnbd, this is no longer possible!
+      /*
       try {
         await db
             .rawInsert('INSERT INTO Test (name) VALUES (?)', <dynamic>[null]);
@@ -619,7 +618,7 @@ void run(SqfliteTestContext context) {
         print('ERR: $e');
         expect(e.toString().contains("sql 'DELETE FROM Test"), true);
       }
-
+       */
       await db.close();
     });
 
@@ -632,23 +631,23 @@ void run(SqfliteTestContext context) {
 
       try {
         await db.rawInsert(
-            'INSERT INTO Test (name) VALUES (\'value\')', <dynamic>['value2']);
+            'INSERT INTO Test (name) VALUES (\'value\')', ['value2']);
       } on DatabaseException catch (e) {
         print('ERR: $e');
         expect(e.toString().contains('INSERT INTO Test'), true);
       }
 
       try {
-        await db.rawQuery(
-            'SELECT * FROM Test WHERE name = \'value\'', <dynamic>['value2']);
+        await db
+            .rawQuery('SELECT * FROM Test WHERE name = \'value\'', ['value2']);
       } on DatabaseException catch (e) {
         print('ERR: $e');
         expect(e.toString().contains('SELECT * FROM Test'), true);
       }
 
       try {
-        await db.rawDelete(
-            'DELETE FROM Test WHERE name = \'value\'', <dynamic>['value2']);
+        await db
+            .rawDelete('DELETE FROM Test WHERE name = \'value\'', ['value2']);
       } on DatabaseException catch (e) {
         print('ERR: $e');
         expect(e.toString().contains('DELETE FROM Test'), true);

@@ -27,7 +27,7 @@ dynamic mockResult(String method) {
     case methodUpdate:
       return 0;
     case methodQuery:
-      return <String, dynamic>{};
+      return <String, Object?>{};
     case methodDatabaseExists:
       return false;
   }
@@ -41,7 +41,7 @@ class MockDatabase extends SqfliteDatabaseBase {
   int? version;
   List<String> methods = <String>[];
   List<String?> sqls = <String?>[];
-  List<Map<String, dynamic>?> argumentsLists = <Map<String, dynamic>?>[];
+  List<Map<String, Object?>?> argumentsLists = <Map<String, Object?>?>[];
 
   @override
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
@@ -49,10 +49,10 @@ class MockDatabase extends SqfliteDatabaseBase {
 
     methods.add(method);
     if (arguments is Map) {
-      argumentsLists.add(arguments.cast<String, dynamic>());
+      argumentsLists.add(arguments.cast<String, Object?>());
       if (arguments[paramOperations] != null) {
         final operations =
-            arguments[paramOperations] as List<Map<String, dynamic>>;
+            arguments[paramOperations] as List<Map<String, Object?>>;
         for (var operation in operations) {
           final sql = operation[paramSql] as String?;
           sqls.add(sql);
@@ -65,8 +65,8 @@ class MockDatabase extends SqfliteDatabaseBase {
         if (sql?.startsWith('PRAGMA user_version = ') == true) {
           version = int.tryParse(sql!.split(' ').last);
         } else if (sql == 'PRAGMA user_version') {
-          return <Map<String, dynamic>>[
-            <String, dynamic>{'user_version': version}
+          return <Map<String, Object?>>[
+            <String, Object?>{'user_version': version}
           ] as T;
         }
       }
@@ -80,7 +80,7 @@ class MockDatabase extends SqfliteDatabaseBase {
 
 class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   final List<String> methods = <String>[];
-  final List<dynamic> argumentsList = <dynamic>[];
+  final List<Object?> argumentsList = <Object?>[];
   final Map<String, MockDatabase> databases = <String, MockDatabase>{};
 
   @override
@@ -161,23 +161,23 @@ void run() {
     test('transaction', () async {
       final Database db = mockDatabaseFactory.newEmptyDatabase();
       await db.execute('test');
-      await db.insert('test', <String, dynamic>{'test': 1});
-      await db.update('test', <String, dynamic>{'test': 1});
+      await db.insert('test', <String, Object?>{'test': 1});
+      await db.update('test', <String, Object?>{'test': 1});
       await db.delete('test');
       await db.query('test');
 
       await db.transaction((Transaction txn) async {
         await txn.execute('test');
-        await txn.insert('test', <String, dynamic>{'test': 1});
-        await txn.update('test', <String, dynamic>{'test': 1});
+        await txn.insert('test', <String, Object?>{'test': 1});
+        await txn.update('test', <String, Object?>{'test': 1});
         await txn.delete('test');
         await txn.query('test');
       });
 
       final batch = db.batch();
       batch.execute('test');
-      batch.insert('test', <String, dynamic>{'test': 1});
-      batch.update('test', <String, dynamic>{'test': 1});
+      batch.insert('test', <String, Object?>{'test': 1});
+      batch.update('test', <String, Object?>{'test': 1});
       batch.delete('test');
       batch.query('test');
       await batch.commit();
@@ -191,7 +191,7 @@ void run() {
             as MockDatabase;
         await db.close();
         expect(db.methods, <String>['openDatabase', 'closeDatabase']);
-        expect(db.argumentsLists.first, <String, dynamic>{
+        expect(db.argumentsLists.first, <String, Object?>{
           'path': absolute(
               join(await mockDatabaseFactory.getDatabasesPath(), 'test')),
           'readOnly': true,
@@ -205,7 +205,7 @@ void run() {
             as MockDatabase;
         await db.close();
         expect(db.methods, <String>['openDatabase', 'closeDatabase']);
-        expect(db.argumentsLists.first, <String, dynamic>{
+        expect(db.argumentsLists.first, <String, Object?>{
           'path': absolute(join(await mockDatabaseFactory.getDatabasesPath(),
               'single_instance.db')),
           'singleInstance': false
@@ -222,12 +222,12 @@ void run() {
         await db.close();
         expect(db.methods,
             <String>['openDatabase', 'execute', 'execute', 'closeDatabase']);
-        expect(db.argumentsLists.first, <String, dynamic>{
+        expect(db.argumentsLists.first, <String, Object?>{
           'path': absolute(join(await mockDatabaseFactory.getDatabasesPath(),
               'rollback_transaction.db')),
           'singleInstance': false
         });
-        expect(db.argumentsLists[2], <String, dynamic>{
+        expect(db.argumentsLists[2], <String, Object?>{
           'sql': 'ROLLBACK',
           'arguments': null,
           'id': 1,
@@ -403,20 +403,20 @@ void run() {
           null
         ]);
         expect(db.argumentsLists, <dynamic>[
-          <String, dynamic>{
+          <String, Object?>{
             'path': absolute(
                 join(await mockDatabaseFactory.getDatabasesPath(), 'test')),
             'singleInstance': true
           },
-          <String, dynamic>{
+          <String, Object?>{
             'sql': 'BEGIN IMMEDIATE',
             'arguments': null,
             'id': 1,
             'inTransaction': true
           },
-          <String, dynamic>{
+          <String, Object?>{
             'operations': <dynamic>[
-              <String, dynamic>{
+              <String, Object?>{
                 'method': 'execute',
                 'sql': 'test1',
                 'arguments': null
@@ -424,27 +424,27 @@ void run() {
             ],
             'id': 1
           },
-          <String, dynamic>{
+          <String, Object?>{
             'sql': 'COMMIT',
             'arguments': null,
             'id': 1,
             'inTransaction': false
           },
           {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
-          <String, dynamic>{
+          <String, Object?>{
             'sql': 'BEGIN EXCLUSIVE',
             'arguments': null,
             'inTransaction': true,
             'id': 1
           },
-          <String, dynamic>{
+          <String, Object?>{
             'sql': 'PRAGMA user_version',
             'arguments': null,
             'id': 1
           },
-          <String, dynamic>{
-            'operations': <Map<String, dynamic>>[
-              <String, dynamic>{
+          <String, Object?>{
+            'operations': <Map<String, Object?>>[
+              <String, Object?>{
                 'method': 'execute',
                 'sql': 'test2',
                 'arguments': null
@@ -453,26 +453,26 @@ void run() {
             'id': 1,
             'noResult': true
           },
-          <String, dynamic>{
+          <String, Object?>{
             'sql': 'PRAGMA user_version = 1',
             'arguments': null,
             'id': 1
           },
-          <String, dynamic>{
+          <String, Object?>{
             'sql': 'COMMIT',
             'arguments': null,
             'id': 1,
             'inTransaction': false
           },
-          <String, dynamic>{
+          <String, Object?>{
             'sql': 'BEGIN IMMEDIATE',
             'arguments': null,
             'id': 1,
             'inTransaction': true,
           },
-          <String, dynamic>{
-            'operations': <Map<String, dynamic>>[
-              <String, dynamic>{
+          <String, Object?>{
+            'operations': <Map<String, Object?>>[
+              <String, Object?>{
                 'method': 'execute',
                 'sql': 'test3',
                 'arguments': null
@@ -481,13 +481,13 @@ void run() {
             'id': 1,
             'continueOnError': true
           },
-          <String, dynamic>{
+          <String, Object?>{
             'sql': 'COMMIT',
             'arguments': null,
             'id': 1,
             'inTransaction': false
           },
-          <String, dynamic>{'id': 1}
+          <String, Object?>{'id': 1}
         ]);
       });
     });
@@ -798,9 +798,9 @@ void run() {
           absolute(join(await mockDatabaseFactory.getDatabasesPath(), path));
       expect(mockDatabaseFactory.methods,
           <String>['deleteDatabase', 'databaseExists']);
-      expect(mockDatabaseFactory.argumentsList, <Map<String, dynamic>>[
-        <String, dynamic>{'path': expectedPath},
-        <String, dynamic>{'path': expectedPath}
+      expect(mockDatabaseFactory.argumentsList, <Map<String, Object?>>[
+        <String, Object?>{'path': expectedPath},
+        <String, Object?>{'path': expectedPath}
       ]);
     });
   });

@@ -5,8 +5,8 @@ import 'package:sqflite_common/src/sql_builder.dart';
 void main() {
   group('sql_builder', () {
     test('delete', () {
-      var builder = SqlBuilder.delete('test',
-          where: 'value = ?', whereArgs: <dynamic>[1]);
+      var builder =
+          SqlBuilder.delete('test', where: 'value = ?', whereArgs: <Object>[1]);
       expect(builder.sql, 'DELETE FROM test WHERE value = ?');
       expect(builder.arguments, <int>[1]);
 
@@ -33,7 +33,7 @@ void main() {
           distinct: true,
           columns: <String>['value'],
           where: 'value = ?',
-          whereArgs: <dynamic>[1],
+          whereArgs: <Object>[1],
           groupBy: 'group_value',
           having: 'value > 0',
           orderBy: 'other_value',
@@ -46,68 +46,68 @@ void main() {
 
     test('insert', () {
       try {
-        SqlBuilder.insert('test', <String, dynamic>{});
+        SqlBuilder.insert('test', <String, Object?>{});
         fail('should fail, no nullColumnHack');
       } on ArgumentError catch (_) {}
 
-      var builder = SqlBuilder.insert('test', <String, dynamic>{},
+      var builder = SqlBuilder.insert('test', <String, Object?>{},
           nullColumnHack: 'value');
       expect(builder.sql, 'INSERT INTO test (value) VALUES (NULL)');
       expect(builder.arguments, isNull);
 
-      builder = SqlBuilder.insert('test', <String, dynamic>{'value': 1});
+      builder = SqlBuilder.insert('test', <String, Object?>{'value': 1});
       expect(builder.sql, 'INSERT INTO test (value) VALUES (?)');
       expect(builder.arguments, <int>[1]);
 
       builder = SqlBuilder.insert(
-          'test', <String, dynamic>{'value': 1, 'other_value': null});
+          'test', <String, Object?>{'value': 1, 'other_value': null});
       expect(builder.sql,
           'INSERT INTO test (value, other_value) VALUES (?, NULL)');
       expect(builder.arguments, <int>[1]);
 
-      builder = SqlBuilder.insert('test', <String, dynamic>{'value': 1},
+      builder = SqlBuilder.insert('test', <String, Object?>{'value': 1},
           conflictAlgorithm: ConflictAlgorithm.ignore);
       expect(builder.sql, 'INSERT OR IGNORE INTO test (value) VALUES (?)');
       expect(builder.arguments, <int>[1]);
 
       // no escape yet
-      builder = SqlBuilder.insert('test', <String, dynamic>{'value:': 1});
+      builder = SqlBuilder.insert('test', <String, Object?>{'value:': 1});
       expect(builder.sql, 'INSERT INTO test (value:) VALUES (?)');
       expect(builder.arguments, <int>[1]);
 
       // escape
-      builder = SqlBuilder.insert('table', <String, dynamic>{'table': 1});
+      builder = SqlBuilder.insert('table', <String, Object?>{'table': 1});
       expect(builder.sql, 'INSERT INTO "table" ("table") VALUES (?)');
       expect(builder.arguments, <int>[1]);
     });
 
     test('update', () {
       try {
-        SqlBuilder.update('test', <String, dynamic>{});
+        SqlBuilder.update('test', <String, Object?>{});
         fail('should fail, no values');
       } on ArgumentError catch (_) {}
 
-      var builder = SqlBuilder.update('test', <String, dynamic>{'value': 1});
+      var builder = SqlBuilder.update('test', <String, Object?>{'value': 1});
       expect(builder.sql, 'UPDATE test SET value = ?');
       expect(builder.arguments, <dynamic>[1]);
 
       builder = SqlBuilder.update(
-          'test', <String, dynamic>{'value': 1, 'other_value': null});
+          'test', <String, Object?>{'value': 1, 'other_value': null});
       expect(builder.sql, 'UPDATE test SET value = ?, other_value = NULL');
       expect(builder.arguments, <dynamic>[1]);
 
       // testing where
-      builder = SqlBuilder.update('test', <String, dynamic>{'value': 1},
-          where: 'a = ? AND b = ?', whereArgs: <dynamic>['some_test', 1]);
+      builder = SqlBuilder.update('test', <String, Object?>{'value': 1},
+          where: 'a = ? AND b = ?', whereArgs: <Object>['some_test', 1]);
       expect(builder.arguments, <dynamic>[1, 'some_test', 1]);
 
       // no escape yet
-      builder = SqlBuilder.update('test:', <String, dynamic>{'value:': 1});
+      builder = SqlBuilder.update('test:', <String, Object?>{'value:': 1});
       expect(builder.sql, 'UPDATE test: SET value: = ?');
       expect(builder.arguments, <int>[1]);
 
       // escape
-      builder = SqlBuilder.update('test:', <String, dynamic>{'table': 1});
+      builder = SqlBuilder.update('test:', <String, Object?>{'table': 1});
       expect(builder.sql, 'UPDATE test: SET "table" = ?');
       expect(builder.arguments, <int>[1]);
     });
@@ -125,7 +125,7 @@ void main() {
 
       // testing where
       builder = SqlBuilder.query('test',
-          where: 'a = ? AND b = ?', whereArgs: <dynamic>['some_test', 1]);
+          where: 'a = ? AND b = ?', whereArgs: <Object>['some_test', 1]);
       expect(builder.arguments, <dynamic>['some_test', 1]);
     });
 

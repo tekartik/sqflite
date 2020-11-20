@@ -8,23 +8,23 @@ import 'package:sqflite_common/src/utils.dart';
 /// Batch implementation
 abstract class SqfliteBatch implements Batch {
   /// List of operations
-  final List<Map<String, dynamic>> operations = <Map<String, dynamic>>[];
+  final List<Map<String, Object?>> operations = <Map<String, Object?>>[];
 
-  Map<String, dynamic> _getOperationMap(
-      String method, String sql, List<dynamic>? arguments) {
-    return <String, dynamic>{
+  Map<String, Object?> _getOperationMap(
+      String method, String sql, List<Object>? arguments) {
+    return <String, Object?>{
       paramMethod: method,
       paramSql: sql,
       paramSqlArguments: arguments
     };
   }
 
-  void _add(String method, String sql, List<dynamic>? arguments) {
+  void _add(String method, String sql, List<Object>? arguments) {
     operations.add(_getOperationMap(method, sql, arguments));
   }
 
-  void _addExecute(String method, String sql, List<dynamic>? arguments,
-      bool? inTransaction) {
+  void _addExecute(
+      String method, String sql, List<Object>? arguments, bool? inTransaction) {
     final map = _getOperationMap(method, sql, arguments);
     if (inTransaction != null) {
       map[paramInTransaction] = inTransaction;
@@ -33,12 +33,12 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  void rawInsert(String sql, [List<dynamic>? arguments]) {
+  void rawInsert(String sql, [List<Object>? arguments]) {
     _add(methodInsert, sql, arguments);
   }
 
   @override
-  void insert(String table, Map<String, dynamic> values,
+  void insert(String table, Map<String, Object?> values,
       {String? nullColumnHack, ConflictAlgorithm? conflictAlgorithm}) {
     final builder = SqlBuilder.insert(table, values,
         nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
@@ -46,7 +46,7 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  void rawQuery(String sql, [List<dynamic>? arguments]) {
+  void rawQuery(String sql, [List<Object>? arguments]) {
     _add(methodQuery, sql, arguments);
   }
 
@@ -55,7 +55,7 @@ abstract class SqfliteBatch implements Batch {
       {bool? distinct,
       List<String>? columns,
       String? where,
-      List<dynamic>? whereArgs,
+      List<Object>? whereArgs,
       String? groupBy,
       String? having,
       String? orderBy,
@@ -75,14 +75,14 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  void rawUpdate(String sql, [List<dynamic>? arguments]) {
+  void rawUpdate(String sql, [List<Object>? arguments]) {
     _add(methodUpdate, sql, arguments);
   }
 
   @override
-  void update(String table, Map<String, dynamic> values,
+  void update(String table, Map<String, Object?> values,
       {String? where,
-      List<dynamic>? whereArgs,
+      List<Object>? whereArgs,
       ConflictAlgorithm? conflictAlgorithm}) {
     final builder = SqlBuilder.update(table, values,
         where: where,
@@ -92,19 +92,19 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  void delete(String table, {String? where, List<dynamic>? whereArgs}) {
+  void delete(String table, {String? where, List<Object>? whereArgs}) {
     final builder =
         SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
     return rawDelete(builder.sql, builder.arguments);
   }
 
   @override
-  void rawDelete(String sql, [List<dynamic>? arguments]) {
+  void rawDelete(String sql, [List<Object>? arguments]) {
     rawUpdate(sql, arguments);
   }
 
   @override
-  void execute(String sql, [List<dynamic>? arguments]) {
+  void execute(String sql, [List<Object>? arguments]) {
     // Check for begin/end transaction
     final inTransaction = getSqlInTransactionArgument(sql);
     _addExecute(methodExecute, sql, arguments, inTransaction);
@@ -120,10 +120,10 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   final SqfliteDatabase database;
 
   @override
-  Future<List<dynamic>> commit(
+  Future<List<Object?>> commit(
       {bool? exclusive, bool? noResult, bool? continueOnError}) {
     database.checkNotClosed();
-    return database.transaction<List<dynamic>>((Transaction txn) {
+    return database.transaction<List<Object?>>((Transaction txn) {
       final sqfliteTransaction = txn as SqfliteTransaction;
       return database.txnApplyBatch(sqfliteTransaction, this,
           noResult: noResult, continueOnError: continueOnError);
@@ -140,7 +140,7 @@ class SqfliteTransactionBatch extends SqfliteBatch {
   final SqfliteTransaction transaction;
 
   @override
-  Future<List<dynamic>> commit(
+  Future<List<Object?>> commit(
       {bool? exclusive, bool? noResult, bool? continueOnError}) {
     if (exclusive != null) {
       throw ArgumentError.value(exclusive, 'exclusive',

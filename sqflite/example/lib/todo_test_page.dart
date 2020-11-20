@@ -38,8 +38,8 @@ class Todo {
   bool? done;
 
   /// Convert to a record.
-  Map<String, dynamic> toMap() {
-    var map = <String, dynamic>{
+  Map<String, Object?> toMap() {
+    var map = <String, Object?>{
       columnTitle: title,
       columnDone: done == true ? 1 : 0
     };
@@ -94,7 +94,7 @@ create table $tableTodo (
   /// Update a todo.
   Future<int> update(Todo todo) async {
     return await db.update(tableTodo, todo.toMap(),
-        where: '$columnId = ?', whereArgs: [todo.id]);
+        where: '$columnId = ?', whereArgs: [todo.id!]);
   }
 
   /// Close database.

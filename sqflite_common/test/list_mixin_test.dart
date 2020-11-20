@@ -2,19 +2,19 @@ import 'dart:collection';
 
 import 'package:test/test.dart';
 
-class MyList1 extends Object with ListMixin<Map<String, dynamic>> {
+class MyList1 extends Object with ListMixin<Map<String, Object?>> {
   MyList1.from(this._list);
 
   final List<dynamic> _list;
 
   @override
-  Map<String, dynamic> operator [](int index) {
+  Map<String, Object?> operator [](int index) {
     final value = _list[index] as Map<dynamic, dynamic>;
-    return value.cast<String, dynamic>();
+    return value.cast<String, Object?>();
   }
 
   @override
-  void operator []=(int index, Map<String, dynamic> value) {
+  void operator []=(int index, Map<String, Object?> value) {
     throw 'read-only';
   }
 
@@ -27,19 +27,19 @@ class MyList1 extends Object with ListMixin<Map<String, dynamic>> {
   int get length => _list.length;
 }
 
-class MyList2 extends ListBase<Map<String, dynamic>> {
+class MyList2 extends ListBase<Map<String, Object?>> {
   MyList2.from(this._list);
 
   final List<dynamic> _list;
 
   @override
-  Map<String, dynamic> operator [](int index) {
+  Map<String, Object?> operator [](int index) {
     final value = _list[index] as Map<dynamic, dynamic>;
-    return value.cast<String, dynamic>();
+    return value.cast<String, Object?>();
   }
 
   @override
-  void operator []=(int index, Map<String, dynamic> value) {
+  void operator []=(int index, Map<String, Object?> value) {
     throw 'read-only';
   }
 

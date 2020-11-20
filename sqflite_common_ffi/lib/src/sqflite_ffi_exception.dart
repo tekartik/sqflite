@@ -18,19 +18,19 @@ class SqfliteFfiException extends SqfliteDatabaseException {
   String? sql;
 
   /// SQL arguments.
-  List<dynamic>? sqlArguments;
+  List<Object>? sqlArguments;
 
   /// Error code.
   final String code;
 
   /// Error details.
-  Map<String, dynamic>? details;
+  Map<String, Object?>? details;
 
   int? get _resultCode => getResultCode();
 
   @override
   String toString() {
-    var map = <String, dynamic>{};
+    var map = <String, Object?>{};
     if (details != null) {
       map['details'] = details;
     }

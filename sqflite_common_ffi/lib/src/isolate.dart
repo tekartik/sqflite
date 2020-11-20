@@ -19,7 +19,7 @@ class SqfliteIsolate {
   /// Handle a method call.
   Future<dynamic> handle(FfiMethodCall methodCall) async {
     var recvPort = ReceivePort();
-    var map = <String, dynamic>{
+    var map = <String, Object?>{
       'method': methodCall.method,
       'arguments': methodCall.arguments,
     };
@@ -39,7 +39,7 @@ class SqfliteIsolate {
         throw SqfliteFfiException(
             code: error['code'] as String,
             message: error['message'] as String,
-            details: (error['details'] as Map?)?.cast<String, dynamic>(),
+            details: (error['details'] as Map?)?.cast<String, Object?>(),
             resultCode: error['resultCode'] as int?);
       }
       return response['result'];
@@ -89,7 +89,7 @@ Future _isolate(SendPort sendPort) async {
             var result = await methodCall.handleImpl();
             sendPort.send({'result': result});
           } catch (e, st) {
-            var error = <String, dynamic>{};
+            var error = <String, Object?>{};
             if (e is SqfliteFfiException) {
               error['code'] = e.code;
               error['details'] = e.details;

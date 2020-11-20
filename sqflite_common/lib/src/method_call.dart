@@ -21,8 +21,8 @@ class SqfliteMethodCall {
   final dynamic arguments;
 
   /// To map
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+  Map<String, Object?> toMap() {
+    return <String, Object?>{
       'method': method,
       if (arguments != null) 'arguments': arguments
     };

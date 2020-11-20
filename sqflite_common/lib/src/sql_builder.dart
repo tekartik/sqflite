@@ -61,14 +61,14 @@ class SqlBuilder {
   /// @param whereArgs You may include ?s in the where clause, which
   ///            will be replaced by the values from whereArgs. The values
   ///            will be bound as Strings.
-  SqlBuilder.delete(String table, {String? where, List<dynamic>? whereArgs}) {
+  SqlBuilder.delete(String table, {String? where, List<Object>? whereArgs}) {
     checkWhereArgs(whereArgs);
     final delete = StringBuffer();
     delete.write('DELETE FROM ');
     delete.write(_escapeName(table));
     _writeClause(delete, ' WHERE ', where);
     sql = delete.toString();
-    arguments = whereArgs != null ? List<dynamic>.from(whereArgs) : null;
+    arguments = whereArgs != null ? List<Object>.from(whereArgs) : null;
   }
 
   /// Build an SQL query string from the given clauses.
@@ -98,7 +98,7 @@ class SqlBuilder {
       {bool? distinct,
       List<String>? columns,
       String? where,
-      List<dynamic>? whereArgs,
+      List<Object>? whereArgs,
       String? groupBy,
       String? having,
       String? orderBy,
@@ -135,7 +135,7 @@ class SqlBuilder {
     }
 
     sql = query.toString();
-    arguments = whereArgs != null ? List<dynamic>.from(whereArgs) : null;
+    arguments = whereArgs != null ? List<Object>.from(whereArgs) : null;
   }
 
   /// Convenience method for inserting a row into the database.
@@ -144,7 +144,7 @@ class SqlBuilder {
   /// @nullColumnHack optional; may be null. SQL doesn't allow inserting a completely empty row without naming at least one column name. If your provided values is empty, no column names are known and an empty row can't be inserted. If not set to null, the nullColumnHack parameter provides the name of nullable column name to explicitly insert a NULL into in the case where your values is empty.
   /// @values this map contains the initial column values for the row. The keys should be the column names and the values the column values
 
-  SqlBuilder.insert(String table, Map<String, dynamic> values,
+  SqlBuilder.insert(String table, Map<String, Object?> values,
       {String? nullColumnHack, ConflictAlgorithm? conflictAlgorithm}) {
     final insert = StringBuffer();
     insert.write('INSERT');
@@ -155,15 +155,15 @@ class SqlBuilder {
     insert.write(_escapeName(table));
     insert.write(' (');
 
-    List<dynamic>? bindArgs;
+    List<Object>? bindArgs;
     final size = values.length;
 
     if (size > 0) {
       final sbValues = StringBuffer(') VALUES (');
 
-      bindArgs = <dynamic>[];
+      bindArgs = <Object>[];
       var i = 0;
-      values.forEach((String colName, dynamic value) {
+      values.forEach((String colName, Object? value) {
         if (i++ > 0) {
           insert.write(', ');
           sbValues.write(', ');
@@ -204,9 +204,9 @@ class SqlBuilder {
   ///            will be bound as Strings.
   /// @param conflictAlgorithm for update conflict resolver
 
-  SqlBuilder.update(String table, Map<String, dynamic> values,
+  SqlBuilder.update(String table, Map<String, Object?> values,
       {String? where,
-      List<dynamic>? whereArgs,
+      List<Object>? whereArgs,
       ConflictAlgorithm? conflictAlgorithm}) {
     if (values.isEmpty) {
       throw ArgumentError('Empty values');
@@ -221,13 +221,13 @@ class SqlBuilder {
     update.write(' ${_escapeName(table)}');
     update.write(' SET ');
 
-    final bindArgs = <dynamic>[];
+    final bindArgs = <Object>[];
     var i = 0;
 
     values.keys.forEach((String colName) {
       update.write((i++ > 0) ? ', ' : '');
       update.write(_escapeName(colName));
-      final dynamic value = values[colName];
+      final value = values[colName];
       if (value != null) {
         checkNonNullValue(value);
         bindArgs.add(value);
@@ -251,7 +251,7 @@ class SqlBuilder {
   late String sql;
 
   /// The arguments list;
-  List<dynamic>? arguments;
+  List<Object>? arguments;
 
   /// Used during build if there was a name with an escaped keyword.
   bool hasEscape = false;

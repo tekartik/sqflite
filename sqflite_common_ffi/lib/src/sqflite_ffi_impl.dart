@@ -39,7 +39,7 @@ class SqfliteFfiOperation {
   String? sql;
 
   /// SQL arguments.
-  List? sqlArguments;
+  List<Object>? sqlArguments;
 }
 
 /// Ffi database
@@ -72,8 +72,8 @@ class SqfliteFfiDatabase {
   String get _prefix => '[sqflite-$id]';
 
   /// Debug map.
-  Map<String, dynamic> toDebugMap() {
-    var map = <String, dynamic>{
+  Map<String, Object?> toDebugMap() {
+    var map = <String, Object?>{
       'path': path,
       'id': id,
       'readOnly': readOnly,
@@ -214,7 +214,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       e.sql ??= getSql();
       e.sqlArguments ??= getSqlArguments();
       if (e.database != null || e.sql != null || e.sqlArguments != null) {
-        e.details ??= <String, dynamic>{
+        e.details ??= <String, Object?>{
           if (e.database != null) 'database': e.database!.toDebugMap(),
           if (e.sql != null) 'sql': e.sql,
           if (e.sqlArguments != null) 'arguments': e.sqlArguments
@@ -356,7 +356,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     }
     //devPrint('opened: $database');
 
-    return <String, dynamic>{'id': id};
+    return <String, Object?>{'id': id};
   }
 
   /// Handle close database.
@@ -427,7 +427,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Check the arguments
-  List? getSqlArguments() {
+  List<Object>? getSqlArguments() {
     var arguments = this.arguments;
     if (arguments != null) {
       var sqlArguments = arguments['arguments'] as List?;
@@ -444,7 +444,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
           }
         }
       }
-      return sqlArguments;
+      return sqlArguments?.cast<Object>();
     }
     return null;
   }
@@ -469,7 +469,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     arguments['operations'].cast<Map>().forEach((operationArgument) {
       operations.add(SqfliteFfiOperation()
         ..sql = operationArgument['sql'] as String?
-        ..sqlArguments = operationArgument['arguments'] as List?
+        ..sqlArguments =
+            (operationArgument['arguments'] as List?)?.cast<Object>()
         ..method = operationArgument['method'] as String);
     });
     return operations;
@@ -485,7 +486,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Wrap SQL exception.
   SqfliteFfiException wrapSqlException(ffi.SqliteException e,
-      {String? code, Map<String, dynamic>? details}) {
+      {String? code, Map<String, Object?>? details}) {
     return SqfliteFfiException(
         // Hardcoded
         code: sqliteErrorCode,
@@ -555,16 +556,16 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     //devPrint(arguments);
     var database = getDatabaseOrThrow();
     var operations = getOperations();
-    List<Map<String, dynamic>>? results;
+    List<Map<String, Object?>>? results;
     var noResult = getNoResult();
     var continueOnError = getContinueOnError();
     if (!noResult) {
-      results = <Map<String, dynamic>>[];
+      results = <Map<String, Object?>>[];
     }
     for (var operation in operations) {
-      Map<String, dynamic> getErrorMap(SqfliteFfiException e) {
-        return <String, dynamic>{
-          'error': <String, dynamic>{
+      Map<String, Object?> getErrorMap(SqfliteFfiException e) {
+        return <String, Object?>{
+          'error': <String, Object?>{
             'message': '$e',
             if (e.sql != null || e.sqlArguments != null)
               'data': {
@@ -577,7 +578,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
       void addResult(dynamic result) {
         if (!noResult) {
-          results!.add(<String, dynamic>{'result': result});
+          results!.add(<String, Object?>{'result': result});
         }
       }
 
@@ -684,9 +685,9 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 }
 
 /// Pack the result in the expected sqflite format.
-Map<String, dynamic> packResult(ffi.ResultSet result) {
+Map<String, Object?> packResult(ffi.ResultSet result) {
   var columns = result.columnNames;
   var rows = result.rows;
   // This is what sqflite expected
-  return <String, dynamic>{'columns': columns, 'rows': rows};
+  return <String, Object?>{'columns': columns, 'rows': rows};
 }

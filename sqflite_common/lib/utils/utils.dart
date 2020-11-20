@@ -3,7 +3,7 @@ import 'package:sqflite_common/src/utils.dart' as impl;
 
 /// helper to get the first int value in a query
 /// Useful for COUNT(*) queries
-int? firstIntValue(List<Map<String, dynamic>> list) {
+int? firstIntValue(List<Map<String, Object?>> list) {
   if (list.isNotEmpty) {
     final firstRow = list.first;
     if (firstRow.isNotEmpty) {

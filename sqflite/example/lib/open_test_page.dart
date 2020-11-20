@@ -267,7 +267,7 @@ class OpenTestPage extends TestPage {
       });
       try {
         await database
-            .insert('Test', <String, dynamic>{'id': 1, 'name': 'test'});
+            .insert('Test', <String, Object?>{'id': 1, 'name': 'test'});
         fail('should fail');
       } on DatabaseException catch (e) {
         print(e);
@@ -286,7 +286,7 @@ class OpenTestPage extends TestPage {
       try {
         expect(
             await database
-                .insert('Test', <String, dynamic>{'id': 1, 'name': 'test'}),
+                .insert('Test', <String, Object?>{'id': 1, 'name': 'test'}),
             1);
       } finally {
         await database.close();

@@ -29,7 +29,7 @@ class FactoryServiceDelegate with SqfliteDatabaseFactoryMixin {
 
   @override
   Future<T> invokeMethod<T>(String method, [arguments]) async {
-    var map = <String, dynamic>{
+    var map = <String, Object?>{
       'm': method,
       if (arguments != null) 'a': arguments
     };
@@ -38,7 +38,7 @@ class FactoryServiceDelegate with SqfliteDatabaseFactoryMixin {
     try {
       result = await _factory.invokeMethod<T>(method, arguments);
     } catch (e) {
-      _outs.add(<String, dynamic>{'error': e.toString()});
+      _outs.add(<String, Object?>{'error': e.toString()});
       rethrow;
     }
     _outs.add(result);

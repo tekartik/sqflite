@@ -258,7 +258,7 @@ void run(SqfliteTestContext context) {
               await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
             }));
     try {
-      await database.insert('Test', <String, dynamic>{'id': 1, 'name': 'test'});
+      await database.insert('Test', <String, Object?>{'id': 1, 'name': 'test'});
       fail('should fail');
     } on DatabaseException catch (e) {
       print(e);
@@ -278,7 +278,7 @@ void run(SqfliteTestContext context) {
 
     expect(
         await database
-            .insert('Test', <String, dynamic>{'id': 1, 'name': 'test'}),
+            .insert('Test', <String, Object?>{'id': 1, 'name': 'test'}),
         1);
     await database.close();
   });
@@ -663,7 +663,7 @@ void run(SqfliteTestContext context) {
     try {
       await db
           .execute('CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
-      await db.insert('Test', <String, dynamic>{'id': 1});
+      await db.insert('Test', <String, Object?>{'id': 1});
       expect(await db.query('Test'), [
         {'id': 1}
       ]);
@@ -689,7 +689,7 @@ void run(SqfliteTestContext context) {
 
     var db = await factory.openDatabase(path);
     await db.execute('CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
-    await db.insert('Test', <String, dynamic>{'id': 1});
+    await db.insert('Test', <String, Object?>{'id': 1});
     expect(await db.query('Test'), [
       {'id': 1}
     ]);

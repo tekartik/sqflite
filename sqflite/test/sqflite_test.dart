@@ -60,25 +60,25 @@ void main() {
 
     test('firstIntValue', () {
       expect(
-          Sqflite.firstIntValue(<Map<String, dynamic>>[
-            <String, dynamic>{'test': 1}
+          Sqflite.firstIntValue(<Map<String, Object?>>[
+            <String, Object?>{'test': 1}
           ]),
           1);
       expect(
-          Sqflite.firstIntValue(<Map<String, dynamic>>[
-            <String, dynamic>{'test': 1},
-            <String, dynamic>{'test': 1}
+          Sqflite.firstIntValue(<Map<String, Object?>>[
+            <String, Object?>{'test': 1},
+            <String, Object?>{'test': 1}
           ]),
           1);
       expect(
-          Sqflite.firstIntValue(<Map<String, dynamic>>[
-            <String, dynamic>{'test': null}
+          Sqflite.firstIntValue(<Map<String, Object?>>[
+            <String, Object?>{'test': null}
           ]),
           null);
-      expect(Sqflite.firstIntValue(<Map<String, dynamic>>[<String, dynamic>{}]),
+      expect(Sqflite.firstIntValue(<Map<String, Object?>>[<String, Object?>{}]),
           isNull);
-      expect(Sqflite.firstIntValue(<Map<String, dynamic>>[]), isNull);
-      expect(Sqflite.firstIntValue(<Map<String, dynamic>>[<String, dynamic>{}]),
+      expect(Sqflite.firstIntValue(<Map<String, Object?>>[]), isNull);
+      expect(Sqflite.firstIntValue(<Map<String, Object?>>[<String, Object?>{}]),
           isNull);
     });
 

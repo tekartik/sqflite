@@ -79,8 +79,8 @@ Future main() async {
       title TEXT
   )
   ''');
-  await db.insert('Product', <String, dynamic>{'title': 'Product 1'});
-  await db.insert('Product', <String, dynamic>{'title': 'Product 1'});
+  await db.insert('Product', <String, Object?>{'title': 'Product 1'});
+  await db.insert('Product', <String, Object?>{'title': 'Product 1'});
 
   var result = await db.query('Product');
   print(result);

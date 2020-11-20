@@ -1,6 +1,6 @@
 # Supported types
 
-The API offers a way to save a record as map of type `Map<String, dynamic>`. This map cannot be an
+The API offers a way to save a record as map of type `Map<String, Object?>`. This map cannot be an
 arbitrary map:
 - Keys are column in a table (declared when creating the table)
 - Values are field values in the record of type `num`, `String` or `Uint8List`

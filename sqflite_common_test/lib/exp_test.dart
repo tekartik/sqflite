@@ -76,7 +76,7 @@ void run(SqfliteTestContext context) {
     // testing with value as arguments
     result = await db.query(table,
         where: 'column_1 IN (?, ?)',
-        whereArgs: <dynamic>['1', '2'],
+        whereArgs: <Object>['1', '2'],
         orderBy: 'column_1 ASC, column_2 ASC');
     expect(result, expectedResult);
 
@@ -119,8 +119,8 @@ void run(SqfliteTestContext context) {
     await db.execute('CREATE TABLE "$table" ("group" TEXT)');
     // inserted in a wrong order to check ASC/DESC
 
-    await db.insert(table, <String, dynamic>{'group': 'group_value'});
-    await db.update(table, <String, dynamic>{'group': 'group_new_value'},
+    await db.insert(table, <String, Object?>{'group': 'group_value'});
+    await db.update(table, <String, Object?>{'group': 'group_new_value'},
         where: "\"group\" = 'group_value'");
 
     var expectedResult = [
@@ -144,9 +144,9 @@ void run(SqfliteTestContext context) {
 
     var table = 'functions';
     await db.execute("CREATE TABLE '$table' (one TEXT, another TEXT)");
-    await db.insert(table, <String, dynamic>{'one': '1', 'another': '2'});
-    await db.insert(table, <String, dynamic>{'one': '1', 'another': '3'});
-    await db.insert(table, <String, dynamic>{'one': '2', 'another': '2'});
+    await db.insert(table, <String, Object?>{'one': '1', 'another': '2'});
+    await db.insert(table, <String, Object?>{'one': '1', 'another': '3'});
+    await db.insert(table, <String, Object?>{'one': '2', 'another': '2'});
 
     var result = await db.rawQuery('''
       select one, GROUP_CONCAT(another) as my_col
@@ -191,7 +191,7 @@ void run(SqfliteTestContext context) {
       var table = 'alias';
       await db
           .execute('CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)');
-      await db.insert(table, <String, dynamic>{'column_1': 1, 'column_2': 2});
+      await db.insert(table, <String, Object?>{'column_1': 1, 'column_2': 2});
 
       var result = await db.rawQuery('''
       select t.column_1, t.column_1 as 't.column1', column_1 as column_alias_1, column_2
@@ -214,7 +214,7 @@ void run(SqfliteTestContext context) {
       var table = 'test';
       await db
           .execute('CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)');
-      await db.insert(table, <String, dynamic>{'column_1': 1, 'column_2': 2});
+      await db.insert(table, <String, Object?>{'column_1': 1, 'column_2': 2});
 
       var result = await db.rawQuery('''
          select column_1, column_2
@@ -276,12 +276,12 @@ void run(SqfliteTestContext context) {
             onCreate: (Database db, int version) async {
               await db.execute(
                   'CREATE TABLE npa (id INT, title TEXT, identifier TEXT)');
-              await db.insert('npa', <String, dynamic>{
+              await db.insert('npa', <String, Object?>{
                 'id': 128,
                 'title': 'title 1',
                 'identifier': '0001'
               });
-              await db.insert('npa', <String, dynamic>{
+              await db.insert('npa', <String, Object?>{
                 'id': 215,
                 'title': 'title 1',
                 'identifier': '0008120150514'
@@ -290,7 +290,7 @@ void run(SqfliteTestContext context) {
     var resultSet = await db.query('npa',
         columns: ['id', 'title', 'identifier'],
         where: '"identifier" = ?',
-        whereArgs: <dynamic>['0008120150514']);
+        whereArgs: <Object>['0008120150514']);
     // print(resultSet);
     expect(resultSet.length, 1);
     // but the results is always - empty QueryResultSet[].
@@ -298,7 +298,7 @@ void run(SqfliteTestContext context) {
     resultSet = await db.query('npa',
         columns: ['id', 'title', 'identifier'],
         where: '"id" = ?',
-        whereArgs: <dynamic>[215]);
+        whereArgs: <Object>[215]);
     // print(resultSet);
     expect(resultSet.length, 1);
     await db.close();
@@ -314,17 +314,17 @@ void run(SqfliteTestContext context) {
             onCreate: (Database db, int version) async {
               await db.execute('CREATE TABLE test (id INT, value TEXT)');
               await db.insert(
-                  'test', <String, dynamic>{'id': 1, 'value': 'without quote'});
+                  'test', <String, Object?>{'id': 1, 'value': 'without quote'});
               await db.insert(
-                  'test', <String, dynamic>{'id': 2, 'value': "with ' quote"});
+                  'test', <String, Object?>{'id': 2, 'value': "with ' quote"});
             }));
-    var resultSet = await db.query('test',
-        where: 'value = ?', whereArgs: <dynamic>["with ' quote"]);
+    var resultSet = await db
+        .query('test', where: 'value = ?', whereArgs: <Object>["with ' quote"]);
     expect(resultSet.length, 1);
     expect(resultSet.first['id'], 2);
 
-    resultSet = await db.rawQuery(
-        'SELECT * FROM test WHERE value = ?', <dynamic>["with ' quote"]);
+    resultSet = await db
+        .rawQuery('SELECT * FROM test WHERE value = ?', ["with ' quote"]);
     expect(resultSet.length, 1);
     expect(resultSet.first['id'], 2);
     await db.close();
@@ -402,7 +402,7 @@ INSERT INTO test (value) VALUES (10);
       // However (at least on Android)
       // result is empty, only the first statement is executed
       print(json.encode(result));
-      // expect(result, <dynamic>[]);
+      // expect(result, []);
     } finally {
       await db.close();
     }
@@ -469,7 +469,7 @@ INSERT INTO test (value) VALUES (10);
     try {
       await db.execute('CREATE TABLE test (value TEXT UNIQUE)');
       var table = 'test';
-      var map = <String, dynamic>{'value': 'test'};
+      var map = <String, Object?>{'value': 'test'};
       await db.insert(table, map, conflictAlgorithm: ConflictAlgorithm.replace);
       await db.insert(table, map, conflictAlgorithm: ConflictAlgorithm.replace);
       expect(
@@ -536,9 +536,9 @@ INSERT INTO test (value) VALUES (10);
             onCreate: (Database db, int version) async {
               await db.execute('CREATE TABLE test (id INT, value TEXT)');
               await db.insert(
-                  'test', <String, dynamic>{'id': 1, 'value': 'without quote'});
+                  'test', <String, Object?>{'id': 1, 'value': 'without quote'});
               await db.insert(
-                  'test', <String, dynamic>{'id': 2, 'value': "with ' quote"});
+                  'test', <String, Object?>{'id': 2, 'value': "with ' quote"});
             }));
     var resultSet = await db.rawQuery('SELECT r.id FROM test r');
     expect(resultSet, [

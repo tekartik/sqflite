@@ -11,8 +11,8 @@ void run(SqfliteTestContext context) {
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
       await db.transaction((txn) async {
         for (var i = 0; i < 100; i++) {
-          await txn.rawInsert(
-              'INSERT INTO Test (name) VALUES (?)', <dynamic>['item $i']);
+          await txn
+              .rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
         }
       });
       await db.close();
@@ -24,8 +24,7 @@ void run(SqfliteTestContext context) {
       var db = await factory.openDatabase(path);
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
       for (var i = 0; i < 1000; i++) {
-        await db.rawInsert(
-            'INSERT INTO Test (name) VALUES (?)', <dynamic>['item $i']);
+        await db.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
       }
       await db.close();
     }, timeout: const Timeout(Duration(minutes: 2)));
@@ -38,8 +37,8 @@ void run(SqfliteTestContext context) {
       var sw = Stopwatch()..start();
       await db.transaction((txn) async {
         for (var i = 0; i < 1000; i++) {
-          await txn.rawInsert(
-              'INSERT INTO Test (name) VALUES (?)', <dynamic>['item $i']);
+          await txn
+              .rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
         }
       });
       print('1000 insert ${sw.elapsed}');
@@ -55,8 +54,7 @@ void run(SqfliteTestContext context) {
       var batch = db.batch();
 
       for (var i = 0; i < 1000; i++) {
-        batch.rawInsert(
-            'INSERT INTO Test (name) VALUES (?)', <dynamic>['item $i']);
+        batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
       }
       await batch.commit();
       print('1000 insert batch ${sw.elapsed}');
@@ -73,8 +71,7 @@ void run(SqfliteTestContext context) {
       var batch = db.batch();
 
       for (var i = 0; i < 1000; i++) {
-        batch.rawInsert(
-            'INSERT INTO Test (name) VALUES (?)', <dynamic>['item $i']);
+        batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
       }
       await batch.commit(noResult: true);
 

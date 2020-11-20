@@ -538,7 +538,7 @@ CREATE TABLE test (
 
           int index = 0;
           SendPort sendPort;
-          List<Map<String, dynamic>> results;
+          List<Map<String, Object?>> results;
           var completer = Completer();
           var subscription = receivePort.listen((data) {
             switch (index++) {
@@ -550,7 +550,7 @@ CREATE TABLE test (
                 break;
               case 1:
                 // second is result
-                results = data as List<Map<String, dynamic>>;
+                results = data as List<Map<String, Object?>>;
                 completer.complete();
                 break;
             }
@@ -588,7 +588,7 @@ Future simpleInsertQueryIsolate(SendPort sendPort) async {
   var db = await openDatabase(path, version: 1, onCreate: (db, version) {
     db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
   });
-  List<Map<String, dynamic>> results;
+  List<Map<String, Object?>> results;
   try {
     await insert(db, 2);
     results = await db.rawQuery('SELECT id, name FROM Test');

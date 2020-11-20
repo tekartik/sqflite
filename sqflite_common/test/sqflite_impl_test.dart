@@ -11,13 +11,13 @@ void main() {
       final rows = Rows.from(raw);
       final row = rows.first;
       expect(rows, raw);
-      expect(row, <String, dynamic>{'col': 1});
+      expect(row, <String, Object?>{'col': 1});
     });
 
     test('fromRawOperationResult', () async {
-      expect(fromRawOperationResult(<String, dynamic>{'result': 1}), 1);
+      expect(fromRawOperationResult(<String, Object?>{'result': 1}), 1);
       expect(
-          fromRawOperationResult(<String, dynamic>{
+          fromRawOperationResult(<String, Object?>{
             'result': <dynamic, dynamic>{
               'columns': <dynamic>['column'],
               'rows': <dynamic>[
@@ -25,8 +25,8 @@ void main() {
               ]
             }
           }),
-          <Map<String, dynamic>>[
-            <String, dynamic>{'column': 1}
+          <Map<String, Object?>>[
+            <String, Object?>{'column': 1}
           ]);
       var exception = fromRawOperationResult(<dynamic, dynamic>{
         'error': <dynamic, dynamic>{
@@ -67,14 +67,14 @@ void main() {
       expect(queryResultSet.columnIndex('column'), 0);
       final row = queryResultSet.first;
       //expect(rows, raw);
-      expect(row, <String, dynamic>{'column': 1});
+      expect(row, <String, Object?>{'column': 1});
 
       // read only
       try {
         row['column'] = 2;
         fail('should have failed');
       } on UnsupportedError catch (_) {}
-      final map = Map<String, dynamic>.from(row);
+      final map = Map<String, Object?>.from(row);
       // now can modify
       map['column'] = 2;
 
@@ -85,17 +85,17 @@ void main() {
           <dynamic>[2, 'item 2']
         ]
       };
-      final expected = <Map<String, dynamic>>[
-        <String, dynamic>{'id': 1, 'name': 'item 1'},
-        <String, dynamic>{'id': 2, 'name': 'item 2'}
+      final expected = <Map<String, Object?>>[
+        <String, Object?>{'id': 1, 'name': 'item 1'},
+        <String, Object?>{'id': 2, 'name': 'item 2'}
       ];
       expect(queryResultToList(queryResultSetMap), expected);
       expect(queryResultToList(expected), expected);
-      expect(queryResultToList(raw), <Map<String, dynamic>>[
-        <String, dynamic>{'column': 1}
+      expect(queryResultToList(raw), <Map<String, Object?>>[
+        <String, Object?>{'column': 1}
       ]);
 
-      expect(queryResultToList(<String, dynamic>{}), <dynamic>[]);
+      expect(queryResultToList(<String, Object?>{}), <dynamic>[]);
     });
 
     test('duplicated key', () {
@@ -113,7 +113,7 @@ void main() {
       expect(row.length, 1);
       expect(row.keys, <String>['col']);
       expect(row.values, <dynamic>[2]);
-      expect(row, <String, dynamic>{'col': 2});
+      expect(row, <String, Object?>{'col': 2});
     });
 
     test('lockWarning', () {});

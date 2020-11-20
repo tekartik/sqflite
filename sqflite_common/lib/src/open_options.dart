@@ -36,7 +36,7 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
 
   @override
   String toString() {
-    final map = <String, dynamic>{};
+    final map = <String, Object?>{};
     if (version != null) {
       map['version'] = version;
     }

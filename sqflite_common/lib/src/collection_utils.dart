@@ -7,14 +7,14 @@ import 'package:sqflite_common/src/exception.dart';
 export 'dart:async';
 
 /// Native result wrapper
-class Rows extends PluginList<Map<String, dynamic>> {
+class Rows extends PluginList<Map<String, Object?>> {
   /// Wrap the native list as a raw
   Rows.from(List<dynamic> list) : super.from(list);
 
   @override
-  Map<String, dynamic> operator [](int index) {
+  Map<String, Object?> operator [](int index) {
     final item = rawList[index] as Map<dynamic, dynamic>;
-    return item.cast<String, dynamic>();
+    return item.cast<String, Object?>();
   }
 }
 
@@ -55,7 +55,7 @@ dynamic fromRawOperationResult(Map<dynamic, dynamic> rawOperationResultMap) {
 }
 
 /// Native result to a map list as expected by the sqflite API
-List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
+List<Map<String, Object?>> queryResultToList(dynamic queryResult) {
   if (queryResult is Map) {
     return queryResultSetFromMap(queryResult);
   }
@@ -71,7 +71,7 @@ List<Map<String, dynamic>> queryResultToList(dynamic queryResult) {
 }
 
 /// Query native result
-class QueryResultSet extends ListBase<Map<String, dynamic>> {
+class QueryResultSet extends ListBase<Map<String, Object?>> {
   /// Creates a result set from a native column/row values
   QueryResultSet(List<dynamic>? rawColumns, List<dynamic>? rawRows) {
     _columns = rawColumns?.cast<String>();
@@ -95,12 +95,12 @@ class QueryResultSet extends ListBase<Map<String, dynamic>> {
   int get length => _rows?.length ?? 0;
 
   @override
-  Map<String, dynamic> operator [](int index) {
+  Map<String, Object?> operator [](int index) {
     return QueryRow(this, _rows![index]);
   }
 
   @override
-  void operator []=(int index, Map<String, dynamic> value) {
+  void operator []=(int index, Map<String, Object?> value) {
     throw UnsupportedError('read-only');
   }
 

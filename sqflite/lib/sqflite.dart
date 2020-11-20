@@ -57,7 +57,7 @@ class Sqflite {
 
   /// helper to get the first int value in a query
   /// Useful for COUNT(*) queries
-  static int? firstIntValue(List<Map<String, dynamic>> list) =>
+  static int? firstIntValue(List<Map<String, Object?>> list) =>
       utils.firstIntValue(list);
 
   /// Utility to encode a blob to allow blob query using

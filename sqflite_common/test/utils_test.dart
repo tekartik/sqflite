@@ -5,26 +5,26 @@ void main() {
   group('sqflite', () {
     test('firstIntValue', () {
       expect(
-          firstIntValue(<Map<String, dynamic>>[
-            <String, dynamic>{'test': 1}
+          firstIntValue(<Map<String, Object?>>[
+            <String, Object?>{'test': 1}
           ]),
           1);
       expect(
-          firstIntValue(<Map<String, dynamic>>[
-            <String, dynamic>{'test': 1},
-            <String, dynamic>{'test': 1}
+          firstIntValue(<Map<String, Object?>>[
+            <String, Object?>{'test': 1},
+            <String, Object?>{'test': 1}
           ]),
           1);
       expect(
-          firstIntValue(<Map<String, dynamic>>[
-            <String, dynamic>{'test': null}
+          firstIntValue(<Map<String, Object?>>[
+            <String, Object?>{'test': null}
           ]),
           null);
       expect(
-          firstIntValue(<Map<String, dynamic>>[<String, dynamic>{}]), isNull);
-      expect(firstIntValue(<Map<String, dynamic>>[]), isNull);
+          firstIntValue(<Map<String, Object?>>[<String, Object?>{}]), isNull);
+      expect(firstIntValue(<Map<String, Object?>>[]), isNull);
       expect(
-          firstIntValue(<Map<String, dynamic>>[<String, dynamic>{}]), isNull);
+          firstIntValue(<Map<String, Object?>>[<String, Object?>{}]), isNull);
     });
 
     test('hex', () {

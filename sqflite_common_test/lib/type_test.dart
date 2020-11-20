@@ -20,13 +20,13 @@ Future<dynamic> _getValue(int id) async {
 
 // insert the value field and return the id
 Future<int> _insertValue(dynamic value) async {
-  return await _data.db.insert('Test', <String, dynamic>{'value': value});
+  return await _data.db.insert('Test', <String, Object?>{'value': value});
 }
 
 // insert the value field and return the id
 Future<int> _updateValue(int id, dynamic value) async {
   return await _data.db
-      .update('Test', <String, dynamic>{'value': value}, where: '_id = $id');
+      .update('Test', <String, Object?>{'value': value}, where: '_id = $id');
 }
 
 /// Run type tests.
@@ -228,13 +228,13 @@ void run(SqfliteTestContext context) {
         }
 
         // test hex feature on sqlite
-        var hexResult = await _data.db.rawQuery(
-            'SELECT hex(value) FROM Test WHERE _id = ?', <dynamic>[id]);
+        var hexResult = await _data.db
+            .rawQuery('SELECT hex(value) FROM Test WHERE _id = ?', [id]);
         expect(hexResult[0].values.first, '01020304');
 
         // try blob lookup - does work but on Android
-        var rows = await _data.db.rawQuery(
-            'SELECT * FROM Test WHERE value = ?', <dynamic>[blob1234]);
+        var rows = await _data.db
+            .rawQuery('SELECT * FROM Test WHERE value = ?', [blob1234]);
         if (context.isAndroid) {
           expect(rows.length, 0);
         } else if (context.isIOS || context.isMacOS || context.isLinux) {
@@ -243,8 +243,7 @@ void run(SqfliteTestContext context) {
 
         // try blob lookup using hex
         rows = await _data.db.rawQuery(
-            'SELECT * FROM Test WHERE hex(value) = ?',
-            <dynamic>[utils.hex(blob1234)]);
+            'SELECT * FROM Test WHERE hex(value) = ?', [utils.hex(blob1234)]);
         expect(rows.length, context.strict ? 1 : 2);
         expect(rows.last['_id'], id);
 
@@ -329,7 +328,7 @@ void run(SqfliteTestContext context) {
                     ' value TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)');
               }));
       try {
-        var id = await _data.db.insert('Test', <String, dynamic>{'_id': 1});
+        var id = await _data.db.insert('Test', <String, Object?>{'_id': 1});
         expect(DateTime.parse(await _getValue(id) as String), isNotNull);
       } finally {
         await _data.db.close();
