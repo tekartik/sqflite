@@ -49,12 +49,12 @@ class SqfliteIsolate {
 }
 
 /// Create an isolate.
-Future<SqfliteIsolate> createIsolate() async {
+Future<SqfliteIsolate> createIsolate(void Function() ffiInit) async {
   // create a long-lived port for receiving messages
   var ourFirstReceivePort = ReceivePort();
 
   // spawn the isolate with an initial sendPort.
-  await Isolate.spawn(_isolate, ourFirstReceivePort.sendPort);
+  await Isolate.spawn(_isolate, [ourFirstReceivePort.sendPort, ffiInit]);
 
   // the isolate sends us its SendPort as its first message.
   // this lets us communicate with it. we’ll always use this port to
@@ -65,10 +65,16 @@ Future<SqfliteIsolate> createIsolate() async {
 }
 
 /// The isolate
-Future _isolate(SendPort sendPort) async {
+Future _isolate(List<dynamic> args) async {
   // open our receive port. this is like turning on
   // our cellphone.
   var ourReceivePort = ReceivePort();
+
+  final sendPort = args[0] as SendPort;
+  final ffiInit = (args[1] as void Function());
+
+  // Initialize with the FFI callback if provided
+  ffiInit?.call();
 
   // tell whoever created us what port they can reach us on
   // (like giving them our phone number)
