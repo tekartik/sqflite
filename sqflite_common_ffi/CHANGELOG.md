@@ -1,6 +1,7 @@
-## 2.0.0-nullsafety.1
+## 2.0.0-nullsafety.2
 
 * `nnbd` support
+* Improved sqlite shared lib loading mechanism to support alternate library. 
 
 ## 1.1.1
 

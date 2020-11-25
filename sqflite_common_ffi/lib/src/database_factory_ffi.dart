@@ -6,7 +6,7 @@ import 'package:synchronized/synchronized.dart';
 
 import 'isolate.dart';
 
-/// Signature responsible for overriding the SQLite dynamic library to use 
+/// Signature responsible for overriding the SQLite dynamic library to use
 typedef SqfliteFfiInit = void Function();
 
 DatabaseFactory? _databaseFactoryFfiImpl;
@@ -18,10 +18,10 @@ DatabaseFactory get databaseFactoryFfiImpl =>
 /// Creates an FFI database factory
 DatabaseFactory createDatabaseFactoryFfiImpl({SqfliteFfiInit? ffiInit}) {
   return buildDatabaseFactory(
-        invokeMethod: (String method, [dynamic arguments]) {
-      final methodCall = FfiMethodCall(method, arguments);
-      return methodCall.handleInIsolate(ffiInit);
-    });
+      invokeMethod: (String method, [dynamic arguments]) {
+    final methodCall = FfiMethodCall(method, arguments);
+    return methodCall.handleInIsolate(ffiInit);
+  });
 }
 
 bool _debug = false; // devWarning(true);

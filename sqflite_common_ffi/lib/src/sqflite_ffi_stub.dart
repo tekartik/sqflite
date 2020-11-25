@@ -10,8 +10,9 @@ DatabaseFactory get databaseFactoryFfi => throw UnimplementedError(
     'databaseFactoryFfi only supported for io application');
 
 /// Creates an FFI database factory
-DatabaseFactory createDatabaseFactoryFfi({SqfliteFfiInit? ffiInit}) => throw UnimplementedError(
-    'createDatabaseFactoryFfi only supported for io application');
+DatabaseFactory createDatabaseFactoryFfi({SqfliteFfiInit? ffiInit}) =>
+    throw UnimplementedError(
+        'createDatabaseFactoryFfi only supported for io application');
 
 /// Optional. Initialize ffi loader.
 ///
