@@ -6,13 +6,15 @@ import 'package:synchronized/synchronized.dart';
 
 import 'isolate.dart';
 
+typedef FFIInit = void Function();
+
 DatabaseFactory? _databaseFactoryFfiImpl;
 
 /// The Ffi database factory.
 DatabaseFactory get databaseFactoryFfiImpl =>
     _databaseFactoryFfiImpl ??= createDatabaseFactoryFfiImpl();
 
-DatabaseFactory createDatabaseFactoryFfiImpl({void Function() ffiInit}) {
+DatabaseFactory createDatabaseFactoryFfiImpl({FFIInit? ffiInit}) {
   return buildDatabaseFactory(
         invokeMethod: (String method, [dynamic arguments]) {
       //FfiMethodCall methodCall = FfiMethodCall(method, arguments);
@@ -29,7 +31,7 @@ final _isolateLock = Lock();
 /// Extension on MethodCall
 extension FfiMethodCallHandler on FfiMethodCall {
   /// Handle a method call
-  Future<dynamic> handleInIsolate(void Function() ffiInit) async {
+  Future<dynamic> handleInIsolate(FFIInit? ffiInit) async {
     try {
       if (_debug) {
         print('main_send: $this');
@@ -49,7 +51,7 @@ extension FfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Create the isolate if needed
-  Future<dynamic> _isolateHandle(void Function() ffiInit) async {
+  Future<dynamic> _isolateHandle(FFIInit? ffiInit) async {
     if (_isolate == null) {
       await _isolateLock.synchronized(() async {
         _isolate ??= await createIsolate(ffiInit);

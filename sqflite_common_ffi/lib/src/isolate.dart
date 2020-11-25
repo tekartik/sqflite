@@ -1,5 +1,6 @@
 import 'dart:isolate';
 
+import 'package:sqflite_common_ffi/src/database_factory_ffi.dart';
 import 'package:sqflite_common_ffi/src/import.dart';
 import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
@@ -49,7 +50,7 @@ class SqfliteIsolate {
 }
 
 /// Create an isolate.
-Future<SqfliteIsolate> createIsolate(void Function() ffiInit) async {
+Future<SqfliteIsolate> createIsolate(FFIInit? ffiInit) async {
   // create a long-lived port for receiving messages
   var ourFirstReceivePort = ReceivePort();
 
@@ -71,7 +72,7 @@ Future _isolate(List<dynamic> args) async {
   var ourReceivePort = ReceivePort();
 
   final sendPort = args[0] as SendPort;
-  final ffiInit = (args[1] as void Function());
+  final ffiInit = (args[1] as FFIInit?);
 
   // Initialize with the FFI callback if provided
   ffiInit?.call();

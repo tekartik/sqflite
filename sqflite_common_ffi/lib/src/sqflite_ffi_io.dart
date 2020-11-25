@@ -11,7 +11,7 @@ import 'package:sqflite_common_ffi/src/windows/setup.dart';
 /// Currently supports Win/Mac/Linux.
 DatabaseFactory get databaseFactoryFfi => databaseFactoryFfiImpl;
 
-DatabaseFactory createDatabaseFactoryFfi({void Function() ffiInit}) => createDatabaseFactoryFfiImpl(ffiInit: ffiInit);
+DatabaseFactory createDatabaseFactoryFfi({FFIInit? ffiInit}) => createDatabaseFactoryFfiImpl(ffiInit: ffiInit);
 
 /// Optional. Initialize ffi loader.
 ///

@@ -1,4 +1,5 @@
 import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common_ffi/src/database_factory_ffi.dart';
 
 /// The database factory to use for ffi.
 ///
@@ -8,7 +9,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 DatabaseFactory get databaseFactoryFfi => throw UnimplementedError(
     'databaseFactoryFfi only supported for io application');
 
-DatabaseFactory createDatabaseFactoryFfi({void Function() ffiInit}) => throw UnimplementedError(
+DatabaseFactory createDatabaseFactoryFfi({FFIInit? ffiInit}) => throw UnimplementedError(
     'createDatabaseFactoryFfi only supported for io application');
 
 /// Optional. Initialize ffi loader.
