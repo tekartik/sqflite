@@ -6,16 +6,23 @@ import 'package:synchronized/synchronized.dart';
 
 import 'isolate.dart';
 
+/// Signature responsible for overriding the SQLite dynamic library to use 
+typedef SqfliteFfiInit = void Function();
+
 DatabaseFactory? _databaseFactoryFfiImpl;
 
 /// The Ffi database factory.
 DatabaseFactory get databaseFactoryFfiImpl =>
-    _databaseFactoryFfiImpl ??= buildDatabaseFactory(
+    _databaseFactoryFfiImpl ??= createDatabaseFactoryFfiImpl();
+
+/// Creates an FFI database factory
+DatabaseFactory createDatabaseFactoryFfiImpl({SqfliteFfiInit? ffiInit}) {
+  return buildDatabaseFactory(
         invokeMethod: (String method, [dynamic arguments]) {
-      //FfiMethodCall methodCall = FfiMethodCall(method, arguments);
-      var methodCall = FfiMethodCall(method, arguments);
-      return methodCall.handleInIsolate();
+      final methodCall = FfiMethodCall(method, arguments);
+      return methodCall.handleInIsolate(ffiInit);
     });
+}
 
 bool _debug = false; // devWarning(true);
 
@@ -25,12 +32,12 @@ final _isolateLock = Lock();
 /// Extension on MethodCall
 extension FfiMethodCallHandler on FfiMethodCall {
   /// Handle a method call
-  Future<dynamic> handleInIsolate() async {
+  Future<dynamic> handleInIsolate(SqfliteFfiInit? ffiInit) async {
     try {
       if (_debug) {
         print('main_send: $this');
       }
-      var result = await _isolateHandle();
+      var result = await _isolateHandle(ffiInit);
       if (_debug) {
         print('main_recv: $result');
       }
@@ -45,10 +52,10 @@ extension FfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Create the isolate if needed
-  Future<dynamic> _isolateHandle() async {
+  Future<dynamic> _isolateHandle(SqfliteFfiInit? ffiInit) async {
     if (_isolate == null) {
       await _isolateLock.synchronized(() async {
-        _isolate ??= await createIsolate();
+        _isolate ??= await createIsolate(ffiInit);
       });
     }
     return await _isolate!.handle(this);
