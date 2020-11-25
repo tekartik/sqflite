@@ -11,7 +11,14 @@ import 'package:sqflite_common_ffi/src/windows/setup.dart';
 /// Currently supports Win/Mac/Linux.
 DatabaseFactory get databaseFactoryFfi => databaseFactoryFfiImpl;
 
-DatabaseFactory createDatabaseFactoryFfi({FFIInit? ffiInit}) => createDatabaseFactoryFfiImpl(ffiInit: ffiInit);
+/// Creates an FFI database factory.
+/// Optionally the FFIInit function can be provided if you want to override
+/// some behavior with the sqlite3 dynamic library opening. This function should
+/// be either a top level function or a static function.
+/// Prefer the use of the [databaseFactoryFfi] getter if you don't need this functionality.
+DatabaseFactory createDatabaseFactoryFfi({FFIInit? ffiInit}) {
+  return createDatabaseFactoryFfiImpl(ffiInit: ffiInit);
+}
 
 /// Optional. Initialize ffi loader.
 ///

@@ -9,6 +9,11 @@ import 'package:sqflite_common_ffi/src/database_factory_ffi.dart';
 DatabaseFactory get databaseFactoryFfi => throw UnimplementedError(
     'databaseFactoryFfi only supported for io application');
 
+/// Creates an FFI database factory.
+/// Optionally the FFIInit function can be provided if you want to override
+/// some behavior with the sqlite3 dynamic library opening. This function should
+/// be either a top level function or a static function.
+/// Prefer the use of the [databaseFactoryFfi] getter if you don't need this functionality.
 DatabaseFactory createDatabaseFactoryFfi({FFIInit? ffiInit}) => throw UnimplementedError(
     'createDatabaseFactoryFfi only supported for io application');
 
