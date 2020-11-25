@@ -35,7 +35,7 @@ DatabaseFactory get databaseFactoryFfi => databaseFactoryFfiImpl;
 ///   ...
 /// }
 /// ```
-DatabaseFactory createDatabaseFactoryFfi({FFIInit? ffiInit}) {
+DatabaseFactory createDatabaseFactoryFfi({SqfliteFfiInit? ffiInit}) {
   return createDatabaseFactoryFfiImpl(ffiInit: ffiInit);
 }
 

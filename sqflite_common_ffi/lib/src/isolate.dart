@@ -50,7 +50,7 @@ class SqfliteIsolate {
 }
 
 /// Create an isolate.
-Future<SqfliteIsolate> createIsolate(FFIInit? ffiInit) async {
+Future<SqfliteIsolate> createIsolate(SqfliteFfiInit? ffiInit) async {
   // create a long-lived port for receiving messages
   var ourFirstReceivePort = ReceivePort();
 
@@ -72,7 +72,7 @@ Future _isolate(List<dynamic> args) async {
   var ourReceivePort = ReceivePort();
 
   final sendPort = args[0] as SendPort;
-  final ffiInit = (args[1] as FFIInit?);
+  final ffiInit = (args[1] as SqfliteFfiInit?);
 
   // Initialize with the FFI callback if provided
   ffiInit?.call();

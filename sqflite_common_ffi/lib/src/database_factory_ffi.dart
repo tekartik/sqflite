@@ -7,7 +7,7 @@ import 'package:synchronized/synchronized.dart';
 import 'isolate.dart';
 
 /// Signature responsible for overriding the SQLite dynamic library to use 
-typedef FFIInit = void Function();
+typedef SqfliteFfiInit = void Function();
 
 DatabaseFactory? _databaseFactoryFfiImpl;
 
@@ -16,7 +16,7 @@ DatabaseFactory get databaseFactoryFfiImpl =>
     _databaseFactoryFfiImpl ??= createDatabaseFactoryFfiImpl();
 
 /// Creates an FFI database factory
-DatabaseFactory createDatabaseFactoryFfiImpl({FFIInit? ffiInit}) {
+DatabaseFactory createDatabaseFactoryFfiImpl({SqfliteFfiInit? ffiInit}) {
   return buildDatabaseFactory(
         invokeMethod: (String method, [dynamic arguments]) {
       final methodCall = FfiMethodCall(method, arguments);
@@ -32,7 +32,7 @@ final _isolateLock = Lock();
 /// Extension on MethodCall
 extension FfiMethodCallHandler on FfiMethodCall {
   /// Handle a method call
-  Future<dynamic> handleInIsolate(FFIInit? ffiInit) async {
+  Future<dynamic> handleInIsolate(SqfliteFfiInit? ffiInit) async {
     try {
       if (_debug) {
         print('main_send: $this');
@@ -52,7 +52,7 @@ extension FfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Create the isolate if needed
-  Future<dynamic> _isolateHandle(FFIInit? ffiInit) async {
+  Future<dynamic> _isolateHandle(SqfliteFfiInit? ffiInit) async {
     if (_isolate == null) {
       await _isolateLock.synchronized(() async {
         _isolate ??= await createIsolate(ffiInit);
