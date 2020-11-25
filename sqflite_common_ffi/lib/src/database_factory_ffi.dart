@@ -1,13 +1,11 @@
 import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_import.dart';
 
 import 'package:synchronized/synchronized.dart';
 
 import 'isolate.dart';
-
-/// Signature responsible for overriding the SQLite dynamic library to use
-typedef SqfliteFfiInit = void Function();
 
 DatabaseFactory? _databaseFactoryFfiImpl;
 
@@ -20,7 +18,7 @@ DatabaseFactory createDatabaseFactoryFfiImpl({SqfliteFfiInit? ffiInit}) {
   return buildDatabaseFactory(
       invokeMethod: (String method, [dynamic arguments]) {
     final methodCall = FfiMethodCall(method, arguments);
-    return methodCall.handleInIsolate(ffiInit);
+    return methodCall.handleInIsolate(ffiInit: ffiInit);
   });
 }
 
@@ -32,7 +30,7 @@ final _isolateLock = Lock();
 /// Extension on MethodCall
 extension FfiMethodCallHandler on FfiMethodCall {
   /// Handle a method call
-  Future<dynamic> handleInIsolate(SqfliteFfiInit? ffiInit) async {
+  Future<dynamic> handleInIsolate({SqfliteFfiInit? ffiInit}) async {
     try {
       if (_debug) {
         print('main_send: $this');
