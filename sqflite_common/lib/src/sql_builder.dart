@@ -61,14 +61,14 @@ class SqlBuilder {
   /// @param whereArgs You may include ?s in the where clause, which
   ///            will be replaced by the values from whereArgs. The values
   ///            will be bound as Strings.
-  SqlBuilder.delete(String table, {String? where, List<Object>? whereArgs}) {
+  SqlBuilder.delete(String table, {String? where, List<Object?>? whereArgs}) {
     checkWhereArgs(whereArgs);
     final delete = StringBuffer();
     delete.write('DELETE FROM ');
     delete.write(_escapeName(table));
     _writeClause(delete, ' WHERE ', where);
     sql = delete.toString();
-    arguments = whereArgs != null ? List<Object>.from(whereArgs) : null;
+    arguments = whereArgs != null ? List<Object?>.from(whereArgs) : null;
   }
 
   /// Build an SQL query string from the given clauses.
@@ -98,7 +98,7 @@ class SqlBuilder {
       {bool? distinct,
       List<String>? columns,
       String? where,
-      List<Object>? whereArgs,
+      List<Object?>? whereArgs,
       String? groupBy,
       String? having,
       String? orderBy,
@@ -135,7 +135,7 @@ class SqlBuilder {
     }
 
     sql = query.toString();
-    arguments = whereArgs != null ? List<Object>.from(whereArgs) : null;
+    arguments = whereArgs != null ? List<Object?>.from(whereArgs) : null;
   }
 
   /// Convenience method for inserting a row into the database.
@@ -155,13 +155,13 @@ class SqlBuilder {
     insert.write(_escapeName(table));
     insert.write(' (');
 
-    List<Object>? bindArgs;
+    List<Object?>? bindArgs;
     final size = values.length;
 
     if (size > 0) {
       final sbValues = StringBuffer(') VALUES (');
 
-      bindArgs = <Object>[];
+      bindArgs = <Object?>[];
       var i = 0;
       values.forEach((String colName, Object? value) {
         if (i++ > 0) {
@@ -206,7 +206,7 @@ class SqlBuilder {
 
   SqlBuilder.update(String table, Map<String, Object?> values,
       {String? where,
-      List<Object>? whereArgs,
+      List<Object?>? whereArgs,
       ConflictAlgorithm? conflictAlgorithm}) {
     if (values.isEmpty) {
       throw ArgumentError('Empty values');
@@ -221,7 +221,7 @@ class SqlBuilder {
     update.write(' ${_escapeName(table)}');
     update.write(' SET ');
 
-    final bindArgs = <Object>[];
+    final bindArgs = <Object?>[];
     var i = 0;
 
     values.keys.forEach((String colName) {
@@ -251,7 +251,7 @@ class SqlBuilder {
   late String sql;
 
   /// The arguments list;
-  List<Object>? arguments;
+  List<Object?>? arguments;
 
   /// Used during build if there was a name with an escaped keyword.
   bool hasEscape = false;

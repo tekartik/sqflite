@@ -36,7 +36,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
 
   /// Execute an SQL query with no return value
   @override
-  Future<void> execute(String sql, [List<Object>? arguments]) {
+  Future<void> execute(String sql, [List<Object?>? arguments]) {
     db.checkNotClosed();
     return db.txnExecute<dynamic>(txn, sql, arguments);
   }
@@ -45,7 +45,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   ///
   /// Returns the last inserted record id
   @override
-  Future<int> rawInsert(String sql, [List<Object>? arguments]) {
+  Future<int> rawInsert(String sql, [List<Object?>? arguments]) {
     db.checkNotClosed();
     return db.txnRawInsert(txn, sql, arguments);
   }
@@ -91,7 +91,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
       {bool? distinct,
       List<String>? columns,
       String? where,
-      List<Object>? whereArgs,
+      List<Object?>? whereArgs,
       String? groupBy,
       String? having,
       String? orderBy,
@@ -115,13 +115,13 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   /// Returns a list of rows that were found
   @override
   Future<List<Map<String, Object?>>> rawQuery(String sql,
-      [List<Object>? arguments]) {
+      [List<Object?>? arguments]) {
     checkRawArgs(arguments);
     return _rawQuery(sql, arguments);
   }
 
   Future<List<Map<String, Object?>>> _rawQuery(String sql,
-      [List<Object>? arguments]) {
+      [List<Object?>? arguments]) {
     db.checkNotClosed();
     return db.txnRawQuery(txn, sql, arguments);
   }
@@ -130,7 +130,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   ///
   /// Returns the number of changes made
   @override
-  Future<int> rawUpdate(String sql, [List<Object>? arguments]) {
+  Future<int> rawUpdate(String sql, [List<Object?>? arguments]) {
     checkRawArgs(arguments);
     return _rawUpdate(sql, arguments);
   }
@@ -138,7 +138,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   /// Execute a raw SQL UPDATE query
   ///
   /// Returns the number of changes made
-  Future<int> _rawUpdate(String sql, [List<Object>? arguments]) {
+  Future<int> _rawUpdate(String sql, [List<Object?>? arguments]) {
     db.checkNotClosed();
     return db.txnRawUpdate(txn, sql, arguments);
   }
@@ -159,7 +159,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   @override
   Future<int> update(String table, Map<String, Object?> values,
       {String? where,
-      List<Object>? whereArgs,
+      List<Object?>? whereArgs,
       ConflictAlgorithm? conflictAlgorithm}) {
     final builder = SqlBuilder.update(table, values,
         where: where,
@@ -172,12 +172,12 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   ///
   /// Returns the number of changes made
   @override
-  Future<int> rawDelete(String sql, [List<Object>? arguments]) {
+  Future<int> rawDelete(String sql, [List<Object?>? arguments]) {
     checkRawArgs(arguments);
     return _rawDelete(sql, arguments);
   }
 
-  Future<int> _rawDelete(String sql, [List<Object>? arguments]) =>
+  Future<int> _rawDelete(String sql, [List<Object?>? arguments]) =>
       rawUpdate(sql, arguments);
 
   /// Convenience method for deleting rows in the database.
@@ -197,7 +197,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   /// otherwise. To remove all rows and get a count pass '1' as the
   /// whereClause.
   @override
-  Future<int> delete(String table, {String? where, List<Object>? whereArgs}) {
+  Future<int> delete(String table, {String? where, List<Object?>? whereArgs}) {
     final builder =
         SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
     return _rawDelete(builder.sql, builder.arguments);
@@ -305,7 +305,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   @override
   Future<T> devInvokeSqlMethod<T>(String method, String sql,
-      [List<Object>? arguments]) {
+      [List<Object?>? arguments]) {
     return devInvokeMethod(
         method, <String, Object?>{paramSql: sql, paramSqlArguments: arguments});
   }
@@ -356,7 +356,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// for sql without return values
   @override
   Future<T> txnExecute<T>(SqfliteTransaction? txn, String sql,
-      [List<Object>? arguments]) {
+      [List<Object?>? arguments]) {
     return txnWriteSynchronized<T>(txn, (_) {
       var inTransactionChange = getSqlInTransactionArgument(sql);
 
@@ -373,7 +373,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   }
 
   /// [inTransactionChange] is true when entering a transaction, false when leaving
-  Future<T> invokeExecute<T>(String sql, List<Object>? arguments,
+  Future<T> invokeExecute<T>(String sql, List<Object?>? arguments,
       {bool? inTransactionChange}) {
     return safeInvokeMethod(
         methodExecute,
@@ -388,7 +388,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// 0 returned instead of null
   @override
   Future<int> txnRawInsert(
-      SqfliteTransaction? txn, String sql, List<Object>? arguments) {
+      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
     return txnWriteSynchronized(txn, (_) async {
       // The value could be null (for insert ignore). Return 0 in this case
       return await safeInvokeMethod<int?>(
@@ -401,7 +401,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   @override
   Future<List<Map<String, Object?>>> txnRawQuery(
-      SqfliteTransaction? txn, String sql, List<Object>? arguments) {
+      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
     return txnSynchronized(txn, (_) async {
       final dynamic result = await safeInvokeMethod<dynamic>(
           methodQuery,
@@ -415,7 +415,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// returns the update count
   @override
   Future<int> txnRawUpdate(
-      SqfliteTransaction? txn, String sql, List<Object>? arguments) {
+      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
     return txnWriteSynchronized(txn, (_) async {
       final result = await safeInvokeMethod<int?>(
           methodUpdate,

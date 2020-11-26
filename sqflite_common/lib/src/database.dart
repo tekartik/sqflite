@@ -87,19 +87,19 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
 
   /// Execute a command.
   Future<T> txnExecute<T>(SqfliteTransaction? txn, String sql,
-      [List<Object>? arguments]);
+      [List<Object?>? arguments]);
 
   /// Execute a raw INSERT command.
   Future<int> txnRawInsert(
-      SqfliteTransaction? txn, String sql, List<Object>? arguments);
+      SqfliteTransaction? txn, String sql, List<Object?>? arguments);
 
   /// Execute a raw SELECT command.
   Future<List<Map<String, Object?>>> txnRawQuery(
-      SqfliteTransaction? txn, String sql, List<Object>? arguments);
+      SqfliteTransaction? txn, String sql, List<Object?>? arguments);
 
   /// Execute a raw UPDATE/DELETE command.
   Future<int> txnRawUpdate(
-      SqfliteTransaction? txn, String sql, List<Object>? arguments);
+      SqfliteTransaction? txn, String sql, List<Object?>? arguments);
 
   /// Check if a database is not closed.
   ///

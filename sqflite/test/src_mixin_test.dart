@@ -81,7 +81,7 @@ class MockDatabase extends SqfliteDatabaseBase {
 
 class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   final List<String> methods = <String>[];
-  final List<Object> argumentsList = <Object>[];
+  final List<Object?> argumentsList = <Object?>[];
   final Map<String, MockDatabase> databases = <String, MockDatabase>{};
 
   @override

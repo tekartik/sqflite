@@ -706,5 +706,19 @@ void run(SqfliteTestContext context) {
         await db.close();
       }
     });
+
+    test('binding null', () async {
+      var db = await factory.openDatabase(inMemoryDatabasePath);
+      try {
+        for (var value in [null, 2]) {
+          expect(
+              utils.firstIntValue(await db.rawQuery(
+                  'SELECT CASE WHEN 0 = 1 THEN 1 ELSE ? END', [value])),
+              value);
+        }
+      } finally {
+        await db.close();
+      }
+    });
   });
 }

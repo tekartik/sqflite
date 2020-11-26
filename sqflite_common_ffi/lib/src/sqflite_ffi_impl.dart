@@ -39,7 +39,7 @@ class SqfliteFfiOperation {
   String? sql;
 
   /// SQL arguments.
-  List<Object>? sqlArguments;
+  List<Object?>? sqlArguments;
 }
 
 /// Ffi database
@@ -427,7 +427,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Check the arguments
-  List<Object>? getSqlArguments() {
+  List<Object?>? getSqlArguments() {
     var arguments = this.arguments;
     if (arguments != null) {
       var sqlArguments = arguments['arguments'] as List?;
@@ -444,7 +444,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
           }
         }
       }
-      return sqlArguments?.cast<Object>();
+      return sqlArguments?.cast<Object?>();
     }
     return null;
   }
@@ -470,7 +470,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       operations.add(SqfliteFfiOperation()
         ..sql = operationArgument['sql'] as String?
         ..sqlArguments =
-            (operationArgument['arguments'] as List?)?.cast<Object>()
+            (operationArgument['arguments'] as List?)?.cast<Object?>()
         ..method = operationArgument['method'] as String);
     });
     return operations;

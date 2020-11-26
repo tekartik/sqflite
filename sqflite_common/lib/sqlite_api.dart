@@ -35,14 +35,14 @@ abstract class DatabaseFactory {
 ///
 abstract class DatabaseExecutor {
   /// Execute an SQL query with no return value.
-  Future<void> execute(String sql, [List<Object>? arguments]);
+  Future<void> execute(String sql, [List<Object?>? arguments]);
 
   /// Execute a raw SQL INSERT query.
   ///
   /// Returns the last inserted record id.
   ///
   /// 0 could be returned for some specific conflict algorithms if not inserted.
-  Future<int> rawInsert(String sql, [List<Object>? arguments]);
+  Future<int> rawInsert(String sql, [List<Object?>? arguments]);
 
   /// SQL INSERT helper.
   ///
@@ -91,7 +91,7 @@ abstract class DatabaseExecutor {
       {bool? distinct,
       List<String>? columns,
       String? where,
-      List<Object>? whereArgs,
+      List<Object?>? whereArgs,
       String? groupBy,
       String? having,
       String? orderBy,
@@ -102,12 +102,12 @@ abstract class DatabaseExecutor {
   ///
   /// Returns a list of rows that were found.
   Future<List<Map<String, Object?>>> rawQuery(String sql,
-      [List<Object>? arguments]);
+      [List<Object?>? arguments]);
 
   /// Execute a raw SQL UPDATE query.
   ///
   /// Returns the number of changes made.
-  Future<int> rawUpdate(String sql, [List<Object>? arguments]);
+  Future<int> rawUpdate(String sql, [List<Object?>? arguments]);
 
   /// Convenience method for updating rows in the database.
   ///
@@ -124,13 +124,13 @@ abstract class DatabaseExecutor {
   /// conflict. See [ConflictResolver] docs for more details
   Future<int> update(String table, Map<String, Object?> values,
       {String? where,
-      List<Object>? whereArgs,
+      List<Object?>? whereArgs,
       ConflictAlgorithm? conflictAlgorithm});
 
   /// Executes a raw SQL DELETE query
   ///
   /// Returns the number of changes made
-  Future<int> rawDelete(String sql, [List<Object>? arguments]);
+  Future<int> rawDelete(String sql, [List<Object?>? arguments]);
 
   /// Convenience method for deleting rows in the database.
   ///
@@ -145,7 +145,7 @@ abstract class DatabaseExecutor {
   /// Returns the number of rows affected if a whereClause is passed in, 0
   /// otherwise. To remove all rows and get a count pass '1' as the
   /// whereClause.
-  Future<int> delete(String table, {String? where, List<Object>? whereArgs});
+  Future<int> delete(String table, {String? where, List<Object?>? whereArgs});
 
   /// Creates a batch, used for performing multiple operation
   /// in a single atomic operation.
@@ -197,7 +197,7 @@ abstract class Database implements DatabaseExecutor {
   /// testing only
   @deprecated
   Future<T> devInvokeSqlMethod<T>(String method, String sql,
-      [List<Object>? arguments]);
+      [List<Object?>? arguments]);
 }
 
 /// Prototype of the function called when the version has changed.
@@ -370,36 +370,36 @@ abstract class Batch {
       {bool? exclusive, bool? noResult, bool? continueOnError});
 
   /// See [Database.rawInsert]
-  void rawInsert(String sql, [List<Object>? arguments]);
+  void rawInsert(String sql, [List<Object?>? arguments]);
 
   /// See [Database.insert]
   void insert(String table, Map<String, Object?> values,
       {String? nullColumnHack, ConflictAlgorithm? conflictAlgorithm});
 
   /// See [Database.rawUpdate]
-  void rawUpdate(String sql, [List<Object>? arguments]);
+  void rawUpdate(String sql, [List<Object?>? arguments]);
 
   /// See [Database.update]
   void update(String table, Map<String, Object?> values,
       {String? where,
-      List<Object>? whereArgs,
+      List<Object?>? whereArgs,
       ConflictAlgorithm? conflictAlgorithm});
 
   /// See [Database.rawDelete]
-  void rawDelete(String sql, [List<Object>? arguments]);
+  void rawDelete(String sql, [List<Object?>? arguments]);
 
   /// See [Database.delete]
-  void delete(String table, {String? where, List<Object>? whereArgs});
+  void delete(String table, {String? where, List<Object?>? whereArgs});
 
   /// See [Database.execute];
-  void execute(String sql, [List<Object>? arguments]);
+  void execute(String sql, [List<Object?>? arguments]);
 
   /// See [Database.query];
   void query(String table,
       {bool? distinct,
       List<String>? columns,
       String? where,
-      List<Object>? whereArgs,
+      List<Object?>? whereArgs,
       String? groupBy,
       String? having,
       String? orderBy,
@@ -407,5 +407,5 @@ abstract class Batch {
       int? offset});
 
   /// See [Database.query];
-  void rawQuery(String sql, [List<Object>? arguments]);
+  void rawQuery(String sql, [List<Object?>? arguments]);
 }

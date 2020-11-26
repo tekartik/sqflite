@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/utils/utils.dart';
 import 'package:sqflite_example/src/dev_utils.dart';
 
 import 'test_page.dart';
@@ -562,6 +563,20 @@ class RawTestPage extends TestPage {
         expect(result, [
           {'other': 1, 'name': 'item 2'}
         ]);
+      } finally {
+        await db.close();
+      }
+    });
+
+    test('Binding null (fails on Android)', () async {
+      var db = await openDatabase(inMemoryDatabasePath);
+      try {
+        for (var value in [null, 2]) {
+          expect(
+              firstIntValue(await db.rawQuery(
+                  'SELECT CASE WHEN 0 = 1 THEN 1 ELSE ? END', [value])),
+              value);
+        }
       } finally {
         await db.close();
       }

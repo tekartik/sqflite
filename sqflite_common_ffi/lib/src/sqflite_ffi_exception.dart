@@ -18,7 +18,7 @@ class SqfliteFfiException extends SqfliteDatabaseException {
   String? sql;
 
   /// SQL arguments.
-  List<Object>? sqlArguments;
+  List<Object?>? sqlArguments;
 
   /// Error code.
   final String code;
