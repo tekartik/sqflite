@@ -10,6 +10,8 @@ environment:
 dependencies:
   path: any
   collection: any
+  # image_picker seems to conflict with sqflite if an Android release build with enabled shrinking is performed. Dependency is added to verify this problem is fixed.
+  image_picker: ^0.6.7+14
   flutter:
     sdk: flutter
   sqflite:
