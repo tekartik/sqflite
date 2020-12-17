@@ -2,6 +2,7 @@ import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
 import 'batch_test.dart' as batch_test;
+import 'database_factory_test.dart' as database_factory_test;
 import 'doc_test.dart' as doc_test;
 import 'exception_test.dart' as exception_test;
 import 'exp_test.dart' as exp_test;
@@ -29,5 +30,6 @@ void run(SqfliteTestContext context) {
     open_test.run(context);
     exception_test.run(context);
     exp_test.run(context);
+    database_factory_test.run(context);
   });
 }

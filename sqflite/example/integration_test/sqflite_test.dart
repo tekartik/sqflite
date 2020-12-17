@@ -158,7 +158,7 @@ void main() {
     test('multiple database', () async {
       //await Sqflite.devSetDebugModeOn(true);
       var count = 10;
-      var dbs = List<Database>(count);
+      var dbs = List<Database>.generate(count, (index) => null);
       for (var i = 0; i < count; i++) {
         var path = 'test_multiple_$i.db';
         await deleteDatabase(path);
