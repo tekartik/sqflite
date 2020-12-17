@@ -29,4 +29,12 @@ void main() {
     var originalDatabasesPath = await databaseFactory.getDatabasesPath();
     expect(originalDatabasesPath, isNotNull);
   });
+  test('databaseExists', () async {
+    var dbPath = 'database_exists_1.db';
+    await databaseFactory.openDatabase(dbPath);
+    expect(await databaseFactory.databaseExists(dbPath), isFalse);
+    var db = await databaseFactory.openDatabase(dbPath);
+    expect(await databaseFactory.databaseExists(dbPath), isTrue);
+    await db.close();
+  });
 }
