@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/mixin/factory.dart';

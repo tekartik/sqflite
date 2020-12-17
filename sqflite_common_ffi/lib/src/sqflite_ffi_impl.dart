@@ -279,6 +279,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
         return await handleGetDatabasesPath();
       case 'deleteDatabase':
         return await handleDeleteDatabase();
+      case 'databaseExists':
+        return await handleDatabaseExists();
       case 'options':
         return await handleOptions();
       case 'debugMode':
@@ -520,7 +522,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Handle insert.
-  Future handleInsert() async {
+  Future<int> handleInsert() async {
     var database = getDatabaseOrThrow();
     if (database.readOnly) {
       throw SqfliteFfiException(
@@ -537,7 +539,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Handle udpate.
-  Future handleUpdate() async {
+  Future<int> handleUpdate() async {
     var database = getDatabaseOrThrow();
     if (database.readOnly) {
       throw SqfliteFfiException(
@@ -668,7 +670,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Handle delete database.
-  Future handleDeleteDatabase() async {
+  Future<void> handleDeleteDatabase() async {
     var path = getPath();
 
     var singleInstanceDatabase = ffiSingleInstanceDbs[path];
@@ -681,6 +683,17 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     try {
       await File(path!).delete();
     } catch (_) {}
+  }
+
+  /// Handle `databaseExists`.
+  Future<bool> handleDatabaseExists() async {
+    var path = getPath();
+    // Ignore failure
+    try {
+      return (File(path)).existsSync();
+    } catch (_) {
+      return false;
+    }
   }
 }
 

@@ -3,9 +3,10 @@
 * `nnbd` support
 * Improved sqlite shared lib loading mechanism to support alternate library. 
 
-## 1.1.1
+## 1.1.1+1
 
 * Fixes hot-restart lock issue
+* Fixes missing `databaseExists` handler
 
 ## 1.1.0+1
 
