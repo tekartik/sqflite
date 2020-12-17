@@ -152,9 +152,6 @@ class MockInvalidFactory extends DatabaseFactory {
   Future<void> setDatabasesPath(String path) {
     throw UnimplementedError();
   }
-
-  @override
-  Future<void> setDatabasesPath(String path) async {}
 }
 
 final MockDatabaseFactory mockDatabaseFactory = MockDatabaseFactory();

@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // await Navigator.of(context).pushNamed(testExpRoute);
           // await Navigator.of(context).pushNamed(testRawRoute);
           var future =
-              Navigator.of(context)!.pushNamed(debugAutoStartRouteName!);
+              Navigator.of(context).pushNamed(debugAutoStartRouteName!);
           // ignore: deprecated_member_use_from_same_package
           debugAutoStartRouteName = null;
           await future;
@@ -185,7 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _itemBuilder(BuildContext context, int index) {
     return MainItemWidget(widget._items[index], (MainItem item) {
-      Navigator.of(context)!.pushNamed(item.route!);
+      Navigator.of(context).pushNamed(item.route!);
     });
   }
 }

@@ -522,7 +522,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Handle insert.
-  Future<int> handleInsert() async {
+  Future<int?> handleInsert() async {
     var database = getDatabaseOrThrow();
     if (database.readOnly) {
       throw SqfliteFfiException(
@@ -531,6 +531,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
     await handleExecute();
 
+    // null means no insert
     var id = database.getLastInsertId();
     if (logLevel >= sqfliteLogLevelSql) {
       print('$_prefix Inserted id $id');
@@ -690,7 +691,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     var path = getPath();
     // Ignore failure
     try {
-      return (File(path)).existsSync();
+      return (File(path!)).existsSync();
     } catch (_) {
       return false;
     }

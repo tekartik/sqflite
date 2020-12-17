@@ -94,7 +94,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
         print(await _incrementVersion());
       }, summary: 'Implementation info (dev only)'),
       MenuItem('Multiple db', () async {
-        await Navigator.of(context)!.push(MaterialPageRoute(builder: (_) {
+        await Navigator.of(context).push(MaterialPageRoute(builder: (_) {
           return MultipleDbTestPage();
         }));
       }, summary: 'Open multiple databases')
@@ -142,7 +142,7 @@ class MultipleDbTestPage extends StatelessWidget {
       return ListTile(
         title: Text(name),
         onTap: () {
-          Navigator.of(context)!.push(MaterialPageRoute(builder: (_) {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) {
             return SimpleDbTestPage(
               dbName: name,
             );
