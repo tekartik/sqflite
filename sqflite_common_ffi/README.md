@@ -34,7 +34,9 @@ Should work as is.
 
 ### Windows
 
-Should work as is (`sqlite3.dll` is bundled).
+It is needed to add [sqlite3.dll](lib/src/windows/sqlite3.dll) next to executable in release mode.
+
+This is not needed in debug mode (`sqlite3.dll` is bundled).
 
 ## Sample code
 
