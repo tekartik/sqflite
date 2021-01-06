@@ -15,6 +15,18 @@ export 'package:sqflite_common/src/exception.dart' show DatabaseException;
 /// Basic databases operations
 abstract class DatabaseFactory {
   /// Open a database at [path] with the given [options]
+  ///
+  /// ```
+  ///   var databasesPath = await getDatabasesPath();
+  ///   String path = join(databasesPath, 'demo.db');
+  ///   Database database = await openDatabase(path, version: 1,
+  ///       onCreate: (Database db, int version) async {
+  ///     // When creating the db, create the table
+  ///     await db.execute(
+  ///         'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
+  ///   });
+  ///```
+  /// Notice, `join` is a part of the [path](https://pub.dev/packages/path) package
   Future<Database> openDatabase(String path, {OpenDatabaseOptions options});
 
   /// Get the default databases location path
