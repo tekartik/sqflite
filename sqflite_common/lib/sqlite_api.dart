@@ -51,7 +51,21 @@ abstract class DatabaseExecutor {
   /// Returns the last inserted record id
   Future<int> rawInsert(String sql, [List<dynamic> arguments]);
 
-  /// INSERT helper
+  /// This method helps insert a map of `values`
+  /// into the specified `table` and returns the
+  /// id of the inserted value.
+  ///
+  /// ```
+  ///    var value = {
+  ///      'age': 18,
+  ///      'name': 'value'
+  ///    };
+  ///    var id = await db.insert(
+  ///      'table',
+  ///      value,
+  ///      conflictAlgorithm: ConflictAlgorithm.replace,
+  ///    );
+  /// ```
   Future<int> insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm});
 
@@ -178,6 +192,16 @@ abstract class Database implements DatabaseExecutor {
 
   /// Calls in action must only be done using the transaction object
   /// using the database will trigger a dead-lock
+  ///
+  /// ```
+  /// await database.transaction((txn) async {
+  ///   // Ok
+  ///   await txn.execute('CREATE TABLE Test1 (id INTEGER PRIMARY KEY)');
+  ///
+  ///   // DON'T  use the database object in a transaction
+  ///   // this will deadlock!
+  ///   await database.execute('CREATE TABLE Test2 (id INTEGER PRIMARY KEY)');
+  /// });
   Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
       {bool exclusive});
 
@@ -356,6 +380,14 @@ abstract class OpenDatabaseOptions {
 /// methods for adding operation. None of the operation will be
 /// executed (or visible locally) until commit() is called.
 ///
+///
+/// ```
+/// batch = db.batch();
+/// batch.insert('Test', {'name': 'item'});
+/// batch.update('Test', {'name': 'new_item'}, where: 'name = ?', whereArgs: ['item']);
+/// batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
+/// results = await batch.commit();
+/// ```
 abstract class Batch {
   /// Commits all of the operations in this batch as a single atomic unit
   /// The result is a list of the result of each operation in the same order
