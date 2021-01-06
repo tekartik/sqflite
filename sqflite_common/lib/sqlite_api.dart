@@ -51,7 +51,7 @@ abstract class DatabaseExecutor {
   /// ```
   Future<void> execute(String sql, [List<dynamic> arguments]);
 
-  /// Executes a raw SQL INSERT query and returns the inserted row ID.
+  /// Executes a raw SQL INSERT query and returns the last inserted row ID.
   ///
   /// ```
   /// int id1 = await database.rawInsert(
@@ -61,7 +61,7 @@ abstract class DatabaseExecutor {
 
   /// This method helps insert a map of `values`
   /// into the specified `table` and returns the
-  /// id of the inserted value.
+  /// id of the last inserted row.
   ///
   /// ```
   ///    var value = {
