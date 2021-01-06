@@ -14,7 +14,7 @@ export 'package:sqflite_common/src/exception.dart' show DatabaseException;
 
 /// Basic databases operations
 abstract class DatabaseFactory {
-  /// Open a database at [path] with the given [options]
+  /// Open a database at `path` with the given [OpenDatabaseOptions]`options`
   ///
   /// ```
   ///   var databasesPath = await getDatabasesPath();
@@ -147,17 +147,17 @@ abstract class DatabaseExecutor {
   /// Convenience method for updating rows in the database. Returns
   /// the number of changes made
   ///
-  /// Update [table] with [values], a map from column names to new column
+  /// Update `table` with `values`, a map from column names to new column
   /// values. null is a valid value that will be translated to NULL.
   ///
-  /// [where] is the optional WHERE clause to apply when updating.
+  /// `where` is the optional WHERE clause to apply when updating.
   /// Passing null will update all rows.
   ///
   /// You may include ?s in the where clause, which will be replaced by the
-  /// values from [whereArgs]
+  /// values from `whereArgs`
   ///
-  /// [conflictAlgorithm] (optional) specifies algorithm to use in case of a
-  /// conflict. See [ConflictResolver] docs for more details
+  /// `conflictAlgorithm` (optional) specifies algorithm to use in case of a
+  /// conflict. See [ConflictAlgorithm] docs for more details
   ///
   /// ```
   /// int count = await db.update(tableTodo, todo.toMap(),
@@ -179,13 +179,13 @@ abstract class DatabaseExecutor {
 
   /// Convenience method for deleting rows in the database.
   ///
-  /// Delete from [table]
+  /// Delete from `table`
   ///
-  /// [where] is the optional WHERE clause to apply when updating. Passing null
+  /// `where` is the optional WHERE clause to apply when updating. Passing null
   /// will update all rows.
   ///
   /// You may include ?s in the where clause, which will be replaced by the
-  /// values from [whereArgs]
+  /// values from `whereArgs`
   ///
   /// Returns the number of rows affected if a whereClause is passed in, 0
   /// otherwise. To remove all rows and get a count, pass '1' as the
@@ -420,18 +420,18 @@ abstract class OpenDatabaseOptions {
 abstract class Batch {
   /// Commits all of the operations in this batch as a single atomic unit
   /// The result is a list of the result of each operation in the same order
-  /// if [noResult] is true, the result list is empty (i.e. the id inserted
+  /// if `noResult` is true, the result list is empty (i.e. the id inserted
   /// the count of item changed is not returned.
   ///
   /// The batch is stopped if any operation failed
-  /// If [continueOnError] is true, all the operations in the batch are executed
+  /// If `continueOnError` is true, all the operations in the batch are executed
   /// and the failure are ignored (i.e. the result for the given operation will
   /// be a DatabaseException)
   ///
   /// During [Database.onCreate], [Database.onUpgrade], [Database.onDowngrade]
   /// (we are already in a transaction) or if the batch was created in a
   /// transaction it will only be commited when
-  /// the transaction is commited ([exclusive] is not used then)
+  /// the transaction is commited (`exclusive` is not used then)
   Future<List<dynamic>> commit(
       {bool exclusive, bool noResult, bool continueOnError});
 
