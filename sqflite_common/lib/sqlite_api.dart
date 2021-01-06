@@ -44,11 +44,19 @@ abstract class DatabaseFactory {
 ///
 abstract class DatabaseExecutor {
   /// Execute an SQL query with no return value
+  ///
+  /// ```
+  ///   await db.execute(
+  ///   'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
+  /// ```
   Future<void> execute(String sql, [List<dynamic> arguments]);
 
-  /// Execute a raw SQL INSERT query
+  /// Executes a raw SQL INSERT query and returns the inserted row ID.
   ///
-  /// Returns the last inserted record id
+  /// ```
+  /// int id1 = await database.rawInsert(
+  ///   'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
+  /// ```
   Future<int> rawInsert(String sql, [List<dynamic> arguments]);
 
   /// This method helps insert a map of `values`
@@ -60,7 +68,7 @@ abstract class DatabaseExecutor {
   ///      'age': 18,
   ///      'name': 'value'
   ///    };
-  ///    var id = await db.insert(
+  ///    int id = await db.insert(
   ///      'table',
   ///      value,
   ///      conflictAlgorithm: ConflictAlgorithm.replace,
@@ -117,18 +125,27 @@ abstract class DatabaseExecutor {
       int limit,
       int offset});
 
-  /// Execute a raw SQL SELECT query
+  /// Executes a raw SQL SELECT query and returns a list
+  /// of the rows that were found.
   ///
-  /// Returns a list of rows that were found
+  /// ```
+  /// List<Map> list = await database.rawQuery('SELECT * FROM Test');
+  /// ```
   Future<List<Map<String, dynamic>>> rawQuery(String sql,
       [List<dynamic> arguments]);
 
-  /// Execute a raw SQL UPDATE query
+  /// Executes a raw SQL UPDATE query and returns
+  /// the number of changes made.
   ///
-  /// Returns the number of changes made
+  /// ```
+  /// int count = await database.rawUpdate(
+  ///   'UPDATE Test SET name = ?, value = ? WHERE name = ?',
+  ///   ['updated name', '9876', 'some name']);
+  /// ```
   Future<int> rawUpdate(String sql, [List<dynamic> arguments]);
 
-  /// Convenience method for updating rows in the database.
+  /// Convenience method for updating rows in the database. Returns
+  /// the number of changes made
   ///
   /// Update [table] with [values], a map from column names to new column
   /// values. null is a valid value that will be translated to NULL.
@@ -141,14 +158,23 @@ abstract class DatabaseExecutor {
   ///
   /// [conflictAlgorithm] (optional) specifies algorithm to use in case of a
   /// conflict. See [ConflictResolver] docs for more details
+  ///
+  /// ```
+  /// int count = await db.update(tableTodo, todo.toMap(),
+  ///    where: '$columnId = ?', whereArgs: [todo.id]);
+  /// ```
   Future<int> update(String table, Map<String, dynamic> values,
       {String where,
       List<dynamic> whereArgs,
       ConflictAlgorithm conflictAlgorithm});
 
-  /// Executes a raw SQL DELETE query
+  /// Executes a raw SQL DELETE query and returns the
+  /// number of changes made.
   ///
-  /// Returns the number of changes made
+  /// ```
+  /// int count = await database
+  ///   .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
+  /// ```
   Future<int> rawDelete(String sql, [List<dynamic> arguments]);
 
   /// Convenience method for deleting rows in the database.
@@ -162,8 +188,11 @@ abstract class DatabaseExecutor {
   /// values from [whereArgs]
   ///
   /// Returns the number of rows affected if a whereClause is passed in, 0
-  /// otherwise. To remove all rows and get a count pass '1' as the
+  /// otherwise. To remove all rows and get a count, pass '1' as the
   /// whereClause.
+  /// ```
+  ///  int count = await db.delete(tableTodo, where: 'columnId = ?', whereArgs: [id]);
+  /// ```
   Future<int> delete(String table, {String where, List<dynamic> whereArgs});
 
   /// Creates a batch, used for performing multiple operation
