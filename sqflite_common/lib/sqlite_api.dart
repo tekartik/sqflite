@@ -55,31 +55,43 @@ abstract class DatabaseExecutor {
   Future<int> insert(String table, Map<String, dynamic> values,
       {String nullColumnHack, ConflictAlgorithm conflictAlgorithm});
 
-  /// Helper to query a table
+  /// This is a helper to query a table and return the items found. All optional
+  /// clauses and filters are formatted as SQL queries
+  /// excluding the clauses' names.
   ///
-  /// @param distinct true if you want each row to be unique, false otherwise.
-  /// @param table The table names to compile the query against.
-  /// @param columns A list of which columns to return. Passing null will
-  ///            return all columns, which is discouraged to prevent reading
-  ///            data from storage that isn't going to be used.
-  /// @param where A filter declaring which rows to return, formatted as an SQL
-  ///            WHERE clause (excluding the WHERE itself). Passing null will
-  ///            return all rows for the given URL.
-  /// @param groupBy A filter declaring how to group rows, formatted as an SQL
-  ///            GROUP BY clause (excluding the GROUP BY itself). Passing null
-  ///            will cause the rows to not be grouped.
-  /// @param having A filter declare which row groups to include in the cursor,
-  ///            if row grouping is being used, formatted as an SQL HAVING
-  ///            clause (excluding the HAVING itself). Passing null will cause
-  ///            all row groups to be included, and is required when row
-  ///            grouping is not being used.
-  /// @param orderBy How to order the rows, formatted as an SQL ORDER BY clause
-  ///            (excluding the ORDER BY itself). Passing null will use the
-  ///            default sort order, which may be unordered.
-  /// @param limit Limits the number of rows returned by the query,
-  /// @param offset starting index,
+  /// `table` contains the table names to compile the query against.
+  ///
+  /// `distinct` when set to true ensures each row is unique.
+  ///
+  /// The `columns` list specify which columns to return. Passing null will
+  /// return all columns, which is discouraged.
+  ///
+  /// `where` filters which rows to return. Passing null will return all rows
+  /// for the given URL. '?'s are replaced with the items in the
+  /// `whereArgs` field.
+  ///
+  /// `groupBy` decalres how to group rows. Passing null
+  /// will cause the rows to not be grouped.
+  ///
+  /// `having` declares which row groups to include in the cursor,
+  /// if row grouping is being used. Passing null will cause
+  /// all row groups to be included, and is required when row
+  /// grouping is not being used.
+  ///
+  /// `orderBy` decalres how to order the rows,
+  /// Passing null will use the default sort order,
+  /// which may be unordered.
+  ///
+  /// `limit` Limits the number of rows returned by the query,
+  ///
+  /// `offset` specifies the starting index,
+  /// ```
+  ///  List<Map> maps = await db.query(tableTodo,
+  ///      columns: ['columnId', 'columnDone', 'columnTitle'],
+  ///      where: 'columnId = ?',
+  ///      whereArgs: [id]);
+  /// ```
 
-  /// @return the items found
   Future<List<Map<String, dynamic>>> query(String table,
       {bool distinct,
       List<String> columns,
