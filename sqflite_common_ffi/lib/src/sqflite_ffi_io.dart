@@ -43,6 +43,9 @@ DatabaseFactory createDatabaseFactoryFfi({SqfliteFfiInit? ffiInit}) {
 /// Optional. Initialize ffi loader.
 ///
 /// Call in main until you find a loader for your needs.
+///
+/// Currently this only performs windows specific operations. Implementation
+/// is provided for reference only.
 void sqfliteFfiInit() {
   if (Platform.isWindows) {
     windowsInit();

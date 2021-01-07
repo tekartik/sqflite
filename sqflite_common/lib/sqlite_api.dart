@@ -14,7 +14,19 @@ export 'package:sqflite_common/src/exception.dart' show DatabaseException;
 
 /// Basic databases operations
 abstract class DatabaseFactory {
-  /// Open a database at [path] with the given [options]
+  /// Open a database at [path] with the given [OpenDatabaseOptions]`options`
+  ///
+  /// ```
+  ///   var databasesPath = await getDatabasesPath();
+  ///   String path = join(databasesPath, 'demo.db');
+  ///   Database database = await openDatabase(path, version: 1,
+  ///       onCreate: (Database db, int version) async {
+  ///     // When creating the db, create the table
+  ///     await db.execute(
+  ///         'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
+  ///   });
+  ///```
+  /// Notice, `join` is a part of the [path](https://pub.dev/packages/path) package
   Future<Database> openDatabase(String path, {OpenDatabaseOptions? options});
 
   /// Get the default databases location path
@@ -35,81 +47,112 @@ abstract class DatabaseFactory {
 ///
 abstract class DatabaseExecutor {
   /// Execute an SQL query with no return value.
+  ///
+  /// ```
+  ///   await db.execute(
+  ///   'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
+  /// ```
   Future<void> execute(String sql, [List<Object?>? arguments]);
 
-  /// Execute a raw SQL INSERT query.
+  /// Executes a raw SQL INSERT query and returns the last inserted row ID.
   ///
-  /// Returns the last inserted record id.
+  /// ```
+  /// int id1 = await database.rawInsert(
+  ///   'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
+  /// ```
   ///
   /// 0 could be returned for some specific conflict algorithms if not inserted.
   Future<int> rawInsert(String sql, [List<Object?>? arguments]);
 
-  /// SQL INSERT helper.
+  /// This method helps insert a map of [values]
+  /// into the specified [table] and returns the
+  /// id of the last inserted row.
   ///
-  /// Execute an SQL INSERT query.
-  ///
-  /// Returns the last inserted record id.
+  /// ```
+  ///    var value = {
+  ///      'age': 18,
+  ///      'name': 'value'
+  ///    };
+  ///    int id = await db.insert(
+  ///      'table',
+  ///      value,
+  ///      conflictAlgorithm: ConflictAlgorithm.replace,
+  ///    );
+  /// ```
   ///
   /// 0 could be returned for some specific conflict algorithms if not inserted.
   Future<int> insert(String table, Map<String, Object?> values,
       {String? nullColumnHack, ConflictAlgorithm? conflictAlgorithm});
 
-  /// Helper to query a table.
+  /// This is a helper to query a table and return the items found. All optional
+  /// clauses and filters are formatted as SQL queries
+  /// excluding the clauses' names.
   ///
-  /// [distinct] : true if you want each row to be unique, false otherwise.
+  /// [table] contains the table names to compile the query against.
   ///
-  /// [table]: The table names to compile the query against.
+  /// [distinct] when set to true ensures each row is unique.
   ///
-  /// [columns]: A list of which columns to return. Passing null will
-  ///            return all columns, which is discouraged to prevent reading
-  ///            data from storage that isn't going to be used.
+  /// The [columns] list specify which columns to return. Passing null will
+  /// return all columns, which is discouraged.
   ///
-  /// [where]: A filter declaring which rows to return, formatted as an SQL
-  ///            WHERE clause (excluding the WHERE itself). Passing null will
-  ///            return all rows for the given URL.
+  /// [where] filters which rows to return. Passing null will return all rows
+  /// for the given URL. '?'s are replaced with the items in the
+  /// [whereArgs] field.
   ///
-  /// [groupBy]: A filter declaring how to group rows, formatted as an SQL
-  ///            GROUP BY clause (excluding the GROUP BY itself). Passing null
-  ///            will cause the rows to not be grouped.
+  /// [groupBy] declares how to group rows. Passing null
+  /// will cause the rows to not be grouped.
   ///
-  /// [having]: A filter declare which row groups to include in the cursor,
-  ///            if row grouping is being used, formatted as an SQL HAVING
-  ///            clause (excluding the HAVING itself). Passing null will cause
-  ///            all row groups to be included, and is required when row
-  ///            grouping is not being used.
+  /// [having] declares which row groups to include in the cursor,
+  /// if row grouping is being used. Passing null will cause
+  /// all row groups to be included, and is required when row
+  /// grouping is not being used.
   ///
-  /// [orderBy]: How to order the rows, formatted as an SQL ORDER BY clause
-  ///            (excluding the ORDER BY itself). Passing null will use the
-  ///            default sort order, which may be unordered.
+  /// [orderBy] declares how to order the rows,
+  /// Passing null will use the default sort order,
+  /// which may be unordered.
   ///
-  /// [limit]: Limits the number of rows returned by the query,
+  /// [limit] limits the number of rows returned by the query.
   ///
-  /// [offset]: starting index.
+  /// [offset] specifies the starting index.
   ///
-  /// returns the items found.
+  /// ```
+  ///  List<Map> maps = await db.query(tableTodo,
+  ///      columns: ['columnId', 'columnDone', 'columnTitle'],
+  ///      where: 'columnId = ?',
+  ///      whereArgs: [id]);
+  /// ```
   Future<List<Map<String, Object?>>> query(String table,
       {bool? distinct,
-      List<String>? columns,
-      String? where,
-      List<Object?>? whereArgs,
-      String? groupBy,
-      String? having,
-      String? orderBy,
-      int? limit,
-      int? offset});
+        List<String>? columns,
+        String? where,
+        List<Object?>? whereArgs,
+        String? groupBy,
+        String? having,
+        String? orderBy,
+        int? limit,
+        int? offset});
 
-  /// Execute a raw SQL SELECT query.
+  /// Executes a raw SQL SELECT query and returns a list
+  /// of the rows that were found.
   ///
-  /// Returns a list of rows that were found.
+  /// ```
+  /// List<Map> list = await database.rawQuery('SELECT * FROM Test');
+  /// ```
   Future<List<Map<String, Object?>>> rawQuery(String sql,
       [List<Object?>? arguments]);
 
-  /// Execute a raw SQL UPDATE query.
+  /// Executes a raw SQL UPDATE query and returns
+  /// the number of changes made.
   ///
-  /// Returns the number of changes made.
+  /// ```
+  /// int count = await database.rawUpdate(
+  ///   'UPDATE Test SET name = ?, value = ? WHERE name = ?',
+  ///   ['updated name', '9876', 'some name']);
+  /// ```
   Future<int> rawUpdate(String sql, [List<Object?>? arguments]);
 
-  /// Convenience method for updating rows in the database.
+  /// Convenience method for updating rows in the database. Returns
+  /// the number of changes made
   ///
   /// Update [table] with [values], a map from column names to new column
   /// values. null is a valid value that will be translated to NULL.
@@ -121,15 +164,24 @@ abstract class DatabaseExecutor {
   /// values from [whereArgs]
   ///
   /// [conflictAlgorithm] (optional) specifies algorithm to use in case of a
-  /// conflict. See [ConflictResolver] docs for more details
+  /// conflict. See [ConflictAlgorithm] docs for more details
+  ///
+  /// ```
+  /// int count = await db.update(tableTodo, todo.toMap(),
+  ///    where: '$columnId = ?', whereArgs: [todo.id]);
+  /// ```
   Future<int> update(String table, Map<String, Object?> values,
       {String? where,
-      List<Object?>? whereArgs,
-      ConflictAlgorithm? conflictAlgorithm});
+        List<Object?>? whereArgs,
+        ConflictAlgorithm? conflictAlgorithm});
 
-  /// Executes a raw SQL DELETE query
+  /// Executes a raw SQL DELETE query and returns the
+  /// number of changes made.
   ///
-  /// Returns the number of changes made
+  /// ```
+  /// int count = await database
+  ///   .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
+  /// ```
   Future<int> rawDelete(String sql, [List<Object?>? arguments]);
 
   /// Convenience method for deleting rows in the database.
@@ -137,14 +189,15 @@ abstract class DatabaseExecutor {
   /// Delete from [table]
   ///
   /// [where] is the optional WHERE clause to apply when updating. Passing null
-  /// will update all rows.
+  /// will delete all rows.
   ///
   /// You may include ?s in the where clause, which will be replaced by the
   /// values from [whereArgs]
   ///
-  /// Returns the number of rows affected if a whereClause is passed in, 0
-  /// otherwise. To remove all rows and get a count pass '1' as the
-  /// whereClause.
+  /// Returns the number of rows affected.
+  /// ```
+  ///  int count = await db.delete(tableTodo, where: 'columnId = ?', whereArgs: [id]);
+  /// ```
   Future<int> delete(String table, {String? where, List<Object?>? whereArgs});
 
   /// Creates a batch, used for performing multiple operation
@@ -172,7 +225,17 @@ abstract class Database implements DatabaseExecutor {
   Future<void> close();
 
   /// Calls in action must only be done using the transaction object
-  /// using the database will trigger a dead-lock
+  /// using the database will trigger a dead-lock.
+  ///
+  /// ```
+  /// await database.transaction((txn) async {
+  ///   // Ok
+  ///   await txn.execute('CREATE TABLE Test1 (id INTEGER PRIMARY KEY)');
+  ///
+  ///   // DON'T  use the database object in a transaction
+  ///   // this will deadlock!
+  ///   await database.execute('CREATE TABLE Test2 (id INTEGER PRIMARY KEY)');
+  /// });
   Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
       {bool? exclusive});
 
@@ -351,6 +414,14 @@ abstract class OpenDatabaseOptions {
 /// methods for adding operation. None of the operation will be
 /// executed (or visible locally) until commit() is called.
 ///
+///
+/// ```
+/// batch = db.batch();
+/// batch.insert('Test', {'name': 'item'});
+/// batch.update('Test', {'name': 'new_item'}, where: 'name = ?', whereArgs: ['item']);
+/// batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
+/// results = await batch.commit();
+/// ```
 abstract class Batch {
   /// Commits all of the operations in this batch as a single atomic unit
   /// The result is a list of the result of each operation in the same order

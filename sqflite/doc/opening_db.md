@@ -218,13 +218,13 @@ class Helper {
   Future<Database> _db;
 
   Future<Database> getDb() {
-    _db ??= _initDb(path);
+    _db ??= _initDb();
     return _db;
   }
 
   // Guaranteed to be called only once.
   Future<Database> _initDb() async {
-    final db = await openDatabase(path);
+    final db = await openDatabase(this.path);
     // do "tons of stuff in async mode"
     return db;
   }
