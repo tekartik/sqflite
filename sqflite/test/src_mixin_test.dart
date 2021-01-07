@@ -131,6 +131,12 @@ class MockInvalidFactory implements DatabaseFactory {
       {OpenDatabaseOptions options}) async {
     return null;
   }
+
+  @override
+  // ignore: override_on_non_overriding_member
+  Future<void> setDatabasesPath(String path) {
+    throw UnimplementedError();
+  }
 }
 
 final MockDatabaseFactory mockDatabaseFactory = MockDatabaseFactory();
