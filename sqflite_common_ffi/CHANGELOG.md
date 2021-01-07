@@ -1,8 +1,8 @@
-## 2.0.0-nullsafety.5
+## 2.0.0-nullsafety.6
 
 * `nnbd` support
 * Improved sqlite shared lib loading mechanism to support alternate library. 
-
+pub
 ## 1.1.1+2
 
 * Fixes hot-restart lock issue

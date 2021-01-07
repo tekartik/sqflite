@@ -123,14 +123,14 @@ abstract class DatabaseExecutor {
   /// ```
   Future<List<Map<String, Object?>>> query(String table,
       {bool? distinct,
-        List<String>? columns,
-        String? where,
-        List<Object?>? whereArgs,
-        String? groupBy,
-        String? having,
-        String? orderBy,
-        int? limit,
-        int? offset});
+      List<String>? columns,
+      String? where,
+      List<Object?>? whereArgs,
+      String? groupBy,
+      String? having,
+      String? orderBy,
+      int? limit,
+      int? offset});
 
   /// Executes a raw SQL SELECT query and returns a list
   /// of the rows that were found.
@@ -172,8 +172,8 @@ abstract class DatabaseExecutor {
   /// ```
   Future<int> update(String table, Map<String, Object?> values,
       {String? where,
-        List<Object?>? whereArgs,
-        ConflictAlgorithm? conflictAlgorithm});
+      List<Object?>? whereArgs,
+      ConflictAlgorithm? conflictAlgorithm});
 
   /// Executes a raw SQL DELETE query and returns the
   /// number of changes made.
