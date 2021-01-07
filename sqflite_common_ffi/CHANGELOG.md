@@ -2,7 +2,7 @@
 
 * `nnbd` support
 * Improved sqlite shared lib loading mechanism to support alternate library. 
-pub
+
 ## 1.1.1+2
 
 * Fixes hot-restart lock issue
