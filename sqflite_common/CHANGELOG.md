@@ -1,4 +1,4 @@
-## 1.0.3-dev.1
+## 1.0.3
 
 * Don't lock globally during open but lock per database full path.
  

@@ -1,4 +1,4 @@
-## 1.3.2+1
+## 1.3.2+2
 
 * iOS/macOS: Update FMDB to 2.7.5+
 * android: Update gradle to 6.5

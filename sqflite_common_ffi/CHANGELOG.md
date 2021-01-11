@@ -1,4 +1,4 @@
-## 1.1.1+2
+## 1.1.1+3
 
 * Fixes hot-restart lock issue
 * Fixes missing `databaseExists` handler
