@@ -13,8 +13,8 @@ Future main() async {
     '.',
     ...[
       'sqflite_common',
-      // 'sqflite_common_test',
-      // 'sqflite_common_ffi',
+      'sqflite_common_test',
+      'sqflite_common_ffi',
     ].map((dir) => join('..', dir))
   ]) {
     await packageRunCi(dir);
