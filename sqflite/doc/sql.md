@@ -62,14 +62,20 @@ See [Conflict algorithm](conflict_algorithm.md) for conflict handling.
 
 ### transaction
 
-`transaction` handle the 'all or nothing' scenario. If one command fails, all other commands are reverted.
+`transaction` handle the 'all or nothing' scenario. If one command fails (and throws an error), all other commands are reverted.
 
 ```dart
 await db.transaction((txn) async {
-  await db.insert('my_table', {'name': 'my_name'});
-  await db.delete('my_table', where: 'name = ?', whereArgs: ['cat']);
+  await txn.insert('my_table', {'name': 'my_name'});
+  await txn.delete('my_table', where: 'name = ?', whereArgs: ['cat']);
 });
 ```
+
+* Make sure to sure the inner transaction object - `txn` in the code above - is used in a transaction (using the `db` object itself will cause a deadlock),
+* You can throw an error during a transaction to cancel a transaction,
+* When an error is thrown during a transaction, the action is cancelled right away and previous commands in the transaction are reverted,
+* No other concurrent modification on the database (even from an outside process) can happen during a transaction,
+* The inner part of the transaction is called only once, it is up to the developer to handle a try-again loop - assuming it can succeed at some point.
 
 ## Parameters
 
