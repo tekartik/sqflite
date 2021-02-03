@@ -1,5 +1,5 @@
 name: sqflite_example
-description: Demonstrates how to use the sqflite plugin.
+description: Demonstrates how to use the sqflite plugin and perform some tests.
 publish_to: none
 version: '0.4.0'
 

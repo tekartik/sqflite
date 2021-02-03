@@ -2,10 +2,11 @@
 
 * `nnbd` support
 
-## 1.3.2+1
+## 1.3.2+3
 
 * iOS/macOS: Update FMDB to 2.7.5+
 * android: Update gradle to 6.5
+* fix logs on iOS
 
 ## 1.3.1+2
 

@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common/sqflite_dev.dart';
 
 import 'test_page.dart';
 
@@ -510,6 +511,29 @@ CREATE TABLE test (
         expect(map['matchinfo'], const TypeMatcher<Uint8List>());
       } finally {
         await db.close();
+      }
+    });
+
+    test('Log level', () async {
+      // test setting log level
+      Database db;
+      try {
+        // ignore: deprecated_member_use
+        await databaseFactory.setLogLevel(sqfliteLogLevelVerbose);
+        //await databaseFactory.setLogLevel(sqfliteLogLevelSql);
+        db = await openDatabase(inMemoryDatabasePath);
+        await db.execute('CREATE TABLE test (value TEXT UNIQUE)');
+        var table = 'test';
+        var map = <String, dynamic>{'value': 'test'};
+        await db.insert(table, map,
+            conflictAlgorithm: ConflictAlgorithm.replace);
+        expect(
+            Sqflite.firstIntValue(await db.query(table, columns: ['COUNT(*)'])),
+            1);
+      } finally {
+        // ignore: deprecated_member_use
+        await databaseFactory.setLogLevel(sqfliteLogLevelNone);
+        await db?.close();
       }
     });
 

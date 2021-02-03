@@ -137,6 +137,14 @@ await upsertRecord(product);
 
 In the last example above, there is a short race condition between _insert and _update that depending on your use, should be avoided.
 
+## Concurrency
+
+- Every read/write/transaction operation is protected by a global mutex on the database. Each action runs one after the other, first
+  action called, first ran. While it is a conservative solution, due to some
+  native implementation, you can design an app which remains fast.
+- `transaction` handle the 'all or nothing' scenario. If one command fails (and throws an error), all other commands called during the
+  transaction are reverted. You can also throw an error to cancel a transaction.
+
 ## Limitations
 
 ### SQLiteBlobTooBigException (Row too big to fit into CursorWindow)
