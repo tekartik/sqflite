@@ -279,7 +279,6 @@ static NSInteger _databaseOpenCount = 0;
     BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
-        return true;
     }
     
     BOOL success;
