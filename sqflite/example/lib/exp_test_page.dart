@@ -516,7 +516,7 @@ CREATE TABLE test (
 
     test('Log level', () async {
       // test setting log level
-      Database db;
+      Database? db;
       try {
         // ignore: deprecated_member_use
         await databaseFactory.setLogLevel(sqfliteLogLevelVerbose);
