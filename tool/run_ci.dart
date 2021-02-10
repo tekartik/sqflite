@@ -17,12 +17,13 @@ Future main() async {
   final nnbdEnabled = dartVersion > Version(2, 12, 0, pre: '0');
   if (nnbdEnabled) {
     for (var dir in [
-      // 'sqflite/example',
-      // 'sqflite',
-      // 'sqflite_test_app',
       'sqflite_common',
       'sqflite_common_test',
       'sqflite_common_ffi',
+      'sqflite/example',
+      'sqflite',
+      'sqflite_test_app',
+      'sqflite_support',
     ]) {
       shell = shell.pushd(dir);
       await packageRunCi(dir);
