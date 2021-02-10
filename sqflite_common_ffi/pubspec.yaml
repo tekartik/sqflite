@@ -7,7 +7,7 @@ environment:
   sdk: '>=2.12.0-29 <3.0.0'
 
 dependencies:
-  sqlite3: '>=0.1.9-nullsafety.0 <1.0.0'
+  sqlite3: '>=0.1.10-nullsafety.0 <1.0.0'
   sqflite_common: '>=2.0.0-nullsafety.2 <3.0.0'
   synchronized: '>=3.0.0-nullsafety.0 <4.0.0'
   path: '>=1.8.0-nullsafety.3 <3.0.0'
