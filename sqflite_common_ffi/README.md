@@ -34,7 +34,9 @@ Should work as is.
 
 ### Windows
 
-Should work as is (`sqlite3.dll` is bundled).
+Should work as is in debug mode (`sqlite3.dll` is bundled).
+
+In release mode, add [sqlite3.dll](https://github.com/tekartik/sqflite/raw/master/sqflite_common_ffi/lib/src/windows/sqlite3.dll) in same folder as your executable.
 
 ## Sample code
 
