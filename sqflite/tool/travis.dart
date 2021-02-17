@@ -37,8 +37,8 @@ flutter test
         try {
           final dir = await Directory.systemTemp.createTemp('sqflite');
           bashFilePath = join(dir.path, 'codecov.bash');
-          await File(bashFilePath)
-              .writeAsString(await IOClient().read('https://codecov.io/bash'));
+          await File(bashFilePath).writeAsString(
+              await IOClient().read(Uri.parse('https://codecov.io/bash')));
           await shell.run('bash $bashFilePath');
         } catch (e) {
           stdout.writeln('error $e running $bashFilePath');
