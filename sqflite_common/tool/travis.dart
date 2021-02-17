@@ -1,9 +1,3 @@
-//
-// @dart = 2.9
-//
-// This is to allow running this file without null experiment
-// In the future, remove this 2.9 comment or run using: dart --enable-experiment=non-nullable --no-sound-null-safety run tool/travis.dart
-
 import 'dart:io';
 
 import 'package:http/io_client.dart';
@@ -32,7 +26,7 @@ dart test
     if (travisDartChannel == 'stable') {
       stdout.writeln('Publishing coverage information.');
       if (codeCovToken != null) {
-        String bashFilePath;
+        String? bashFilePath;
         try {
           final dir = await Directory.systemTemp.createTemp('sqflite_common');
           bashFilePath = join(dir.path, 'codecov.bash');

@@ -1,4 +1,4 @@
-## 2.0.0-nullsafety.2
+## 2.0.0
 
 * `nnbd` support
 
