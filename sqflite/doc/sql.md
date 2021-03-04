@@ -119,7 +119,7 @@ Be aware that Android binds argument as String. While it works in most cases (in
 ## NULL value
 
 `NULL` is a special value. When testing for null in a query you should not do `'WHERE my_col = ?', [null]` but use 
-instead `WHERE my_col IS NULL`.
+instead `WHERE my_col IS NULL` or `WHERE my_col IS NOT NULL`.
 
 ```dart
 var list = await db.query('my_table', columns: ['name'], where: 'type IS NULL');
