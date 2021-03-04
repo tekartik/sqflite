@@ -126,10 +126,11 @@ class _ManualTestPageState extends State<ManualTestPage> {
         title: Text('Manual tests'),
       ),
       body: WillPopScope(
-          child: ListView(
-            children: itemWidgets,
-          ),
-          onWillPop: pop),
+        onWillPop: pop,
+        child: ListView(
+          children: itemWidgets,
+        ),
+      ),
     );
   }
 }
@@ -220,8 +221,8 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
 
             Future _countRecord() async {
               var db = await _openDatabase();
-              var result = await firstIntValue(
-                  await db.query('test', columns: ['COUNT(*)']));
+              var result =
+                  firstIntValue(await db.query('test', columns: ['COUNT(*)']));
               // Temp for nnbd successfull lint
               // ignore: deprecated_member_use
               Scaffold.of(context).showSnackBar(SnackBar(
