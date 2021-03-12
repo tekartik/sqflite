@@ -480,9 +480,11 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       Transaction? txn, Future<T> Function(Transaction txn) action,
       {bool? exclusive}) async {
     bool? successfull;
-    if (transactionRefCount++ == 0) {
+    if (transactionRefCount == 0) {
       txn = await beginTransaction(exclusive: exclusive);
     }
+    // Update the ref count after a successful begin
+    transactionRefCount++;
     T result;
     try {
       result = await action(txn!);
