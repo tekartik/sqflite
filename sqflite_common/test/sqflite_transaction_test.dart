@@ -77,5 +77,43 @@ void main() {
       await db.close();
       scenario.end();
     });
+    test('error in begin during open', () async {
+      final scenario = startScenario([
+        openStep,
+        [
+          'query',
+          {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
+          {},
+        ],
+        [
+          'execute',
+          {
+            'sql': 'BEGIN EXCLUSIVE',
+            'arguments': null,
+            'id': 1,
+            'inTransaction': true
+          },
+          SqfliteDatabaseException('failure', null),
+        ],
+        [
+          'execute',
+          {
+            'sql': 'ROLLBACK',
+            'arguments': null,
+            'id': 1,
+            'inTransaction': false
+          },
+          null,
+        ],
+        closeStep,
+      ]);
+      final factory = scenario.factory;
+      try {
+        await factory.openDatabase(inMemoryDatabasePath,
+            options:
+                OpenDatabaseOptions(version: 1, onCreate: (db, version) {}));
+      } on DatabaseException catch (_) {}
+      scenario.end();
+    });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common/src/dev_utils.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
 import 'package:test/test.dart';
 
@@ -45,7 +46,7 @@ MockScenario startScenario(List<List> data) {
       expect(method, item.expectedMethod);
       expect(arguments, item.expectedArguments);
     } catch (e) {
-      // devPrint(e);
+      devPrint(e);
       scenario.exception ??= '$e $index';
     }
     if (item.response is DatabaseException) {
