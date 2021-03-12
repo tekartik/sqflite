@@ -1,10 +1,11 @@
+import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
 
 /// Run unit and driver test on a connected device
 Future main() async {
   var shell = Shell();
 
-  shell = shell.pushd('sqflite');
+  shell = shell.pushd(join('..', 'sqflite'));
   await shell.run('''
     
     flutter test
@@ -15,8 +16,8 @@ Future main() async {
   await shell.run('''
     
     flutter packages get
-    flutter test
-    dart tool/run_flutter_driver_test.dart
+    # flutter test
+    dart tool/run_integration_test.dart
     
         ''');
   shell = shell.popd();

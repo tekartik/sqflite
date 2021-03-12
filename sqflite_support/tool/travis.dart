@@ -1,20 +1,17 @@
 import 'package:process_run/shell.dart';
-//import 'package:dev_test/package.dart';
+import 'package:path/path.dart';
 
 Future main() async {
-  // await packageRunCi('.');
-
   var shell = Shell();
 
   await shell.run('flutter doctor');
 
-  /*
   for (var dir in [
     'sqflite/example',
     'sqflite',
     'sqflite_test_app',
   ]) {
-    shell = shell.pushd(dir);
+    shell = shell.pushd(join('..', dir));
     await shell.run('''
     
     flutter packages get
@@ -23,13 +20,13 @@ Future main() async {
         ''');
     shell = shell.popd();
   }
-  */
+
   for (var dir in [
     'sqflite_common',
-    // 'sqflite_common_test',
-    // 'sqflite_common_ffi',
+    'sqflite_common_test',
+    'sqflite_common_ffi',
   ]) {
-    shell = shell.pushd(dir);
+    shell = shell.pushd(join('..', dir));
     await shell.run('''
     
     pub get

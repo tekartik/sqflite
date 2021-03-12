@@ -8,6 +8,7 @@ environment:
   sdk: '>=2.7.0 <3.0.0'
 
 dev_dependencies:
+  path:
   pedantic: '>=1.4.0 <3.0.0'
   tekartik_travis_ci_flutter:
     git:

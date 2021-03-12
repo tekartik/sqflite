@@ -48,3 +48,5 @@ flutter:
 dependency_overrides:
   sqflite:
     path: ../
+  sqflite_common:
+    path: ../../sqflite_common
