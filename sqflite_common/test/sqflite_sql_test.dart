@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:test/test.dart';
 
-import 'sqflite_open_test.dart';
+import 'test_scenario.dart';
 
 var openStep = [
   'openDatabase',
