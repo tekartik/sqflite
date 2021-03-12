@@ -1,6 +1,8 @@
 package com.tekartik.sqflite;
 
 import android.content.Context;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -11,7 +13,12 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -76,12 +83,13 @@ public class TestSqflitePluginTest {
 
     @Test
     public void openCloseDatabase() throws InterruptedException {
-        /*
+
         Looper.prepare();
         final Data data = new Data();
         // Context of the app under test.
         Context appContext = ApplicationProvider.getApplicationContext();
         TestSqflitePlugin plugin = new TestSqflitePlugin(appContext);
+        plugin.setExtraLogLevel();
 
         // Open the database
         data.signal = new CountDownLatch(1);
@@ -137,6 +145,6 @@ public class TestSqflitePluginTest {
         plugin.onMethodCall(call, result);
         data.signal.await();
 
-    */
+
     }
 }

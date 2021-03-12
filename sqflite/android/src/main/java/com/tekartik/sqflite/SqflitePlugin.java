@@ -950,6 +950,9 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
+        if (LogLevel.hasExtraLevel(logLevel)) {
+            Log.d(TAG, "onMethodCall(" + call + ")");
+        }
         switch (call.method) {
             // quick testing
             case METHOD_GET_PLATFORM_VERSION:

@@ -43,4 +43,12 @@ android {
 
 dependencies {
     testImplementation 'junit:junit:4.13.1'
+
+    def sqlite_version = "2.1.0"
+
+    // Java language implementation
+    implementation "androidx.sqlite:sqlite:$sqlite_version"
+
+    // Implementation of the AndroidX SQLite interfaces via the Android framework APIs.
+    implementation "androidx.sqlite:sqlite-framework:$sqlite_version"
 }

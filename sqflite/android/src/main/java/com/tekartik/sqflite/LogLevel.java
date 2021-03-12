@@ -9,6 +9,8 @@ public class LogLevel {
     static final int none = 0;
     static final int sql = 1;
     static final int verbose = 2;
+    // Internal only
+    static final int extra = 3;
 
     static Integer getLogLevel(MethodCall methodCall) {
         return methodCall.argument(PARAM_LOG_LEVEL);
@@ -20,5 +22,9 @@ public class LogLevel {
 
     static boolean hasVerboseLevel(int level) {
         return level >= verbose;
+    }
+
+    static boolean hasExtraLevel(int level) {
+        return level >= extra;
     }
 }
