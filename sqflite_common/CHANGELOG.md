@@ -1,6 +1,7 @@
-## 1.0.3+1
+## 1.0.3+2
 
 * Don't lock globally during open but lock per database full path.
+* Fix transaction ref counting on begin transaction failure
  
 ## 1.0.2+1
 
