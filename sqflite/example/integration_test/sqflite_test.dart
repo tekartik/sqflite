@@ -21,7 +21,7 @@ void main() {
         //await devVerbose();
         var path = join('test_missing_sub_dir', 'simple.db');
         try {
-          await Directory(join((await getDatabasesPath())!, dirname(path)))
+          await Directory(join(await getDatabasesPath(), dirname(path)))
               .delete(recursive: true);
         } catch (_) {}
         var db =
@@ -105,7 +105,7 @@ void main() {
     test('read_only empty file', () async {
       var path = 'empty_file_database.db';
       await deleteDatabase(path);
-      var fullPath = join((await getDatabasesPath())!, path);
+      var fullPath = join((await getDatabasesPath()), path);
       await Directory(dirname(fullPath)).create(recursive: true);
       await File(fullPath).writeAsString('');
 
@@ -123,7 +123,7 @@ void main() {
     test('read_only missing bad format', () async {
       var path = 'test_bad_format_database.db';
       await deleteDatabase(path);
-      var fullPath = join((await getDatabasesPath())!, path);
+      var fullPath = join((await getDatabasesPath()), path);
       await Directory(dirname(fullPath)).create(recursive: true);
       await File(fullPath).writeAsString('test');
 

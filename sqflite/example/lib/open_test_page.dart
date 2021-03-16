@@ -330,7 +330,7 @@ class OpenTestPage extends TestPage {
 
     test('Open asset database', () async {
       // await Sqflite.devSetDebugModeOn(false);
-      var databasesPath = (await getDatabasesPath())!;
+      var databasesPath = await getDatabasesPath();
       var path = join(databasesPath, 'asset_example.db');
 
       // delete existing if any
@@ -616,7 +616,7 @@ class OpenTestPage extends TestPage {
       // asset (use existing copy if any
       {
         // Check if we have an existing copy first
-        var databasesPath = (await getDatabasesPath())!;
+        var databasesPath = await getDatabasesPath();
         var path = join(databasesPath, 'demo_asset_example.db');
 
         // try opening (will work if it exists)

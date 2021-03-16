@@ -158,7 +158,7 @@ Future<Database> openReadOnlyDatabase(String path) =>
 ///
 /// On iOS, it is the Documents directory
 ///
-Future<String?> getDatabasesPath() => databaseFactory.getDatabasesPath();
+Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();
 
 ///
 /// Delete the database at the given path.
