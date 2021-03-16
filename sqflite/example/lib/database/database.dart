@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 
 /// delete the db, create the folder and returnes its path
 Future<String> initDeleteDb(String dbName) async {
-  final databasePath = (await getDatabasesPath())!;
+  final databasePath = await getDatabasesPath();
   // print(databasePath);
   final path = join(databasePath, dbName);
 

@@ -390,7 +390,7 @@ class RawTestPage extends TestPage {
 
     test('Demo clean', () async {
       // Get a location
-      var databasesPath = (await getDatabasesPath())!;
+      var databasesPath = await getDatabasesPath();
 
       // Make sure the directory exists
       try {
