@@ -9,7 +9,7 @@ import 'package:process_run/shell.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 Future main() async {
-  var shell = Shell();
+  var shell = Shell(workingDirectory: '..');
 
   await shell.run('flutter doctor');
 

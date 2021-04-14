@@ -4,5 +4,79 @@
 include: package:pedantic/analysis_options.yaml
 
 analyzer:
-  strong-mode:
-    implicit-casts: false
+  errors:
+    # treat missing required parameters as a warning (not a hint)
+    missing_required_param: warning
+    # treat missing returns as a warning (not a hint)
+    missing_return: warning
+    # allow having TODOs in the code
+    todo: ignore
+    # Ignore errors like
+    # 'super_goes_last' is a deprecated lint rule and should not be used • included_file_warning
+    included_file_warning: ignore
+
+linter:
+  rules:
+    - avoid_dynamic_calls
+    - avoid_empty_else
+    - avoid_slow_async_io
+    - camel_case_types
+    - cancel_subscriptions
+    - constant_identifier_names
+    - control_flow_in_finally
+    - directives_ordering
+    - empty_statements
+    - hash_and_equals
+    - implementation_imports
+    - iterable_contains_unrelated_type
+    - list_remove_unrelated_type
+    - no_adjacent_strings_in_list
+    - non_constant_identifier_names
+    - overridden_fields
+    - package_api_docs
+    - package_names
+    - package_prefixed_library_names
+    - prefer_const_constructors
+    - prefer_initializing_formals
+    - prefer_typing_uninitialized_variables
+    - prefer_void_to_null
+    - test_types_in_equals
+    - throw_in_finally
+    - unnecessary_null_aware_assignments
+    - unnecessary_statements
+    #
+    - no_duplicate_case_values
+    - unrelated_type_equality_checks
+    - valid_regexps
+    - always_declare_return_types
+    - always_require_non_null_named_parameters
+    - annotate_overrides
+    - avoid_init_to_null
+    - avoid_null_checks_in_equality_operators
+    - avoid_return_types_on_setters
+    - await_only_futures
+    - empty_catches
+    - empty_constructor_bodies
+    - library_names
+    - library_prefixes
+    - prefer_adjacent_string_concatenation
+    - prefer_collection_literals
+    - prefer_contains
+    - prefer_equal_for_default_values
+    - prefer_is_empty
+    - prefer_is_not_empty
+    - slash_for_doc_comments
+    - type_init_formals
+    - unawaited_futures # https://github.com/flutter/flutter/issues/5793
+    - unnecessary_const
+    - unnecessary_new
+    - unnecessary_null_in_if_null_operators
+    - use_rethrow_when_possible
+    - avoid_relative_lib_imports
+    # === doc rules ===
+    - public_member_api_docs
+    #
+    - prefer_final_locals
+    - sort_constructors_first
+    - sort_unnamed_constructors_first
+

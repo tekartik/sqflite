@@ -4,8 +4,8 @@ import 'package:process_run/package/package.dart';
 import 'package:process_run/shell.dart';
 
 Future main() async {
-  var shell = Shell();
-  var version = await getPackageVersion(dir: 'sqflite');
+  final shell = Shell();
+  final version = await getPackageVersion(dir: 'sqflite');
   print('Version $version');
   print('Tap anything or CTRL-C: $version');
 

@@ -2,7 +2,7 @@ import 'package:process_run/shell.dart';
 
 /// Run unit and driver test on a connected device
 Future main() async {
-  var shell = Shell();
+  var shell = Shell(workingDirectory: '..');
 
   shell = shell.pushd('sqflite');
   await shell.run('''

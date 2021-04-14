@@ -32,12 +32,14 @@ class TestPage extends StatefulWidget {
 
   /// define a solo test.
   @Deprecated('SOLO_TEST - On purpose to remove before checkin')
+  // ignore: non_constant_identifier_names
   void solo_test(String name, FutureOr Function() fn) {
     tests.add(Test(name, fn, solo: true));
   }
 
   /// skip a test.
   @Deprecated('SKIP_TEST - On purpose to remove before checkin')
+  // ignore: non_constant_identifier_names
   void skip_test(String name, FutureOr Function() fn) {
     tests.add(Test(name, fn, skip: true));
   }
@@ -188,7 +190,7 @@ class _TestPageState extends State<TestPage> with Group {
     return Scaffold(
         appBar: AppBar(title: Text(widget.title), actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             tooltip: 'Run again',
             onPressed: _run,
           ),

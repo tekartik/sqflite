@@ -475,14 +475,14 @@ class ExceptionTestPage extends TestPage {
         var hasTimedOut = false;
         var callbackCount = 0;
         Sqflite.setLockWarningInfo(
-            duration: Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 200),
             callback: () {
               callbackCount++;
             });
 
         await db.transaction((txn) async {
           try {
-            await db.getVersion().timeout(Duration(milliseconds: 1500));
+            await db.getVersion().timeout(const Duration(milliseconds: 1500));
             fail('should fail');
           } on TimeoutException catch (_) {
             hasTimedOut = true;
@@ -508,7 +508,7 @@ class ExceptionTestPage extends TestPage {
           // this should block the main thread
           await db2
               .execute('BEGIN IMMEDIATE TRANSACTION')
-              .timeout(Duration(milliseconds: 500));
+              .timeout(const Duration(milliseconds: 500));
           fail('should timeout');
         } on TimeoutException catch (e) {
           print('caught $e');

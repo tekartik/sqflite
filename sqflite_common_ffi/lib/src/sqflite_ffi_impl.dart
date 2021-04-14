@@ -295,14 +295,16 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     return absolute(join('.dart_tool', 'sqflite_common_ffi', 'databases'));
   }
 
+  /// Read arguments as a map;
+  Map get argumentsMap => arguments as Map;
+
   /// Handle open database.
   Future handleOpenDatabase() async {
-    //dePrint(arguments);
-    var path = arguments['path'] as String;
+    var path = argumentsMap['path'] as String;
 
     //devPrint('opening $path');
-    var singleInstance = (arguments['singleInstance'] as bool?) ?? false;
-    var readOnly = (arguments['readOnly'] as bool?) ?? false;
+    var singleInstance = (argumentsMap['singleInstance'] as bool?) ?? false;
+    var readOnly = (argumentsMap['readOnly'] as bool?) ?? false;
     if (singleInstance) {
       var database = ffiSingleInstanceDbs[path];
       if (database != null) {
@@ -399,14 +401,14 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Get the id from the arguments.
   int? getDatabaseId() {
     if (arguments is Map) {
-      return arguments['id'] as int?;
+      return argumentsMap['id'] as int?;
     }
     return null;
   }
 
   /// Get the sql command.
   String? getSql() {
-    var sql = arguments['sql'] as String?;
+    var sql = argumentsMap['sql'] as String?;
     return sql;
   }
 
@@ -419,7 +421,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   String? getPath() {
     var arguments = this.arguments;
     if (arguments is Map) {
-      var path = arguments['path'] as String?;
+      var path = argumentsMap['path'] as String?;
       if ((path != null) && !isInMemory(path) && isRelative(path)) {
         path = join(getDatabasesPath(), path);
       }
@@ -432,7 +434,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   List<Object?>? getSqlArguments() {
     var arguments = this.arguments;
     if (arguments != null) {
-      var sqlArguments = arguments['arguments'] as List?;
+      var sqlArguments = argumentsMap['arguments'] as List?;
       if (sqlArguments != null) {
         // Check the argument, make it stricter
         for (var argument in sqlArguments) {
@@ -453,7 +455,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Get the no result argument.
   bool getNoResult() {
-    var noResult = arguments['noResult'] as bool?;
+    var noResult = argumentsMap['noResult'] as bool?;
     return noResult ?? false;
   }
 
@@ -461,14 +463,16 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   ///
   // 'continueOnError': true
   bool getContinueOnError() {
-    var continueOnError = arguments['continueOnError'] as bool?;
+    var continueOnError = argumentsMap['continueOnError'] as bool?;
     return continueOnError ?? false;
   }
 
   /// Get the list of operations.
   List<SqfliteFfiOperation> getOperations() {
     var operations = <SqfliteFfiOperation>[];
-    arguments['operations'].cast<Map>().forEach((operationArgument) {
+    (argumentsMap['operations'] as List)
+        .cast<Map>()
+        .forEach((operationArgument) {
       operations.add(SqfliteFfiOperation()
         ..sql = operationArgument['sql'] as String?
         ..sqlArguments =
@@ -508,7 +512,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Handle options.
   Future handleOptions() async {
     if (arguments is Map) {
-      logLevel = (arguments['logLevel'] as int?) ?? sqfliteLogLevelNone;
+      logLevel = (argumentsMap['logLevel'] as int?) ?? sqfliteLogLevelNone;
     }
     return null;
   }

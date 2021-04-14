@@ -40,7 +40,7 @@ class MenuItem extends Item {
   /// Run the item.
   Future run() {
     state = ItemState.running;
-    return Future.delayed(Duration()).then((_) async {
+    return Future.delayed(const Duration()).then((_) async {
       try {
         await body();
         state = ItemState.success;

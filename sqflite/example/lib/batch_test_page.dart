@@ -121,7 +121,7 @@ class BatchTestPage extends TestPage {
       var path = await initDeleteDb('batch_in_transaction.db');
       var db = await openDatabase(path);
 
-      var results;
+      late List<Object?> results;
 
       await db.transaction((txn) async {
         var batch1 = txn.batch();

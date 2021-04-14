@@ -299,7 +299,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> devInvokeMethod<T>(String method, [dynamic arguments]) {
     return invokeMethod<T>(
         method,
-        (arguments ?? <String, Object?>{})
+        ((arguments as Map?) ?? <String, Object?>{})
           ..addAll(baseDatabaseMethodArguments));
   }
 
@@ -554,8 +554,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     // the one being about being recovered from the native world
     // where we are going to revert
     // doing first on Android without breaking ios
-    final dynamic openResult =
-        await safeInvokeMethod(methodOpenDatabase, params);
+    final openResult =
+        await safeInvokeMethod<Object?>(methodOpenDatabase, params);
     // devPrint('open result $openResult');
     if (openResult is int) {
       return openResult;

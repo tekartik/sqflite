@@ -5,9 +5,9 @@ import 'package:sqflite_example/utils.dart';
 void main() {
   group('example', () {
     test('sleep', () async {
-      await sleep(1).timeout(Duration(milliseconds: 100));
+      await sleep(1).timeout(const Duration(milliseconds: 100));
       try {
-        await sleep(100).timeout(Duration(milliseconds: 1));
+        await sleep(100).timeout(const Duration(milliseconds: 1));
         fail('should fail');
       } on TimeoutException catch (_) {}
     });
