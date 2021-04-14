@@ -1,7 +1,7 @@
 import 'package:process_run/shell.dart';
 
 Future<void> main() async {
-  var shell = Shell();
+  final shell = Shell(workingDirectory: '..');
 
   await shell.run('''
 # Code is shared between ios and macos

@@ -6,7 +6,9 @@ dart:
   - beta
   - dev
 before_script:
-  - pub run tekartik_travis_ci_flutter:install
-  - source $(pub run tekartik_travis_ci_flutter:env)
+  - cd sqflite_support
+  - dart pub get
+  - dart run tekartik_travis_ci_flutter:install
+  - source $(dart run tekartik_travis_ci_flutter:env)
 script:
   - dart tool/travis.dart

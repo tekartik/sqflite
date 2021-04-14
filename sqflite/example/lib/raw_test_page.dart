@@ -119,7 +119,7 @@ class RawTestPage extends TestPage {
           await db.transaction((txn) async {
             var count = Sqflite.firstIntValue(
                 await txn.rawQuery('SELECT COUNT(*) FROM Test'))!;
-            await Future.delayed(Duration(milliseconds: 40));
+            await Future.delayed(const Duration(milliseconds: 40));
             await txn
                 .rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
             //print(await db.query('SELECT COUNT(*) FROM Test'));
@@ -157,7 +157,7 @@ class RawTestPage extends TestPage {
           try {
             await db
                 .rawQuery('SELECT COUNT(*) FROM Test')
-                .timeout(Duration(seconds: 1));
+                .timeout(const Duration(seconds: 1));
             throw 'should fail';
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -213,7 +213,7 @@ class RawTestPage extends TestPage {
           try {
             await db
                 .rawQuery('SELECT COUNT(*) FROM Test')
-                .timeout(Duration(seconds: 1));
+                .timeout(const Duration(seconds: 1));
             throw 'should fail';
           } catch (e) {
             expect(e is TimeoutException, true);
@@ -394,6 +394,7 @@ class RawTestPage extends TestPage {
 
       // Make sure the directory exists
       try {
+        // ignore: avoid_slow_async_io
         if (!await Directory(databasesPath).exists()) {
           await Directory(databasesPath).create(recursive: true);
         }

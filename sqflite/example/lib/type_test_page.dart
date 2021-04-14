@@ -119,7 +119,6 @@ class TypeTestPage extends TestPage {
             .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value BLOB)');
       });
       int id;
-      dynamic value;
       try {
         // insert text in blob
         id = await insertValue('simple text');
@@ -131,7 +130,7 @@ class TypeTestPage extends TestPage {
         var blob = byteData.buffer.asUint8List();
         id = await insertValue(blob);
         //print(await getValue(id));
-        var result = (await getValue(id));
+        var result = (await getValue(id)) as List;
         print(result.runtimeType);
         expect(result is Uint8List, true);
         expect(result.length, 1);
@@ -144,9 +143,10 @@ class TypeTestPage extends TestPage {
 
         final blob1234 = [1, 2, 3, 4];
         id = await insertValue(blob1234);
-        print(await getValue(id));
-        print('${(await getValue(id)).length}');
-        expect(await getValue(id), blob1234, reason: '${await getValue(id)}');
+        var value = (await getValue(id)) as List;
+        print(value);
+        print('${value.length}');
+        expect(value, blob1234, reason: '${await getValue(id)}');
 
         // test hex feature on sqlite
         var hexResult = await data.db

@@ -18,8 +18,8 @@ void main() {
     setUpAll(() async {
       await buildInitFlutter();
     });
-    var dir = join('.dart_tool', 'sqflite_support', 'raw_flutter_test1', 'test',
-        'project');
+    final dir = join('.dart_tool', 'sqflite_support', 'raw_flutter_test1',
+        'test', 'project');
     var _ensureCreated = false;
     var shell = Shell(workingDirectory: dir);
     Future<void> _create() async {

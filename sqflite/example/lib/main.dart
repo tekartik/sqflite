@@ -174,8 +174,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title:
-              Center(child: Text('Sqflite demo', textAlign: TextAlign.center)),
+          title: const Center(
+              child: Text('Sqflite demo', textAlign: TextAlign.center)),
         ),
         body:
             ListView.builder(itemBuilder: _itemBuilder, itemCount: _itemCount));

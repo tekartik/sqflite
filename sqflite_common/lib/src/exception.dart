@@ -114,15 +114,18 @@ class SqfliteDatabaseException extends DatabaseException {
   /// Typically the result of a native call
   dynamic result;
 
+  /// The result as a map
+  Map get resultMap => result as Map;
+
   @override
   String toString() {
     if (result is Map) {
-      if (result[paramSql] != null) {
-        final dynamic args = result[paramSqlArguments];
+      if (resultMap[paramSql] != null) {
+        final dynamic args = resultMap[paramSqlArguments];
         if (args == null) {
-          return "DatabaseException($_message) sql '${result[paramSql]}'";
+          return "DatabaseException($_message) sql '${resultMap[paramSql]}'";
         } else {
-          return "DatabaseException($_message) sql '${result[paramSql]}' args $args}";
+          return "DatabaseException($_message) sql '${resultMap[paramSql]}' args $args}";
         }
       }
     }

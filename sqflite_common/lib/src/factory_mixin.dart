@@ -193,9 +193,9 @@ mixin SqfliteDatabaseFactoryMixin
   /// Debug information.
   Future<SqfliteDebugInfo> getDebugInfo() async {
     final info = SqfliteDebugInfo();
-    final dynamic map =
-        await safeInvokeMethod(methodDebug, <String, Object?>{'cmd': 'get'});
-    final dynamic databasesMap = map[paramDatabases];
+    final map = await safeInvokeMethod<Map>(
+        methodDebug, <String, Object?>{'cmd': 'get'});
+    final databasesMap = map[paramDatabases];
     if (databasesMap is Map) {
       info.databases = databasesMap.map((dynamic id, dynamic info) {
         final dbInfo = SqfliteDatabaseDebugInfo();

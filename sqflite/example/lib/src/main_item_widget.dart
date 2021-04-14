@@ -12,7 +12,7 @@ class MainItemWidget extends StatefulWidget {
   final MainItem item;
 
   /// onTap action (typically run or open).
-  final Function onTap; // = Function(MainItem item);
+  final Function(MainItem item) onTap; // = Function(MainItem item);
 
   @override
   _MainItemWidgetState createState() => _MainItemWidgetState();

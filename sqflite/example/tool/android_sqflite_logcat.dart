@@ -8,7 +8,7 @@ Future<void> main() async {
 
   controller.stream
       .transform(utf8.decoder)
-      .transform(LineSplitter())
+      .transform(const LineSplitter())
       .listen((line) {
     if (line.contains('Sqflite')) {
       print('$line');

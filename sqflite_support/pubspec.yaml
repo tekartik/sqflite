@@ -5,14 +5,14 @@ homepage: https://github.com/tekartik/sqflite
 publish_to: none
 
 environment:
-  sdk: '>=2.10.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dev_dependencies:
   pedantic: '>=1.4.0 <3.0.0'
   tekartik_travis_ci_flutter:
     git:
       url: git://github.com/tekartik/travis_ci_flutter.dart
-      ref: dart2
+      ref: null_safety
     version: '>=0.1.0'
   process_run: '>=0.11.0+2'
   dev_test: '>=0.13.4-dev.2'

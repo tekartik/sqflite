@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
+// ignore: implementation_imports
 import 'package:sqflite/src/factory_mixin.dart' as impl;
 import 'package:sqflite/utils/utils.dart';
 import 'package:sqflite_example/model/item.dart';
@@ -108,7 +109,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
               item,
               (item) async {
                 final stopwatch = Stopwatch()..start();
-                var future = item.run();
+                var future = (item as MenuItem).run();
                 setState(() {});
                 await future;
                 // always add a small delay
@@ -123,7 +124,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
         .toList(growable: false);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Manual tests'),
+        title: const Text('Manual tests'),
       ),
       body: WillPopScope(
         onWillPop: pop,
@@ -154,7 +155,7 @@ class MultipleDbTestPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Multiple databases'),
+        title: const Text('Multiple databases'),
       ),
       body: ListView(
         children: <Widget>[
@@ -227,7 +228,7 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
               // ignore: deprecated_member_use
               Scaffold.of(context).showSnackBar(SnackBar(
                 content: Text('$result records'),
-                duration: Duration(milliseconds: 700),
+                duration: const Duration(milliseconds: 700),
               ));
             }
 

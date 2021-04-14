@@ -11,6 +11,7 @@ Future<String> initDeleteDb(String dbName) async {
   final path = join(databasePath, dbName);
 
   // make sure the folder exists
+  // ignore: avoid_slow_async_io
   if (await Directory(dirname(path)).exists()) {
     await deleteDatabase(path);
   } else {

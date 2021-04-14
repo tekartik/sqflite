@@ -27,6 +27,7 @@ flutter analyze
   }
 
   // For android look for some kind of generated file
+  // ignore: avoid_slow_async_io
   if (await Directory(join('build', 'sqflite', 'generated')).exists()) {
     if (exception != null) {
       throw exception;
