@@ -1,5 +1,5 @@
-import 'package:test/test.dart';
 import 'package:sqflite_common/sqlite_api.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('sqlite_api', () {

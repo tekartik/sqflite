@@ -19,7 +19,7 @@ class FfiMethodCall
   /// The arguments for the method.
   ///
   /// Must be a valid value for the [MethodCodec] used.
-  final dynamic? arguments;
+  final Object? arguments;
 
   @override
   String toString() => '$runtimeType($method, $arguments)';

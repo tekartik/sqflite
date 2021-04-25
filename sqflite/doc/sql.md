@@ -21,7 +21,7 @@ and common pitfalls.
 
 ```dart
 // Create a table
-await db.execute('CREATE TABLE my_table (id INTEGER PRIMARY KEY AUTO INCREMENT, name TEXT, type TEXT)');
+await db.execute('CREATE TABLE my_table (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT)');
 ```
 
 ### insert
