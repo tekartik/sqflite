@@ -1,5 +1,5 @@
-import 'package:test/test.dart';
 import 'package:sqflite_common/sql.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('sqflite', () {

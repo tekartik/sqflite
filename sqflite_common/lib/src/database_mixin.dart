@@ -10,9 +10,9 @@ import 'package:sqflite_common/src/factory.dart';
 import 'package:sqflite_common/src/sql_builder.dart';
 import 'package:sqflite_common/src/transaction.dart';
 import 'package:sqflite_common/src/utils.dart';
+import 'package:sqflite_common/src/utils.dart' as utils;
 import 'package:sqflite_common/src/value_utils.dart';
 import 'package:sqflite_common/utils/utils.dart';
-import 'package:sqflite_common/src/utils.dart' as utils;
 import 'package:synchronized/synchronized.dart';
 
 /// Base database implementation

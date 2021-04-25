@@ -1,11 +1,11 @@
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/src/import.dart';
+import 'package:sqflite_common_ffi/src/windows/setup_impl.dart';
 import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
-import 'package:path/path.dart';
-import 'package:sqflite_common_ffi/src/windows/setup_impl.dart';
 
 /// Windows specific sqflite3 initialization.
 ///

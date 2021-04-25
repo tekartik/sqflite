@@ -19,6 +19,7 @@ dev_dependencies:
   flutter_driver:
     sdk: flutter
   integration_test:
+    sdk: flutter
   test:
   matcher: '>=0.12.10-nullsafety.3 <2.0.0'
   pedantic: '>=1.10.0-nullsafety.3 <3.0.0'

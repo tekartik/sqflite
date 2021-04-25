@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:sqflite_common_test/sqflite_test.dart';
-import 'package:test/test.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
+import 'package:sqflite_common_test/sqflite_test.dart';
+import 'package:test/test.dart';
 
 /// Documentation test.
 void run(SqfliteTestContext context) {

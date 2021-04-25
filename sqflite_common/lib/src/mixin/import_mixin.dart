@@ -1,19 +1,9 @@
 ///
 /// Export for implementation: sqflite, sqflite_common_ffi
 ///
-// ignore: deprecated_member_use, deprecated_member_use_from_same_package
-export 'package:sqflite_common/src/compat.dart' show SqfliteOptions;
-
-//
-// Factory mixin
-//
-export 'package:sqflite_common/src/factory_mixin.dart'
-    show SqfliteDatabaseFactoryBase, SqfliteDatabaseFactoryMixin;
-export 'package:sqflite_common/src/factory.dart' show SqfliteDatabaseFactory;
-
-//
-// Database mixin
-//
+export 'package:sqflite_common/src/compat.dart'
+    show
+        SqfliteOptions; // ignore: deprecated_member_use, deprecated_member_use_from_same_package
 /// Explicit list of needed private import
 export 'package:sqflite_common/src/database.dart' // ignore: implementation_imports
     show
@@ -29,6 +19,13 @@ export 'package:sqflite_common/src/database_mixin.dart' // ignore: implementatio
 //
 export 'package:sqflite_common/src/exception.dart'
     show SqfliteDatabaseException;
+export 'package:sqflite_common/src/factory.dart' show SqfliteDatabaseFactory;
+
+//
+// Factory mixin
+//
+export 'package:sqflite_common/src/factory_mixin.dart'
+    show SqfliteDatabaseFactoryBase, SqfliteDatabaseFactoryMixin;
 
 //
 // Constant
