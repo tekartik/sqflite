@@ -104,6 +104,8 @@ This call is on purpose deprecated to force removing it once the SQL issues has 
 
 ## iOS build issue
 
+### General
+
 I'm not an expert on iOS so it is hard for me reply to issues you encounter especially when you integrate
 into your app. Good if you can validate that you have no issue with other plugin such as `path_provider` and that
 the example app work with your setup.
@@ -145,6 +147,38 @@ flutter run
 ```
 
 In the worst case, you can also re-create your ios project by deleting the ios/folder and running `flutter create .`
+
+### Undefined symbols for architecture armv7
+
+You might encounter this error on old projects or sometimes when sqflite is included by another dependency.
+
+I have not found a solution to fix this in sqflite itself so the fix has to be done in your application Podfile
+(you can just append this at the end of the `Podfile` file)
+
+```
+post_install do |installer|
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings["EXCLUDED_ARCHS"] = "armv7"
+  end
+end
+```
+
+You might also want to enforce a SDK version, sometimes just declaring `platform :ios, '9.0'` is not sufficient. Below
+is an example
+
+```
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '11.0'
+    end
+  end
+end
+```
+
+Since Flutter templates change over time for new sdk, you might sometimes try to delete the ios folder and re-create
+your project.
 
 ## Error in Flutter web
 
