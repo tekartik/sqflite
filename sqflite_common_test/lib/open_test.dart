@@ -313,12 +313,15 @@ void run(SqfliteTestContext context) {
   });
 
   test('Open bad path', () async {
-    try {
-      await factory.openDatabase('/invalid_path');
-      fail('should fail');
-    } on DatabaseException catch (e) {
-      expect(e.toString(), contains('open_failed'));
-      // expect(e.isOpenFailedError(), isTrue, reason: e.toString());
+    // Don't test on windows as it creates the path...
+    if (!context.isWindows) {
+      try {
+        await factory.openDatabase('/invalid_path');
+        fail('should fail');
+      } on DatabaseException catch (e) {
+        expect(e.toString(), contains('open_failed'));
+        // expect(e.isOpenFailedError(), isTrue, reason: e.toString());
+      }
     }
   });
 
