@@ -235,7 +235,7 @@ map['my_column'] = 1;
 ### Transaction
 
 Don't use the database but only use the Transaction object in a transaction
-to access the database
+to access the database. Keep in mind that the callbacks ```onCreate``` ```onUpgrade``` ```onDowngrade``` are already internally wrapped in a transaction, so there is no need to wrap your statements in a transaction within those callbacks.
 
 ```dart
 await database.transaction((txn) async {
