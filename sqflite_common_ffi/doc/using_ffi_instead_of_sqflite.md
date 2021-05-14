@@ -47,7 +47,8 @@ Future main() async {
 As a side note, `sqfliteFfiInit` is only made to be convenient during development. You can customize the setup (finding/loading the sqlite shared library) by
 following [sqlite3](https://pub.dev/packages/sqlite3) documentation.
 
-As another note, `getDatabasesPath()` has a lame implementation on Linux and Windows.
+As another note, `getDatabasesPath()` has a lame implementation on Linux and Windows when using ffi (so on Mac too if
+you are using ffi as well). you'd better rely on a custom strategy using package such as `path_provider`.
 
 ## Long term planning
 

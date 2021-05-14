@@ -45,7 +45,7 @@ import 'package:sqflite/sqflite.dart';
 ### Opening a database
 
 A SQLite database is a file in the file system identified by a path. If relative, this path is relative to the path
-obtained by `getDatabasesPath()`, which is the default database directory on Android and the documents directory on iOS.
+obtained by `getDatabasesPath()`, which is the default database directory on Android and the documents directory on iOS/MacOS.
 
 ```dart
 var db = await openDatabase('my_db.db');
@@ -356,7 +356,6 @@ All calls are currently synchronized and transactions block are exclusive. I tho
 concurrent access is to open a database multiple times but it only works on iOS as Android reuses the same database object.
 I also thought a native thread could be a potential future solution however on android accessing the database in another
 thread is blocked while in a transaction...
-* Currently INTEGER are limited to -2^63 to 2^63 - 1 (although Android supports bigger ones)
 
 ## More
 
