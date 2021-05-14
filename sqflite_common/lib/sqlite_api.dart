@@ -29,7 +29,15 @@ abstract class DatabaseFactory {
   /// Notice, `join` is a part of the [path](https://pub.dev/packages/path) package
   Future<Database> openDatabase(String path, {OpenDatabaseOptions? options});
 
-  /// Get the default databases location path
+  /// Get the default databases location path.
+  ///
+  /// When using sqfliteFactory:
+  /// * On Android, it is typically data/data/<package_name>/databases
+  /// * On iOS and MacOS, it is the Documents directory
+  ///
+  /// For other implementation (ffi), the location is a default location
+  /// that makes mainly sense for debug/testing and you'd better rely on a
+  /// custom strategy using package such as `path_provider`.
   Future<String> getDatabasesPath();
 
   /// Set the default databases location path

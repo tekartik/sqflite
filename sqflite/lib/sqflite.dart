@@ -156,7 +156,7 @@ Future<Database> openReadOnlyDatabase(String path) =>
 ///
 /// On Android, it is typically data/data/<package_name>/databases
 ///
-/// On iOS, it is the Documents directory
+/// On iOS and MacOS, it is the Documents directory
 ///
 Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();
 
