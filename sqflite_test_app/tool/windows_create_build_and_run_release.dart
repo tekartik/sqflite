@@ -1,8 +1,8 @@
 // @dart=2.9
 import 'dart:io';
 
-import 'package:process_run/shell_run.dart';
 import 'package:path/path.dart';
+import 'package:process_run/shell_run.dart';
 
 Future<void> main() async {
   final shell = Shell();
