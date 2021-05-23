@@ -2,12 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:path/path.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/constant.dart'; // ignore: implementation_imports
 import 'package:sqflite_common_ffi/src/constant.dart';
 import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
-import 'package:sqflite_common_ffi/src/sqflite_import.dart';
 import 'package:sqlite3/sqlite3.dart' as ffi;
 import 'package:synchronized/extension.dart';
 import 'package:synchronized/synchronized.dart';

@@ -1,5 +1,4 @@
 import 'package:sqflite_common/sqflite_dev.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/constant.dart';
 import 'package:sqflite_common/src/method_call.dart';
 import 'package:sqflite_common/src/mixin/factory.dart';

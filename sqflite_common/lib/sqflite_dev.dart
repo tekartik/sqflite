@@ -1,6 +1,4 @@
 import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common/src/compat.dart';
-import 'package:sqflite_common/src/factory_mixin.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
 
 /// Dev extension
