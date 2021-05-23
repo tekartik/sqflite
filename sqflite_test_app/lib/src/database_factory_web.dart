@@ -1,8 +1,8 @@
 import 'package:sqflite_common/sqlite_api.dart';
 // ignore: implementation_imports
-import 'package:sqflite_common/src/mixin/import_mixin.dart';
-// ignore: implementation_imports
 import 'package:sqflite_common/src/method_call.dart';
+// ignore: implementation_imports
+import 'package:sqflite_common/src/mixin/import_mixin.dart';
 
 DatabaseFactory? _databaseFactoryWebImpl;
 

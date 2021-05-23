@@ -2,7 +2,6 @@
 import 'dart:io';
 
 import 'package:dev_test/build_support.dart';
-import 'package:dev_test/package.dart';
 import 'package:dev_test/src/run_ci.dart';
 import 'package:path/path.dart';
 import 'package:process_run/shell_run.dart';
