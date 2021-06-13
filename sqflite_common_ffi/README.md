@@ -71,6 +71,8 @@ void main() {
 }
 ```
 
+More info on unit testing [here](doc/testing.md)
+
 ### Application
 
 Make it a normal dependency.
