@@ -36,7 +36,7 @@ class MockScenario {
 MockScenario startScenario(List<List> data) {
   final scenario = MockScenario(data);
 
-  channel.setMockMethodCallHandler((MethodCall methodCall) async {
+  channel.setMethodCallHandler((MethodCall methodCall) async {
     final index = scenario.index++;
     // devPrint('$index ${scenario.methodsCalls[index]}');
     final item = scenario.methodsCalls[index];
