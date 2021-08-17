@@ -13,7 +13,7 @@ void main() {
     final log = <MethodCall>[];
     String? response;
 
-    channel.setMethodCallHandler((MethodCall methodCall) async {
+    channel.setMockMethodCallHandler((MethodCall methodCall) async {
       log.add(methodCall);
       return response;
     });

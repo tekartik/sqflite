@@ -8,7 +8,7 @@ import 'package:sqflite_common_ffi/src/mixin/handler_mixin.dart';
 void sqfliteFfiInitAsMockMethodCallHandler() {
   const channel = MethodChannel('com.tekartik.sqflite');
 
-  channel.setMethodCallHandler((MethodCall methodCall) async {
+  channel.setMockMethodCallHandler((MethodCall methodCall) async {
     try {
       return await FfiMethodCall(methodCall.method, methodCall.arguments)
           .handleInIsolate();
