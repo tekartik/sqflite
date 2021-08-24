@@ -29,4 +29,5 @@ void main() {
     var originalDatabasesPath = await databaseFactory.getDatabasesPath();
     expect(originalDatabasesPath, isNotNull);
   });
+  test('exception', () async {});
 }

@@ -1,12 +1,19 @@
-# Defines a default set of lint rules enforced for
-# projects at Google. For details and rationale,
-# see https://github.com/dart-lang/pedantic#enabled-lints.
-include: package:pedantic/analysis_options.yaml
+include: package:lints/recommended.yaml
+
+# Until there are meta linter rules, each desired lint must be explicitly enabled.
+# See: https://github.com/dart-lang/linter/issues/288
+#
+# For a list of lints, see: http://dart-lang.github.io/linter/lints/
+# See the configuration guide for more
+# https://github.com/dart-lang/sdk/tree/master/pkg/analyzer#configuring-the-analyzer
+#
+# NOTE: Please keep this file in sync with
+# https://github.com/flutter/flutter/blob/master/analysis_options.yaml
 
 analyzer:
+  # Strong mode is sometimes harder to keep
   strong-mode:
     implicit-casts: false
-    # implicit-dynamic: false
 
   errors:
     # treat missing required parameters as a warning (not a hint)
@@ -21,45 +28,62 @@ analyzer:
 
 linter:
   rules:
+    - always_declare_return_types
     - avoid_dynamic_calls
     - avoid_empty_else
+    - avoid_relative_lib_imports
+    - avoid_shadowing_type_parameters
     - avoid_slow_async_io
+    - avoid_types_as_parameter_names
+    - await_only_futures
+    - camel_case_extensions
     - camel_case_types
     - cancel_subscriptions
-    - constant_identifier_names
-    - control_flow_in_finally
+    - curly_braces_in_flow_control_structures
+    # - depend_on_referenced_packages
     - directives_ordering
-    - empty_statements
+    - empty_catches
     - hash_and_equals
-    - implementation_imports
     - iterable_contains_unrelated_type
     - list_remove_unrelated_type
     - no_adjacent_strings_in_list
+    - no_duplicate_case_values
     - non_constant_identifier_names
-    - overridden_fields
+    - omit_local_variable_types
     - package_api_docs
-    - package_names
     - package_prefixed_library_names
-    - prefer_const_constructors
-    - prefer_initializing_formals
+    - prefer_generic_function_type_aliases
+    - prefer_is_empty
+    - prefer_is_not_empty
+    - prefer_iterable_whereType
+    - prefer_single_quotes
     - prefer_typing_uninitialized_variables
-    - prefer_void_to_null
+    - sort_child_properties_last
     - test_types_in_equals
     - throw_in_finally
+    - unawaited_futures
     - unnecessary_null_aware_assignments
     - unnecessary_statements
-    #
-    - no_duplicate_case_values
     - unrelated_type_equality_checks
+    - unsafe_html
+    - use_full_hex_values_for_flutter_colors
     - valid_regexps
-    - always_declare_return_types
+
+    - constant_identifier_names
+    - control_flow_in_finally
+    - empty_statements
+    - implementation_imports
+    - overridden_fields
+    - package_names
+    - prefer_const_constructors
+    - prefer_initializing_formals
+    - prefer_void_to_null
+    #
     - always_require_non_null_named_parameters
     - annotate_overrides
     - avoid_init_to_null
     - avoid_null_checks_in_equality_operators
     - avoid_return_types_on_setters
-    - await_only_futures
-    - empty_catches
     - empty_constructor_bodies
     - library_names
     - library_prefixes
@@ -67,19 +91,12 @@ linter:
     - prefer_collection_literals
     - prefer_contains
     - prefer_equal_for_default_values
-    - prefer_is_empty
-    - prefer_is_not_empty
     - slash_for_doc_comments
     - type_init_formals
-    - unawaited_futures # https://github.com/flutter/flutter/issues/5793
     - unnecessary_const
     - unnecessary_new
     - unnecessary_null_in_if_null_operators
     - use_rethrow_when_possible
-    - avoid_relative_lib_imports
+
     # === doc rules ===
     - public_member_api_docs
-    #
-    # - prefer_final_locals
-    - sort_constructors_first
-    - sort_unnamed_constructors_first
