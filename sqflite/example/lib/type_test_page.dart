@@ -3,9 +3,12 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'test_page.dart';
+
+// ignore_for_file: avoid_print
 
 class _Data {
   late Database db;
@@ -14,10 +17,10 @@ class _Data {
 /// Type test page.
 class TypeTestPage extends TestPage {
   /// Type test page.
-  TypeTestPage() : super('Type tests') {
+  TypeTestPage({Key? key}) : super('Type tests', key: key) {
     test('int', () async {
       //await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('type_int.db');
+      final path = await initDeleteDb('type_int.db');
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db.execute(
@@ -67,7 +70,7 @@ class TypeTestPage extends TestPage {
 
     test('real', () async {
       //await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('type_real.db');
+      final path = await initDeleteDb('type_real.db');
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db
@@ -89,7 +92,7 @@ class TypeTestPage extends TestPage {
 
     test('text', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('type_text.db');
+      final path = await initDeleteDb('type_text.db');
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db.execute(
@@ -112,7 +115,7 @@ class TypeTestPage extends TestPage {
 
     test('blob', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('type_blob.db');
+      final path = await initDeleteDb('type_blob.db');
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db
@@ -125,12 +128,12 @@ class TypeTestPage extends TestPage {
         expect(await getValue(id), 'simple text');
 
         // UInt8List - default
-        var byteData = ByteData(1);
+        final byteData = ByteData(1);
         byteData.setInt8(0, 1);
-        var blob = byteData.buffer.asUint8List();
+        final blob = byteData.buffer.asUint8List();
         id = await insertValue(blob);
         //print(await getValue(id));
-        var result = (await getValue(id)) as List;
+        final result = (await getValue(id)) as List;
         print(result.runtimeType);
         expect(result is Uint8List, true);
         expect(result.length, 1);
@@ -143,13 +146,13 @@ class TypeTestPage extends TestPage {
 
         final blob1234 = [1, 2, 3, 4];
         id = await insertValue(blob1234);
-        var value = (await getValue(id)) as List;
+        dynamic value = (await getValue(id)) as List;
         print(value);
-        print('${value.length}');
+        print('${(value as List).length}');
         expect(value, blob1234, reason: '${await getValue(id)}');
 
         // test hex feature on sqlite
-        var hexResult = await data.db
+        final hexResult = await data.db
             .rawQuery('SELECT hex(value) FROM Test WHERE id = ?', [id]);
         expect(hexResult[0].values.first, '01020304');
 
@@ -181,14 +184,14 @@ class TypeTestPage extends TestPage {
 
     test('null', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('type_null.db');
+      final path = await initDeleteDb('type_null.db');
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db
             .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
       });
       try {
-        var id = await insertValue(null);
+        final id = await insertValue(null);
         expect(await getValue(id), null);
 
         // Make a string
@@ -204,7 +207,7 @@ class TypeTestPage extends TestPage {
 
     test('date_time', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('type_date_time.db');
+      final path = await initDeleteDb('type_date_time.db');
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db

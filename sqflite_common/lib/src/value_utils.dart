@@ -8,7 +8,7 @@ var checkThrowException = false;
 var _debugCheckPrinted = <String, bool>{};
 
 void _checkArg(dynamic arg) {
-  if (!(arg is String) && !(arg is num) && !(arg is Uint8List)) {
+  if ((arg is! String) && (arg is! num) && (arg is! Uint8List)) {
     final type = arg.runtimeType.toString();
 
     final text = '''
@@ -41,20 +41,20 @@ void checkNonNullValue(dynamic value) {
 
 /// Check whether the args are valid in raw statement. null is supported here
 void checkRawArgs(List<dynamic>? args) {
-  if (isDebug) {
-    args?.forEach((arg) {
+  if (isDebug && args != null) {
+    for (var arg in args) {
       if (arg != null) {
         _checkArg(arg);
       }
-    });
+    }
   }
 }
 
 /// Check whether the where args are valid. null is not supported here.
 void checkWhereArgs(List<dynamic>? args) {
-  if (isDebug) {
-    args?.forEach((arg) {
+  if (isDebug && args != null) {
+    for (var arg in args) {
       _checkArg(arg);
-    });
+    }
   }
 }

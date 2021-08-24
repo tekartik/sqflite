@@ -34,7 +34,7 @@ class Sqflite {
   ///
   /// To use during developpment/debugging
   /// Set extra dart and nativate debug logs
-  @deprecated
+  @Deprecated('Dev only')
   static Future<void> devSetDebugModeOn([bool on = true]) {
     impl.debugModeOn = on;
     return setDebugModeOn(on);
@@ -43,13 +43,13 @@ class Sqflite {
   /// Testing only.
   ///
   /// deprecated on purpose to remove from code.
-  @deprecated
+  @Deprecated('Dev only')
   static Future<void> devSetOptions(SqfliteOptions options) async {
     await invokeMethod<dynamic>(methodOptions, options.toMap());
   }
 
   /// Testing only
-  @deprecated
+  @Deprecated('Dev only')
   static Future<void> devInvokeMethod(String method,
       [dynamic arguments]) async {
     await invokeMethod<dynamic>(method, arguments);

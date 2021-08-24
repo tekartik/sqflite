@@ -1,20 +1,21 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'test_page.dart';
 
 /// `todo` table name
-final String tableTodo = 'todo';
+const String tableTodo = 'todo';
 
 /// id column name
-final String columnId = '_id';
+const String columnId = '_id';
 
 /// title column name
-final String columnTitle = 'title';
+const String columnTitle = 'title';
 
 /// done column name
-final String columnDone = 'done';
+const String columnDone = 'done';
 
 /// Todo model.
 class Todo {
@@ -39,7 +40,7 @@ class Todo {
 
   /// Convert to a record.
   Map<String, Object?> toMap() {
-    var map = <String, Object?>{
+    final map = <String, Object?>{
       columnTitle: title,
       columnDone: done == true ? 1 : 0
     };
@@ -76,7 +77,7 @@ create table $tableTodo (
 
   /// Get a todo.
   Future<Todo?> getTodo(int id) async {
-    List<Map> maps = await db.query(tableTodo,
+    final List<Map> maps = await db.query(tableTodo,
         columns: [columnId, columnDone, columnTitle],
         where: '$columnId = ?',
         whereArgs: [id]);
@@ -104,11 +105,11 @@ create table $tableTodo (
 /// Todo test page.
 class TodoTestPage extends TestPage {
   /// Todo test page.
-  TodoTestPage() : super('Todo example') {
+  TodoTestPage({Key? key}) : super('Todo example', key: key) {
     test('open', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('simple_todo_open.db');
-      var todoProvider = TodoProvider();
+      final path = await initDeleteDb('simple_todo_open.db');
+      final todoProvider = TodoProvider();
       await todoProvider.open(path);
 
       await todoProvider.close();
@@ -117,8 +118,8 @@ class TodoTestPage extends TestPage {
 
     test('insert/query/update/delete', () async {
       // await Sqflite.devSetDebugModeOn();
-      var path = await initDeleteDb('simple_todo.db');
-      var todoProvider = TodoProvider();
+      final path = await initDeleteDb('simple_todo.db');
+      final todoProvider = TodoProvider();
       await todoProvider.open(path);
 
       var todo = Todo()..title = 'test';

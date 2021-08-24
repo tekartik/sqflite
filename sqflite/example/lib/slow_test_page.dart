@@ -1,16 +1,19 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'test_page.dart';
 
+// ignore_for_file: avoid_print
+
 /// Slow test page.
 class SlowTestPage extends TestPage {
   /// Slow test page.
-  SlowTestPage() : super('Slow tests') {
+  SlowTestPage({Key? key}) : super('Slow tests', key: key) {
     test('Perf 100 insert', () async {
-      var path = await initDeleteDb('slow_txn_100_insert.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('slow_txn_100_insert.db');
+      final db = await openDatabase(path);
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
       await db.transaction((txn) async {
         for (var i = 0; i < 100; i++) {
@@ -22,8 +25,8 @@ class SlowTestPage extends TestPage {
     });
 
     test('Perf 100 insert no txn', () async {
-      var path = await initDeleteDb('slow_100_insert.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('slow_100_insert.db');
+      final db = await openDatabase(path);
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
       for (var i = 0; i < 1000; i++) {
         await db.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
@@ -36,12 +39,12 @@ class SlowTestPage extends TestPage {
     });
 
     test('Perf 1000 insert batch', () async {
-      var path = await initDeleteDb('slow_txn_1000_insert_batch.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('slow_txn_1000_insert_batch.db');
+      final db = await openDatabase(path);
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
-      var sw = Stopwatch()..start();
-      var batch = db.batch();
+      final sw = Stopwatch()..start();
+      final batch = db.batch();
 
       for (var i = 0; i < 1000; i++) {
         batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
@@ -52,12 +55,13 @@ class SlowTestPage extends TestPage {
     });
 
     test('Perf 1000 insert batch no result', () async {
-      var path = await initDeleteDb('slow_txn_1000_insert_batch_no_result.db');
-      var db = await openDatabase(path);
+      final path =
+          await initDeleteDb('slow_txn_1000_insert_batch_no_result.db');
+      final db = await openDatabase(path);
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
-      var sw = Stopwatch()..start();
-      var batch = db.batch();
+      final sw = Stopwatch()..start();
+      final batch = db.batch();
 
       for (var i = 0; i < 1000; i++) {
         batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
@@ -68,7 +72,7 @@ class SlowTestPage extends TestPage {
       await db.close();
     });
 
-    var count = 10000;
+    const count = 10000;
 
     test('Perf $count item', () async {
       //Sqflite.devSetDebugModeOn(true);
@@ -94,13 +98,13 @@ class SlowTestPage extends TestPage {
 
   /// basic performance testing.
   Future perfDo(int count) async {
-    var path = await initDeleteDb('pref_${count}_items.db');
-    var db = await openDatabase(path);
+    final path = await initDeleteDb('pref_${count}_items.db');
+    final db = await openDatabase(path);
     try {
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
       var sw = Stopwatch()..start();
-      var batch = db.batch();
+      final batch = db.batch();
 
       for (var i = 0; i < count; i++) {
         batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
@@ -130,11 +134,11 @@ class SlowTestPage extends TestPage {
 
   /// Insert perf testing.
   Future perfInsert() async {
-    var path = await initDeleteDb('slow_txn_1000_insert.db');
-    var db = await openDatabase(path);
+    final path = await initDeleteDb('slow_txn_1000_insert.db');
+    final db = await openDatabase(path);
     await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
-    var sw = Stopwatch()..start();
+    final sw = Stopwatch()..start();
     await db.transaction((txn) async {
       for (var i = 0; i < 1000; i++) {
         await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);

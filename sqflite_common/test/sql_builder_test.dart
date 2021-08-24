@@ -136,7 +136,7 @@ void main() {
       expect(isEscapedName('"group"'), true);
       expect(isEscapedName('`group`'), true);
       expect(isEscapedName("`group'"), false);
-      expect(isEscapedName('\"group\"'), true);
+      expect(isEscapedName('"group"'), true);
     });
 
     test('escapeName', () {

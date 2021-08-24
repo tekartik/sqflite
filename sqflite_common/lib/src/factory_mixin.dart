@@ -44,11 +44,6 @@ mixin SqfliteDatabaseFactoryMixin
   Map<String, SqfliteDatabaseOpenHelper> databaseOpenHelpers =
       <String, SqfliteDatabaseOpenHelper>{};
 
-  // open lock mechanism
-  @override
-  @deprecated
-  final Lock lock = Lock(reentrant: true);
-
   /// Avoid concurrent open operation on the same database
   Lock _getDatabaseOpenLock(String path) => _NamedLock(path).lock;
 
@@ -182,12 +177,6 @@ mixin SqfliteDatabaseFactoryMixin
       path = absolute(normalize(path));
     }
     return path;
-  }
-
-  /// True if it is a real path. Unused?
-  @deprecated
-  bool isPath(String path) {
-    return !isInMemoryDatabasePath(path);
   }
 
   /// Debug information.

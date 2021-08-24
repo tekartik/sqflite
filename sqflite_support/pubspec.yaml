@@ -8,7 +8,7 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dev_dependencies:
-  pedantic: '>=1.4.0 <3.0.0'
+  lints: '>=1.0.0'
   tekartik_travis_ci_flutter:
     git:
       url: git://github.com/tekartik/travis_ci_flutter.dart

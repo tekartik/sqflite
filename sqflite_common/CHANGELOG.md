@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Truncate arguments in exception
+
 ## 2.0.0+2
 
 * `nnbd` support

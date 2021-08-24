@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'test_page.dart';
@@ -5,11 +6,11 @@ import 'test_page.dart';
 /// Batch test page.
 class BatchTestPage extends TestPage {
   /// Batch test page.
-  BatchTestPage() : super('Batch tests') {
+  BatchTestPage({Key? key}) : super('Batch tests', key: key) {
     test('BatchQuery', () async {
       // await Sqflite.devSetDebugModeOn();
-      var path = await initDeleteDb('batch.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('batch.db');
+      final db = await openDatabase(path);
 
       // empty batch
       var batch = db.batch();
@@ -18,7 +19,7 @@ class BatchTestPage extends TestPage {
       var results = await batch.commit();
       expect(results, [null, 1]);
 
-      var dbResult = await db.rawQuery('SELECT id, name FROM Test');
+      final dbResult = await db.rawQuery('SELECT id, name FROM Test');
       // devPrint('dbResult $dbResult');
       expect(dbResult, [
         {'id': 1, 'name': 'item1'}
@@ -42,8 +43,8 @@ class BatchTestPage extends TestPage {
     });
     test('Batch', () async {
       // await Sqflite.devSetDebugModeOn();
-      var path = await initDeleteDb('batch.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('batch.db');
+      final db = await openDatabase(path);
 
       // empty batch
       var batch = db.batch();
@@ -118,15 +119,15 @@ class BatchTestPage extends TestPage {
 
     test('Batch in transaction', () async {
       // await Sqflite.devSetDebugModeOn();
-      var path = await initDeleteDb('batch_in_transaction.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('batch_in_transaction.db');
+      final db = await openDatabase(path);
 
       late List<Object?> results;
 
       await db.transaction((txn) async {
-        var batch1 = txn.batch();
+        final batch1 = txn.batch();
         batch1.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
-        var batch2 = txn.batch();
+        final batch2 = txn.batch();
         batch2.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item1']);
         results = await batch1.commit();
         expect(results, [null]);
@@ -140,16 +141,16 @@ class BatchTestPage extends TestPage {
 
     test('Batch continue on error', () async {
       // await Sqflite.devSetDebugModeOn();
-      var path = await initDeleteDb('batch_continue_on_error.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('batch_continue_on_error.db');
+      final db = await openDatabase(path);
       try {
-        var batch = db.batch();
+        final batch = db.batch();
         batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item1']);
         batch.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
         batch.execute('DUMMY');
         batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item1']);
         batch.rawQuery('SELECT * FROM Test');
-        var results = await batch.commit(continueOnError: true);
+        final results = await batch.commit(continueOnError: true);
         // devPrint(results);
         // First result is an exception
         var exception = results[0] as DatabaseException;

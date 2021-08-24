@@ -14,6 +14,7 @@ dependencies:
   sqflite:
 
 dev_dependencies:
+  flutter_lints:
   flutter_test:
     sdk: flutter
   flutter_driver:
@@ -22,7 +23,6 @@ dev_dependencies:
     sdk: flutter
   test:
   matcher: '>=0.12.10-nullsafety.3 <2.0.0'
-  pedantic: '>=1.10.0-nullsafety.3 <3.0.0'
   process_run: '>=0.11.0+2'
 
 # For information on the generic Dart part of this file, see the

@@ -6,7 +6,7 @@ import '../model/item.dart';
 /// Item widget.
 class ItemWidget extends StatefulWidget {
   /// Item widget.
-  ItemWidget(this.item, this.onTap, {this.summary});
+  const ItemWidget(this.item, this.onTap, {this.summary, Key? key}) : super(key: key);
 
   /// item summary.
   final String? summary;

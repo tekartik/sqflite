@@ -92,7 +92,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   }
 
   SqfliteDatabase newEmptyDatabase() {
-    final path = 'empty';
+    const path = 'empty';
     final helper = SqfliteDatabaseOpenHelper(this, path, OpenDatabaseOptions());
     final db = helper.newDatabase(path)..id = 1;
     return db;
@@ -804,7 +804,7 @@ void run() {
     });
 
     test('deleted/exists', () async {
-      final path = 'test_exists.db';
+      const path = 'test_exists.db';
       await mockDatabaseFactory.deleteDatabase(path);
       final exists = await mockDatabaseFactory.databaseExists(path);
       expect(exists, isFalse);

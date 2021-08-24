@@ -6,7 +6,7 @@ void main() {
   group('handler_mixin', () {
     // Check that public api are exported
     test('exported', () {
-      <dynamic>[
+      for (var value in <dynamic>[
         // ignore: deprecated_member_use_from_same_package
         SqfliteOptions,
         methodOpenDatabase,
@@ -29,9 +29,9 @@ void main() {
         SqfliteDatabaseException,
         // ignore: deprecated_member_use_from_same_package
         devPrint, devWarning,
-      ].forEach((dynamic value) {
+      ]) {
         expect(value, isNotNull);
-      });
+      }
     });
   });
 }

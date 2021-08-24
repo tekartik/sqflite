@@ -4,6 +4,8 @@ import 'package:sqflite_common/src/method_call.dart';
 // ignore: implementation_imports
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
 
+// ignore_for_file: avoid_print
+
 DatabaseFactory? _databaseFactoryWebImpl;
 
 /// The Ffi database factory.
@@ -24,7 +26,7 @@ extension WebMethodCallHandler on SqfliteMethodCall {
       if (_debug) {
         print('main_send: $this');
       }
-      final result = 'TODO';
+      const result = 'TODO';
 
       ///
       /// TODO Implement Web support

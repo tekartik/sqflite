@@ -15,7 +15,7 @@ int? parseInt(Object? object) {
 /// Deprecated on purpose to avoid keep in the code.
 ///
 /// Used during development to add a quick log (and to not forget to remove it)
-@deprecated
+@Deprecated('Dev only')
 void devPrint(Object object) {
   print(object);
 }
@@ -46,7 +46,9 @@ Duration? lockWarningDuration = constant.lockWarningDurationDefault;
 /// Default lock warning callback.
 ///
 /// Use [setLockWarningInfo] instead.
-void Function()? lockWarningCallback = () {
+void Function()? lockWarningCallback = _lockWarningCallbackDefault;
+
+void _lockWarningCallbackDefault() {
   print('Warning database has been locked for $lockWarningDuration. '
       'Make sure you always use the transaction object for database operations during a transaction');
-};
+}

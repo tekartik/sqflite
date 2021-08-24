@@ -16,9 +16,9 @@ Future<void> runIntegrationTest({String deviceId}) async {
   final nnbdEnabled = dartVersion > Version(2, 11, 0, pre: '0');
   if (nnbdEnabled) {
     // Temp dart extra option. To remove once nnbd supported on stable without flags
-    final dartExtraOptions = '--enable-experiment=non-nullable';
+    const dartExtraOptions = '--enable-experiment=non-nullable';
     // Needed for run and test
-    final dartRunExtraOptions = '$dartExtraOptions --no-sound-null-safety';
+    const dartRunExtraOptions = '$dartExtraOptions --no-sound-null-safety';
     await shell.pushd('android').run(
         'flutter drive ${deviceId != null ? '-d $deviceId ' : ''}$dartRunExtraOptions'
         ' --driver=test_driver/integration_test.dart'
