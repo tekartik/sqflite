@@ -54,7 +54,7 @@ abstract class SqfliteTestContext {
   bool get isWindows;
 
   /// Set debug mode on
-  @deprecated
+  @Deprecated('Deb only')
   Future devSetDebugModeOn(bool on);
 }
 

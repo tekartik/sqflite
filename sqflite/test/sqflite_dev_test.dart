@@ -24,11 +24,11 @@ void main() {
 
     // Check that public api are exported
     test('exported', () {
-      <dynamic>[
+      for (var value in <dynamic>[
         MockDatabaseFactoryEmpty,
-      ].forEach((dynamic value) {
+      ]) {
         expect(value, isNotNull);
-      });
+      }
     });
   });
 }

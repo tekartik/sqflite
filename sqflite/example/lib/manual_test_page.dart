@@ -9,8 +9,13 @@ import 'package:sqflite_example/model/item.dart';
 import 'package:sqflite_example/src/item_widget.dart';
 import 'package:sqflite_example/utils.dart';
 
+// ignore_for_file: avoid_print
+
 /// Manual test page.
 class ManualTestPage extends StatefulWidget {
+  /// Test page.
+  const ManualTestPage({Key? key}) : super(key: key);
+
   @override
   _ManualTestPageState createState() => _ManualTestPageState();
 }
@@ -33,7 +38,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
   }
 
   Future _incrementVersion() async {
-    var version = await database!.getVersion();
+    final version = await database!.getVersion();
     print('version $version');
     await database!.setVersion(version + 1);
   }
@@ -53,7 +58,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
         await _openDatabase();
       }, summary: 'Open the database'),
       MenuItem('BEGIN EXCLUSIVE', () async {
-        var db = await _openDatabase();
+        final db = await _openDatabase();
         await db.execute('BEGIN EXCLUSIVE');
       },
           summary:
@@ -88,7 +93,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
       }, summary: 'Verbose logs, for debugging'),
       MenuItem('Get info', () async {
         final factory = databaseFactory as impl.SqfliteDatabaseFactoryMixin;
-        var info = await factory.getDebugInfo();
+        final info = await factory.getDebugInfo();
         print(info.toString());
       }, summary: 'Implementation info (dev only)'),
       MenuItem('Increment version', () async {
@@ -96,7 +101,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
       }, summary: 'Implementation info (dev only)'),
       MenuItem('Multiple db', () async {
         await Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-          return MultipleDbTestPage();
+          return const MultipleDbTestPage();
         }));
       }, summary: 'Open multiple databases')
     ];
@@ -109,11 +114,11 @@ class _ManualTestPageState extends State<ManualTestPage> {
               item,
               (item) async {
                 final stopwatch = Stopwatch()..start();
-                var future = (item as MenuItem).run();
+                final future = (item as MenuItem).run();
                 setState(() {});
                 await future;
                 // always add a small delay
-                var elapsed = stopwatch.elapsedMilliseconds;
+                final elapsed = stopwatch.elapsedMilliseconds;
                 if (elapsed < 300) {
                   await sleep(300 - elapsed);
                 }
@@ -138,6 +143,9 @@ class _ManualTestPageState extends State<ManualTestPage> {
 
 /// Multiple db test page.
 class MultipleDbTestPage extends StatelessWidget {
+  /// Test page.
+  const MultipleDbTestPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     Widget dbTile(String name) {
@@ -221,8 +229,8 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
             }
 
             Future _countRecord() async {
-              var db = await _openDatabase();
-              var result =
+              final db = await _openDatabase();
+              final result =
                   firstIntValue(await db.query('test', columns: ['COUNT(*)']));
               // Temp for nnbd successfull lint
               // ignore: deprecated_member_use
@@ -232,12 +240,12 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
               ));
             }
 
-            var items = <Widget>[
+            final items = <Widget>[
               menuItem('open Database', () async {
                 await _openDatabase();
               }, summary: 'Open the database'),
               menuItem('Add record', () async {
-                var db = await _openDatabase();
+                final db = await _openDatabase();
                 await db.insert('test', {'value': 'some_value'});
                 await _countRecord();
               }, summary: 'Add one record. Open the database if needed'),

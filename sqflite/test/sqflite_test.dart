@@ -30,7 +30,7 @@ void main() {
 
     // Check that public api are exported
     test('exported', () {
-      <dynamic>[
+      for (var value in <dynamic>[
         // Not part of sqflite_api
         openDatabase,
         openReadOnlyDatabase,
@@ -53,9 +53,9 @@ void main() {
         sqfliteLogLevelSql,
         sqfliteLogLevelVerbose,
         databaseFactory,
-      ].forEach((dynamic value) {
+      ]) {
         expect(value, isNotNull);
-      });
+      }
     });
 
     test('firstIntValue', () {

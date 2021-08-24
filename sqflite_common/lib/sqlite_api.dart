@@ -262,11 +262,11 @@ abstract class Database implements DatabaseExecutor {
   Future<void> setVersion(int version);
 
   /// testing only
-  @deprecated
+  @Deprecated('Dev only')
   Future<T> devInvokeMethod<T>(String method, [dynamic arguments]);
 
   /// testing only
-  @deprecated
+  @Deprecated('Dev only')
   Future<T> devInvokeSqlMethod<T>(String method, String sql,
       [List<Object?>? arguments]);
 }

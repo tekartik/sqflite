@@ -6,7 +6,7 @@ import '../model/main_item.dart';
 /// Main item widget.
 class MainItemWidget extends StatefulWidget {
   /// Main item widget.
-  MainItemWidget(this.item, this.onTap);
+  const MainItemWidget(this.item, this.onTap, {Key? key}) : super(key: key);
 
   /// item data.
   final MainItem item;

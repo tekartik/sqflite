@@ -21,7 +21,7 @@ DatabaseFactory get databaseFactory => sqfliteDatabaseFactory;
 set databaseFactory(DatabaseFactory? databaseFactory) {
   // Warn when changing. might throw in the future
   if (databaseFactory != null) {
-    if (!(databaseFactory is SqfliteDatabaseFactory)) {
+    if (databaseFactory is! SqfliteDatabaseFactory) {
       throw ArgumentError.value(
           databaseFactory, 'databaseFactory', 'Unsupported sqflite factory');
     }

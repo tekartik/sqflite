@@ -1,5 +1,5 @@
 /// Deprecated to prevent keeping the code used.
-@deprecated
+@Deprecated('Dev only')
 void devPrint(Object object) {
   print(object);
 }
@@ -8,5 +8,5 @@ void devPrint(Object object) {
 ///
 /// Can be use as a todo for weird code. int value = devWarning(myFunction());
 /// The function is always called
-@deprecated
+@Deprecated('Dev only')
 T devWarning<T>(T value) => value;

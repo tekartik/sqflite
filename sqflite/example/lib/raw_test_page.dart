@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/utils/utils.dart';
@@ -9,15 +10,17 @@ import 'package:sqflite_example/src/dev_utils.dart';
 
 import 'test_page.dart';
 
+// ignore_for_file: avoid_print
+
 /// Raw test page.
 class RawTestPage extends TestPage {
   /// Raw test page.
-  RawTestPage() : super('Raw tests') {
+  RawTestPage({Key? key}) : super('Raw tests', key: key) {
     test('Simple', () async {
       // await Sqflite.devSetDebugModeOn(true);
 
-      var path = await initDeleteDb('raw_simple.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('raw_simple.db');
+      final db = await openDatabase(path);
       try {
         await db
             .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
@@ -25,8 +28,8 @@ class RawTestPage extends TestPage {
             await db.rawInsert('INSERT INTO Test (name) VALUES (?)', ['test']),
             1);
 
-        var result = await db.query('Test');
-        var expected = [
+        final result = await db.query('Test');
+        final expected = [
           {'id': 1, 'name': 'test'}
         ];
         expect(result, expected);
@@ -36,8 +39,8 @@ class RawTestPage extends TestPage {
     });
 
     test('Sqlite version', () async {
-      var db = await openDatabase(inMemoryDatabasePath);
-      var results = await db.rawQuery('select sqlite_version()');
+      final db = await openDatabase(inMemoryDatabasePath);
+      final results = await db.rawQuery('select sqlite_version()');
       print('sqlite version: ${results.first.values.first}');
       await db.close();
     });
@@ -45,10 +48,10 @@ class RawTestPage extends TestPage {
     test('Options', () async {
       // Sqflite.devSetDebugModeOn(true);
 
-      var path = await initDeleteDb('raw_query_format.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('raw_query_format.db');
+      final db = await openDatabase(path);
       try {
-        var batch = db.batch();
+        final batch = db.batch();
 
         batch.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
         batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item 1']);
@@ -109,27 +112,27 @@ class RawTestPage extends TestPage {
 
     test('Transaction', () async {
       //Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('simple_transaction.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('simple_transaction.db');
+      final db = await openDatabase(path);
       try {
         await db
             .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
         Future _test(int i) async {
           await db.transaction((txn) async {
-            var count = Sqflite.firstIntValue(
+            final count = Sqflite.firstIntValue(
                 await txn.rawQuery('SELECT COUNT(*) FROM Test'))!;
             await Future.delayed(const Duration(milliseconds: 40));
             await txn
                 .rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
             //print(await db.query('SELECT COUNT(*) FROM Test'));
-            var afterCount = Sqflite.firstIntValue(
+            final afterCount = Sqflite.firstIntValue(
                 await txn.rawQuery('SELECT COUNT(*) FROM Test'));
             expect(count + 1, afterCount);
           });
         }
 
-        var futures = <Future>[];
+        final futures = <Future>[];
         for (var i = 0; i < 4; i++) {
           futures.add(_test(i));
         }
@@ -141,12 +144,12 @@ class RawTestPage extends TestPage {
 
     test('Concurrency 1', () async {
       // Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('simple_concurrency_1.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('simple_concurrency_1.db');
+      final db = await openDatabase(path);
       try {
-        var step1 = Completer();
-        var step2 = Completer();
-        var step3 = Completer();
+        final step1 = Completer();
+        final step2 = Completer();
+        final step3 = Completer();
 
         Future action1() async {
           await db
@@ -176,18 +179,18 @@ class RawTestPage extends TestPage {
 
             await step3.future;
 
-            var count = Sqflite.firstIntValue(
+            final count = Sqflite.firstIntValue(
                 await txn.rawQuery('SELECT COUNT(*) FROM Test'));
             expect(count, 1);
           });
         }
 
-        var future1 = action1();
-        var future2 = action2();
+        final future1 = action1();
+        final future2 = action2();
 
         await Future.wait([future1, future2]);
 
-        var count = Sqflite.firstIntValue(
+        final count = Sqflite.firstIntValue(
             await db.rawQuery('SELECT COUNT(*) FROM Test'));
         expect(count, 1);
       } finally {
@@ -197,12 +200,12 @@ class RawTestPage extends TestPage {
 
     test('Concurrency 2', () async {
       // Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('simple_concurrency_2.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('simple_concurrency_2.db');
+      final db = await openDatabase(path);
       try {
-        var step1 = Completer();
-        var step2 = Completer();
-        var step3 = Completer();
+        final step1 = Completer();
+        final step2 = Completer();
+        final step3 = Completer();
 
         Future action1() async {
           await db
@@ -235,18 +238,18 @@ class RawTestPage extends TestPage {
 
             await step3.future;
 
-            var count = Sqflite.firstIntValue(
+            final count = Sqflite.firstIntValue(
                 await txn.rawQuery('SELECT COUNT(*) FROM Test'));
             expect(count, 1);
           });
         }
 
-        var future1 = action1();
-        var future2 = action2();
+        final future1 = action1();
+        final future2 = action2();
 
         await Future.wait([future1, future2]);
 
-        var count = Sqflite.firstIntValue(
+        final count = Sqflite.firstIntValue(
             await db.rawQuery('SELECT COUNT(*) FROM Test'));
         expect(count, 1);
       } finally {
@@ -255,8 +258,8 @@ class RawTestPage extends TestPage {
     });
 
     test('Transaction recursive', () async {
-      var path = await initDeleteDb('transaction_recursive.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('transaction_recursive.db');
+      final db = await openDatabase(path);
       try {
         await db
             .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
@@ -267,7 +270,7 @@ class RawTestPage extends TestPage {
 
           await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item 2']);
         });
-        var afterCount = Sqflite.firstIntValue(
+        final afterCount = Sqflite.firstIntValue(
             await db.rawQuery('SELECT COUNT(*) FROM Test'));
         expect(afterCount, 2);
       } finally {
@@ -277,8 +280,8 @@ class RawTestPage extends TestPage {
 
     test('Transaction open twice', () async {
       //Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('transaction_open_twice.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('transaction_open_twice.db');
+      final db = await openDatabase(path);
       Database? db2;
       try {
         await db
@@ -288,7 +291,7 @@ class RawTestPage extends TestPage {
 
         await db.transaction((txn) async {
           await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item']);
-          var afterCount = Sqflite.firstIntValue(
+          final afterCount = Sqflite.firstIntValue(
               await txn.rawQuery('SELECT COUNT(*) FROM Test'));
           expect(afterCount, 1);
 
@@ -299,11 +302,11 @@ class RawTestPage extends TestPage {
         assert(db2AfterCount == 0);
         */
         });
-        var db2AfterCount = Sqflite.firstIntValue(
+        final db2AfterCount = Sqflite.firstIntValue(
             await db2.rawQuery('SELECT COUNT(*) FROM Test'));
         expect(db2AfterCount, 1);
 
-        var afterCount = Sqflite.firstIntValue(
+        final afterCount = Sqflite.firstIntValue(
             await db.rawQuery('SELECT COUNT(*) FROM Test'));
         expect(afterCount, 1);
       } finally {
@@ -314,10 +317,10 @@ class RawTestPage extends TestPage {
 
     test('Debug mode (log)', () async {
       //await Sqflite.devSetDebugModeOn(false);
-      var path = await initDeleteDb('debug_mode.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('debug_mode.db');
+      final db = await openDatabase(path);
       try {
-        var debugModeOn = await Sqflite.getDebugModeOn();
+        final debugModeOn = await Sqflite.getDebugModeOn();
         await Sqflite.setDebugModeOn(true);
         await db.setVersion(1);
         await Sqflite.setDebugModeOn(false);
@@ -334,8 +337,8 @@ class RawTestPage extends TestPage {
 
     test('Demo', () async {
       // await Sqflite.devSetDebugModeOn();
-      var path = await initDeleteDb('simple_demo.db');
-      var database = await openDatabase(path);
+      final path = await initDeleteDb('simple_demo.db');
+      final database = await openDatabase(path);
       try {
         //int version = await database.update('PRAGMA user_version');
         //print('version: ${await database.update('PRAGMA user_version')}');
@@ -390,7 +393,7 @@ class RawTestPage extends TestPage {
 
     test('Demo clean', () async {
       // Get a location
-      var databasesPath = await getDatabasesPath();
+      final databasesPath = await getDatabasesPath();
 
       // Make sure the directory exists
       try {
@@ -400,13 +403,13 @@ class RawTestPage extends TestPage {
         }
       } catch (_) {}
 
-      var path = join(databasesPath, 'demo.db');
+      final path = join(databasesPath, 'demo.db');
 
       // Delete the database
       await deleteDatabase(path);
 
       // open the database
-      var database = await openDatabase(path, version: 1,
+      final database = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         // When creating the db, create the table
         await db.execute(
@@ -415,10 +418,10 @@ class RawTestPage extends TestPage {
 
       // Insert some records in a transaction
       await database.transaction((txn) async {
-        var id1 = await txn.rawInsert(
+        final id1 = await txn.rawInsert(
             'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
         print('inserted1: $id1');
-        var id2 = await txn.rawInsert(
+        final id2 = await txn.rawInsert(
             'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
             ['another name', 12345678, 3.1416]);
         print('inserted2: $id2');
@@ -431,8 +434,8 @@ class RawTestPage extends TestPage {
       print('updated: $count');
 
       // Get the records
-      var list = await database.rawQuery('SELECT * FROM Test');
-      var expectedList = [
+      final list = await database.rawQuery('SELECT * FROM Test');
+      final expectedList = [
         {'name': 'updated name', 'id': 1, 'value': 9876, 'num': 456.789},
         {'name': 'another name', 'id': 2, 'value': 12345678, 'num': 3.1416}
       ];
@@ -457,15 +460,15 @@ class RawTestPage extends TestPage {
 
     test('Open twice', () async {
       // Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('open_twice.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('open_twice.db');
+      final db = await openDatabase(path);
       Database? db2;
       try {
         await db
             .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
         db2 = await openReadOnlyDatabase(path);
 
-        var count = Sqflite.firstIntValue(
+        final count = Sqflite.firstIntValue(
             await db2.rawQuery('SELECT COUNT(*) FROM Test'));
         expect(count, 0);
       } finally {
@@ -476,8 +479,8 @@ class RawTestPage extends TestPage {
 
     test('text primary key', () async {
       // Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('text_primary_key.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('text_primary_key.db');
+      final db = await openDatabase(path);
       try {
         // This table has no primary key however sqlite generates an hidden row id
         await db.execute('CREATE TABLE Test (name TEXT PRIMARY KEY)');
@@ -507,7 +510,7 @@ class RawTestPage extends TestPage {
 
       late Database db;
       try {
-        var path = await initDeleteDb('without_rowid.db');
+        final path = await initDeleteDb('without_rowid.db');
         db = await openDatabase(path);
         // This table has no primary key and we ask sqlite not to generate
         // a rowid
@@ -528,7 +531,7 @@ class RawTestPage extends TestPage {
           expect(id, 1);
         }
         // notice the order is based on the primary key
-        var list = await db.query('Test');
+        final list = await db.query('Test');
         expect(list, [
           {'name': 'other'},
           {'name': 'test'}
@@ -539,10 +542,10 @@ class RawTestPage extends TestPage {
     });
 
     test('Reference query', () async {
-      var path = await initDeleteDb('reference_query.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('reference_query.db');
+      final db = await openDatabase(path);
       try {
-        var batch = db.batch();
+        final batch = db.batch();
 
         batch.execute('CREATE TABLE Other (id INTEGER PRIMARY KEY, name TEXT)');
         batch.execute(
@@ -570,7 +573,7 @@ class RawTestPage extends TestPage {
     });
 
     test('Binding null (fails on Android)', () async {
-      var db = await openDatabase(inMemoryDatabasePath);
+      final db = await openDatabase(inMemoryDatabasePath);
       try {
         for (var value in [null, 2]) {
           expect(

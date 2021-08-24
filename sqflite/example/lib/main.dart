@@ -17,11 +17,13 @@ import 'todo_test_page.dart';
 import 'type_test_page.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 /// Sqflite test app
 class MyApp extends StatefulWidget {
+  /// test app.
+  const MyApp({Key? key}) : super(key: key);
   // This widget is the root of your application.
 
   @override
@@ -66,7 +68,7 @@ class _MyAppState extends State<MyApp> {
     testSlowRoute: (BuildContext context) => SlowTestPage(),
     testTodoRoute: (BuildContext context) => TodoTestPage(),
     testTypeRoute: (BuildContext context) => TypeTestPage(),
-    testManualRoute: (BuildContext context) => ManualTestPage(),
+    testManualRoute: (BuildContext context) => const ManualTestPage(),
     testBatchRoute: (BuildContext context) => BatchTestPage(),
     testExceptionRoute: (BuildContext context) => ExceptionTestPage(),
     testExpRoute: (BuildContext context) => ExpTestPage(),
@@ -140,7 +142,7 @@ String? _debugAutoStartRouteName;
 String? get debugAutoStartRouteName => _debugAutoStartRouteName;
 
 /// Deprecated to avoid calls
-@deprecated
+@Deprecated('Deb only')
 set debugAutoStartRouteName(String? routeName) =>
     _debugAutoStartRouteName = routeName;
 
@@ -159,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
           // await Navigator.of(context).pushNamed(testExpRoute);
           // await Navigator.of(context).pushNamed(testRawRoute);
-          var future =
+          final future =
               Navigator.of(context).pushNamed(debugAutoStartRouteName!);
           // ignore: deprecated_member_use_from_same_package
           debugAutoStartRouteName = null;

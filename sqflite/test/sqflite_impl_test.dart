@@ -34,14 +34,14 @@ void main() {
       // ignore: deprecated_member_use_from_same_package
       sqlfliteDatabaseFactory = null;
       sqfliteDatabaseFactory = null;
-      [
+      for (var element in [
         // ignore: unnecessary_statements
         sqlfliteDatabaseFactory,
         // ignore: unnecessary_statements
         sqfliteDatabaseFactory
-      ].forEach((element) {
+      ]) {
         expect(element, isNotNull);
-      });
+      }
     });
   });
 }

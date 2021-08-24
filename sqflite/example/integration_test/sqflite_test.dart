@@ -12,6 +12,7 @@ import 'package:pedantic/pedantic.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/src/common_import.dart';
 
+// ignore_for_file: avoid_print
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -19,12 +20,12 @@ void main() {
     group('open', () {
       test('missing directory', () async {
         //await devVerbose();
-        var path = join('test_missing_sub_dir', 'simple.db');
+        final path = join('test_missing_sub_dir', 'simple.db');
         try {
           await Directory(join(await getDatabasesPath(), dirname(path)))
               .delete(recursive: true);
         } catch (_) {}
-        var db =
+        final db =
             await openDatabase(path, version: 1, onCreate: (db, version) async {
           expect(await db.getVersion(), 0);
         });
@@ -36,7 +37,7 @@ void main() {
         // fail('regular test failure');
       });
       test('in_memory', () async {
-        var db = await openDatabase(inMemoryDatabasePath, version: 1,
+        final db = await openDatabase(inMemoryDatabasePath, version: 1,
             onCreate: (db, version) async {
           expect(await db.getVersion(), 0);
         });
@@ -47,10 +48,10 @@ void main() {
 
     test('exists', () async {
       expect(await databaseExists(inMemoryDatabasePath), isFalse);
-      var path = 'test_exists.db';
+      const path = 'test_exists.db';
       await deleteDatabase(path);
       expect(await databaseExists(path), isFalse);
-      var db = await openDatabase(path);
+      final db = await openDatabase(path);
       try {
         expect(await databaseExists(path), isTrue);
       } finally {
@@ -59,8 +60,8 @@ void main() {
     });
     test('close in transaction', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = 'test_close_in_transaction.db';
-      var factory = databaseFactory;
+      const path = 'test_close_in_transaction.db';
+      final factory = databaseFactory;
       await deleteDatabase(path);
       var db = await factory.openDatabase(path,
           options: OpenDatabaseOptions(version: 1));
@@ -85,18 +86,17 @@ void main() {
         db = await openReadOnlyDatabase(path);
         await db.getVersion();
         isDatabase = true;
-      } catch (_) {
-      } finally {
+      } catch (_) {} finally {
         await db?.close();
       }
       return isDatabase;
     }
 
     test('read_only missing database', () async {
-      var path = 'test_missing_database.db';
+      const path = 'test_missing_database.db';
       await deleteDatabase(path);
       try {
-        var db = await openReadOnlyDatabase(path);
+        final db = await openReadOnlyDatabase(path);
         fail('should fail ${db.path}');
       } on DatabaseException catch (_) {}
 
@@ -104,14 +104,14 @@ void main() {
     });
 
     test('read_only empty file', () async {
-      var path = 'empty_file_database.db';
+      const path = 'empty_file_database.db';
       await deleteDatabase(path);
-      var fullPath = join((await getDatabasesPath()), path);
+      final fullPath = join((await getDatabasesPath()), path);
       await Directory(dirname(fullPath)).create(recursive: true);
       await File(fullPath).writeAsString('');
 
       // Open is fine, that is the native behavior
-      var db = await openReadOnlyDatabase(fullPath);
+      final db = await openReadOnlyDatabase(fullPath);
       expect(await File(fullPath).readAsString(), '');
 
       await db.getVersion();
@@ -122,17 +122,18 @@ void main() {
     });
 
     test('read_only missing bad format', () async {
-      var path = 'test_bad_format_database.db';
+      const path = 'test_bad_format_database.db';
       await deleteDatabase(path);
-      var fullPath = join((await getDatabasesPath()), path);
+      final fullPath = join((await getDatabasesPath()), path);
       await Directory(dirname(fullPath)).create(recursive: true);
       await File(fullPath).writeAsString('test');
 
       // Open is fine, that is the native behavior
-      var db = await openReadOnlyDatabase(fullPath);
+      final db = await openReadOnlyDatabase(fullPath);
       expect(await File(fullPath).readAsString(), 'test');
       try {
-        var version = await db.getVersion();
+        final version = await db.getVersion();
+
         print(await db.query('sqlite_master'));
         fail('getVersion should fail ${db.path} $version');
       } on DatabaseException catch (_) {
@@ -149,10 +150,10 @@ void main() {
 
     test('multiple database', () async {
       //await Sqflite.devSetDebugModeOn(true);
-      var count = 10;
-      var dbs = List<Database?>.filled(count, null, growable: false);
+      const count = 10;
+      final dbs = List<Database?>.filled(count, null, growable: false);
       for (var i = 0; i < count; i++) {
-        var path = 'test_multiple_$i.db';
+        final path = 'test_multiple_$i.db';
         await deleteDatabase(path);
         dbs[i] =
             await openDatabase(path, version: 1, onCreate: (db, version) async {
@@ -166,9 +167,9 @@ void main() {
       }
 
       for (var i = 0; i < count; i++) {
-        var db = dbs[i]!;
+        final db = dbs[i]!;
         try {
-          var name = (await db.query('Test', columns: ['name']))
+          final name = (await db.query('Test', columns: ['name']))
               .first
               .values
               .first as String?;
@@ -179,14 +180,14 @@ void main() {
       }
 
       for (var i = 0; i < count; i++) {
-        var db = dbs[i]!;
+        final db = dbs[i]!;
         await db.close();
       }
     });
 
     test('version', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = 'test_version.db';
+      const path = 'test_version.db';
       await deleteDatabase(path);
       var db = await openDatabase(path, version: 1);
       try {
@@ -212,14 +213,14 @@ void main() {
 
     test('duplicated_column', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = 'test_duplicated_column.db';
+      const path = 'test_duplicated_column.db';
       await deleteDatabase(path);
-      var db = await openDatabase(path);
+      final db = await openDatabase(path);
       try {
         await db.execute('CREATE TABLE Test (col1 INTEGER, col2 INTEGER)');
         await db.insert('Test', {'col1': 1, 'col2': 2});
 
-        var result = await db.rawQuery(
+        final result = await db.rawQuery(
             'SELECT t.col1, col1, t.col2, col2 AS col1 FROM Test AS t');
         expect(result, [
           {'col1': 2, 'col2': 2}
@@ -241,7 +242,7 @@ void main() {
       // await devVerbose();
       late Database db;
       try {
-        var path = 'test_delete_database.db';
+        const path = 'test_delete_database.db';
         await deleteDatabase(path);
         db = await openDatabase(path);
         expect(await db.getVersion(), 0);

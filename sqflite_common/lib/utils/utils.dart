@@ -29,20 +29,20 @@ String hex(List<int> bytes) {
 /// Deprecated since 1.1.7+.
 ///
 /// Used internally.
-@deprecated
+@Deprecated('Used internally')
 void Function()? get lockWarningCallback => impl.lockWarningCallback;
 
 /// Deprecated since 1.1.7+.
-@deprecated
+@Deprecated('Used internally')
 set lockWarningCallback(void Function()? callback) =>
     impl.lockWarningCallback = callback;
 
 /// Deprecated since 1.1.7+.
-@deprecated
+@Deprecated('Used internally')
 Duration? get lockWarningDuration => impl.lockWarningDuration;
 
 /// Deprecated since 1.1.7+.
-@deprecated
+@Deprecated('Used internally')
 set lockWarningDuration(Duration? duration) =>
     impl.lockWarningDuration = duration;
 

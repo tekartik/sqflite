@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-
 // ignore: implementation_imports
 import 'package:sqflite_common_ffi/src/mixin/handler_mixin.dart';
 

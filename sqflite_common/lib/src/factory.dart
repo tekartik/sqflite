@@ -1,20 +1,16 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/mixin/factory.dart';
-import 'package:synchronized/synchronized.dart';
 
 /// Internal database factory interface.
 abstract class SqfliteDatabaseFactory
     implements DatabaseFactory, SqfliteInvokeHandler {
   /// Wrap any exception to a [DatabaseException].
   Future<T> wrapDatabaseException<T>(Future<T> Function() action);
+
   // To override
   // This also should wrap exception
   //Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]);
-
-  /// open lock mechanism.
-  @deprecated
-  final Lock lock = Lock();
 
   /// Create a new database object.
   SqfliteDatabase newDatabase(

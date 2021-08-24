@@ -128,7 +128,7 @@ void run(SqfliteTestContext context) {
     // await context.devSetDebugModeOn(true);
     //await context..devSetDebugModeOn(false);
     var path = await context.initDeleteDb('delete_database.db');
-    expect(await checkFileExists(path), isFalse, reason: '$path');
+    expect(await checkFileExists(path), isFalse, reason: path);
     var db = await factory.openDatabase(path);
     await db.close();
 
@@ -798,7 +798,7 @@ void run(SqfliteTestContext context) {
               onCreate: (db, version) async {
                 fail('should never be called');
               },
-              onOpen: (db) {
+              onOpen: (db) async {
                 fail('should never be called');
               }));
       db1 = await futureDb1;

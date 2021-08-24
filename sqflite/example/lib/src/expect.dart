@@ -74,7 +74,7 @@ Future expectLater(actual, matcher, {String? reason, skip}) =>
 
 String _formatFailure(Matcher expected, actual, String which,
     {String? reason}) {
-  var buffer = StringBuffer();
+  final buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
   buffer.writeln(indent(prettyPrint(actual), first: '  Actual: '));
   if (which.isNotEmpty) buffer.writeln(indent(which, first: '   Which: '));
@@ -90,7 +90,7 @@ Future _expect(actual, matcher,
     // ignore: deprecated_member_use, deprecated_member_use_from_same_package
     ErrorFormatter? formatter}) async {
   formatter ??= (actual, matcher, reason, matchState, verbose) {
-    var mismatchDescription = StringDescription();
+    final mismatchDescription = StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
 
     // ignore: deprecated_member_use
@@ -104,7 +104,7 @@ Future _expect(actual, matcher,
 
   matcher = wrapMatcher(matcher);
 
-  var matchState = {};
+  final matchState = {};
   try {
     if ((matcher as Matcher).matches(actual, matchState)) {
       return Future.sync(() {});
@@ -125,7 +125,7 @@ String indent(String text, {String? first}) {
   if (first != null) {
     return '$first $text';
   }
-  return '$text';
+  return text;
 }
 
 /// index text helper.
@@ -139,7 +139,7 @@ String prettyPrint(dynamic text, {String? first}) {
 /// The default error formatter.
 @Deprecated('Will be removed in 0.13.0.')
 String formatFailure(Matcher expected, actual, String which, {String? reason}) {
-  var buffer = StringBuffer();
+  final buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
   buffer.writeln(indent(prettyPrint(actual), first: '  Actual: '));
   if (which.isNotEmpty) buffer.writeln(indent(which, first: '   Which: '));

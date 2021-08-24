@@ -5,7 +5,7 @@ void main() {
   group('sqlite_api', () {
     // Check that public api are exported
     test('exported', () {
-      <dynamic>[
+      for (var value in <dynamic>[
         OpenDatabaseOptions,
         DatabaseFactory,
         Database,
@@ -21,9 +21,9 @@ void main() {
         sqfliteLogLevelNone,
         sqfliteLogLevelSql,
         sqfliteLogLevelVerbose
-      ].forEach((dynamic value) {
+      ]) {
         expect(value, isNotNull);
-      });
+      }
     });
   });
 }

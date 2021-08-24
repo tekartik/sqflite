@@ -14,10 +14,12 @@ export 'package:sqflite_example/database/database.dart';
 
 export 'src/expect.dart' show expect, fail;
 
+// ignore_for_file: avoid_print
+
 /// Base test page.
 class TestPage extends StatefulWidget {
   /// Base test page.
-  TestPage(this.title);
+  TestPage(this.title, {Key? key}) : super(key: key);
 
   /// The title.
   final String title;
@@ -113,7 +115,7 @@ class _TestPageState extends State<TestPage> with Group {
       add(test);
     }
     for (var test in _tests) {
-      var item = Item('${test.name}');
+      var item = Item(test.name);
 
       late int position;
       setState(() {
@@ -123,11 +125,11 @@ class _TestPageState extends State<TestPage> with Group {
       try {
         await test.fn();
 
-        item = Item('${test.name}')..state = ItemState.success;
+        item = Item(test.name)..state = ItemState.success;
       } catch (e, st) {
         print(e);
         print(st);
-        item = Item('${test.name}')..state = ItemState.failure;
+        item = Item(test.name)..state = ItemState.failure;
       }
 
       if (!mounted) {
@@ -145,7 +147,7 @@ class _TestPageState extends State<TestPage> with Group {
       return null;
     }
 
-    var test = _tests[index];
+    final test = _tests[index];
 
     var item = items[index];
     setState(() {
@@ -156,13 +158,13 @@ class _TestPageState extends State<TestPage> with Group {
       await test.fn();
       print('TEST Done ${test.name}');
 
-      item = Item('${test.name}')..state = ItemState.success;
+      item = Item(test.name)..state = ItemState.success;
     } catch (e, st) {
       print('TEST Error $e running ${test.name}');
       try {
         print(st);
       } catch (_) {}
-      item = Item('${test.name}')..state = ItemState.failure;
+      item = Item(test.name)..state = ItemState.failure;
     }
 
     if (!mounted) {
@@ -200,7 +202,7 @@ class _TestPageState extends State<TestPage> with Group {
   }
 
   Widget _itemBuilder(BuildContext context, int index) {
-    var item = getItem(index);
+    final item = getItem(index);
     return ItemWidget(item, (Item item) {
       //Navigator.of(context).pushNamed(item.route);
       _runTest(index);

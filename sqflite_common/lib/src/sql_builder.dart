@@ -224,7 +224,7 @@ class SqlBuilder {
     final bindArgs = <Object?>[];
     var i = 0;
 
-    values.keys.forEach((String colName) {
+    for (var colName in values.keys) {
       update.write((i++ > 0) ? ', ' : '');
       update.write(_escapeName(colName));
       final value = values[colName];
@@ -235,7 +235,7 @@ class SqlBuilder {
       } else {
         update.write(' = NULL');
       }
-    });
+    }
 
     if (whereArgs != null) {
       bindArgs.addAll(whereArgs);
@@ -288,7 +288,7 @@ bool isEscapedName(String name) {
     final codeUnits = name.codeUnits;
     if (_areCodeUnitsEscaped(codeUnits)) {
       return escapeNames
-          .contains('${name.substring(1, name.length - 1).toLowerCase()}');
+          .contains(name.substring(1, name.length - 1).toLowerCase());
     }
   }
   return false;

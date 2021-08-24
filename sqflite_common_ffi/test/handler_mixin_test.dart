@@ -8,13 +8,13 @@ void main() {
   group('handler_mixin', () {
     // Check that public api are exported
     test('exported', () {
-      <dynamic>[
+      for (dynamic value in <dynamic>[
         FfiMethodCall,
         SqfliteFfiException,
         const FfiMethodCall('dummy').handleInIsolate,
-      ].forEach((dynamic value) {
+      ]) {
         expect(value, isNotNull);
-      });
+      }
     });
   });
 }

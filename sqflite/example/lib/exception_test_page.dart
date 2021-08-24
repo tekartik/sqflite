@@ -2,19 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sql.dart';
 
 import 'test_page.dart';
 
+// ignore_for_file: avoid_print
 /// Exception test page.
 class ExceptionTestPage extends TestPage {
   /// Exception test page.
-  ExceptionTestPage() : super('Exception tests') {
+  ExceptionTestPage({Key? key}) : super('Exception tests', key: key) {
     test('Transaction failed', () async {
       //await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('transaction_failed.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('transaction_failed.db');
+      final db = await openDatabase(path);
 
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
@@ -24,7 +26,7 @@ class ExceptionTestPage extends TestPage {
         await db.transaction((txn) async {
           await txn.rawInsert(
               'INSERT INTO Test (name) VALUES (?)', <Object>['item']);
-          var afterCount = Sqflite.firstIntValue(
+          final afterCount = Sqflite.firstIntValue(
               await txn.rawQuery('SELECT COUNT(*) FROM Test'));
           expect(afterCount, 1);
 
@@ -39,7 +41,7 @@ class ExceptionTestPage extends TestPage {
       }
       verify(hasFailed);
 
-      var afterCount =
+      final afterCount =
           Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test'));
       expect(afterCount, 0);
 
@@ -48,12 +50,12 @@ class ExceptionTestPage extends TestPage {
 
     test('Batch failed', () async {
       //await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('batch_failed.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('batch_failed.db');
+      final db = await openDatabase(path);
 
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
-      var batch = db.batch();
+      final batch = db.batch();
       batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item']);
       batch.execute('DUMMY CALL');
 
@@ -67,7 +69,7 @@ class ExceptionTestPage extends TestPage {
 
       verify(hasFailed);
 
-      var afterCount =
+      final afterCount =
           Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test'));
       expect(afterCount, 0);
 
@@ -76,8 +78,8 @@ class ExceptionTestPage extends TestPage {
 
     test('Sqlite Exception', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('exception.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('exception.db');
+      final db = await openDatabase(path);
 
       // Query
       try {
@@ -139,8 +141,8 @@ class ExceptionTestPage extends TestPage {
 
     test('Sqlite constraint Exception', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('constraint_exception.db');
-      var db = await openDatabase(path, version: 1, onCreate: (db, version) {
+      final path = await initDeleteDb('constraint_exception.db');
+      final db = await openDatabase(path, version: 1, onCreate: (db, version) {
         db.execute('CREATE TABLE Test (name TEXT UNIQUE)');
       });
       await db.insert('Test', {'name': 'test1'});
@@ -162,8 +164,8 @@ class ExceptionTestPage extends TestPage {
 
     test('Sqlite constraint primary key', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('constraint_primary_key_exception.db');
-      var db = await openDatabase(path, version: 1, onCreate: (db, version) {
+      final path = await initDeleteDb('constraint_primary_key_exception.db');
+      final db = await openDatabase(path, version: 1, onCreate: (db, version) {
         db.execute('CREATE TABLE Test (name TEXT PRIMARY KEY)');
       });
       await db.insert('Test', {'name': 'test1'});
@@ -185,12 +187,12 @@ class ExceptionTestPage extends TestPage {
 
     test('Sqlite batch Exception', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('batch_exception.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('batch_exception.db');
+      final db = await openDatabase(path);
 
       // Query
       try {
-        var batch = db.batch();
+        final batch = db.batch();
         batch.rawQuery('SELECT COUNT(*) FROM Test');
         await batch.commit();
         fail(); // should fail before
@@ -201,7 +203,7 @@ class ExceptionTestPage extends TestPage {
 
       // Catch without using on DatabaseException
       try {
-        var batch = db.batch();
+        final batch = db.batch();
         batch.rawQuery('malformed query');
         await batch.commit();
         fail(); // should fail before
@@ -212,7 +214,7 @@ class ExceptionTestPage extends TestPage {
       }
 
       try {
-        var batch = db.batch();
+        final batch = db.batch();
         batch.rawQuery('malformed query with args ?', [1]);
         await batch.commit();
         fail(); // should fail before
@@ -225,7 +227,7 @@ class ExceptionTestPage extends TestPage {
       }
 
       try {
-        var batch = db.batch();
+        final batch = db.batch();
         batch.execute('DUMMY');
         await batch.commit();
         fail(); // should fail before
@@ -237,7 +239,7 @@ class ExceptionTestPage extends TestPage {
       }
 
       try {
-        var batch = db.batch();
+        final batch = db.batch();
         batch.rawInsert('DUMMY');
         await batch.commit();
         fail(); // should fail before
@@ -247,7 +249,7 @@ class ExceptionTestPage extends TestPage {
       }
 
       try {
-        var batch = db.batch();
+        final batch = db.batch();
         batch.rawUpdate('DUMMY');
         await batch.commit();
         fail(); // should fail before
@@ -260,7 +262,7 @@ class ExceptionTestPage extends TestPage {
     });
 
     test('Open onDowngrade fail', () async {
-      var path = await initDeleteDb('open_on_downgrade_fail.db');
+      final path = await initDeleteDb('open_on_downgrade_fail.db');
       var database = await openDatabase(path, version: 2,
           onCreate: (Database db, int version) async {
         await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
@@ -286,8 +288,8 @@ class ExceptionTestPage extends TestPage {
 
     test('Access after close', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('access_after_close.db');
-      var database = await openDatabase(path, version: 3,
+      final path = await initDeleteDb('access_after_close.db');
+      final database = await openDatabase(path, version: 3,
           onCreate: (Database db, int version) async {
         await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
       });
@@ -311,10 +313,10 @@ class ExceptionTestPage extends TestPage {
 
     test('Non escaping fields', () async {
       //await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('non_escaping_fields.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('non_escaping_fields.db');
+      final db = await openDatabase(path);
 
-      var table = 'table';
+      const table = 'table';
       try {
         await db.execute('CREATE TABLE $table (group INTEGER)');
         fail('should fail');
@@ -344,7 +346,7 @@ class ExceptionTestPage extends TestPage {
       }
 
       // Build our escape list from all the sqlite keywords
-      var toExclude = <String>[];
+      final toExclude = <String>[];
       for (var name in allEscapeNames) {
         try {
           await db.execute('CREATE TABLE $name (value INTEGER)');
@@ -355,6 +357,7 @@ class ExceptionTestPage extends TestPage {
           toExclude.add(name);
         }
       }
+
       print(json.encode(toExclude));
 
       await db.close();
@@ -363,12 +366,12 @@ class ExceptionTestPage extends TestPage {
     test('Bind no argument (no iOS)', () async {
       if (!Platform.isIOS) {
         // await Sqflite.devSetDebugModeOn(true);
-        var path = await initDeleteDb('bind_no_arg_failed.db');
-        var db = await openDatabase(path);
+        final path = await initDeleteDb('bind_no_arg_failed.db');
+        final db = await openDatabase(path);
 
         await db.execute('CREATE TABLE Test (name TEXT)');
 
-        await db.rawInsert('INSERT INTO Test (name) VALUES (\"?\")', []);
+        await db.rawInsert('INSERT INTO Test (name) VALUES ("?")', []);
 
         await db.rawQuery('SELECT * FROM Test WHERE name = ?', []);
 
@@ -383,12 +386,12 @@ class ExceptionTestPage extends TestPage {
       if (!Platform.isIOS) {
         //if (true) {
         // await Sqflite.devSetDebugModeOn(true);
-        var path = await initDeleteDb('bind_no_arg_failed.db');
-        var db = await openDatabase(path);
+        final path = await initDeleteDb('bind_no_arg_failed.db');
+        final db = await openDatabase(path);
 
         await db.execute('CREATE TABLE Test (name TEXT)');
 
-        await db.rawInsert('INSERT INTO Test (name) VALUES (\"?\")', []);
+        await db.rawInsert('INSERT INTO Test (name) VALUES ("?")', []);
 
         await db.rawQuery('SELECT * FROM Test WHERE name = ?', []);
 
@@ -398,8 +401,8 @@ class ExceptionTestPage extends TestPage {
 
     test('Bind null argument', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('bind_null_failed.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('bind_null_failed.db');
+      final db = await openDatabase(path);
 
       await db.execute('CREATE TABLE Test (name TEXT)');
 
@@ -435,14 +438,14 @@ class ExceptionTestPage extends TestPage {
 
     test('Bind no parameter', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('bind_no_parameter_failed.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('bind_no_parameter_failed.db');
+      final db = await openDatabase(path);
 
       await db.execute('CREATE TABLE Test (name TEXT)');
 
       try {
-        await db.rawInsert(
-            'INSERT INTO Test (name) VALUES (\"value\")', ['value2']);
+        await db
+            .rawInsert('INSERT INTO Test (name) VALUES ("value")', ['value2']);
       } on DatabaseException catch (e) {
         print('ERR: $e');
         expect(e.toString().contains("sql 'INSERT INTO Test"), true);
@@ -450,15 +453,14 @@ class ExceptionTestPage extends TestPage {
 
       try {
         await db
-            .rawQuery('SELECT * FROM Test WHERE name = \"value\"', ['value2']);
+            .rawQuery('SELECT * FROM Test WHERE name = "value"', ['value2']);
       } on DatabaseException catch (e) {
         print('ERR: $e');
         expect(e.toString().contains("sql 'SELECT * FROM Test"), true);
       }
 
       try {
-        await db
-            .rawDelete('DELETE FROM Test WHERE name = \"value\"', ['value2']);
+        await db.rawDelete('DELETE FROM Test WHERE name = "value"', ['value2']);
       } on DatabaseException catch (e) {
         print('ERR: $e');
         expect(e.toString().contains("sql 'DELETE FROM Test"), true);
@@ -469,8 +471,8 @@ class ExceptionTestPage extends TestPage {
 
     // Using the db object in a transaction lead to a deadlock...
     test('Dead lock', () async {
-      var path = await initDeleteDb('dead_lock.db');
-      var db = await openDatabase(path);
+      final path = await initDeleteDb('dead_lock.db');
+      final db = await openDatabase(path);
       try {
         var hasTimedOut = false;
         var callbackCount = 0;
@@ -498,9 +500,9 @@ class ExceptionTestPage extends TestPage {
 
     test('Thread dead lock', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      var path = await initDeleteDb('thread_dead_lock.db');
-      var db1 = await openDatabase(path, singleInstance: false);
-      var db2 = await openDatabase(path, singleInstance: false);
+      final path = await initDeleteDb('thread_dead_lock.db');
+      final db1 = await openDatabase(path, singleInstance: false);
+      final db2 = await openDatabase(path, singleInstance: false);
       try {
         await db1.execute('BEGIN IMMEDIATE TRANSACTION');
 
@@ -515,7 +517,7 @@ class ExceptionTestPage extends TestPage {
         }
 
         // Try to open another db to check that the main thread is free
-        var db = await openDatabase(inMemoryDatabasePath);
+        final db = await openDatabase(inMemoryDatabasePath);
         await db.close();
 
         try {

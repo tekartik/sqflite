@@ -7,7 +7,7 @@ import 'factory_mixin.dart';
 ///
 /// deprecated since 1.1.1
 ///
-@deprecated
+@Deprecated('Dev only')
 class SqfliteOptions {
   /// deprecated
   SqfliteOptions({this.logLevel});

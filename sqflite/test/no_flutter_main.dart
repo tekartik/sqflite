@@ -7,6 +7,7 @@ Future<void> main() async {
   final factory = buildDatabaseFactory(
       invokeMethod: (String method, [dynamic arguments]) async {
     dynamic result;
+    // ignore: avoid_print
     print('$method: $arguments');
     return result;
   });
