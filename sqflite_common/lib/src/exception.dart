@@ -1,3 +1,4 @@
+import 'package:sqflite_common/src/arg_utils.dart';
 import 'package:sqflite_common/src/constant.dart';
 
 /// Wrap sqlite native exception
@@ -122,10 +123,10 @@ class SqfliteDatabaseException extends DatabaseException {
     if (result is Map) {
       if (resultMap[paramSql] != null) {
         final dynamic args = resultMap[paramSqlArguments];
-        if (args == null) {
-          return "DatabaseException($_message) sql '${resultMap[paramSql]}'";
+        if (args is List) {
+          return "DatabaseException($_message) sql '${resultMap[paramSql]}' args ${argumentsToString(args)}";
         } else {
-          return "DatabaseException($_message) sql '${resultMap[paramSql]}' args $args}";
+          return "DatabaseException($_message) sql '${resultMap[paramSql]}'";
         }
       }
     }
