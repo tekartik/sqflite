@@ -1,11 +1,12 @@
 import 'dart:io';
 
+import 'package:path/path.dart';
 import 'package:process_run/package/package.dart';
 import 'package:process_run/shell.dart';
 
 Future main() async {
   final shell = Shell();
-  final version = await getPackageVersion(dir: 'sqflite');
+  final version = await getPackageVersion(dir: join('..', 'sqflite'));
   print('Version $version');
   print('Tap anything or CTRL-C: $version');
 

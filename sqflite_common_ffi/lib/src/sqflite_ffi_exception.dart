@@ -32,7 +32,18 @@ class SqfliteFfiException extends SqfliteDatabaseException {
   String toString() {
     var map = <String, Object?>{};
     if (details != null) {
-      map['details'] = details;
+      if (details is Map) {
+        var detailsMap = Map.from(details!).cast<String, Object?>();
+
+        /// remove sql and arguments that we h
+        detailsMap.remove('arguments');
+        detailsMap.remove('sql');
+        if (detailsMap.isNotEmpty) {
+          map['details'] = detailsMap;
+        }
+      } else {
+        map['details'] = details;
+      }
     }
     return 'SqfliteFfiException($code${_resultCode == null ? '' : ': $_resultCode, '}, $message} ${super.toString()} $map';
   }
