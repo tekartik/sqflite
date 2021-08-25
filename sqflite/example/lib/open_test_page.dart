@@ -126,7 +126,8 @@ Future<bool> isDatabase(String path) async {
     db = await openReadOnlyDatabase(path);
     await db.getVersion();
     isDatabase = true;
-  } catch (_) {} finally {
+  } catch (_) {
+  } finally {
     await db?.close();
   }
   return isDatabase;
