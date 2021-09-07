@@ -98,13 +98,16 @@ mixin SqfliteDatabaseFactoryMixin
 
         var databaseOpenHelper = getExistingDatabaseOpenHelper(path);
 
-        final firstOpen = databaseOpenHelper == null;
+        // TODO(https://github.com/dart-lang/sdk/issues/47065): remove this
+        // explicit `bool` type when no longer needed to work around
+        // https://github.com/dart-lang/language/issues/1785
+        final bool firstOpen = databaseOpenHelper == null;
         if (firstOpen) {
           databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options);
           setDatabaseOpenHelper(databaseOpenHelper);
         }
         try {
-          return await databaseOpenHelper!.openDatabase();
+          return await databaseOpenHelper.openDatabase();
         } catch (e) {
           // If first open fail remove the reference
           if (firstOpen) {
