@@ -156,7 +156,12 @@ Future<Database> openReadOnlyDatabase(String path) =>
 ///
 /// On Android, it is typically data/data/<package_name>/databases
 ///
-/// On iOS and MacOS, it is the Documents directory
+/// On iOS and MacOS, it is the Documents directory.
+///
+/// Note for iOS: Using `path_provider` is recommended to get the
+/// databases directory. The most appropriate location on iOS would be
+/// the Library directory that you could get from the [`path_provider` package]
+/// (https://pub.dev/documentation/path_provider/latest/path_provider/getLibraryDirectory.html).
 ///
 Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();
 
