@@ -24,7 +24,7 @@ void main() {
     sqfliteFfiInitAsMockMethodCallHandler();
   }
 
-  tearDownAll(() => completer.complete(null));
+  tearDownAll(() => completer.complete(''));
 
   group('driver', () {
     all.run(testContext);
