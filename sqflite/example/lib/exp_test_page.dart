@@ -477,6 +477,35 @@ CREATE TABLE test (
       }
     });
 
+    test('ATTACH database', () async {
+      final db1Path = await initDeleteDb('attach1.db');
+      final db2Path = await initDeleteDb('attach2.db');
+
+      // Create some data on db1 and close it
+      var db1 = await databaseFactory.openDatabase(db1Path);
+      try {
+        var batch = db1.batch();
+        batch.execute('CREATE TABLE table1 (col1 INTEGER)');
+        batch.insert('table1', {'col1': 1234});
+        await batch.commit();
+      } finally {
+        await db1.close();
+      }
+
+      // Open a new db2 database, attach db1 and query it
+
+      var db2 = await databaseFactory.openDatabase(db2Path);
+      try {
+        await db2.execute('ATTACH DATABASE \'$db1Path\' AS db1');
+        var rows = await db2.query('db1.table1');
+        expect(rows, [
+          {'col1': 1234}
+        ]);
+      } finally {
+        await db2.close();
+      }
+    });
+
     test('Issue#206', () async {
       //await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('issue_206.db');
