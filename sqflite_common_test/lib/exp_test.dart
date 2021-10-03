@@ -1,6 +1,7 @@
+// ignore_for_file: unawaited_futures
+
 import 'dart:convert';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
 import 'package:sqflite_common_test/sqflite_test.dart';
@@ -494,7 +495,7 @@ INSERT INTO test (value) VALUES (10);
     try {
       var path = await context.initDeleteDb('open_close_transaction.db');
       db = await factory.openDatabase(path);
-      unawaited(db.close());
+      db.close();
       try {
         await db.transaction((_) async {});
         fail('should fail');
