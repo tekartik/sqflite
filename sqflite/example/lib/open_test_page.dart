@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
-import 'package:pedantic/pedantic.dart';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/database_mixin.dart' // ignore: implementation_imports
     show
