@@ -4,5 +4,6 @@ export 'src/sqflite_ffi.dart'
     show
         SqfliteFfiInit,
         databaseFactoryFfi,
+        databaseFactoryFfiNoIsolate,
         createDatabaseFactoryFfi,
         sqfliteFfiInit;

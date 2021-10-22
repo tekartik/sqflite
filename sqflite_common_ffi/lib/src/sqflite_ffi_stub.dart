@@ -9,8 +9,17 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 DatabaseFactory get databaseFactoryFfi => throw UnimplementedError(
     'databaseFactoryFfi only supported for io application');
 
+/// The database factory to use for ffi without creating a separate isolate.
+///
+/// This should only be used from a background isolate.
+///
+/// Currently supports Win/Mac/Linux.
+DatabaseFactory get databaseFactoryFfiNoIsolate => throw UnimplementedError(
+    'databaseFactoryFfiNoIsolate only supported for io application');
+
 /// Creates an FFI database factory
-DatabaseFactory createDatabaseFactoryFfi({SqfliteFfiInit? ffiInit}) =>
+DatabaseFactory createDatabaseFactoryFfi(
+        {SqfliteFfiInit? ffiInit, bool noIsolate = false}) =>
     throw UnimplementedError(
         'createDatabaseFactoryFfi only supported for io application');
 

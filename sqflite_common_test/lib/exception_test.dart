@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
+// ignore: unused_import
+import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_common/sql.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
@@ -623,7 +625,7 @@ void run(SqfliteTestContext context) {
     });
 
     test('Bind no parameter', () async {
-      // await utils.devSetDebugModeOn(true);
+      // await factory.setLogLevel(sqfliteLogLevelVerbose);
       var path = await context.initDeleteDb('bind_no_parameter_failed.db');
       var db = await factory.openDatabase(path);
 
