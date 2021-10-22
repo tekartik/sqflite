@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:sqflite_example/src/common_import.dart';
 import 'package:sqflite_example/src/expect.dart';
 

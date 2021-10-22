@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-
-import '../model/item.dart';
+import 'package:sqflite_example/model/item.dart';
 
 /// Item widget.
 class ItemWidget extends StatefulWidget {

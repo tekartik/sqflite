@@ -12,7 +12,7 @@ import 'package:synchronized/synchronized.dart';
 
 import 'database_tracker.dart';
 
-final _debug = false; // devWarning(true); // false
+final _debug = false; //devWarning(true); // false
 // final _useIsolate = true; // devWarning(true); // true the default!
 
 String _prefix = '[sqflite]';
@@ -223,6 +223,22 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       return wrapAnyException(wrapSqlException(e));
     } else {
       return wrapAnyException(
+          SqfliteFfiException(code: anyErrorCode, message: e.toString()));
+    }
+  }
+
+  /// Wrap the exception, keeping sql/sqlArguments in error
+  SqfliteFfiException wrapAnyExceptionNoIsolate(dynamic e) {
+    if (e is SqfliteFfiException) {
+      e.database ??= getDatabase();
+      e.sql ??= getSql();
+      e.sqlArguments ??= getSqlArguments();
+
+      return e;
+    } else if (e is ffi.SqliteException) {
+      return wrapAnyException(wrapSqlException(e));
+    } else {
+      return wrapAnyExceptionNoIsolate(
           SqfliteFfiException(code: anyErrorCode, message: e.toString()));
     }
   }

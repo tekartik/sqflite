@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Add `databaseFactoryFfiNoIsolate`
+
 ## 2.0.0+3
 
 * `nnbd` support
