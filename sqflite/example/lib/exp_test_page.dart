@@ -437,7 +437,7 @@ CREATE TABLE test (
         id = await db.rawInsert('''
         INSERT INTO test (label) VALUES(?)
         ''', ['label-1']);
-        expect(id, null);
+        expect(id, 0);
       } finally {
         await db.close();
       }
