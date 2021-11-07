@@ -9,7 +9,7 @@ dependencies:
 ```yaml
   sqflite_common_test:
     git:
-      url: git://github.com/tekartik/sqflite
+      url: https://github.com/tekartik/sqflite
       ref: develop
       path: sqflite_common_test
     version: '>=0.3.0'

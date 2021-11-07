@@ -70,7 +70,7 @@ void expect(
 /// If the matcher fails asynchronously, that failure is piped to the returned
 /// future where it can be handled by user code.
 Future expectLater(actual, matcher, {String? reason, skip}) =>
-    _expect(actual, matcher, reason: reason, skip: skip);
+    _expect(actual, matcher, reason: reason, skip: skip) as Future;
 
 String _formatFailure(Matcher expected, actual, String which,
     {String? reason}) {
@@ -83,12 +83,12 @@ String _formatFailure(Matcher expected, actual, String which,
 }
 
 /// The implementation of [expect] and [expectLater].
-Future _expect(actual, matcher,
+FutureOr _expect(actual, matcher,
     {String? reason,
     skip,
     bool verbose = false,
     // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-    ErrorFormatter? formatter}) async {
+    ErrorFormatter? formatter}) {
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     final mismatchDescription = StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
