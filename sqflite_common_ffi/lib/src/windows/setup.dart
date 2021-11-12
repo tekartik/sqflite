@@ -6,6 +6,12 @@ import 'package:sqflite_common_ffi/src/windows/setup_impl.dart';
 import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+/// Get the dll path from our package path.
+String packageGetSqlite3DllPath(String packagePath) {
+  var path = join(packagePath, 'src', 'windows', 'sqlite3.dll');
+  return path;
+}
+
 /// Windows specific sqflite3 initialization.
 ///
 /// In debug mode: A bundled sqlite3.dll from the sqflite_common_ffi package
@@ -18,9 +24,8 @@ import 'package:sqlite3/sqlite3.dart';
 void windowsInit() {
   // Look for the bundle sqlite3.dll while in development
   // otherwise make sure to copy the dll along with the executable
-  var location = findPackagePath(Directory.current.path);
-  if (location != null) {
-    var path = normalize(join(location, 'src', 'windows', 'sqlite3.dll'));
+  var path = findWindowsDllPath();
+  if (path != null) {
     open.overrideFor(OperatingSystem.windows, () {
       // devPrint('loading $path');
       try {
@@ -35,4 +40,26 @@ void windowsInit() {
   // Force an open in the main isolate
   // Loading from an isolate seems to break on windows
   sqlite3.openInMemory().dispose();
+}
+
+/// Find sqflite_common_ffi path
+String? findPackageLibPath(String path) {
+  var map = pathGetPackageConfigMap(path);
+
+  var packagePath =
+      pathPackageConfigMapGetPackagePath(path, map, 'sqflite_common_ffi');
+  if (packagePath != null) {
+    return join(packagePath, 'lib');
+  }
+  return null;
+}
+
+/// Find windows dll path.
+String? findWindowsDllPath() {
+  var location = findPackageLibPath(Directory.current.path);
+  if (location != null) {
+    var path = packageGetSqlite3DllPath(normalize(join(location)));
+    return path;
+  }
+  return null;
 }
