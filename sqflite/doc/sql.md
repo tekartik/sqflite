@@ -42,6 +42,31 @@ See [Conflict algorithm](conflict_algorithm.md) for conflict handling.
 var list = await db.query('my_table', columns: ['name', 'type']);
 ```
 
+The list is read-only. If you want to modify the results by adding/deleting items in memory,
+you need to clone the list:
+
+```dart
+// This throws an error
+list.add(<String, Object?>{'name': 'some data'});
+```
+```dart
+// This works
+list = List.from(list)
+list.add(<String, Object?>{'name': 'some data'});
+```
+
+Each item (map) of the list is read-only too so you need to clone it if you want to modify the result.
+```dart
+map = list.first;
+// This crashes
+map['name'] = 'other';
+```
+```dart
+// This works
+map = Map.from(map);
+map['name'] = 'other';
+```
+
 ### delete
 
 `delete` is for deleting content in a table. It returns the number of rows deleted.
