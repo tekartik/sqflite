@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Bump default android thread priority to `THREAD_PRIORITY_DEFAULT`
+
 ## 2.0.0+4
 
 * `nnbd` support

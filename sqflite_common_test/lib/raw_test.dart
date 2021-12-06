@@ -687,9 +687,17 @@ void run(SqfliteTestContext context) {
       }
     });
 
-    test('insert conflict ignore', () async {
-      var db = await factory.openDatabase(inMemoryDatabasePath);
-      try {
+    group('in_opened_memory_db', () {
+      late Database db;
+
+      setUp(() async {
+        db = await factory.openDatabase(inMemoryDatabasePath);
+      });
+      tearDown(() async {
+        await db.close();
+      });
+
+      test('insert conflict ignore', () async {
         await db.execute('''
       CREATE TABLE test (
         name TEXT PRIMARY KEY
@@ -702,23 +710,48 @@ void run(SqfliteTestContext context) {
         var key3 = await db.insert('test', {'name': 'name 1'},
             conflictAlgorithm: ConflictAlgorithm.ignore);
         expect([key1, key2, key3], [1, 2, 0]);
-      } finally {
-        await db.close();
-      }
-    });
+      });
 
-    test('binding null', () async {
-      var db = await factory.openDatabase(inMemoryDatabasePath);
-      try {
+      test('binding null', () async {
         for (var value in [null, 2]) {
           expect(
               utils.firstIntValue(await db.rawQuery(
                   'SELECT CASE WHEN 0 = 1 THEN 1 ELSE ? END', [value])),
               value);
         }
-      } finally {
-        await db.close();
-      }
+      });
+
+      test('Modifying result', () async {
+        await db.execute('''
+      CREATE TABLE test (
+        name TEXT PRIMARY KEY
+      )''');
+        await db.insert('test', {'name': 'name 1'});
+        var list = await db.query('test');
+        try {
+          list.add(<String, Object?>{'name': 'some data'});
+          fail('should fail');
+        } on UnsupportedError catch (e) {
+          expect(e.message, contains('read-only'));
+          // read only
+        }
+        late Map<String, dynamic> map;
+        try {
+          map = list.first;
+          // This crashes
+          map['name'] = 'other';
+        } on UnsupportedError catch (e) {
+          expect(e.message, contains('read-only'));
+          // read only
+        }
+        // Ok!
+        list = List.from(list);
+        list.add(<String, Object?>{'name': 'insert data'});
+
+        // Ok!
+        map = Map.from(map);
+        map['name'] = 'other';
+      });
     });
   });
 }
