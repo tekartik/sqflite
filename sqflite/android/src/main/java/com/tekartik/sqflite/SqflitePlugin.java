@@ -71,7 +71,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
     static final Map<String, Integer> _singleInstancesByPath = new HashMap<>();
     static private boolean QUERY_AS_MAP_LIST = false; // set by options
-    static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_BACKGROUND;
+    static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_DEFAULT;
     static int logLevel = LogLevel.none;
 
     static private final Object databaseMapLocker = new Object();
