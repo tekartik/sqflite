@@ -4,7 +4,7 @@ description: Dart wrapper on SQLite, a self-contained, high-reliability, embedde
 version: 2.0.1+1
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.15.0 <3.0.0'
 
 dependencies:
   synchronized: '>=3.0.0 <5.0.0'
