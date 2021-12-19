@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
-
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/database_mixin.dart' // ignore: implementation_imports
     show
@@ -703,9 +702,9 @@ class OpenTestPage extends TestPage {
     });
 
     test('In memory database', () async {
-      final inMemoryPath =
+      const inMemoryPath =
           inMemoryDatabasePath; // tried null without success, as it crashes on Android
-      final path = inMemoryPath;
+      const path = inMemoryPath;
 
       var db = await openDatabase(path);
       await db
