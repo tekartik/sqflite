@@ -2,6 +2,8 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
 
 /// Dev extension
+///
+/// Please prefer using SqfliteDatabaseFactoryDebug.
 extension SqfliteDatabaseFactoryDev on DatabaseFactory {
   /// Change the log level if you want to see the SQL query
   /// executed natively.
