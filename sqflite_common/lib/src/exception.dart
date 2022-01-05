@@ -96,6 +96,12 @@ abstract class DatabaseException implements Exception {
   /// This might involve parsing the sqlite native message to extract the code
   /// See https://www.sqlite.org/rescode.html for the list of result code
   int? getResultCode();
+
+  /// Platform specific error result.
+  ///
+  /// Its content is platform dependent and used internally and could change
+  /// in the future but could help in analyzing the error.
+  Object? get result;
 }
 
 /// Exception implementation
@@ -113,7 +119,8 @@ class SqfliteDatabaseException extends DatabaseException {
   int? _resultCode;
 
   /// Typically the result of a native call
-  dynamic result;
+  @override
+  Object? result;
 
   /// The result as a map
   Map get resultMap => result as Map;

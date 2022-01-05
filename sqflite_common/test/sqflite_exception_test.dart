@@ -152,5 +152,11 @@ void main() {
       expect(exception.toString(),
           'DatabaseException(test) sql \'statement\' args [null, 1, short, 12345678901234567890123456789012345678901234567890..., Blob(3)]');
     });
+    test('Exception result', () async {
+      DatabaseException exception = SqfliteDatabaseException('test', 1);
+      expect(exception.result, 1);
+      exception = SqfliteDatabaseException('test', null);
+      expect(exception.result, isNull);
+    });
   });
 }

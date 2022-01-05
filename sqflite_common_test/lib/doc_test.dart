@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_common_test/sqflite_test.dart';
@@ -9,6 +10,7 @@ import 'package:test/test.dart';
 /// Documentation test.
 void run(SqfliteTestContext context) {
   var factory = context.databaseFactory;
+  var databaseFactory = factory;
 
   group('doc', () {
     test('upgrade_add_table', () async {
@@ -377,6 +379,19 @@ CREATE TABLE Product (
         var result = await db.query('Product');
         expect(result.length, 1, reason: 'list $result');
         await db.close();
+      }
+    });
+
+    test('Logging', () async {
+      try {
+        // ignore: deprecated_member_use
+        await databaseFactory.setLogLevel(sqfliteLogLevelVerbose);
+        var db = await databaseFactory.openDatabase(inMemoryDatabasePath);
+        await db.getVersion();
+        await db.close();
+      } finally {
+        // ignore: deprecated_member_use
+        await databaseFactory.setLogLevel(sqfliteLogLevelNone);
       }
     });
   });
