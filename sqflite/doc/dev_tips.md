@@ -10,7 +10,13 @@ Here are some debugging tips when you encounter issues:
 Temporarily turn on SQL logging on the console by adding the following call in your code before opening the first database
 
 ````dart
-Sqflite.devSetDebugModeOn(true);
+import 'package:sqflite_common/sqflite_dev.dart';
+import 'package:sqflite/sqflite.dart';
+
+Future<void> main() async {
+  // Turn logging on
+  await databaseFactory.setLogLevel(sqfliteLogLevelVerbose);
+}
 ````
 
 This call is `deprecated` on purpose to prevent keeping it in your app

@@ -11,6 +11,8 @@ export 'package:sqflite_common/src/constant.dart'
         sqfliteLogLevelSql,
         sqfliteLogLevelVerbose;
 export 'package:sqflite_common/src/exception.dart' show DatabaseException;
+export 'package:sqflite_common/src/sqflite_debug.dart'
+    show SqfliteDatabaseFactoryDebug;
 
 /// Basic databases operations
 abstract class DatabaseFactory {

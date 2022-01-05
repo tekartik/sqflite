@@ -1,3 +1,8 @@
+## 2.2.0
+
+* Export `Object? result` in `DatabaseException`
+* Export deprecated `DatabaseFactory.debugSetLogLevel` for quick logging.
+
 ## 2.1.0
 
 * Requires dart sdk 2.15

@@ -15,6 +15,11 @@ which should give a version formatted like this:
 
 Unfortunately the version of SQLite depends on the OS version.
 
+You could get a more recent version using [`sqflite_common_ffi`](https://pub.dev/packages/sqflite_common_ffi).
+
+You could then add [`sqlite3_flutter_libs`](https://pub.dev/packages/sqlite3_flutter_libs) for ios/android or include your own
+sqlite shared library for desktop or mobile (one for each platform).
+
 ## Android
 
 See https://developer.android.com/reference/android/database/sqlite/package-summary
