@@ -142,11 +142,11 @@ void run() {
     test('setDatabasesPath', () async {
       final factory = MockDatabaseFactoryEmpty();
 
-      await factory.setDatabasesPath('.');
+      factory.setDatabasesPathOrNull('.');
       expect(await factory.getDatabasesPath(), '.');
 
       // reset
-      await factory.setDatabasesPath(null);
+      factory.setDatabasesPathOrNull(null);
       expect(factory.methods, <String>[]);
 
       try {
