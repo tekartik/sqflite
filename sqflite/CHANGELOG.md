@@ -1,3 +1,7 @@
+## 2.0.2
+
+* Android build: remove jcenter
+
 ## 2.0.1
 
 * Bump default android thread priority to `THREAD_PRIORITY_DEFAULT`
