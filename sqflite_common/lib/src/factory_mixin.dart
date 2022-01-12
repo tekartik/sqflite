@@ -157,7 +157,13 @@ mixin SqfliteDatabaseFactoryMixin
 
   /// Set the databases path.
   @override
+  @Deprecated('Use setDatabasesPathOrNull')
   Future<void> setDatabasesPath(String? path) async {
+    setDatabasesPathOrNull(path);
+  }
+
+  /// Set the databases path.
+  void setDatabasesPathOrNull(String? path) {
     _databasesPath = path;
   }
 

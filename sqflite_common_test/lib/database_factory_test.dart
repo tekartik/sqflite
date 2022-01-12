@@ -35,5 +35,19 @@ void run(SqfliteTestContext context) {
       }
       await db.close();
     });
+
+    test('setDatabasesPath', () async {
+      var originalDatabasesPath = await factory.getDatabasesPath();
+      try {
+        var path = context.pathContext.normalize(
+            context.pathContext.absolute(context.pathContext.current));
+        await factory.setDatabasesPath(path);
+        expect(await factory.getDatabasesPath(), path);
+      } finally {
+        try {
+          await factory.setDatabasesPath(originalDatabasesPath);
+        } catch (_) {}
+      }
+    });
   });
 }
