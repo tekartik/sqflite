@@ -1,4 +1,4 @@
-## 2.2.0
+## 2.2.0+1
 
 * Export `Object? result` in `DatabaseException`
 * Export deprecated `DatabaseFactory.debugSetLogLevel` for quick logging.
