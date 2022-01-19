@@ -35,9 +35,11 @@ Future<void> main() async {
     } catch (_) {}
 
     expect(File(dbFile).existsSync(), isFalse);
-    await runAppShell.run(join('.', appFilename));
-    expect(File(dbFile).existsSync(), isTrue);
-  },
-      skip: !platformIsLinux || runningOnGithubAction,
-      timeout: const Timeout(Duration(minutes: 10)));
+
+    /// Failing due to GTK issue on github
+    if (!runningOnGithubAction) {
+      await runAppShell.run(join('.', appFilename));
+      expect(File(dbFile).existsSync(), isTrue);
+    }
+  }, skip: !platformIsLinux, timeout: const Timeout(Duration(minutes: 10)));
 }
