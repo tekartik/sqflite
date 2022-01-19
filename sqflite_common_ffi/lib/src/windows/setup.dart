@@ -43,14 +43,18 @@ void windowsInit() {
 }
 
 /// Find sqflite_common_ffi path
+///
+/// Return null if not found
 String? findPackageLibPath(String path) {
-  var map = pathGetPackageConfigMap(path);
+  try {
+    var map = pathGetPackageConfigMap(path);
 
-  var packagePath =
-      pathPackageConfigMapGetPackagePath(path, map, 'sqflite_common_ffi');
-  if (packagePath != null) {
-    return join(packagePath, 'lib');
-  }
+    var packagePath =
+        pathPackageConfigMapGetPackagePath(path, map, 'sqflite_common_ffi');
+    if (packagePath != null) {
+      return join(packagePath, 'lib');
+    }
+  } catch (_) {}
   return null;
 }
 
