@@ -42,6 +42,7 @@ dev_dependencies:
   test: '>=1.16.0-nullsafety.10'
   process_run: '>=0.11.0+2'
   sqlite3_flutter_libs:
+  path:
 
 dependency_overrides:
   sqflite:
