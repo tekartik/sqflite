@@ -1,6 +1,7 @@
-## 2.1.0+1
+## 2.1.0+2
 
 * Add `databaseFactoryFfiNoIsolate`
+* Fix windows release mode for basic ffi setup
 
 ## 2.0.0+3
 

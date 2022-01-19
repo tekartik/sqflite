@@ -1,7 +1,7 @@
 name: sqflite_common_ffi
 homepage: https://github.com/tekartik/sqflite/tree/master/sqflite_common_ffi
 description: sqflite ffi based implementation, for desktop and units tests.
-version: 2.1.0+1
+version: 2.1.0+2
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
