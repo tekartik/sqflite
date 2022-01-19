@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi/src/import.dart';
 import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
 
+import 'constant.dart';
 import 'sqflite_ffi_impl.dart';
 
 bool _debug = false; // devWarning(true); // false;
@@ -38,7 +39,7 @@ class SqfliteIsolate {
       var error = response['error'];
       if (error is Map) {
         throw SqfliteFfiException(
-            code: error['code'] as String,
+            code: (error['code'] as String?) ?? anyErrorCode,
             message: error['message'] as String,
             details: (error['details'] as Map?)?.cast<String, Object?>(),
             resultCode: error['resultCode'] as int?);
