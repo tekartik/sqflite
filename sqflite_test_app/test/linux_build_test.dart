@@ -6,6 +6,8 @@ import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
 import 'package:sqflite_test_app/src/ffi_test_utils.dart';
 
+var runningOnGithubAction = Platform.environment['GITHUB_ACTION'] != null;
+
 Future<void> main() async {
   var appFilename = await getBuildProjectAppFilename('.');
   var exeDir = platformExeDir;
@@ -35,5 +37,7 @@ Future<void> main() async {
     expect(File(dbFile).existsSync(), isFalse);
     await runAppShell.run(join('.', appFilename));
     expect(File(dbFile).existsSync(), isTrue);
-  }, skip: !platformIsLinux, timeout: const Timeout(Duration(minutes: 10)));
+  },
+      skip: !platformIsLinux || runningOnGithubAction,
+      timeout: const Timeout(Duration(minutes: 10)));
 }
