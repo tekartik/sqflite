@@ -1,4 +1,4 @@
-@TestOn('windows')
+@TestOn('vm')
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -61,5 +61,5 @@ Future<void> main() async {
     expect(File(dbFile).existsSync(), isFalse);
     await runAppShell.run(shellArgument(absoluteExePath));
     expect(File(dbFile).existsSync(), isTrue);
-  }, timeout: const Timeout(Duration(minutes: 10)));
+  }, skip: !isWindows, timeout: const Timeout(Duration(minutes: 10)));
 }
