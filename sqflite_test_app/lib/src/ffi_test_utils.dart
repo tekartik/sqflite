@@ -5,19 +5,24 @@ import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
 
 /// True on io windows
-var isWindows = Platform.isWindows;
+var platformIsWindows = Platform.isWindows;
 
 /// True on io linux
 var platformIsLinux = Platform.isLinux;
 
+/// True on io MacOS
+var platformIsMacOS = Platform.isMacOS;
+
 /// True for supported platform
-var isSupported = isWindows || platformIsLinux;
+var isSupported = platformIsWindows || platformIsLinux || platformIsMacOS;
 
 /// Platform
-var platform = isWindows ? 'windows' : 'linux';
+var platform =
+    platformIsWindows ? 'windows' : (platformIsMacOS ? 'macos' : 'linux');
 
 var _linuxExeDir = join('build', 'linux', 'x64', 'release', 'bundle');
 var _windowsExeDir = join('build', 'windows', 'runner', 'Release');
+var _macOSExeDir = join('build', 'macos', 'Build', 'Products', 'Release');
 
 /// Safe delete a directory
 Future<void> deleteDir(String path) async {
@@ -34,7 +39,9 @@ Future<void> deleteFile(String path) async {
 }
 
 /// release exe dir (linux and windows for now)
-String get platformExeDir => Platform.isLinux ? _linuxExeDir : _windowsExeDir;
+String get platformExeDir => Platform.isLinux
+    ? _linuxExeDir
+    : (Platform.isMacOS ? _macOSExeDir : _windowsExeDir);
 
 /// Windows platform
 var buildPlatformWindows = 'windows';
@@ -82,8 +89,10 @@ Future<void> runBuiltProject(String path) async {
 /// Get the app name
 Future<String> getBuildProjectAppFilename(String path) async {
   var appName = (await pathGetPubspecYamlMap(path))['name'] as String;
-  if (Platform.isWindows) {
+  if (platformIsWindows) {
     appName = '$appName.exe';
+  } else if (platformIsMacOS) {
+    appName = '$appName.app';
   }
   return appName;
 }
