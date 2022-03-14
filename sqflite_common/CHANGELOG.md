@@ -1,3 +1,7 @@
+## 2.2.1
+
+* Add debug tag to database factory
+
 ## 2.2.0
 
 * Export `Object? result` in `DatabaseException`
