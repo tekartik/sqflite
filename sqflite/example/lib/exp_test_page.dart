@@ -570,6 +570,46 @@ CREATE TABLE test (
       }
     });
 
+    Future<void> testBigBlog(int size) async {
+      // await Sqflite.devSetDebugModeOn(true);
+      final path = await initDeleteDb('big_blob.db');
+      var db = await openDatabase(path, version: 1,
+          onCreate: (Database db, int version) async {
+        await db
+            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value BLOB)');
+      });
+      try {
+        var blob =
+            Uint8List.fromList(List.generate(size, (index) => index % 256));
+        var id = await db.insert('Test', {'value': blob});
+
+        /// Get the value field from a given id
+        Future<Uint8List> getValue(int id) async {
+          return ((await db.query('Test', where: 'id = $id')).first)['value']
+              as Uint8List;
+        }
+
+        expect((await getValue(id)).length, blob.length);
+      } finally {
+        await db.close();
+      }
+    }
+
+    // We don't test automatically above as it crashes seriously on Android
+    test('big blob 800 Ko', () async {
+      await testBigBlog(800000);
+    });
+    /*
+    test('big blob 1500 Ko (fails on Android sqlite)', () async {
+      await testBigBlog(1500000);
+    });
+    test('big blob 2 Mo (fails on Android sqlite)', () async {
+      await testBigBlog(2000000);
+    });
+    test('big blob 15 Mo (fails on Android sqlite)', () async {
+      await testBigBlog(15000000);
+    });
+    */
     /*
     test('Isolate', () async {
       // This test does not work yet

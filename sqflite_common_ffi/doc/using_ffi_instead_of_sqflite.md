@@ -6,6 +6,7 @@ on DartVM or flutter.
 * [sqflite_common](https://pub.dev/packages/sqflite_common) provides an abstracted [`DatabaseFactory`](https://pub.dev/documentation/sqflite_common/latest/sqlite_api/DatabaseFactory-class.html) that allows another level
   of abstraction (for any target, not only flutter) above the plugin mechanism which is only for flutter.
 * [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi) defines a global `databaseFactoryFfi` allowing supporting Linux and Windows on Flutter and on DartVM.
+  It uses [sqlite3](https://pub.dev/packages/sflite3) so also works on iOS and Android using [sqlite3_flutter_libs](https://pub.dev/packages/sqlite3_flutter_libs)
 * [sqflite](https://pub.dev/packages/sqflite) provides a direct API (openDatabase, deleteDatabase) that uses a global `databaseFactory` that can be modified.
 
 Ideally, packages requiring sqlite feature should only require a [`DatabaseFactory`](https://pub.dev/documentation/sqflite_common/latest/sqlite_api/DatabaseFactory-class.html) parameter to allow using any implementation.
@@ -25,6 +26,12 @@ dependencies:
   sqflite_common_ffi:
 ```
 
+On iOS, Android and MacOS, add
+```
+dependencies:
+  sqlite3_flutter_libs:
+```
+
 ## Initialization
 
 Then initialize ffi before running your app:
@@ -37,9 +44,10 @@ Future main() async {
   if (Platform.isWindows || Platform.isLinux) {
     // Initialize FFI
     sqfliteFfiInit();
-    // Change the default factory
-    databaseFactory = databaseFactoryFfi;
   }
+  // Change the default factory. On iOS/Android, if not using `sqlite_flutter_lib` you can forget
+  // this step, it will use the sqlite version available on the system.
+  databaseFactory = databaseFactoryFfi;
   runApp(MyApp());
 }
 ```
@@ -47,8 +55,7 @@ Future main() async {
 As a side note, `sqfliteFfiInit` is only made to be convenient during development. You can customize the setup (finding/loading the sqlite shared library) by
 following [sqlite3](https://pub.dev/packages/sqlite3) documentation.
 
-As another note, `getDatabasesPath()` has a lame implementation on Linux and Windows when using ffi (so on Mac too if
-you are using ffi as well). you'd better rely on a custom strategy using package such as `path_provider`.
+As another note, `getDatabasesPath()` has a lame implementation when using ffi. you'd better rely on a custom strategy using package such as `path_provider`.
 
 ## Long term planning
 

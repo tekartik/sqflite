@@ -30,6 +30,7 @@ dependencies:
     path: ../sqflite/example
   flutter_web_plugins:
     sdk: flutter
+  path_provider:
 dev_dependencies:
   flutter_lints:
   flutter_test:
@@ -43,7 +44,7 @@ dev_dependencies:
   process_run: '>=0.11.0+2'
   sqlite3_flutter_libs:
   path:
-
+  dev_test:
 dependency_overrides:
   sqflite:
     path: ../sqflite

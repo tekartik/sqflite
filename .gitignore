@@ -20,6 +20,10 @@ pubspec.lock
 .idea/
 *.iml
 .vscode/
+
+# ?
+.uuid
+
 /sqflite/example/.flutter-plugins-dependencies
 
 # Copied from flutter plugins

@@ -16,17 +16,18 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        flutter: [stable, beta, dev]
+        flutter: [stable, beta]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
           java-version: '12.x'
-      - uses: subosito/flutter-action@v1
+      - uses: subosito/flutter-action@v2
         with:
           channel: ${{ matrix.flutter }}
       - run: dart --version
       - run: flutter --version
       - run: flutter upgrade
       - run: dart pub get
+      - run: dart run tool/setup_env.dart
       - run: dart run tool/run_ci.dart
