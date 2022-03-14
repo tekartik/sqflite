@@ -5,10 +5,11 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_example/main.dart' as example;
 import 'package:sqflite_example/utils.dart';
 
-Future<void> main() async  {
+Future<void> main() async {
   // getDatabasesPath implementation is lame, use the default one
   // but we could also use path_provider
-  var isSqfliteCompatible = !kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isMacOS);
+  var isSqfliteCompatible =
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isMacOS);
   DatabaseFactory? original;
   // Save original for iOS & Android
   if (isSqfliteCompatible) {
