@@ -653,8 +653,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       if (options.onDowngrade == onDatabaseDowngradeDelete) {
         // Downgrading will delete the database and open it again
         Future<void> _onDatabaseDowngradeDelete(
-            Database _db, int oldVersion, int newVersion) async {
-          final db = _db as SqfliteDatabase;
+            Database database, int oldVersion, int newVersion) async {
+          final db = database as SqfliteDatabase;
           // This is tricky as we are in the middle of opening a database
           // need to close what is being done and restart
           await db.doClose();

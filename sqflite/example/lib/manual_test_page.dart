@@ -56,6 +56,22 @@ class _ManualTestPageState extends State<ManualTestPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     items = <MenuItem>[
+      MenuItem('SQLite version', () async {
+        final db = await openDatabase(inMemoryDatabasePath);
+        final results = await db.rawQuery('select sqlite_version()');
+        print('select sqlite_version(): $results');
+        var version = results.first.values.first;
+        print('sqlite version: $version');
+        await db.close();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('select sqlite_version(): $version')));
+      }, summary: 'select sqlite_version()'),
+      MenuItem('Factory information', () async {
+        var info = databaseFactory.toString();
+        print('sqlite database factory: $info');
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(info)));
+      }, summary: 'toString()'),
       MenuItem('openDatabase', () async {
         await _openDatabase();
       }, summary: 'Open the database'),

@@ -10,7 +10,9 @@ abstract class SqfliteInvokeHandler {
 class _SqfliteDatabaseFactoryImpl
     with SqfliteDatabaseFactoryMixin
     implements SqfliteInvokeHandler {
-  _SqfliteDatabaseFactoryImpl(this._invokeMethod);
+  _SqfliteDatabaseFactoryImpl(this._invokeMethod, {String? tag}) {
+    this.tag = tag;
+  }
 
   final Future<dynamic> Function(String method, [dynamic arguments])
       _invokeMethod;
@@ -24,9 +26,13 @@ class _SqfliteDatabaseFactoryImpl
 /// flutter services.
 ///
 /// To use to enable running without flutter plugins (unit test)
+///
+/// [tag] is an optional debug
 DatabaseFactory buildDatabaseFactory(
-    {required Future<dynamic> Function(String method, [dynamic arguments])
+    {String? tag,
+    required Future<dynamic> Function(String method, [dynamic arguments])
         invokeMethod}) {
-  final DatabaseFactory impl = _SqfliteDatabaseFactoryImpl(invokeMethod);
+  final DatabaseFactory impl =
+      _SqfliteDatabaseFactoryImpl(invokeMethod, tag: tag);
   return impl;
 }
