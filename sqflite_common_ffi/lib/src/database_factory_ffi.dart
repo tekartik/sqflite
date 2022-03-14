@@ -19,20 +19,21 @@ var databaseFactoryFfiNoIsolateImpl =
 DatabaseFactory createDatabaseFactoryFfiImpl(
     {SqfliteFfiInit? ffiInit, bool noIsolate = false, String? tag = 'ffi'}) {
   var noIsolateInitialized = false;
-  return buildDatabaseFactory(tag: tag,
+  return buildDatabaseFactory(
+      tag: tag,
       invokeMethod: (String method, [dynamic arguments]) {
-    final methodCall = FfiMethodCall(method, arguments);
-    if (noIsolate) {
-      if (!noIsolateInitialized) {
-        if (ffiInit != null) {
-          ffiInit();
+        final methodCall = FfiMethodCall(method, arguments);
+        if (noIsolate) {
+          if (!noIsolateInitialized) {
+            if (ffiInit != null) {
+              ffiInit();
+            }
+          }
+          return methodCall.handleNoIsolate();
+        } else {
+          return methodCall.handleInIsolate(ffiInit: ffiInit);
         }
-      }
-      return methodCall.handleNoIsolate();
-    } else {
-      return methodCall.handleInIsolate(ffiInit: ffiInit);
-    }
-  });
+      });
 }
 
 bool _debug = false; // devWarning(true);
