@@ -164,6 +164,29 @@ void run(SqfliteTestContext context) {
     await db.close();
   });
 
+  test('Open version 0', () async {
+    //await utils.devSetDebugModeOn(true);
+    var path = await context.initDeleteDb('open_version_0.db');
+    expect(await checkFileExists(path), false);
+    var db = await factory.openDatabase(path,
+        options: OpenDatabaseOptions(
+            version: 0,
+            onCreate: (Database db, int version) async {
+              expect(version, 0);
+              //onCreate = true;
+/*
+          await db.transaction((txn) async {
+            await txn
+                .execute('CREATE TABLE Test2 (id INTEGER PRIMARY KEY)');
+            onCreateTransaction = true;
+          });
+
+ */
+            }));
+    verify(await checkFileExists(path));
+    await db.close();
+  });
+
   test('open in sub directory', () async {
     // await context.devSetDebugModeOn(true);
     var path =
@@ -412,6 +435,19 @@ void run(SqfliteTestContext context) {
             onDowngrade: onDatabaseDowngradeDelete));
     expect(onOpened, true);
     await database.close();
+  });
+
+  test('Version 0 callback', () async {
+    // await utils.devSetDebugModeOn(false);
+    var path = await context.initDeleteDb('open_all_callbacks_v0.db');
+
+    var openCallbacks = _OpenCallbacks(factory);
+    try {
+      await openCallbacks.open(path, version: 0);
+      fail('Should fail');
+    } catch (e) {
+      expect(e, const TypeMatcher<ArgumentError>());
+    }
   });
 
   test('All open callback', () async {
