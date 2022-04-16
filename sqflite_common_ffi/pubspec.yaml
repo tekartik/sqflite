@@ -4,11 +4,11 @@ description: sqflite ffi based implementation, for desktop and units tests.
 version: 2.1.0+2
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.16.0 <3.0.0'
 
 dependencies:
   sqlite3: '>=1.0.0 <3.0.0'
-  sqflite_common: '>=2.0.1 <4.0.0'
+  sqflite_common: '>=2.2.1 <4.0.0'
   synchronized: '>=3.0.0 <5.0.0'
   path: '>=1.8.0 <3.0.0'
   meta: '>=1.3.0 <3.0.0'
@@ -18,4 +18,6 @@ dev_dependencies:
   test: '>=1.16.2'
   process_run: '>=0.12.0'
   pub_semver: '>=2.0.0'
+  archive:
+  http:
 

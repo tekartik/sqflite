@@ -5,13 +5,15 @@ import 'package:sqflite_common/src/mixin/factory.dart';
 import 'package:test/test.dart';
 
 var logs = <SqfliteMethodCall>[];
-var databaseFactoryMock =
-    buildDatabaseFactory(invokeMethod: (method, [arguments]) async {
-  logs.add(SqfliteMethodCall(method, arguments));
-  if (method == methodGetDatabasesPath) {
-    return 'mock_path';
-  }
-});
+var databaseFactoryMock = buildDatabaseFactory(
+    tag: 'mock',
+    invokeMethod: (method, [arguments]) async {
+      logs.add(SqfliteMethodCall(method, arguments));
+      if (method == methodGetDatabasesPath) {
+        return 'mock_path';
+      }
+    });
+
 void main() {
   test('simple sqflite example', () async {
     logs.clear();

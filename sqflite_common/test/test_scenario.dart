@@ -37,22 +37,23 @@ class MockScenario {
 MockScenario startScenario(List<List> data) {
   late MockScenario scenario;
   final databaseFactoryMock = buildDatabaseFactory(
+      tag: 'mock',
       invokeMethod: (String method, [dynamic arguments]) async {
-    final index = scenario.index++;
-    // devPrint('$index ${scenario.methodsCalls[index]}');
-    final item = scenario.methodsCalls[index];
-    try {
-      expect(method, item.expectedMethod);
-      expect(arguments, item.expectedArguments);
-    } catch (e) {
-      // devPrint(e);
-      scenario.exception ??= '$e $index';
-    }
-    if (item.response is DatabaseException) {
-      throw item.response as DatabaseException;
-    }
-    return item.response;
-  });
+        final index = scenario.index++;
+        // devPrint('$index ${scenario.methodsCalls[index]}');
+        final item = scenario.methodsCalls[index];
+        try {
+          expect(method, item.expectedMethod);
+          expect(arguments, item.expectedArguments);
+        } catch (e) {
+          // devPrint(e);
+          scenario.exception ??= '$e $index';
+        }
+        if (item.response is DatabaseException) {
+          throw item.response as DatabaseException;
+        }
+        return item.response;
+      });
   scenario = MockScenario(databaseFactoryMock, data);
   return scenario;
 }

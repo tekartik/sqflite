@@ -92,7 +92,8 @@ class Sqflite {
 /// If [version] is specified, [onCreate], [onUpgrade], and [onDowngrade] can
 /// be called. These functions are mutually exclusive — only one of them can be
 /// called depending on the context, although they can all be specified to
-/// cover multiple scenarios
+/// cover multiple scenarios. If specified, it must be a 32-bits integer greater
+/// than 0.
 ///
 /// [onCreate] is called if the database did not exist prior to calling
 /// [openDatabase]. You can use the opportunity to create the required tables

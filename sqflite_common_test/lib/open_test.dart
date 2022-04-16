@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart';
-
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
 import 'package:sqflite_common_test/sqflite_test.dart';
@@ -162,6 +161,21 @@ void run(SqfliteTestContext context) {
     var db = await factory.openDatabase(path);
     verify(await checkFileExists(path));
     await db.close();
+  });
+
+  test('Open version 0', () async {
+    //await utils.devSetDebugModeOn(true);
+    var path = await context.initDeleteDb('open_version_0.db');
+    expect(await checkFileExists(path), false);
+    try {
+      await factory.openDatabase(path,
+          options: OpenDatabaseOptions(
+              version: 0,
+              onCreate: (Database db, int version) async {
+                fail('Should fail');
+              }));
+    } on ArgumentError catch (_) {}
+    expect(await checkFileExists(path), false);
   });
 
   test('open in sub directory', () async {
@@ -412,6 +426,19 @@ void run(SqfliteTestContext context) {
             onDowngrade: onDatabaseDowngradeDelete));
     expect(onOpened, true);
     await database.close();
+  });
+
+  test('Version 0 callback', () async {
+    // await utils.devSetDebugModeOn(false);
+    var path = await context.initDeleteDb('open_all_callbacks_v0.db');
+
+    var openCallbacks = _OpenCallbacks(factory);
+    try {
+      await openCallbacks.open(path, version: 0);
+      fail('Should fail');
+    } catch (e) {
+      expect(e, const TypeMatcher<ArgumentError>());
+    }
   });
 
   test('All open callback', () async {

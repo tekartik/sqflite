@@ -184,7 +184,7 @@ class SqlBuilder {
       if (nullColumnHack == null) {
         throw ArgumentError('nullColumnHack required when inserting no data');
       }
-      insert.write(nullColumnHack + ') VALUES (NULL');
+      insert.write('$nullColumnHack) VALUES (NULL');
     }
     insert.write(')');
 

@@ -11,6 +11,7 @@ Future<void> main() async {
     await buildProject('.');
 
     var appName = await getBuildProjectAppFilename('.');
+
     if (platformIsWindows) {
       /// Copy the sqlite3.dll
       await File('../sqflite_common_ffi/lib/src/windows/sqlite3.dll')
@@ -18,7 +19,7 @@ Future<void> main() async {
 
       /// Set the current dir somewhere else
       await Shell(workingDirectory: Directory.systemTemp.path)
-          .run(absolute('build/windows/runner/Release/sqflite_test_app.exe'));
+          .run(absolute('build/windows/runner/Release/$appName'));
     } else if (platformIsLinux) {
       var exePath = absolute('build/linux/x64/release/bundle/sqflite_test_app');
 

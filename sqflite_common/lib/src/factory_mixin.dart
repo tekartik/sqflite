@@ -47,6 +47,9 @@ mixin SqfliteDatabaseFactoryMixin
   /// Avoid concurrent open operation on the same database
   Lock _getDatabaseOpenLock(String path) => _NamedLock(path).lock;
 
+  /// Optional tag (read-only)
+  String? tag;
+
   @override
   @override
   SqfliteDatabase newDatabase(
@@ -205,6 +208,9 @@ mixin SqfliteDatabaseFactoryMixin
     info.logLevel = map[paramLogLevel] as int?;
     return info;
   }
+
+  @override
+  String toString() => 'SqfliteDatabaseFactory(${tag ?? 'sqflite'})';
 }
 
 // When opening the database (bool)

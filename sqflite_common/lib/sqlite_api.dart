@@ -324,7 +324,8 @@ abstract class OpenDatabaseOptions {
   ///
   /// [version] (optional) specifies the schema version of the database being
   /// opened. This is used to decide whether to call [onCreate], [onUpgrade],
-  /// and [onDowngrade]
+  /// and [onDowngrade]. If specified, it must be a 32-bits integer greater than
+  /// 0.
   ///
   /// The optional callbacks are called in the following order:
   ///
