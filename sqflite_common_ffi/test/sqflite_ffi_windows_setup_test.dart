@@ -73,7 +73,7 @@ void main() {
     });
 
     test('checkDll', () async {
-      var dllPath = findWindowsDllPath()!!;
+      var dllPath = findWindowsDllPath()!;
       if (await getZip()) {
         final inputStream = InputFileStream(localZip);
         final archive = ZipDecoder().decodeBuffer(inputStream);
