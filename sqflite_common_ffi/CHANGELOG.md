@@ -1,3 +1,7 @@
+## 2.1.1
+
+* Windows binary 3.38.2
+
 ## 2.1.0+2
 
 * Add `databaseFactoryFfiNoIsolate`
