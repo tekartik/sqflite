@@ -18,5 +18,6 @@ dev_dependencies:
   test: '>=1.16.2'
   process_run: '>=0.12.0'
   pub_semver: '>=2.0.0'
+  archive:
   http:
 
