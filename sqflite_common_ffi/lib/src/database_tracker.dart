@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:sqlite3/common.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 /// Copied from moor
@@ -71,8 +72,8 @@ CREATE TABLE IF NOT EXISTS $_tableName (
   }
 
   /// Marks the database [db] as closed.
-  void markClosed(Database db) {
-    final ptr = db.handle.address;
+  void markClosed(CommonDatabase db) {
+    final ptr = (db as Database).handle.address;
     _db?.execute('DELETE FROM $_tableName WHERE $_ptrColName = $ptr');
   }
 
