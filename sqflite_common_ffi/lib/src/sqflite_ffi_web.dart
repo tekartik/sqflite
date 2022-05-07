@@ -25,4 +25,6 @@ DatabaseFactory createDatabaseFactoryFfi({SqfliteFfiInit? ffiInit, bool noIsolat
 /// Optional. Initialize ffi loader.
 ///
 /// Call in main until you find a loader for your needs.
-void sqfliteFfiInit() => throw UnimplementedError('sqfliteFfiInit only supported for io application');
+void sqfliteFfiInit() {
+  // noop on web
+}
