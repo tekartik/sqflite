@@ -306,7 +306,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Default database path.
   String getDatabasesPath() {
-    return absolute(join('.dart_tool', 'sqflite_common_ffi', 'databases'));
+    return getDatabasesPathPlatform();
   }
 
   /// Read arguments as a map;

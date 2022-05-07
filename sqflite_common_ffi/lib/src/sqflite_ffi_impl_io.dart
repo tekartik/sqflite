@@ -59,3 +59,8 @@ Future<bool> handleDatabaseExistsPlatform(String path) async {
     return false;
   }
 }
+
+/// Default database path.
+String getDatabasesPathPlatform() {
+  return absolute(join('.dart_tool', 'sqflite_common_ffi', 'databases'));
+}

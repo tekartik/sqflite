@@ -40,3 +40,8 @@ Future<bool> handleDatabaseExistsPlatform(String path) async {
     return false;
   }
 }
+
+/// Default database path.
+String getDatabasesPathPlatform() {
+  return '/';
+}
