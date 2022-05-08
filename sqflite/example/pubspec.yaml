@@ -9,6 +9,7 @@ environment:
 dependencies:
   path: any
   collection: any
+  universal_io: any
   flutter:
     sdk: flutter
   sqflite:

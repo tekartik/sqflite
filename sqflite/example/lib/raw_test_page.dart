@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/utils/utils.dart';
 import 'package:sqflite_example/src/dev_utils.dart';
+import 'package:universal_io/io.dart';
 
 import 'test_page.dart';
 
@@ -398,7 +398,7 @@ class RawTestPage extends TestPage {
       // Make sure the directory exists
       try {
         // ignore: avoid_slow_async_io
-        if (!await Directory(databasesPath).exists()) {
+        if (!kIsWeb && !await Directory(databasesPath).exists()) {
           await Directory(databasesPath).create(recursive: true);
         }
       } catch (_) {}
