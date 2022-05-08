@@ -27,6 +27,7 @@ class MyApp extends StatefulWidget {
   // This widget is the root of your application.
 
   @override
+  // ignore: library_private_types_in_public_api
   _MyAppState createState() => _MyAppState();
 }
 
@@ -133,6 +134,7 @@ class MyHomePage extends StatefulWidget {
   final String? title;
 
   @override
+  // ignore: library_private_types_in_public_api
   _MyHomePageState createState() => _MyHomePageState();
 }
 

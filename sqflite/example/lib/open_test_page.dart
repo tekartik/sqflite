@@ -16,7 +16,6 @@ import 'package:sqflite_example/src/dev_utils.dart';
 import 'package:synchronized/synchronized.dart';
 
 import 'test_page.dart';
-
 // ignore_for_file: avoid_slow_async_io
 // ignore_for_file: avoid_print
 
@@ -142,7 +141,7 @@ class OpenTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn(false);
       final databasesPath = await factory.getDatabasesPath();
       // On Android we know it is current a 'databases' folder in the package folder
-      print('databasesPath: ' + databasesPath);
+      print('databasesPath: $databasesPath');
       if (Platform.isAndroid) {
         expect(basename(databasesPath), 'databases');
       } else if (Platform.isIOS) {

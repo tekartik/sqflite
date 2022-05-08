@@ -99,7 +99,7 @@ void run(SqfliteTestContext context) {
     // await utils.devSetDebugModeOn(false);
     var databasesPath = await factory.getDatabasesPath();
     // On Android we know it is current a 'databases' folder in the package folder
-    print('databasesPath: ' + databasesPath);
+    print('databasesPath: $databasesPath');
     if (Platform.isAndroid) {
       expect(basename(databasesPath), 'databases');
     } else if (Platform.isIOS) {

@@ -28,9 +28,9 @@ class Item {
 }
 
 /// Menu item implementation.
-class MenuItem extends Item {
+class SqfMenuItem extends Item {
   /// Menu item implementation.
-  MenuItem(String name, this.body, {this.summary}) : super(name) {
+  SqfMenuItem(String name, this.body, {this.summary}) : super(name) {
     state = ItemState.none;
   }
 
