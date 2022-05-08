@@ -1,6 +1,6 @@
-## 2.0.2
+## 2.0.2+1
 
-* Android build: remove jcenter
+* Android build: remove jcenter, compile sdk set to 31
 
 ## 2.0.1
 

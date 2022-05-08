@@ -19,7 +19,7 @@ void main() {
     });
     final dir = join('.dart_tool', 'sqflite_support', 'raw_flutter_test1',
         'test', 'project');
-    var _ensureCreated = false;
+    var ensureCreated = false;
     var shell = Shell(workingDirectory: dir);
     Future<void> _create() async {
       await flutterCreateProject(
@@ -29,11 +29,11 @@ void main() {
     }
 
     Future<void> _ensureCreate() async {
-      if (!_ensureCreated) {
+      if (!ensureCreated) {
         if (!Directory(dir).existsSync()) {
           await _create();
         }
-        _ensureCreated = true;
+        ensureCreated = true;
       }
     }
 
@@ -128,7 +128,7 @@ void main() {
       });
       var dir = join(
           '.dart_tool', 'dev_test', 'sqflite_dart_test1', 'test', 'project');
-      var _ensureCreated = false;
+      var ensureCreated = false;
       Future<void> _create() async {
         await dartCreateProject(
           path: dir,
@@ -136,11 +136,11 @@ void main() {
       }
 
       Future<void> _ensureCreate() async {
-        if (!_ensureCreated) {
+        if (!ensureCreated) {
           if (!Directory(dir).existsSync()) {
             await _create();
           }
-          _ensureCreated = true;
+          ensureCreated = true;
         }
       }
 

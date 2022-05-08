@@ -17,6 +17,7 @@ class ItemWidget extends StatefulWidget {
   final Function(Item item) onTap; // = Function(MainItem item);
 
   @override
+  // ignore: library_private_types_in_public_api
   _ItemWidgetState createState() => _ItemWidgetState();
 }
 
