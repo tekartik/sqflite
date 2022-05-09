@@ -77,3 +77,42 @@ int (millisSinceEpoch) or string (iso8601). SQLite `TIMESTAMP` type sometimes re
 
 * SQLite typ: `BLOB`
 * Dart type: `Uint8List`
+
+On Android blob lookup does not work when using `Uint8List` as dart type in a query such as:
+
+```dart
+final id = Uint8List.fromList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+await db.insert('test', {'id': id, 'value': 1});
+var result = await db.query('test', where: 'id = ?', whereArgs: [id]);
+```
+
+This would lead to an empty result on Android. Native implementation can not handle this in a proper way.
+The solution is to use the [`hex()` SQLite function](https://sqlite.org/lang_corefunc.html#hex).
+
+```dart
+import 'package:sqflite_common/utils/utils.dart' as utils;
+
+result = await db.query('test', where: 'hex(id) = ?', whereArgs: [utils.hex(id)]);
+```
+
+```dart
+final db = await openDatabase(
+  inMemoryDatabasePath,
+  version: 1,
+  onCreate: (db, version) async {
+    await db.execute(
+      'CREATE TABLE test (id BLOB, value INTEGER)',
+    );
+  },
+);
+final id = Uint8List.fromList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+await db.insert('test', {'id': id, 'value': 1});
+var result = await db.query('test', where: 'id = ?', whereArgs: [id]);
+print('regular blob lookup (failing on Android)): $result');
+
+// The compatible way to lookup for BLOBs (even work on Android) using the hex function
+result = await db.query('test', where: 'hex(id) = ?', whereArgs: [utils.hex(id)]);
+print('correct blob lookup: $result');
+
+expect(result.first['value'], 1);
+```

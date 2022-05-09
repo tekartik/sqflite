@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart';
-
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
 import 'package:sqflite_common_test/sqflite_test.dart';
@@ -100,7 +99,7 @@ void run(SqfliteTestContext context) {
     // await utils.devSetDebugModeOn(false);
     var databasesPath = await factory.getDatabasesPath();
     // On Android we know it is current a 'databases' folder in the package folder
-    print('databasesPath: ' + databasesPath);
+    print('databasesPath: $databasesPath');
     if (Platform.isAndroid) {
       expect(basename(databasesPath), 'databases');
     } else if (Platform.isIOS) {
@@ -168,23 +167,15 @@ void run(SqfliteTestContext context) {
     //await utils.devSetDebugModeOn(true);
     var path = await context.initDeleteDb('open_version_0.db');
     expect(await checkFileExists(path), false);
-    var db = await factory.openDatabase(path,
-        options: OpenDatabaseOptions(
-            version: 0,
-            onCreate: (Database db, int version) async {
-              expect(version, 0);
-              //onCreate = true;
-/*
-          await db.transaction((txn) async {
-            await txn
-                .execute('CREATE TABLE Test2 (id INTEGER PRIMARY KEY)');
-            onCreateTransaction = true;
-          });
-
- */
-            }));
-    verify(await checkFileExists(path));
-    await db.close();
+    try {
+      await factory.openDatabase(path,
+          options: OpenDatabaseOptions(
+              version: 0,
+              onCreate: (Database db, int version) async {
+                fail('Should fail');
+              }));
+    } on ArgumentError catch (_) {}
+    expect(await checkFileExists(path), false);
   });
 
   test('open in sub directory', () async {

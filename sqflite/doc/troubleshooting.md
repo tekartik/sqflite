@@ -92,6 +92,28 @@ Advanced checks:
 Before raising this issue, try adding another well established plugin (the simplest being 
 `path_provider` or `shared_preferences`) to see if you get the error here as well.
 
+## Warning database has been locked for... 
+
+I you get this output in debug mode:
+> Warning database has been locked for 0:00:10.000000. Make sure you always use the transaction object for database operations during a transaction
+
+One common mistake is to use the db object in a transaction:
+
+```dart
+await db.transaction((txn) async {
+  // DEADLOCK HERE
+  await db.insert('my_table', {'name': 'my_name'});
+});
+```
+...instead of using the correct transaction object (below named `txn`):
+
+```dart
+await db.transaction((txn) async {
+  // Ok!
+  await txn.insert('my_table', {'name': 'my_name'});
+});
+```
+
 ## Debugging SQL commands
 
 A quick way to view SQL commands printed out is to call before opening any database

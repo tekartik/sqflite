@@ -18,6 +18,7 @@ dev_dependencies:
   dev_test: '>=0.13.4-dev.2'
   test:
   path:
+  pub_semver:
 
 dependency_overrides:
   # pedantic: '>=1.9.0 <3.0.0'

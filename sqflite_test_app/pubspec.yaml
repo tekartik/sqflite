@@ -31,6 +31,11 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   path_provider:
+  sqflite_common:
+  dev_test:
+  process_run: '>=0.11.0+2'
+  path:
+
 dev_dependencies:
   flutter_lints:
   flutter_test:
@@ -41,10 +46,9 @@ dev_dependencies:
   sqflite_common_test:
     path: ../sqflite_common_test
   test: '>=1.16.0-nullsafety.10'
-  process_run: '>=0.11.0+2'
+  pub_semver:
   sqlite3_flutter_libs:
-  path:
-  dev_test:
+
 dependency_overrides:
   sqflite:
     path: ../sqflite

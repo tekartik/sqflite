@@ -232,7 +232,7 @@ void run(SqfliteTestContext context) {
             .rawQuery('SELECT hex(value) FROM Test WHERE _id = ?', [id]);
         expect(hexResult[0].values.first, '01020304');
 
-        // try blob lookup - does work but on Android
+        // try blob lookup - does work but not on Android
         var rows = await _data.db
             .rawQuery('SELECT * FROM Test WHERE value = ?', [blob1234]);
         if (context.isAndroid) {

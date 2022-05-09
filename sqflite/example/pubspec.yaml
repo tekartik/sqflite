@@ -12,7 +12,10 @@ dependencies:
   flutter:
     sdk: flutter
   sqflite:
-
+  sqflite_common:
+  synchronized:
+  matcher:
+  meta:
 dev_dependencies:
   flutter_lints:
   flutter_test:
@@ -20,8 +23,8 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   test:
-  matcher: '>=0.12.10-nullsafety.3 <2.0.0'
   process_run: '>=0.11.0+2'
+  pub_semver: 
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

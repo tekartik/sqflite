@@ -249,6 +249,7 @@ class TypeTestPage extends TestPage {
   }
 
   /// Out internal data.
+  // ignore: library_private_types_in_public_api
   final _Data data = _Data();
 
   /// Get the value field from a given id
