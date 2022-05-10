@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -29,3 +30,41 @@ Future<String> initDeleteDb(String dbName) async {
 Future<void> writeFileAsBytes(String path, List<int> bytes, {bool flush = false}) async {
   await File(path).writeAsBytes(bytes, flush: flush);
 }
+
+/// Read a file as bytes
+Future<Uint8List> readFileAsBytes(String path) async {
+  return File(path).readAsBytes();
+}
+
+/// Write a file as a string
+Future<void> writeFileAsString(String path, String text, {bool flush = false}) async {
+  await File(path).writeAsString(text, flush: true);
+}
+
+/// Read a file as a string
+Future<String> readFileAsString(String path) async {
+  return File(path).readAsString();
+}
+
+/// Check if a path exists.
+Future<bool> pathExists(String path) async {
+  // ignore: avoid_slow_async_io
+  return File(path).exists();
+}
+
+/// Recursively create a directory
+Future<void> createDirectory(String path) async {
+  await Directory(dirname(path)).create(recursive: true);
+}
+
+/// Recursively delete a directory
+Future<void> deleteDirectory(String path) async {
+  await Directory(path).delete(recursive: true);
+}
+
+/// Check if a directory exists
+Future<bool> existsDirectory(String path) async {
+  // ignore: avoid_slow_async_io
+  return Directory(path).exists();
+}
+

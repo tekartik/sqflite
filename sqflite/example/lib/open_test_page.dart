@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -14,6 +13,7 @@ import 'package:sqflite/src/factory_mixin.dart' // ignore: implementation_import
         SqfliteDatabaseFactoryMixin;
 import 'package:sqflite_example/src/dev_utils.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:universal_io/io.dart' show Platform;
 
 import 'test_page.dart';
 
@@ -159,20 +159,20 @@ class OpenTestPage extends TestPage {
       expect(await databaseExists(path), false);
       final db = await openDatabase(path);
       await db.close();
-      expect((await File(path).exists()), true);
+      expect((await pathExists(path)), true);
       expect(await databaseExists(path), true);
       print('Deleting database $path');
       await deleteDatabase(path);
-      expect((await File(path).exists()), false);
+      expect((await pathExists(path)), false);
       expect(await databaseExists(path), false);
     });
 
     test('Open no version', () async {
       //await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('open_no_version.db');
-      expect((await File(path).exists()), false);
+      expect((await pathExists(path)), false);
       final db = await openDatabase(path);
-      verify(await File(path).exists());
+      verify(await pathExists(path));
       expect(await db.getVersion(), 0);
       await db.close();
     });
@@ -180,10 +180,10 @@ class OpenTestPage extends TestPage {
     test('isOpen', () async {
       //await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('is_open.db');
-      expect((await File(path).exists()), false);
+      expect((await pathExists(path)), false);
       final db = await openDatabase(path);
       expect(db.isOpen, true);
-      verify(await File(path).exists());
+      verify(await pathExists(path));
       await db.close();
       expect(db.isOpen, false);
     });
@@ -191,7 +191,7 @@ class OpenTestPage extends TestPage {
     test('Open no version onCreate', () async {
       // should fail
       final path = await initDeleteDb('open_no_version_on_create.db');
-      verify(!(await File(path).exists()));
+      verify(!(await pathExists(path)));
       Database? db;
       try {
         db = await openDatabase(path, onCreate: (Database db, int version) {
@@ -200,7 +200,7 @@ class OpenTestPage extends TestPage {
         });
         verify(false);
       } on ArgumentError catch (_) {}
-      verify(!await File(path).exists());
+      verify(!await pathExists(path));
       expect(db, null);
     });
 
@@ -345,7 +345,7 @@ class OpenTestPage extends TestPage {
 
       // Make sure the parent directory exists
       try {
-        await Directory(dirname(path)).create(recursive: true);
+        await createDirectory(path);
       } catch (_) {}
 
       // Copy from asset
@@ -353,7 +353,7 @@ class OpenTestPage extends TestPage {
       final List<int> bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       // Write and flush the bytes written
-      await File(path).writeAsBytes(bytes, flush: true);
+      await writeFileAsBytes(path, bytes, flush: true);
 
       // open the database
       final db = await openDatabase(path);
@@ -642,7 +642,7 @@ class OpenTestPage extends TestPage {
           final data = await rootBundle.load(join('assets', 'example.db'));
           final bytes =
               data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-          await File(path).writeAsBytes(bytes);
+          await writeFileAsBytes(path, bytes);
 
           // open the database
           db = await openDatabase(path, readOnly: true);
@@ -751,7 +751,7 @@ class OpenTestPage extends TestPage {
       final databasesPath = await factory.getDatabasesPath();
       final path = join(databasesPath, 'sub_that_should_not_exists');
       try {
-        await Directory(path).delete(recursive: true);
+        await deleteDirectory(path);
       } catch (_) {}
       final dbPath = join(path, 'open.db');
       final db = await factory.openDatabase(dbPath);
@@ -766,9 +766,9 @@ class OpenTestPage extends TestPage {
       final path =
           join(databasesPath, 'sub2_that_should_not_exists', 'sub_sub');
       try {
-        await Directory(path).delete(recursive: true);
+        await deleteDirectory(path);
       } catch (_) {}
-      expect(await Directory(path).exists(), false);
+      expect(await existsDirectory(path), false);
       final dbPath = join(path, 'open.db');
       final db = await factory.openDatabase(dbPath);
       try {} finally {
@@ -858,9 +858,9 @@ class OpenTestPage extends TestPage {
 
       await factory.deleteDatabase(path);
       // Write dummy content
-      await File(path).writeAsString('dummy', flush: true);
+      await writeFileAsString(path, 'dummy', flush: true);
       // check content
-      expect(await File(path).readAsString(), 'dummy');
+      expect(await readFileAsString(path), 'dummy');
 
       // try read-only
       {
@@ -879,14 +879,14 @@ class OpenTestPage extends TestPage {
         await db.close();
 
         // check content
-        expect(await File(path).readAsString(), 'dummy');
+        expect(await readFileAsString(path), 'dummy');
       }
 
       expect(await isDatabase(path), isFalse);
       // try read-write
       const minExpectedSize = 1000;
       expect(
-          (await File(path).readAsBytes()).length, lessThan(minExpectedSize));
+          (await readFileAsBytes(path)).length, lessThan(minExpectedSize));
 
       var db = await factory.openDatabase(path);
       if (Platform.isIOS || Platform.isMacOS) {
@@ -920,7 +920,7 @@ class OpenTestPage extends TestPage {
 
       if (Platform.isAndroid) {
         // Content has changed, it is a big file now!
-        expect((await File(path).readAsBytes()).length,
+        expect((await readFileAsBytes(path)).length,
             greaterThan(minExpectedSize));
       }
     });
