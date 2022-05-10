@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
@@ -349,7 +348,7 @@ class ExpTestPage extends TestPage {
       final data = await rootBundle.load(join('assets', 'issue_64.db'));
       final bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      await File(path).writeAsBytes(bytes);
+      await writeFileAsBytes(path, bytes);
 
       // open the database
       final db = await openDatabase(path);

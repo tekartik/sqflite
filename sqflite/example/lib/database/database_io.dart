@@ -24,3 +24,8 @@ Future<String> initDeleteDb(String dbName) async {
   }
   return path;
 }
+
+/// Write the db file directly to the file system
+Future<void> writeFileAsBytes(String path, List<int> bytes, {bool flush = false}) async {
+  await File(path).writeAsBytes(bytes, flush: flush);
+}

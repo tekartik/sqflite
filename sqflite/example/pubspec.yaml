@@ -13,6 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
   sqflite:
+  sqlite3: ^1.7.0
 
 dev_dependencies:
   flutter_lints:
