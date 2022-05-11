@@ -889,7 +889,7 @@ class OpenTestPage extends TestPage {
           (await readFileAsBytes(path)).length, lessThan(minExpectedSize));
 
       var db = await factory.openDatabase(path);
-      if (Platform.isIOS || Platform.isMacOS) {
+      if (Platform.isIOS || Platform.isMacOS && !kIsWeb) {
         // On iOS it fails
         try {
           await db.getVersion();
@@ -902,7 +902,7 @@ class OpenTestPage extends TestPage {
       }
       await db.close();
 
-      if (Platform.isIOS || Platform.isMacOS) {
+      if (Platform.isIOS || Platform.isMacOS && !kIsWeb) {
         // On iOS it fails
         try {
           db = await factory.openDatabase(path,
