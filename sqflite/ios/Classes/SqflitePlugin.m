@@ -765,6 +765,15 @@ static NSInteger _databaseOpenCount = 0;
     });
 }
 
+- (void)deleteDatabaseFile:(NSString*)path {
+    bool _log = hasSqlLogLevel(logLevel);
+    if (_log) {
+        NSLog(@"Deleting %@", path);
+    }
+    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    }
+}
 //
 // delete
 //
@@ -791,14 +800,13 @@ static NSInteger _databaseOpenCount = 0;
             // Note: This currently runs on the main thread.  After we upgrade
             // to Flutter 3.0 this can be shifted to a background thread.
             // See also: closeDatabase:result:
-            if (_log) {
-                NSLog(@"Deleting %@", path);
-            }
-            if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
-                [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
-            }
-            result(returnValue);
+            
+            [self deleteDatabaseFile:path];
+            result(nil);
         }];
+    } else {
+        [self deleteDatabaseFile:path];
+        result(nil);
     }
 }
 

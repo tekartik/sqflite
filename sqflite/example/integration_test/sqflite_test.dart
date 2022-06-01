@@ -241,10 +241,21 @@ void main() {
 
     test('deleteDatabase', () async {
       // await devVerbose();
+      const path = 'test_delete_database.db';
+      await deleteDatabase(path);
+      expect(await databaseExists(path), isFalse);
+
       late Database db;
       try {
-        const path = 'test_delete_database.db';
+        db = await openDatabase(path);
+        expect(await db.getVersion(), 0);
+        await db.setVersion(1);
+        await db.close();
+        expect(await databaseExists(path), isTrue);
+
         await deleteDatabase(path);
+        expect(await databaseExists(path), isFalse);
+
         db = await openDatabase(path);
         expect(await db.getVersion(), 0);
         await db.setVersion(1);
