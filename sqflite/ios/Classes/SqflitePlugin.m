@@ -731,19 +731,16 @@ static NSInteger _databaseOpenCount = 0;
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"closing %@", database.path);
     }
-    [self closeDatabase:database];
-    result(nil);
+    [self closeDatabase:database result:result];
 }
 
 //
 // close action
 //
-- (void)closeDatabase:(SqfliteDatabase*)database {
+- (void)closeDatabase:(SqfliteDatabase*)database result:(FlutterResult)result {
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"closing %@", database.path);
     }
-    [database.fmDatabaseQueue close];
-    
     @synchronized (self.mapLock) {
         [self.databaseMap removeObjectForKey:database.databaseId];
         if (database.singleInstance) {
@@ -755,6 +752,17 @@ static NSInteger _databaseOpenCount = 0;
             }
         }
     }
+    FMDatabaseQueue* queue = database.fmDatabaseQueue;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // It is safe to call this from a background queue because the function
+        // dispatches immediately to its queue synchronously.
+        [queue close];
+        // TODO(gaaclarke): Remove this dispatch once the minimum Flutter value is set to 3.0.
+        // See also: https://github.com/flutter/flutter/issues/91635
+        dispatch_async(dispatch_get_main_queue(), ^{
+            result(nil);
+        });
+    });
 }
 
 //
@@ -779,16 +787,19 @@ static NSInteger _databaseOpenCount = 0;
     }
     
     if (database != nil) {
-        [self closeDatabase:database];
+        [self closeDatabase:database result:^(id returnValue) {
+            // Note: This currently runs on the main thread.  After we upgrade
+            // to Flutter 3.0 this can be shifted to a background thread.
+            // See also: closeDatabase:result:
+            if (_log) {
+                NSLog(@"Deleting %@", path);
+            }
+            if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+                [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+            }
+            result(returnValue);
+        }];
     }
-    
-    if (hasSqlLogLevel(database.logLevel)) {
-        NSLog(@"Deleting %@", path);
-    }
-    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
-        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
-    }
-    result(nil);
 }
 
 //
