@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -11,7 +12,7 @@ import 'package:sqflite_example/src/common_import.dart';
 
 // ignore_for_file: avoid_print
 void main() {
-  //IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
   group('sqflite', () {
     group('open', () {
@@ -81,7 +82,8 @@ void main() {
       Database? db;
       try {
         db = await openReadOnlyDatabase(path);
-        await db.getVersion();
+        //await db.getVersion();
+        await db.query('sqlite_master');
         isDatabase = true;
       } catch (_) {
       } finally {
@@ -128,6 +130,7 @@ void main() {
 
       // Open is fine, that is the native behavior
       final db = await openReadOnlyDatabase(fullPath);
+      print('DEBUG');
       expect(await File(fullPath).readAsString(), 'test');
       try {
         final version = await db.getVersion();
