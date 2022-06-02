@@ -743,7 +743,7 @@ static NSInteger _databaseOpenCount = 0;
 //
 // The callback will be called from a background thread
 //
-- (void)closeDatabase:(SqfliteDatabase*)database callback:(void(^)())callback {
+- (void)closeDatabase:(SqfliteDatabase*)database callback:(void(^)(void))callback {
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"closing %@", database.path);
     }
