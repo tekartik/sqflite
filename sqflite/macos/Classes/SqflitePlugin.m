@@ -731,19 +731,22 @@ static NSInteger _databaseOpenCount = 0;
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"closing %@", database.path);
     }
-    [self closeDatabase:database];
-    result(nil);
+    [self closeDatabase:database callback:^(){
+        // We are in a background thread here.
+        // resut itself is a wrapper posting on the main thread
+        result(nil);
+    }];
 }
 
 //
 // close action
 //
-- (void)closeDatabase:(SqfliteDatabase*)database {
+// The callback will be called from a background thread
+//
+- (void)closeDatabase:(SqfliteDatabase*)database callback:(void(^)(void))callback {
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"closing %@", database.path);
     }
-    [database.fmDatabaseQueue close];
-    
     @synchronized (self.mapLock) {
         [self.databaseMap removeObjectForKey:database.databaseId];
         if (database.singleInstance) {
@@ -755,8 +758,26 @@ static NSInteger _databaseOpenCount = 0;
             }
         }
     }
+    FMDatabaseQueue* queue = database.fmDatabaseQueue;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // It is safe to call this from a background queue because the function
+        // dispatches immediately to its queue synchronously.
+        [queue close];
+        // TODO(gaaclarke): Remove this dispatch once the minimum Flutter value is set to 3.0.
+        // See also: https://github.com/flutter/flutter/issues/91635
+        callback();
+    });
 }
 
+- (void)deleteDatabaseFile:(NSString*)path {
+    bool _log = hasSqlLogLevel(logLevel);
+    if (_log) {
+        NSLog(@"Deleting %@", path);
+    }
+    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    }
+}
 //
 // delete
 //
@@ -779,16 +800,16 @@ static NSInteger _databaseOpenCount = 0;
     }
     
     if (database != nil) {
-        [self closeDatabase:database];
+        [self closeDatabase:database callback:^() {
+            // We are in a background thread here.
+            // resut itself is a wrapper posting on the main thread
+            [self deleteDatabaseFile:path];
+            result(nil);
+        }];
+    } else {
+        [self deleteDatabaseFile:path];
+        result(nil);
     }
-    
-    if (hasSqlLogLevel(database.logLevel)) {
-        NSLog(@"Deleting %@", path);
-    }
-    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
-        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
-    }
-    result(nil);
 }
 
 //
@@ -871,6 +892,8 @@ static NSInteger _databaseOpenCount = 0;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // result wrapper to post the result on the main thread
+    // until background threads are supported for plugin services
     FlutterResult wrappedResult = ^(id res) {
         dispatch_async(dispatch_get_main_queue(), ^{
             result(res);
