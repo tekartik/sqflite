@@ -731,13 +731,19 @@ static NSInteger _databaseOpenCount = 0;
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"closing %@", database.path);
     }
-    [self closeDatabase:database result:result];
+    [self closeDatabase:database callback:^(){
+        // We are in a background thread here.
+        // resut itself is a wrapper posting on the main thread
+        result(nil);
+    }];
 }
 
 //
 // close action
 //
-- (void)closeDatabase:(SqfliteDatabase*)database result:(FlutterResult)result {
+// The callback will be called from a background thread
+//
+- (void)closeDatabase:(SqfliteDatabase*)database callback:(void(^)())callback {
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"closing %@", database.path);
     }
@@ -759,9 +765,7 @@ static NSInteger _databaseOpenCount = 0;
         [queue close];
         // TODO(gaaclarke): Remove this dispatch once the minimum Flutter value is set to 3.0.
         // See also: https://github.com/flutter/flutter/issues/91635
-        dispatch_async(dispatch_get_main_queue(), ^{
-            result(nil);
-        });
+        callback();
     });
 }
 
@@ -796,11 +800,9 @@ static NSInteger _databaseOpenCount = 0;
     }
     
     if (database != nil) {
-        [self closeDatabase:database result:^(id returnValue) {
-            // Note: This currently runs on the main thread.  After we upgrade
-            // to Flutter 3.0 this can be shifted to a background thread.
-            // See also: closeDatabase:result:
-            
+        [self closeDatabase:database callback:^() {
+            // We are in a background thread here.
+            // resut itself is a wrapper posting on the main thread
             [self deleteDatabaseFile:path];
             result(nil);
         }];
@@ -890,6 +892,8 @@ static NSInteger _databaseOpenCount = 0;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // result wrapper to post the result on the main thread
+    // until background threads are supported for plugin services
     FlutterResult wrappedResult = ^(id res) {
         dispatch_async(dispatch_get_main_queue(), ^{
             result(res);
