@@ -12,9 +12,7 @@ Future<void> main() async {
 Future<void> runIntegrationTest({String deviceId}) async {
   final shell = Shell();
 
-    await shell.run(
-        'flutter drive${deviceId != null ? ' -d $deviceId ' : ''}'
-        ' --driver=test_driver/integration_test.dart'
-        ' --target=integration_test/sqflite_test.dart');
-
+  await shell.run('flutter drive${deviceId != null ? ' -d $deviceId ' : ''}'
+      ' --driver=test_driver/integration_test.dart'
+      ' --target=integration_test/sqflite_test.dart');
 }
