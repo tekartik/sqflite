@@ -17,7 +17,7 @@ flutter:
       ios:
         pluginClass: SqflitePlugin
       macos:
-        pluginClass: SqflitePlugin
+        pluginClass: SqflitePlugin 
 
 dependencies:
   flutter:
