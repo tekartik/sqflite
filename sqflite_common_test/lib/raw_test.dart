@@ -84,7 +84,7 @@ void run(SqfliteTestContext context) {
         await db
             .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
-        Future _test(int i) async {
+        Future testInsert(int i) async {
           await db.transaction((txn) async {
             var count = utils.firstIntValue(
                 await txn.rawQuery('SELECT COUNT(*) FROM Test'))!;
@@ -100,7 +100,7 @@ void run(SqfliteTestContext context) {
 
         var futures = <Future>[];
         for (var i = 0; i < 4; i++) {
-          futures.add(_test(i));
+          futures.add(testInsert(i));
         }
         await Future.wait<dynamic>(futures);
       } finally {

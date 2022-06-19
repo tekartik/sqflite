@@ -55,7 +55,7 @@ void run(SqfliteTestContext context) {
         // Open 1st version
         {
           /// Create tables
-          void _createTableCompanyV1(Batch batch) {
+          void createTableCompanyV1(Batch batch) {
             batch.execute('DROP TABLE IF EXISTS Company');
             batch.execute('''CREATE TABLE Company (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,7 +69,7 @@ void run(SqfliteTestContext context) {
                   version: 1,
                   onCreate: (db, version) async {
                     var batch = db.batch();
-                    _createTableCompanyV1(batch);
+                    createTableCompanyV1(batch);
                     await batch.commit();
                   },
                   onConfigure: onConfigure,
@@ -87,7 +87,7 @@ void run(SqfliteTestContext context) {
           }
 
           /// Create Company table V2
-          void _createTableCompanyV2(Batch batch) {
+          void createTableCompanyV2(Batch batch) {
             batch.execute('DROP TABLE IF EXISTS Company');
             batch.execute('''CREATE TABLE Company (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,12 +97,12 @@ void run(SqfliteTestContext context) {
           }
 
           /// Update Company table V1 to V2
-          void _updateTableCompanyV1toV2(Batch batch) {
+          void updateTableCompanyV1toV2(Batch batch) {
             batch.execute('ALTER TABLE Company ADD description TEXT');
           }
 
           /// Create Employee table V2
-          void _createTableEmployeeV2(Batch batch) {
+          void createTableEmployeeV2(Batch batch) {
             batch.execute('DROP TABLE IF EXISTS Employee');
             batch.execute('''CREATE TABLE Employee (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,16 +121,16 @@ void run(SqfliteTestContext context) {
                   onCreate: (db, version) async {
                     var batch = db.batch();
                     // We create all the tables
-                    _createTableCompanyV2(batch);
-                    _createTableEmployeeV2(batch);
+                    createTableCompanyV2(batch);
+                    createTableEmployeeV2(batch);
                     await batch.commit();
                   },
                   onUpgrade: (db, oldVersion, newVersion) async {
                     var batch = db.batch();
                     if (oldVersion == 1) {
                       // We update existing table and create the new tables
-                      _updateTableCompanyV1toV2(batch);
-                      _createTableEmployeeV2(batch);
+                      updateTableCompanyV1toV2(batch);
+                      createTableEmployeeV2(batch);
                     }
                     await batch.commit();
                   },
@@ -140,7 +140,7 @@ void run(SqfliteTestContext context) {
           db = null;
         }
 
-        Future _readTest() async {
+        Future readTest() async {
           db ??= await factory.openDatabase(path);
           expect(await db!.query('Company'), [
             {'name': 'Watch', 'description': 'Black Wristatch', 'id': 1}
@@ -150,7 +150,7 @@ void run(SqfliteTestContext context) {
           ]);
         }
 
-        Future _test() async {
+        Future insertTest() async {
           db = await factory.openDatabase(path);
           try {
             var companyId = await db!.insert('Company', <String, Object?>{
@@ -161,7 +161,7 @@ void run(SqfliteTestContext context) {
               'name': '1st Employee',
               'companyId': companyId
             });
-            await _readTest();
+            await readTest();
           } finally {
             await db?.close();
             db = null;
@@ -174,27 +174,27 @@ void run(SqfliteTestContext context) {
               await context.initDeleteDb('upgrade_add_table_and_column_doc.db');
           await openCloseV1();
           await openCloseV2();
-          await _test();
+          await insertTest();
         }
         {
           // Test2
           path =
               await context.initDeleteDb('upgrade_add_table_and_column_doc.db');
           await openCloseV2();
-          await _test();
+          await insertTest();
         }
 
         {
           // Test3
-          await _readTest();
+          await readTest();
           await openCloseV2();
-          await _readTest();
+          await readTest();
         }
         {
           // Test4 - don't delete before
           await openCloseV1();
           await openCloseV2();
-          await _readTest();
+          await readTest();
         }
       } finally {
         await db?.close();
@@ -225,7 +225,7 @@ void run(SqfliteTestContext context) {
 
       {
         /// Create tables
-        void _createTableCompanyV1(Batch batch) {
+        void createTableCompanyV1(Batch batch) {
           batch.execute('''
 CREATE TABLE Product (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -241,7 +241,7 @@ CREATE TABLE Product (
                 version: 1,
                 onCreate: (db, version) async {
                   var batch = db.batch();
-                  _createTableCompanyV1(batch);
+                  createTableCompanyV1(batch);
                   await batch.commit();
                 },
                 onDowngrade: onDatabaseDowngradeDelete));
@@ -257,7 +257,7 @@ CREATE TABLE Product (
 
       {
         /// Create tables
-        void _createProductTable(Batch batch) {
+        void createProductTable(Batch batch) {
           batch.execute('''
 CREATE TABLE Product (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -272,7 +272,7 @@ CREATE TABLE Product (
                 version: 1,
                 onCreate: (db, version) async {
                   var batch = db.batch();
-                  _createProductTable(batch);
+                  createProductTable(batch);
                   await batch.commit();
                 },
                 onDowngrade: onDatabaseDowngradeDelete));
@@ -291,7 +291,7 @@ CREATE TABLE Product (
 
       {
         /// Create tables
-        void _createTableProduct(Batch batch) {
+        void createTableProduct(Batch batch) {
           batch.execute('''
 CREATE TABLE Product (
   id TEXT PRIMARY KEY,
@@ -305,12 +305,12 @@ CREATE TABLE Product (
                 version: 1,
                 onCreate: (db, version) async {
                   var batch = db.batch();
-                  _createTableProduct(batch);
+                  createTableProduct(batch);
                   await batch.commit();
                 },
                 onDowngrade: onDatabaseDowngradeDelete));
 
-        Future<bool> _exists(Transaction txn, Product product) async {
+        Future<bool> exists(Transaction txn, Product product) async {
           return firstIntValue(await txn.query('Product',
                   columns: ['COUNT(*)'],
                   where: 'id = ?',
@@ -318,21 +318,21 @@ CREATE TABLE Product (
               1;
         }
 
-        Future _update(Transaction txn, Product product) async {
+        Future update(Transaction txn, Product product) async {
           await txn.update('Product', product.toMap(),
               where: 'id = ?', whereArgs: [product.id!]);
         }
 
-        Future _insert(Transaction txn, Product product) async {
+        Future insert(Transaction txn, Product product) async {
           await txn.insert('Product', product.toMap()..['id'] = product.id);
         }
 
         Future upsertRecord(Product product) async {
           await db.transaction((txn) async {
-            if (await _exists(txn, product)) {
-              await _update(txn, product);
+            if (await exists(txn, product)) {
+              await update(txn, product);
             } else {
-              await _insert(txn, product);
+              await insert(txn, product);
             }
           });
         }
@@ -354,7 +354,7 @@ CREATE TABLE Product (
 
       {
         /// Create tables
-        void _createTableProduct(Batch batch) {
+        void createTableProduct(Batch batch) {
           batch.execute('''
 CREATE TABLE Product (
   id TEXT PRIMARY KEY,
@@ -368,26 +368,26 @@ CREATE TABLE Product (
                 version: 1,
                 onCreate: (db, version) async {
                   var batch = db.batch();
-                  _createTableProduct(batch);
+                  createTableProduct(batch);
                   await batch.commit();
                 },
                 onDowngrade: onDatabaseDowngradeDelete));
 
-        Future _update(Product product) async {
+        Future update(Product product) async {
           await db.update('Product', product.toMap(),
               where: 'id = ?', whereArgs: [product.id!]);
         }
 
-        Future _insert(Product product) async {
+        Future insert(Product product) async {
           await db.insert('Product', product.toMap()..['id'] = product.id);
         }
 
         Future upsertRecord(Product product) async {
           try {
-            await _insert(product);
+            await insert(product);
           } on DatabaseException catch (e) {
             if (e.isUniqueConstraintError()) {
-              await _update(product);
+              await update(product);
             } else {
               throw TestFailure('expected unique constraint $e');
             }

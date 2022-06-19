@@ -14,24 +14,24 @@ void run(SqfliteTestContext context) {
     var path = await context.initDeleteDb('open_read_only.db');
 
     {
-      Future _onConfigure(Database db) async {
+      Future onConfigure(Database db) async {
         // Add support for cascade delete
         await db.execute('PRAGMA foreign_keys = ON');
       }
 
       var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(onConfigure: _onConfigure));
+          options: OpenDatabaseOptions(onConfigure: onConfigure));
       await db.close();
     }
 
     {
-      Future _onCreate(Database db, int version) async {
+      Future onCreate(Database db, int version) async {
         // Database is created, delete the table
         await db
             .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
       }
 
-      Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+      Future onUpgrade(Database db, int oldVersion, int newVersion) async {
         // Database version is updated, alter the table
         await db.execute('ALTER TABLE Test ADD name TEXT');
       }
@@ -40,21 +40,21 @@ void run(SqfliteTestContext context) {
       var db = await factory.openDatabase(path,
           options: OpenDatabaseOptions(
               version: 1,
-              onCreate: _onCreate,
-              onUpgrade: _onUpgrade,
+              onCreate: onCreate,
+              onUpgrade: onUpgrade,
               onDowngrade: onDatabaseDowngradeDelete));
       await db.close();
     }
 
     {
-      Future _onOpen(Database db) async {
+      Future onOpen(Database db) async {
         // Database is open, print its version
         print('db version ${await db.getVersion()}');
       }
 
       var db = await factory.openDatabase(path,
           options: OpenDatabaseOptions(
-            onOpen: _onOpen,
+            onOpen: onOpen,
           ));
       await db.close();
     }
