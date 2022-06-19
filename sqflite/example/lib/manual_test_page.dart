@@ -282,7 +282,7 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
               );
             }
 
-            Future _countRecord() async {
+            Future countRecord() async {
               final db = await _openDatabase();
               final result =
                   firstIntValue(await db.query('test', columns: ['COUNT(*)']));
@@ -302,10 +302,10 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
               menuItem('Add record', () async {
                 final db = await _openDatabase();
                 await db.insert('test', {'value': 'some_value'});
-                await _countRecord();
+                await countRecord();
               }, summary: 'Add one record. Open the database if needed'),
               menuItem('Count record', () async {
-                await _countRecord();
+                await countRecord();
               }, summary: 'Count records. Open the database if needed'),
               menuItem(
                 'Close Database',

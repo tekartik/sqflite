@@ -652,7 +652,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       // Special on downgrade delete database
       if (options.onDowngrade == onDatabaseDowngradeDelete) {
         // Downgrading will delete the database and open it again
-        Future<void> _onDatabaseDowngradeDelete(
+        Future<void> onDatabaseDowngradeDoDelete(
             Database database, int oldVersion, int newVersion) async {
           final db = database as SqfliteDatabase;
           // This is tricky as we are in the middle of opening a database
@@ -689,7 +689,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           }
         }
 
-        options.onDowngrade = _onDatabaseDowngradeDelete;
+        options.onDowngrade = onDatabaseDowngradeDoDelete;
       }
 
       id = databaseId;
