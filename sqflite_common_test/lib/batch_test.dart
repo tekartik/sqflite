@@ -2,8 +2,6 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
-import 'sqflite_test.dart';
-
 /// Run batch test.
 void run(SqfliteTestContext context) {
   final factory = context.databaseFactory;

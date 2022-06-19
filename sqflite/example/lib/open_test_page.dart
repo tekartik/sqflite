@@ -370,7 +370,7 @@ class OpenTestPage extends TestPage {
 
       var onConfigured = false;
       var onConfiguredTransaction = false;
-      Future _onConfigure(Database db) async {
+      Future onConfigure(Database db) async {
         onConfigured = true;
         await db.execute('CREATE TABLE Test1 (id INTEGER PRIMARY KEY)');
         await db.transaction((txn) async {
@@ -379,7 +379,7 @@ class OpenTestPage extends TestPage {
         });
       }
 
-      final db = await openDatabase(path, onConfigure: _onConfigure);
+      final db = await openDatabase(path, onConfigure: onConfigure);
       expect(onConfigured, true);
       expect(onConfiguredTransaction, true);
 
@@ -503,19 +503,19 @@ class OpenTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('open_batch.db');
 
-      Future _onConfigure(Database db) async {
+      Future onConfigure(Database db) async {
         final batch = db.batch();
         batch.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
         await batch.commit();
       }
 
-      Future _onCreate(Database db, int version) async {
+      Future onCreate(Database db, int version) async {
         final batch = db.batch();
         batch.rawInsert('INSERT INTO Test(value) VALUES("value1")');
         await batch.commit();
       }
 
-      Future _onOpen(Database db) async {
+      Future onOpen(Database db) async {
         final batch = db.batch();
         batch.rawInsert('INSERT INTO Test(value) VALUES("value2")');
         await batch.commit();
@@ -523,9 +523,9 @@ class OpenTestPage extends TestPage {
 
       final db = await openDatabase(path,
           version: 1,
-          onConfigure: _onConfigure,
-          onCreate: _onCreate,
-          onOpen: _onOpen);
+          onConfigure: onConfigure,
+          onCreate: onCreate,
+          onOpen: onOpen);
       expect(
           Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test')),
           2);
@@ -537,14 +537,14 @@ class OpenTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('open_read_only.db');
 
-      Future _onCreate(Database db, int version) async {
+      Future onCreate(Database db, int version) async {
         final batch = db.batch();
         batch.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
         batch.rawInsert('INSERT INTO Test(value) VALUES("value1")');
         await batch.commit();
       }
 
-      var db = await openDatabase(path, version: 1, onCreate: _onCreate);
+      var db = await openDatabase(path, version: 1, onCreate: onCreate);
       expect(
           Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test')),
           1);
@@ -576,23 +576,23 @@ class OpenTestPage extends TestPage {
       final path = await initDeleteDb('open_read_only.db');
 
       {
-        Future _onConfigure(Database db) async {
+        Future onConfigure(Database db) async {
           // Add support for cascade delete
           await db.execute('PRAGMA foreign_keys = ON');
         }
 
-        final db = await openDatabase(path, onConfigure: _onConfigure);
+        final db = await openDatabase(path, onConfigure: onConfigure);
         await db.close();
       }
 
       {
-        Future _onCreate(Database db, int version) async {
+        Future onCreate(Database db, int version) async {
           // Database is created, delete the table
           await db.execute(
               'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
         }
 
-        Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+        Future onUpgrade(Database db, int oldVersion, int newVersion) async {
           // Database version is updated, alter the table
           await db.execute('ALTER TABLE Test ADD name TEXT');
         }
@@ -600,21 +600,21 @@ class OpenTestPage extends TestPage {
         // Special callback used for onDowngrade here to recreate the database
         final db = await openDatabase(path,
             version: 1,
-            onCreate: _onCreate,
-            onUpgrade: _onUpgrade,
+            onCreate: onCreate,
+            onUpgrade: onUpgrade,
             onDowngrade: onDatabaseDowngradeDelete);
         await db.close();
       }
 
       {
-        Future _onOpen(Database db) async {
+        Future onOpen(Database db) async {
           // Database is open, print its version
           print('db version ${await db.getVersion()}');
         }
 
         final db = await openDatabase(
           path,
-          onOpen: _onOpen,
+          onOpen: onOpen,
         );
         await db.close();
       }
