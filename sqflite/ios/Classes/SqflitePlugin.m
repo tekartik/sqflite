@@ -801,6 +801,8 @@ static NSInteger _databaseOpenCount = 0;
     
     if (database != nil) {
         [self closeDatabase:database callback:^() {
+            // We are in a background thread here.
+            // resut itself is a wrapper posting on the main thread
             [self deleteDatabaseFile:path];
             result(nil);
         }];
@@ -890,6 +892,16 @@ static NSInteger _databaseOpenCount = 0;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+#if !TARGET_OS_IPHONE
+    // result wrapper to post the result on the main thread
+    // until background threads are supported for plugin services
+    result = ^(id res) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            result(res);
+        });
+    };
+#endif
+    
     if ([_methodGetPlatformVersion isEqualToString:call.method]) {
 #if TARGET_OS_IPHONE
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
