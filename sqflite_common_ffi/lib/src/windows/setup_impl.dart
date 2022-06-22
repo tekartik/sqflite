@@ -39,7 +39,7 @@ String? pathPackageConfigMapGetPackagePath(
       var name = packageMap['name'];
 
       if (name is String && name == package) {
-        print(name);
+        // print(name);
         var rootUri = packageMap['rootUri'];
         if (rootUri is String) {
           // rootUri if relative is relative to .dart_tool
