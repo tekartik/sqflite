@@ -892,14 +892,6 @@ static NSInteger _databaseOpenCount = 0;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    // result wrapper to post the result on the main thread
-    // until background threads are supported for plugin services
-    FlutterResult wrappedResult = ^(id res) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            result(res);
-        });
-    };
-    
     if ([_methodGetPlatformVersion isEqualToString:call.method]) {
 #if TARGET_OS_IPHONE
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
@@ -908,23 +900,23 @@ static NSInteger _databaseOpenCount = 0;
         result([@"macOS " stringByAppendingString:[[NSProcessInfo processInfo] operatingSystemVersionString]]);
 #endif
     } else if ([_methodOpenDatabase isEqualToString:call.method]) {
-        [self handleOpenDatabaseCall:call result:wrappedResult];
+        [self handleOpenDatabaseCall:call result:result];
     } else if ([_methodInsert isEqualToString:call.method]) {
-        [self handleInsertCall:call result:wrappedResult];
+        [self handleInsertCall:call result:result];
     } else if ([_methodQuery isEqualToString:call.method]) {
-        [self handleQueryCall:call result:wrappedResult];
+        [self handleQueryCall:call result:result];
     } else if ([_methodUpdate isEqualToString:call.method]) {
-        [self handleUpdateCall:call result:wrappedResult];
+        [self handleUpdateCall:call result:result];
     } else if ([_methodExecute isEqualToString:call.method]) {
-        [self handleExecuteCall:call result:wrappedResult];
+        [self handleExecuteCall:call result:result];
     } else if ([_methodBatch isEqualToString:call.method]) {
-        [self handleBatchCall:call result:wrappedResult];
+        [self handleBatchCall:call result:result];
     } else if ([_methodGetDatabasesPath isEqualToString:call.method]) {
         [self handleGetDatabasesPath:call result:result];
     } else if ([_methodCloseDatabase isEqualToString:call.method]) {
-        [self handleCloseDatabaseCall:call result:wrappedResult];
+        [self handleCloseDatabaseCall:call result:result];
     } else if ([_methodDeleteDatabase isEqualToString:call.method]) {
-        [self handleDeleteDatabaseCall:call result:wrappedResult];
+        [self handleDeleteDatabaseCall:call result:result];
     } else if ([_methodOptions isEqualToString:call.method]) {
         [self handleOptionsCall:call result:result];
     } else if ([_methodDebug isEqualToString:call.method]) {
