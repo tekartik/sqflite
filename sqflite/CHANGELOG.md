@@ -1,5 +1,6 @@
-## 2.0.3-dev.1
+## 2.0.3-dev.2
 
+* iOS/Android: Flutter 3.0 support, plugin service result can be called from any thread.
 * iOS/MacOS: make close happen in a background thread
 
 ## 2.0.2+1
