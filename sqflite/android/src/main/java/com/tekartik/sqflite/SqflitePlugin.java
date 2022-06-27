@@ -32,6 +32,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.StandardMethodCodec;
 
 import static com.tekartik.sqflite.Constant.CMD_GET;
 import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
@@ -113,7 +114,9 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
     private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
         this.context = applicationContext;
-        methodChannel = new MethodChannel(messenger, Constant.PLUGIN_KEY);
+        methodChannel = new MethodChannel(messenger, Constant.PLUGIN_KEY,
+                                          StandardMethodCodec.INSTANCE,
+                                          messenger.makeBackgroundTaskQueue());
         methodChannel.setMethodCallHandler(this);
     }
 
