@@ -127,11 +127,11 @@ static NSInteger _databaseOpenCount = 0;
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
 #if TARGET_OS_IPHONE
-    FlutterMethodChannel* channel = [FlutterMethodChannel
-                                     methodChannelWithName:_channelName
-                                     binaryMessenger:[registrar messenger]
-                                     codec:[StandardMethodCodec instance]
-                                     taskQueue:[registrar.messenger makeBackgroundTaskQueue]];
+    FlutterMethodChannel* channel =
+      [[FlutterMethodChannel alloc] initWithName:_channelName
+                                 binaryMessenger:[registrar messenger]
+                                           codec:[FlutterStandardMethodCodec sharedInstance]
+                                       taskQueue:[registrar.messenger makeBackgroundTaskQueue]];
 #else
     FlutterMethodChannel* channel = [FlutterMethodChannel
                                      methodChannelWithName:_channelName
