@@ -1,7 +1,6 @@
-## 2.0.3-dev.5
+## 2.0.3
 
 * iOS/Android: Flutter 3.0 support, makes all the channel calls happen on thread pool instead of the UI thread
-* iOS/Android: Flutter 3.0 support, plugin service result can be called from any thread.
 * iOS/MacOS: make close happen in a background thread
 
 ## 2.0.2+1
