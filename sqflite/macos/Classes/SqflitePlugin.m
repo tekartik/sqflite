@@ -373,7 +373,7 @@ static NSInteger _databaseOpenCount = 0;
     if (!argumentsEmpty) {
         rs = [db executeQuery:sql withArgumentsInArray:sqlArguments];
     } else {
-        rs = [db executeQuery:sql];
+        rs = [db executeQuery:sql withArgumentsInArray:nil];
     }
     
     // handle error
