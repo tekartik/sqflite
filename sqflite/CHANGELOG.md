@@ -1,3 +1,7 @@
+## 2.0.3+1
+
+* MacOS: Fix crash when an invalid number of parameters is specified in the query
+
 ## 2.0.3
 
 * iOS/Android: Flutter 3.0 support, makes all the channel calls happen on thread pool instead of the UI thread
