@@ -128,10 +128,10 @@ static NSInteger _databaseOpenCount = 0;
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
 #if TARGET_OS_IPHONE
     FlutterMethodChannel* channel =
-      [[FlutterMethodChannel alloc] initWithName:_channelName
-                                 binaryMessenger:[registrar messenger]
-                                           codec:[FlutterStandardMethodCodec sharedInstance]
-                                       taskQueue:[registrar.messenger makeBackgroundTaskQueue]];
+    [[FlutterMethodChannel alloc] initWithName:_channelName
+                               binaryMessenger:[registrar messenger]
+                                         codec:[FlutterStandardMethodCodec sharedInstance]
+                                     taskQueue:[registrar.messenger makeBackgroundTaskQueue]];
 #else
     FlutterMethodChannel* channel = [FlutterMethodChannel
                                      methodChannelWithName:_channelName
@@ -373,7 +373,10 @@ static NSInteger _databaseOpenCount = 0;
     if (!argumentsEmpty) {
         rs = [db executeQuery:sql withArgumentsInArray:sqlArguments];
     } else {
-        rs = [db executeQuery:sql];
+        // rs = [db executeQuery:sql];
+        // This crashes on MacOS if there is any ? in the query
+        // Workaround using an empty array
+        rs = [db executeQuery:sql withArgumentsInArray:@[]];
     }
     
     // handle error
