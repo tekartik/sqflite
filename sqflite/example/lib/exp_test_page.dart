@@ -666,6 +666,13 @@ CREATE TABLE test (
       }).timeout(Duration(seconds: 3));
     });
     */
+    test('missing parameter', () async {
+      var db = await openDatabase(inMemoryDatabasePath);
+      await db.execute(
+          'CREATE TABLE IF NOT EXISTS foo (id int primary key, name text)');
+      await db.rawQuery('SELECT * FROM foo WHERE id=?');
+      await db.close();
+    });
   }
 }
 
