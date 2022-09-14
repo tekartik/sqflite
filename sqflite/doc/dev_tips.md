@@ -95,7 +95,7 @@ In Android Studio (> 3.0.1)
 
 ## Enable WAL on Android
 
-WAL is disabled by default on Android. You can turn it off by declaring the 
+WAL is disabled by default on Android. Since sqflite v2.0.4-dev.1 You can turn it off by declaring the 
 following in you app manifest (in the application object):
 
 ```xml
