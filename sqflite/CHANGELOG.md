@@ -1,3 +1,7 @@
+## 2.0.4-dev.1
+
+* Android: Allow turing on WAL in the manifest.
+
 ## 2.0.3+1
 
 * MacOS: Fix crash when an invalid number of parameters is specified in the query

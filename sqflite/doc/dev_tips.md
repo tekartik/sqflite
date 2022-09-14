@@ -92,3 +92,25 @@ In Android Studio (> 3.0.1)
 * Go to `data/data/<package_name>/databases`, where `<package_name>` is the name of your package.
   Location might depends how the path was specified (assuming here that are using `getDatabasesPath` to get its base location)
 * Right click on the database and select Save As.... Save it anywhere you want on your PC.
+
+## Enable WAL on Android
+
+WAL is disabled by default on Android. Since sqflite v2.0.4-dev.1 You can turn it off by declaring the 
+following in you app manifest (in the application object):
+
+```xml
+<application>
+  ...
+  <!-- Enable WAL -->
+  <meta-data
+    android:name="com.tekartik.sqflite.wal_enabled"
+    android:value="true" />
+  ...
+</application>
+```
+
+Alternatively a more conservative (multiplatform) way is to call during onConfigure:
+
+```db
+await db.execute('PRAGMA journal_mode=WAL')
+```

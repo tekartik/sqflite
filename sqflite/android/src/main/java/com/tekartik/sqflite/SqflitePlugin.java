@@ -751,7 +751,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         }
         final int databaseId = newDatabaseId;
 
-        final Database database = new Database(path, databaseId, singleInstance, logLevel);
+        final Database database = new Database(context, path, databaseId, singleInstance, logLevel);
 
         synchronized (databaseMapLocker) {
             // Create handler if necessary

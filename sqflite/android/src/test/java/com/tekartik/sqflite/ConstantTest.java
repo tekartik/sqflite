@@ -10,10 +10,8 @@ import static org.junit.Assert.assertEquals;
 
 public class ConstantTest {
 
-
     @Test
     public void key() {
         assertEquals("com.tekartik.sqflite", Constant.PLUGIN_KEY);
-
     }
 }
