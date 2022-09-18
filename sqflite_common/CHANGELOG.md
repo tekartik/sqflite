@@ -1,3 +1,8 @@
+## 2.3.0
+
+- Add `startTransaction` parameter to `batch()` to control whether sqflite will
+  start a transaction for this batch or not.
+
 ## 2.2.1+1
 
 * Add debug tag to database factory
