@@ -235,11 +235,7 @@ void run(SqfliteTestContext context) {
         // try blob lookup - does work but not on Android
         var rows = await _data.db
             .rawQuery('SELECT * FROM Test WHERE value = ?', [blob1234]);
-        if (context.isAndroid) {
-          expect(rows.length, 0);
-        } else if (context.isIOS || context.isMacOS || context.isLinux) {
-          expect(rows.length, 1);
-        }
+        expect(rows.length, 1);
 
         // try blob lookup using hex
         rows = await _data.db.rawQuery(
