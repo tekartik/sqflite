@@ -114,21 +114,21 @@ abstract class SqfliteBatch implements Batch {
 /// Batch on a given database
 class SqfliteDatabaseBatch extends SqfliteBatch {
   /// Create a batch in a database
-  SqfliteDatabaseBatch(this.database, this._startTransaction);
+  SqfliteDatabaseBatch(this.database);
 
   /// Our database
   final SqfliteDatabase database;
 
-  /// Whether this batch should be executed in a transaction, or whether we
-  /// assume that the user is responsible for managing the transaction for us.
-  final bool _startTransaction;
-
   @override
-  Future<List<Object?>> commit(
-      {bool? exclusive, bool? noResult, bool? continueOnError}) {
+  Future<List<Object?>> commit({
+    bool? startTransaction,
+    bool? exclusive,
+    bool? noResult,
+    bool? continueOnError,
+  }) {
     database.checkNotClosed();
 
-    if (!_startTransaction && exclusive == true) {
+    if (startTransaction == false && exclusive == true) {
       throw ArgumentError.value(
         exclusive,
         'exclusive',
@@ -140,7 +140,7 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
       );
     }
 
-    if (_startTransaction) {
+    if (startTransaction != false) {
       return database.transaction<List<Object?>>((Transaction txn) {
         final sqfliteTransaction = txn as SqfliteTransaction;
         return database.txnApplyBatch(sqfliteTransaction, this,
@@ -162,12 +162,21 @@ class SqfliteTransactionBatch extends SqfliteBatch {
   final SqfliteTransaction transaction;
 
   @override
-  Future<List<Object?>> commit(
-      {bool? exclusive, bool? noResult, bool? continueOnError}) {
+  Future<List<Object?>> commit({
+    bool? startTransaction,
+    bool? exclusive,
+    bool? noResult,
+    bool? continueOnError,
+  }) {
     if (exclusive != null) {
       throw ArgumentError.value(exclusive, 'exclusive',
           'must not be set when commiting a batch in a transaction');
     }
+    if (startTransaction != null) {
+      throw ArgumentError.value(startTransaction, 'startTransaction',
+          'Must not be set when commiting a batch in a transaction.');
+    }
+
     return transaction.database.txnApplyBatch(transaction, this,
         noResult: noResult, continueOnError: continueOnError);
   }

@@ -219,12 +219,9 @@ abstract class DatabaseExecutor {
   /// batches.
   /// If [batch] is called on a [Transaction], the batch will be committed when
   /// the transaction completes.
-  /// Otherwise, sqflite will start a transaction for this batch if
-  /// [startTransaction] is true (the default). [startTransaction] can be set
-  /// to false for the rare cases where you want to run a batch outside of a
-  /// transaction, or if you are manually starting the transaction to use
-  /// instead of using sqflite's transaction api.
-  Batch batch({bool startTransaction = true});
+  /// Otherwise, sqflite will manage a new transaction for this batch by
+  /// default. For more details, see [Batch.commit].
+  Batch batch();
 }
 
 /// Database transaction
@@ -454,9 +451,21 @@ abstract class Batch {
   /// During [Database.onCreate], [Database.onUpgrade], [Database.onDowngrade]
   /// (we are already in a transaction) or if the batch was created in a
   /// transaction it will only be commited when
-  /// the transaction is commited ([exclusive] is not used then)
-  Future<List<Object?>> commit(
-      {bool? exclusive, bool? noResult, bool? continueOnError});
+  /// the transaction is commited ([exclusive] is not used then).
+  ///
+  /// Otherwise, sqflite will start a transaction for this batch if
+  /// [startTransaction] is true (the default). [startTransaction] can be set
+  /// to false for the rare cases where you want to run a batch outside of a
+  /// transaction, or if you are manually starting the transaction to use
+  /// instead of using sqflite's transaction api.
+  /// When [startTransaction] is false, you may not set [exclusive] to
+  /// `true` since there is no transaction to start exclusively.
+  Future<List<Object?>> commit({
+    bool? startTransaction,
+    bool? exclusive,
+    bool? noResult,
+    bool? continueOnError,
+  });
 
   /// See [Database.rawInsert]
   void rawInsert(String sql, [List<Object?>? arguments]);

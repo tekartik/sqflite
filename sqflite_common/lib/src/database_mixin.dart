@@ -278,8 +278,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       getBaseDatabaseMethodArguments(id!);
 
   @override
-  Batch batch({bool startTransaction = true}) {
-    return SqfliteDatabaseBatch(this, startTransaction);
+  Batch batch() {
+    return SqfliteDatabaseBatch(this);
   }
 
   @override
