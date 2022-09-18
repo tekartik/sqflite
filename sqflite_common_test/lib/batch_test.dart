@@ -138,6 +138,34 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    test('batch in manual transaction', () async {
+      var path = await context.initDeleteDb('batch_custom_transaction.db');
+      var db = await factory.openDatabase(path);
+
+      await db.execute('BEGIN');
+
+      final batch = db.batch(startTransaction: false);
+      batch
+        ..execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)')
+        ..rawInsert('INSERT INTO Test (name) VALUES (?)', ['item1']);
+
+      // We should not be able to complete with batch with `exclusive: true`
+      // because there is no transaction being managed.
+      await expectLater(
+          () => batch.commit(exclusive: true), throwsArgumentError);
+
+      await batch.commit(noResult: true);
+      await db.execute('COMMIT');
+
+      // Sanity check too see whether values have been written
+      final result = await db.rawQuery('SELECT * FROM Test');
+      expect(result, [
+        {'id': 1, 'name': 'item1'}
+      ]);
+
+      await db.close();
+    });
+
     test('Batch continue on error', () async {
       // await Sqflite.devSetDebugModeOn();
       var path = await context.initDeleteDb('batch_continue_on_error.db');

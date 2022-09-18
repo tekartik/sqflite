@@ -213,11 +213,18 @@ abstract class DatabaseExecutor {
   /// Creates a batch, used for performing multiple operation
   /// in a single atomic operation.
   ///
-  /// a batch can be commited using [Batch.commit]
+  /// A batch can be commited using [Batch.commit]
   ///
-  /// If the batch was created in a transaction, it will be commited
-  /// when the transaction is done
-  Batch batch();
+  /// To achive atomicity, sqflite will manage a transaction for executed
+  /// batches.
+  /// If [batch] is called on a [Transaction], the batch will be committed when
+  /// the transaction completes.
+  /// Otherwise, sqflite will start a transaction for this batch if
+  /// [startTransaction] is true (the default). [startTransaction] can be set
+  /// to false for the rare cases where you want to run a batch outside of a
+  /// transaction, or if you are manually starting the transaction to use
+  /// instead of using sqflite's transaction api.
+  Batch batch({bool startTransaction = true});
 }
 
 /// Database transaction

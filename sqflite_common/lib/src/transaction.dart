@@ -23,5 +23,9 @@ class SqfliteTransaction
   SqfliteTransaction get txn => this;
 
   @override
-  Batch batch() => SqfliteTransactionBatch(this);
+  Batch batch({bool startTransaction = true}) {
+    // We're already in a transaction, so we can ignore the [startTransaction]
+    // option.
+    return SqfliteTransactionBatch(this);
+  }
 }

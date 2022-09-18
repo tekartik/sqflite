@@ -278,8 +278,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       getBaseDatabaseMethodArguments(id!);
 
   @override
-  Batch batch() {
-    return SqfliteDatabaseBatch(this);
+  Batch batch({bool startTransaction = true}) {
+    return SqfliteDatabaseBatch(this, startTransaction);
   }
 
   @override
@@ -425,7 +425,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   @override
   Future<List<Object?>> txnApplyBatch(
-      SqfliteTransaction txn, SqfliteBatch batch,
+      SqfliteTransaction? txn, SqfliteBatch batch,
       {bool? noResult, bool? continueOnError}) {
     return txnWriteSynchronized(txn, (_) async {
       final arguments = <String, Object?>{paramOperations: batch.operations}

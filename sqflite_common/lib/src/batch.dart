@@ -114,20 +114,42 @@ abstract class SqfliteBatch implements Batch {
 /// Batch on a given database
 class SqfliteDatabaseBatch extends SqfliteBatch {
   /// Create a batch in a database
-  SqfliteDatabaseBatch(this.database);
+  SqfliteDatabaseBatch(this.database, this._startTransaction);
 
   /// Our database
   final SqfliteDatabase database;
+
+  /// Whether this batch should be executed in a transaction, or whether we
+  /// assume that the user is responsible for managing the transaction for us.
+  final bool _startTransaction;
 
   @override
   Future<List<Object?>> commit(
       {bool? exclusive, bool? noResult, bool? continueOnError}) {
     database.checkNotClosed();
-    return database.transaction<List<Object?>>((Transaction txn) {
-      final sqfliteTransaction = txn as SqfliteTransaction;
-      return database.txnApplyBatch(sqfliteTransaction, this,
+
+    if (!_startTransaction && exclusive == true) {
+      throw ArgumentError.value(
+        exclusive,
+        'exclusive',
+        'This batch was started with `startTransaction: false`, meaning that '
+            'sqflite will not start a transaction for it. However, it was '
+            'committed with `exclusive: true`, which wuold require sqflite to '
+            'manage a transaction for this batch.\n'
+            'Try disabling either option.',
+      );
+    }
+
+    if (_startTransaction) {
+      return database.transaction<List<Object?>>((Transaction txn) {
+        final sqfliteTransaction = txn as SqfliteTransaction;
+        return database.txnApplyBatch(sqfliteTransaction, this,
+            noResult: noResult, continueOnError: continueOnError);
+      }, exclusive: exclusive);
+    } else {
+      return database.txnApplyBatch(null, this,
           noResult: noResult, continueOnError: continueOnError);
-    }, exclusive: exclusive);
+    }
   }
 }
 
