@@ -41,11 +41,6 @@ public class SqlCommandTest {
                 1.234f,
                 4.5678, // double
                 new byte[]{1, 2, 3}}, command.getSqlArguments());
-        assertArrayEquals(new String[]{"1", "2", "text",
-                "1.234",
-                "4.5678", // double
-                "[1, 2, 3]"}, command.getQuerySqlArguments());
-
     }
 
     @Test
@@ -82,20 +77,5 @@ public class SqlCommandTest {
         assertEquals(command, command.sanitizeForQuery());
         command = new SqlCommand(null, null);
         assertEquals(command, command.sanitizeForQuery());
-        command = new SqlCommand("?,?,?,?,?,?", Arrays.asList((Object) 1L, 2, "text",
-                1.234f,
-                4.5678, // double
-                new byte[]{1, 2, 3}));
-        assertEquals(new SqlCommand("1,2,?,?,?,?", Arrays.asList((Object) "text",
-                1.234f,
-                4.5678, // double
-                new byte[]{1, 2, 3})), command.sanitizeForQuery());
-
-    }
-
-    @Test
-    public void indexedParam() {
-        SqlCommand command = new SqlCommand("?1", Arrays.asList((Object) 1));
-        assertEquals(new SqlCommand("?1", Arrays.asList((Object) 1)), command.sanitizeForQuery());
     }
 }

@@ -5,7 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
+import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteCursorDriver;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQuery;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -35,6 +38,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.StandardMethodCodec;
 
 import static com.tekartik.sqflite.Constant.CMD_GET;
+import static com.tekartik.sqflite.Constant.EMPTY_STRING_ARRAY;
 import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
 import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_BATCH;
@@ -68,7 +72,6 @@ import static com.tekartik.sqflite.Constant.TAG;
  * SqflitePlugin Android implementation
  */
 public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
-
 
     static final Map<String, Integer> _singleInstancesByPath = new HashMap<>();
     static private boolean QUERY_AS_MAP_LIST = false; // set by options
@@ -473,7 +476,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
     // Return true on success
     private boolean query(Database database, final Operation operation) {
-        SqlCommand command = operation.getSqlCommand();
+        final SqlCommand command = operation.getSqlCommand();
 
         List<Map<String, Object>> results = new ArrayList<>();
         Map<String, Object> newResults = null;
@@ -483,13 +486,19 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             Log.d(TAG, database.getThreadLogPrefix() + command);
         }
         Cursor cursor = null;
-        boolean queryAsMapList = QUERY_AS_MAP_LIST;
+        final boolean queryAsMapList = QUERY_AS_MAP_LIST;
         try {
             // For query we sanitize as it only takes String which does not work
             // for references. Simply embed the int/long into the query itself
-            command = command.sanitizeForQuery();
+            cursor = database.getReadableDatabase().rawQueryWithFactory(
+                    new SQLiteDatabase.CursorFactory() {
+                        @Override
+                        public Cursor newCursor(SQLiteDatabase sqLiteDatabase, SQLiteCursorDriver sqLiteCursorDriver, String s, SQLiteQuery sqLiteQuery) {
+                            command.bindTo(sqLiteQuery);
+                            return new SQLiteCursor(sqLiteCursorDriver, s, sqLiteQuery);
+                        }
+                    }, command.getSql(), EMPTY_STRING_ARRAY, null);
 
-            cursor = database.getReadableDatabase().rawQuery(command.getSql(), command.getQuerySqlArguments());
             while (cursor.moveToNext()) {
                 if (queryAsMapList) {
                     Map<String, Object> map = cursorRowToMap(cursor);
