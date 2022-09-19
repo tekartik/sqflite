@@ -213,10 +213,15 @@ abstract class DatabaseExecutor {
   /// Creates a batch, used for performing multiple operation
   /// in a single atomic operation.
   ///
-  /// a batch can be commited using [Batch.commit]
+  /// A batch can either be committed atomically with [Batch.commit], or non-
+  /// atomically by calling [Batch.apply]. For details on the two methods, see
+  /// their documentation.
+  /// In general, it is recommended to finish batches with [Batch.commit].
   ///
-  /// If the batch was created in a transaction, it will be commited
-  /// when the transaction is done
+  /// When committed with [Batch.commit], sqflite will manage a transaction to
+  /// execute statements in the batch. If this [batch] method has been called on
+  /// a [Transaction], committing the batch is deferred to when the transaction
+  /// completes (but [Batch.apply] or [Batch.commit] still need to be called).
   Batch batch();
 }
 
@@ -447,9 +452,31 @@ abstract class Batch {
   /// During [Database.onCreate], [Database.onUpgrade], [Database.onDowngrade]
   /// (we are already in a transaction) or if the batch was created in a
   /// transaction it will only be commited when
-  /// the transaction is commited ([exclusive] is not used then)
-  Future<List<Object?>> commit(
-      {bool? exclusive, bool? noResult, bool? continueOnError});
+  /// the transaction is commited ([exclusive] is not used then).
+  ///
+  /// Otherwise, sqflite will start a transaction to commit this batch. In rare
+  /// cases where you don't need an atomic operation, or where you are manually
+  /// managing the transaction without using sqflite APIs, you can also use
+  /// [apply] to run statements in this batch without a transaction managed by
+  /// sqflite.
+  Future<List<Object?>> commit({
+    bool? exclusive,
+    bool? noResult,
+    bool? continueOnError,
+  });
+
+  /// Runs all statements in this batch non-atomically.
+  ///
+  /// Unlike [commit], which starts a transaction to commit statements in this
+  /// batch atomically, [apply] will simply run the statements without starting
+  /// a transaction internally.
+  ///
+  /// This can be useful in the rare cases where you don't need a sqflite
+  /// transaction, for instance because you are manually starting a transaction
+  /// or because you simply don't need the batch to be applied atomically.
+  ///
+  /// In general, prefer [commit] to run batches over this method.
+  Future<List<Object?>> apply({bool? noResult, bool? continueOnError});
 
   /// See [Database.rawInsert]
   void rawInsert(String sql, [List<Object?>? arguments]);

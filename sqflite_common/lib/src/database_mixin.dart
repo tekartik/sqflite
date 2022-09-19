@@ -425,7 +425,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   @override
   Future<List<Object?>> txnApplyBatch(
-      SqfliteTransaction txn, SqfliteBatch batch,
+      SqfliteTransaction? txn, SqfliteBatch batch,
       {bool? noResult, bool? continueOnError}) {
     return txnWriteSynchronized(txn, (_) async {
       final arguments = <String, Object?>{paramOperations: batch.operations}

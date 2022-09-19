@@ -72,4 +72,6 @@ public class Constant {
 
     // Obsolete since 1.17
     static final public String METHOD_DEBUG_MODE = "debugMode";
+
+    public static final String[] EMPTY_STRING_ARRAY = new String[0];
 }

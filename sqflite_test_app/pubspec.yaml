@@ -43,6 +43,7 @@ dev_dependencies:
   flutter_driver:
     sdk: flutter
   integration_test:
+    sdk: flutter
   sqflite_common_test:
     path: ../sqflite_common_test
   test: '>=1.16.0-nullsafety.10'

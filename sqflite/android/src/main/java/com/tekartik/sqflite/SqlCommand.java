@@ -1,5 +1,6 @@
 package com.tekartik.sqflite;
 
+import android.database.sqlite.SQLiteProgram;
 import android.util.Log;
 
 import com.tekartik.sqflite.dev.Debug;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.tekartik.sqflite.Constant.TAG;
 
@@ -20,16 +22,12 @@ public class SqlCommand {
     final private String sql;
     final private List<Object> rawArguments;
 
-
     // Handle list of int as byte[]
     static private Object toValue(Object value) {
         if (value == null) {
             return null;
         } else {
-            if (Debug.EXTRA_LOGV) {
-                Log.d(TAG, "arg " + value.getClass().getCanonicalName() + " " + toString(value));
-            }
-            // Assume a list is a blog
+            // Assume a list is a blob
             if (value instanceof List) {
                 @SuppressWarnings("unchecked")
                 List<Integer> list = (List<Integer>) value;
@@ -38,10 +36,6 @@ public class SqlCommand {
                     blob[i] = (byte) (int) list.get(i);
                 }
                 value = blob;
-
-            }
-            if (Debug.EXTRA_LOGV) {
-                Log.d(TAG, "arg " + value.getClass().getCanonicalName() + " " + toString(value));
             }
             return value;
         }
@@ -53,58 +47,6 @@ public class SqlCommand {
             rawArguments = new ArrayList<>();
         }
         this.rawArguments = rawArguments;
-
-    }
-
-    // Only sanitize if the parameter count matches the argument count
-    // For integer value replace ? with the actual value directly
-    // to workaround an issue with references
-    public SqlCommand sanitizeForQuery() {
-        if (rawArguments.size() == 0) {
-            return this;
-        }
-        StringBuilder sanitizeSqlSb = new StringBuilder();
-        List<Object> sanitizeArguments = new ArrayList<>();
-        int count = 0;
-        int argumentIndex = 0;
-        int sqlLength = sql.length();
-        for (int i = 0; i < sqlLength; i++) {
-            char ch = sql.charAt(i);
-            if (ch == '?') {
-                // If it is followed by a number
-                // it is an indexed param, cancel our weird conversion
-                if ((i + 1 < sqlLength) && Character.isDigit(sql.charAt(i + 1))) {
-                    return this;
-                }
-                count++;
-                // no match, return the same
-                if (argumentIndex >= rawArguments.size()) {
-                    return this;
-                }
-                Object argument = rawArguments.get(argumentIndex++);
-                if (argument instanceof Integer || argument instanceof Long) {
-                    sanitizeSqlSb.append(argument.toString());
-                    continue;
-                } else {
-                    // Let the other args as is
-                    sanitizeArguments.add(argument);
-                }
-            }
-            // Simply append the existing
-            sanitizeSqlSb.append(ch);
-        }
-        // no match (there might be an extra ? somwhere), return the same
-        if (count != rawArguments.size()) {
-            return this;
-        }
-        return new SqlCommand(sanitizeSqlSb.toString(), sanitizeArguments);
-    }
-
-
-    // Query only accept string arguments
-    // so should not have byte[]
-    private String[] getQuerySqlArguments(List<Object> rawArguments) {
-        return getStringQuerySqlArguments(rawArguments).toArray(new String[0]);
     }
 
     private Object[] getSqlArguments(List<Object> rawArguments) {
@@ -117,68 +59,44 @@ public class SqlCommand {
         return fixedArguments.toArray(new Object[0]);
     }
 
-
-    // Query only accept string arguments
-    private List<String> getStringQuerySqlArguments(List<Object> rawArguments) {
-        List<String> stringArguments = new ArrayList<>();
+    public void bindTo(SQLiteProgram statement) {
         if (rawArguments != null) {
-            for (Object rawArgument : rawArguments) {
-                stringArguments.add(toString(rawArgument));
+            int count = rawArguments.size();
+            for (int i = 0; i < count; i++) {
+                Object arg = toValue(rawArguments.get(i));
+                // sqlite3 variables are 1-indexed
+                int sqlIndex = i + 1;
+
+                if (arg == null) {
+                    statement.bindNull(sqlIndex);
+                } else if (arg instanceof byte[]) {
+                    statement.bindBlob(sqlIndex, (byte[]) arg);
+                } else if (arg instanceof Double) {
+                    statement.bindDouble(sqlIndex, (Double) arg);
+                } else if (arg instanceof Integer) {
+                    statement.bindLong(sqlIndex, (Integer) arg);
+                } else if (arg instanceof Long) {
+                    statement.bindLong(sqlIndex, (Long) arg);
+                } else if (arg instanceof String) {
+                    statement.bindString(sqlIndex, (String) arg);
+                } else if (arg instanceof Boolean) {
+                    statement.bindLong(sqlIndex, ((Boolean) arg) ? 1 : 0);
+                } else {
+                    throw new IllegalArgumentException("Could not bind " + arg + " from index "
+                        + i + ": Supported types are null, byte[], double, long, boolean and String");
+                }
             }
         }
-        return stringArguments;
-    }
-
-
-    // Convert a value to a string
-    // especially byte[]
-    static private String toString(Object value) {
-        if (value == null) {
-            return null;
-        } else if (value instanceof byte[]) {
-            List<Integer> list = new ArrayList<>();
-            for (byte _byte : (byte[]) value) {
-                list.add((int) _byte);
-            }
-            return list.toString();
-        } else if (value instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<Object, Object> mapValue = (Map<Object, Object>) value;
-            return fixMap(mapValue).toString();
-        } else {
-            return value.toString();
-        }
-    }
-
-
-    static private Map<String, Object> fixMap(Map<Object, Object> map) {
-        Map<String, Object> newMap = new HashMap<>();
-        for (Map.Entry<Object, Object> entry : map.entrySet()) {
-            Object value = entry.getValue();
-            if (value instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<Object, Object> mapValue = (Map<Object, Object>) value;
-                value = fixMap(mapValue);
-            } else {
-                value = toString(value);
-            }
-            newMap.put(toString(entry.getKey()), value);
-        }
-        return newMap;
     }
 
     @Override
     public String toString() {
-        return sql + ((rawArguments == null || rawArguments.isEmpty()) ? "" : (" " + getStringQuerySqlArguments(rawArguments)));
+        return sql + ((rawArguments == null || rawArguments.isEmpty()) ? "" : (" " + rawArguments));
     }
 
     // As expected by execSQL
     public Object[] getSqlArguments() {
         return getSqlArguments(rawArguments);
-    }
-
-    public String[] getQuerySqlArguments() {
-        return getQuerySqlArguments(rawArguments);
     }
 
     public List<Object> getRawSqlArguments() {
