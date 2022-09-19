@@ -8,7 +8,7 @@ void run(SqfliteTestContext context) {
   group('raw', () {
     test('BatchQuery', () async {
       // await Sqflite.devSetDebugModeOn();
-      var path = await context.initDeleteDb('batch.db');
+      var path = await context.initDeleteDb('batch_query.db');
       var db = await factory.openDatabase(path);
 
       // empty batch
