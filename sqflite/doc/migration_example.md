@@ -11,6 +11,8 @@ String path;
 Database db;
 ```
 
+In the examples below, `factory` can be replaced by `sqfliteDatabaseFactory` when using `sqflite`.
+
 ## 1st version
 
 The first version creates a `Company` table with a `name` column.
