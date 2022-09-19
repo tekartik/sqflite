@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Android, fix parameter binding for non string parameters
+
 ## 2.0.4-dev.1
 
 * Android: Allow turing on WAL in the manifest.
