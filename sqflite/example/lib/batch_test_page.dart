@@ -139,6 +139,47 @@ class BatchTestPage extends TestPage {
       await db.close();
     });
 
+    test('Apply in database', () async {
+      // await Sqflite.devSetDebugModeOn();
+      final path = await initDeleteDb('apply_in_database.db');
+      final db = await openDatabase(path);
+
+      late List<Object?> results;
+
+      final batch1 = db.batch();
+      batch1.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+      final batch2 = db.batch();
+      batch2.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item1']);
+      results = await batch1.apply();
+      expect(results, [null]);
+
+      results = await batch2.apply();
+      expect(results, [1]);
+      await db.close();
+    });
+
+    test('Apply in transaction', () async {
+      // await Sqflite.devSetDebugModeOn();
+      final path = await initDeleteDb('apply_in_transaction.db');
+      final db = await openDatabase(path);
+
+      late List<Object?> results;
+
+      await db.transaction((txn) async {
+        final batch1 = txn.batch();
+        batch1.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+        final batch2 = txn.batch();
+        batch2.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item1']);
+        results = await batch1.apply();
+        expect(results, [null]);
+
+        results = await batch2.apply();
+        expect(results, [1]);
+      });
+
+      await db.close();
+    });
+
     test('Batch continue on error', () async {
       // await Sqflite.devSetDebugModeOn();
       final path = await initDeleteDb('batch_continue_on_error.db');
