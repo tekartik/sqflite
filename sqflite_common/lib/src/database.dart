@@ -80,7 +80,7 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
 
   /// Commit a batch.
   Future<List<Object?>> txnApplyBatch(
-      SqfliteTransaction txn, SqfliteBatch batch,
+      SqfliteTransaction? txn, SqfliteBatch batch,
       {bool? noResult, bool? continueOnError});
 
   /// Execute a command.

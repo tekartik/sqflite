@@ -120,14 +120,24 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   final SqfliteDatabase database;
 
   @override
-  Future<List<Object?>> commit(
-      {bool? exclusive, bool? noResult, bool? continueOnError}) {
+  Future<List<Object?>> commit({
+    bool? exclusive,
+    bool? noResult,
+    bool? continueOnError,
+  }) {
     database.checkNotClosed();
+
     return database.transaction<List<Object?>>((Transaction txn) {
       final sqfliteTransaction = txn as SqfliteTransaction;
       return database.txnApplyBatch(sqfliteTransaction, this,
           noResult: noResult, continueOnError: continueOnError);
     }, exclusive: exclusive);
+  }
+
+  @override
+  Future<List<Object?>> apply({bool? noResult, bool? continueOnError}) {
+    return database.txnApplyBatch(null, this,
+        noResult: noResult, continueOnError: continueOnError);
   }
 }
 
@@ -140,12 +150,21 @@ class SqfliteTransactionBatch extends SqfliteBatch {
   final SqfliteTransaction transaction;
 
   @override
-  Future<List<Object?>> commit(
-      {bool? exclusive, bool? noResult, bool? continueOnError}) {
+  Future<List<Object?>> commit({
+    bool? exclusive,
+    bool? noResult,
+    bool? continueOnError,
+  }) {
     if (exclusive != null) {
       throw ArgumentError.value(exclusive, 'exclusive',
           'must not be set when commiting a batch in a transaction');
     }
+
+    return apply(noResult: noResult, continueOnError: continueOnError);
+  }
+
+  @override
+  Future<List<Object?>> apply({bool? noResult, bool? continueOnError}) {
     return transaction.database.txnApplyBatch(transaction, this,
         noResult: noResult, continueOnError: continueOnError);
   }

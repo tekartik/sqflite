@@ -1,3 +1,8 @@
+## 2.3.0
+
+- Add `apply()` method to `Batch`. It will execute statements in that batch
+  without starting a new transaction.
+
 ## 2.2.1+1
 
 * Add debug tag to database factory

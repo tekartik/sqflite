@@ -5,7 +5,6 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:integration_test/integration_test.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
