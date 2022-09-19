@@ -121,35 +121,23 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
 
   @override
   Future<List<Object?>> commit({
-    bool? startTransaction,
     bool? exclusive,
     bool? noResult,
     bool? continueOnError,
   }) {
     database.checkNotClosed();
 
-    if (startTransaction == false && exclusive == true) {
-      throw ArgumentError.value(
-        exclusive,
-        'exclusive',
-        'This batch was started with `startTransaction: false`, meaning that '
-            'sqflite will not start a transaction for it. However, it was '
-            'committed with `exclusive: true`, which wuold require sqflite to '
-            'manage a transaction for this batch.\n'
-            'Try disabling either option.',
-      );
-    }
-
-    if (startTransaction != false) {
-      return database.transaction<List<Object?>>((Transaction txn) {
-        final sqfliteTransaction = txn as SqfliteTransaction;
-        return database.txnApplyBatch(sqfliteTransaction, this,
-            noResult: noResult, continueOnError: continueOnError);
-      }, exclusive: exclusive);
-    } else {
-      return database.txnApplyBatch(null, this,
+    return database.transaction<List<Object?>>((Transaction txn) {
+      final sqfliteTransaction = txn as SqfliteTransaction;
+      return database.txnApplyBatch(sqfliteTransaction, this,
           noResult: noResult, continueOnError: continueOnError);
-    }
+    }, exclusive: exclusive);
+  }
+
+  @override
+  Future<List<Object?>> apply({bool? noResult, bool? continueOnError}) {
+    return database.txnApplyBatch(null, this,
+        noResult: noResult, continueOnError: continueOnError);
   }
 }
 
@@ -163,7 +151,6 @@ class SqfliteTransactionBatch extends SqfliteBatch {
 
   @override
   Future<List<Object?>> commit({
-    bool? startTransaction,
     bool? exclusive,
     bool? noResult,
     bool? continueOnError,
@@ -172,11 +159,12 @@ class SqfliteTransactionBatch extends SqfliteBatch {
       throw ArgumentError.value(exclusive, 'exclusive',
           'must not be set when commiting a batch in a transaction');
     }
-    if (startTransaction != null) {
-      throw ArgumentError.value(startTransaction, 'startTransaction',
-          'Must not be set when commiting a batch in a transaction.');
-    }
 
+    return apply(noResult: noResult, continueOnError: continueOnError);
+  }
+
+  @override
+  Future<List<Object?>> apply({bool? noResult, bool? continueOnError}) {
     return transaction.database.txnApplyBatch(transaction, this,
         noResult: noResult, continueOnError: continueOnError);
   }

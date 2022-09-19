@@ -149,13 +149,7 @@ void run(SqfliteTestContext context) {
         ..execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)')
         ..rawInsert('INSERT INTO Test (name) VALUES (?)', ['item1']);
 
-      // We should not be able to complete with batch with `exclusive: true`
-      // because there is no transaction being managed.
-      await expectLater(
-          () => batch.commit(startTransaction: false, exclusive: true),
-          throwsArgumentError);
-
-      await batch.commit(noResult: true, startTransaction: false);
+      await batch.apply(noResult: true);
       await db.execute('COMMIT');
 
       // Sanity check too see whether values have been written
