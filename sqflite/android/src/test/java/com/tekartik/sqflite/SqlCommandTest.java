@@ -66,16 +66,4 @@ public class SqlCommandTest {
         assertNotEquals(command1, command2);
         assertNotEquals(command2, command1);
     }
-
-    @Test
-    public void sanitizeQuery() {
-        SqlCommand command = new SqlCommand("?", Arrays.asList((Object) 1));
-        assertEquals(new SqlCommand("1", null), command.sanitizeForQuery());
-        command = new SqlCommand("?", Arrays.asList((Object) 1, 2));
-        assertEquals(command, command.sanitizeForQuery());
-        command = new SqlCommand("?", null);
-        assertEquals(command, command.sanitizeForQuery());
-        command = new SqlCommand(null, null);
-        assertEquals(command, command.sanitizeForQuery());
-    }
 }
