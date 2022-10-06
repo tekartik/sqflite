@@ -1,6 +1,7 @@
-## 2.1.0
+## 2.1.0+1
 
-* Android, fix parameter binding for non string parameters
+* Android: fix parameter binding for non string parameters
+* Android: fix unit test
 
 ## 2.0.4-dev.1
 
