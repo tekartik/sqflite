@@ -530,6 +530,16 @@ class RawTestPage extends TestPage {
         } else {
           expect(id, 1);
         }
+
+        // Insert conflict
+        // Only tested on Android for now...
+        try {
+          id = await db.insert('Test', {'name': 'other'});
+        } on DatabaseException catch (e) {
+          // Test.name (code 1555 SQLITE_CONSTRAINT_PRIMARYKEY)) sql 'INSERT INTO Test (name) VALUES (?)' args [other] running without rowid
+          expect(e.getResultCode(), 1555);
+        }
+
         // notice the order is based on the primary key
         final list = await db.query('Test');
         expect(list, [
