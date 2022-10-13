@@ -1,13 +1,11 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+import 'dart:io' as io;
 
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/utils/utils.dart';
-import 'package:sqflite_example/src/dev_utils.dart';
 
+import 'src/common_import.dart';
 import 'test_page.dart';
 
 // ignore_for_file: avoid_print
@@ -397,9 +395,11 @@ class RawTestPage extends TestPage {
 
       // Make sure the directory exists
       try {
-        // ignore: avoid_slow_async_io
-        if (!kIsWeb && !await Directory(databasesPath).exists()) {
-          await Directory(databasesPath).create(recursive: true);
+        if (!kIsWeb) {
+          // ignore: avoid_slow_async_io
+          if (!await io.Directory(databasesPath).exists()) {
+            await io.Directory(databasesPath).create(recursive: true);
+          }
         }
       } catch (_) {}
 
@@ -518,14 +518,14 @@ class RawTestPage extends TestPage {
             .execute('CREATE TABLE Test (name TEXT PRIMARY KEY) WITHOUT ROWID');
         var id = await db.insert('Test', {'name': 'test'});
         // it seems to always return 1 on Android, 0 on iOS...
-        if (Platform.isIOS || Platform.isMacOS && !kIsWeb) {
+        if (platform.isIOS || platform.isMacOS && !kIsWeb) {
           expect(id, 0);
         } else {
           expect(id, 1);
         }
         id = await db.insert('Test', {'name': 'other'});
         // it seems to always return 1
-        if (Platform.isIOS || Platform.isMacOS && !kIsWeb) {
+        if (platform.isIOS || platform.isMacOS && !kIsWeb) {
           expect(id, 0);
         } else {
           expect(id, 1);

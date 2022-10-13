@@ -14,6 +14,9 @@ class _PlatformIo extends Platform {
 
   @override
   bool get isLinux => io.Platform.isLinux;
+
+  @override
+  bool get isMacOS => io.Platform.isMacOS;
 }
 
 /// Platform (IO)

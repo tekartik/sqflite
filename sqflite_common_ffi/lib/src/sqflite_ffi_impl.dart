@@ -8,7 +8,7 @@ import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
 import 'package:sqlite3/common.dart' as common;
 import 'package:synchronized/extension.dart';
 
-import 'database_tracker.dart' if (dart.library.js) 'database_tracker.web.dart';
+import 'database_tracker.dart' if (dart.library.js) 'database_tracker_web.dart';
 import 'sqflite_ffi_impl_io.dart'
     if (dart.library.js) 'sqflite_ffi_impl_web.dart';
 

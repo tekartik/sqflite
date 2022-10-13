@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/services.dart';
@@ -12,9 +9,9 @@ import 'package:sqflite/src/database_mixin.dart' // ignore: implementation_impor
 import 'package:sqflite/src/factory_mixin.dart' // ignore: implementation_imports
     show
         SqfliteDatabaseFactoryMixin;
-import 'package:sqflite_example/src/dev_utils.dart';
 import 'package:synchronized/synchronized.dart';
 
+import 'src/common_import.dart';
 import 'test_page.dart';
 // ignore_for_file: avoid_slow_async_io
 // ignore_for_file: avoid_print
@@ -142,9 +139,9 @@ class OpenTestPage extends TestPage {
       final databasesPath = await factory.getDatabasesPath();
       // On Android we know it is current a 'databases' folder in the package folder
       print('databasesPath: $databasesPath');
-      if (Platform.isAndroid) {
+      if (platform.isAndroid) {
         expect(basename(databasesPath), 'databases');
-      } else if (Platform.isIOS) {
+      } else if (platform.isIOS) {
         expect(basename(databasesPath), 'Documents');
       }
       final path = join(databasesPath, 'in_default_directory.db');
@@ -887,7 +884,7 @@ class OpenTestPage extends TestPage {
       expect((await readFileAsBytes(path)).length, lessThan(minExpectedSize));
 
       var db = await factory.openDatabase(path);
-      if (Platform.isIOS || Platform.isMacOS && !kIsWeb) {
+      if (platform.isIOS || platform.isMacOS && !kIsWeb) {
         // On iOS it fails
         try {
           await db.getVersion();
@@ -900,7 +897,7 @@ class OpenTestPage extends TestPage {
       }
       await db.close();
 
-      if (Platform.isIOS || Platform.isMacOS && !kIsWeb) {
+      if (platform.isIOS || platform.isMacOS && !kIsWeb) {
         // On iOS it fails
         try {
           db = await factory.openDatabase(path,
@@ -916,7 +913,7 @@ class OpenTestPage extends TestPage {
       }
       await db.close();
 
-      if (Platform.isAndroid) {
+      if (platform.isAndroid) {
         // Content has changed, it is a big file now!
         expect(
             (await readFileAsBytes(path)).length, greaterThan(minExpectedSize));

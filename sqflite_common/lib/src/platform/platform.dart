@@ -16,4 +16,7 @@ abstract class Platform {
 
   /// True if IO Linux
   bool get isLinux => false;
+
+  /// True if IO MacOS
+  bool get isMacOS => false;
 }

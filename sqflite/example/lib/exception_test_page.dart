@@ -1,11 +1,8 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sql.dart';
 
+import 'src/common_import.dart';
 import 'test_page.dart';
 
 // ignore_for_file: avoid_print
@@ -364,7 +361,7 @@ class ExceptionTestPage extends TestPage {
     });
 
     test('Bind no argument (no iOS)', () async {
-      if (!Platform.isIOS) {
+      if (!platform.isIOS) {
         // await Sqflite.devSetDebugModeOn(true);
         final path = await initDeleteDb('bind_no_arg_failed.db');
         final db = await openDatabase(path);
@@ -383,7 +380,7 @@ class ExceptionTestPage extends TestPage {
 
     test('crash ios (no iOS)', () async {
       // This crashes natively on iOS...can't catch it yet
-      if (!Platform.isIOS) {
+      if (!platform.isIOS) {
         //if (true) {
         // await Sqflite.devSetDebugModeOn(true);
         final path = await initDeleteDb('bind_no_arg_failed.db');

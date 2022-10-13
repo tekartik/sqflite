@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'src/common_import.dart';
 import 'test_page.dart';
 
 // ignore_for_file: avoid_print
@@ -79,7 +78,7 @@ class SlowTestPage extends TestPage {
       await perfDo(count);
     });
 
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       test('Perf android NORMAL_PRIORITY', () async {
         // ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
         await Sqflite.devSetOptions(
