@@ -9,7 +9,7 @@ environment:
   sdk: '>=2.16.0 <3.0.0'
 
 dependencies:
-  sqlite3: '>=1.0.0 <3.0.0'
+  sqlite3: '>=1.7.0 <3.0.0'
   sqflite_common: '>=2.2.1+1 <4.0.0'
   synchronized: '>=3.0.0 <5.0.0'
   path: '>=1.8.0 <3.0.0'

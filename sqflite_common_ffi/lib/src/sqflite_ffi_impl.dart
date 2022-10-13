@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:path/path.dart';
@@ -6,11 +5,12 @@ import 'package:sqflite_common/src/mixin/constant.dart'; // ignore: implementati
 import 'package:sqflite_common_ffi/src/constant.dart';
 import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
-import 'package:sqlite3/sqlite3.dart' as ffi;
+import 'package:sqlite3/common.dart' as common;
 import 'package:synchronized/extension.dart';
 import 'package:synchronized/synchronized.dart';
 
-import 'database_tracker.dart';
+import 'database_tracker.dart' if (dart.library.js) 'database_tracker.web.dart';
+import 'sqflite_ffi_impl_io.dart' if (dart.library.js) 'sqflite_ffi_impl_web.dart';
 
 final _debug = false; //devWarning(true); // false
 // final _useIsolate = true; // devWarning(true); // true the default!
@@ -62,7 +62,7 @@ class SqfliteFfiDatabase {
 
   /// If read-only
   final bool readOnly;
-  final ffi.Database _ffiDb;
+  final common.CommonDatabase _ffiDb;
 
   /// Log level.
   final int logLevel;
@@ -219,7 +219,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
         };
       }
       return e;
-    } else if (e is ffi.SqliteException) {
+    } else if (e is common.SqliteException) {
       return wrapAnyException(wrapSqlException(e));
     } else {
       return wrapAnyException(
@@ -235,7 +235,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       e.sqlArguments ??= getSqlArguments();
 
       return e;
-    } else if (e is ffi.SqliteException) {
+    } else if (e is common.SqliteException) {
       return wrapAnyException(wrapSqlException(e));
     } else {
       return wrapAnyExceptionNoIsolate(
@@ -306,7 +306,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Default database path.
   String getDatabasesPath() {
-    return absolute(join('.dart_tool', 'sqflite_common_ffi', 'databases'));
+    return getDatabasesPathPlatform();
   }
 
   /// Read arguments as a map;
@@ -329,36 +329,11 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
         return database;
       }
     }
-    ffi.Database? ffiDb;
-    try {
-      if (path == inMemoryDatabasePath) {
-        ffiDb = ffi.sqlite3.openInMemory();
-      } else {
-        if (readOnly) {
-          // ignore: avoid_slow_async_io
-          if (!(await File(path).exists())) {
-            throw StateError('file $path not found');
-          }
-        } else {
-          // ignore: avoid_slow_async_io
-          if (!(await File(path).exists())) {
-            // Make sure its parent exists
-            try {
-              await Directory(dirname(path)).create(recursive: true);
-            } catch (_) {}
-          }
-        }
-        final mode =
-            readOnly ? ffi.OpenMode.readOnly : ffi.OpenMode.readWriteCreate;
-        ffiDb = ffi.sqlite3.open(path, mode: mode);
 
-        // Handle hot-restart for single instance
-        // The dart code is killed but the native code remains
-        if (singleInstance) {
-          tracker.markOpened(ffiDb);
-        }
-      }
-    } on ffi.SqliteException catch (e) {
+    common.CommonDatabase ffiDb;
+    try {
+      ffiDb = await handleOpenPlatform(argumentsMap);
+    } on common.SqliteException catch (e) {
       throw wrapSqlException(e, code: 'open_failed');
     }
 
@@ -505,7 +480,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Wrap SQL exception.
-  SqfliteFfiException wrapSqlException(ffi.SqliteException e,
+  SqfliteFfiException wrapSqlException(common.SqliteException e,
       {String? code, Map<String, Object?>? details}) {
     return SqfliteFfiException(
         // Hardcoded
@@ -700,24 +675,19 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
     // Ignore failure
     try {
-      await File(path!).delete();
+      await deleteDatabasePlatform(path!);
     } catch (_) {}
   }
 
   /// Handle `databaseExists`.
   Future<bool> handleDatabaseExists() async {
     var path = getPath();
-    // Ignore failure
-    try {
-      return (File(path!)).existsSync();
-    } catch (_) {
-      return false;
-    }
+    return handleDatabaseExistsPlatform(path!);
   }
 }
 
 /// Pack the result in the expected sqflite format.
-Map<String, Object?> packResult(ffi.ResultSet result) {
+Map<String, Object?> packResult(common.ResultSet result) {
   var columns = result.columnNames;
   var rows = result.rows;
   // This is what sqflite expected
