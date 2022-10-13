@@ -176,7 +176,7 @@ mixin SqfliteDatabaseFactoryMixin
   }
 
   final bool _kIsWeb = identical(0, 0.0);
-  
+
   /// path must be non null
   Future<String> fixPath(String path) async {
     if (isInMemoryDatabasePath(path) || _kIsWeb) {

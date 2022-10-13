@@ -9,10 +9,12 @@ import 'sqflite_ffi_impl.dart';
 var databaseFactoryFfiImpl = createDatabaseFactoryFfiImpl();
 
 /// The Ffi database factory.
-var databaseFactoryFfiNoIsolateImpl = createDatabaseFactoryFfiImpl(noIsolate: true);
+var databaseFactoryFfiNoIsolateImpl =
+    createDatabaseFactoryFfiImpl(noIsolate: true);
 
 /// Creates an FFI database factory
-DatabaseFactory createDatabaseFactoryFfiImpl({SqfliteFfiInit? ffiInit, bool noIsolate = false, String? tag = 'ffi'}) {
+DatabaseFactory createDatabaseFactoryFfiImpl(
+    {SqfliteFfiInit? ffiInit, bool noIsolate = false, String? tag = 'ffi'}) {
   return buildDatabaseFactory(
       tag: tag,
       invokeMethod: (String method, [dynamic arguments]) {
