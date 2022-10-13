@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
+
+import 'src/core_import.dart';
 
 /// Statement test.
 void run(SqfliteTestContext context) {
@@ -56,7 +55,7 @@ SELECT s FROM x WHERE ind=0;
       }
     },
         // This fail on ubuntu...why
-        skip: context.strict && !Platform.isWindows);
+        skip: context.strict && !platform.isWindows);
 
     test('indexed_param', () async {
       final db = await factory.openDatabase(inMemoryDatabasePath);

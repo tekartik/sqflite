@@ -7,13 +7,19 @@ import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
 import 'package:sqlite3/common.dart' as common;
 import 'package:synchronized/extension.dart';
-import 'package:synchronized/synchronized.dart';
 
 import 'database_tracker.dart' if (dart.library.js) 'database_tracker.web.dart';
-import 'sqflite_ffi_impl_io.dart' if (dart.library.js) 'sqflite_ffi_impl_web.dart';
+import 'sqflite_ffi_impl_io.dart'
+    if (dart.library.js) 'sqflite_ffi_impl_web.dart';
 
-final _debug = false; //devWarning(true); // false
+final _debug = false; // devWarning(true); // false
 // final _useIsolate = true; // devWarning(true); // true the default!
+
+/// Ffi handler.
+abstract class SqfliteFfiHandler {
+  /// Opens the database using an ffi implementation
+  Future<common.CommonDatabase> openPlatform(Map argumentsMap);
+}
 
 String _prefix = '[sqflite]';
 
@@ -165,17 +171,13 @@ class SqfliteFfiDatabase {
   }
 }
 
-/// Ffi handler.
-class SqfliteFfiHandler {
-  /// Lock per instance.
-  final multiInstanceLocks = <String, Lock>{};
+SqfliteFfiHandler? _sqfliteFfiHandler;
 
-  /// Main lock.
-  final mainLock = Lock();
-}
-
-/// Bas handler.
-final sqfliteFfiHandler = SqfliteFfiHandler();
+/// Base handler, might be overriden by web implementation
+SqfliteFfiHandler get sqfliteFfiHandler =>
+    _sqfliteFfiHandler ??= SqfliteFfiHandlerIo();
+set sqfliteFfiHandler(SqfliteFfiHandler handler) =>
+    _sqfliteFfiHandler = handler;
 
 class _MultiInstanceLocker {
   _MultiInstanceLocker(this.path);
@@ -332,7 +334,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
     common.CommonDatabase ffiDb;
     try {
-      ffiDb = await handleOpenPlatform(argumentsMap);
+      ffiDb = await sqfliteFfiHandler.openPlatform(argumentsMap);
     } on common.SqliteException catch (e) {
       throw wrapSqlException(e, code: 'open_failed');
     }

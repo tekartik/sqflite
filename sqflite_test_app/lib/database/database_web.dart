@@ -4,9 +4,10 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+// ignore: depend_on_referenced_packages
 import 'package:sqlite3/wasm.dart';
 
-const _dbName = 'sqflite_databases'; 
+const _dbName = 'sqflite_databases';
 
 /// delete the db, create the folder and returnes its path
 Future<String> initDeleteDb(String dbName) async {
@@ -14,13 +15,14 @@ Future<String> initDeleteDb(String dbName) async {
   final path = join(databasePath, dbName);
   if (await databaseExists(path)) {
     await deleteDatabase(path);
-  }  
+  }
   return path;
 }
 
 /// Write the db file directly to the file system
-Future<void> writeFileAsBytes(String path, List<int> bytes, {bool flush = false}) async {
-  final fs = await IndexedDbFileSystem.open(dbName: _dbName); 
+Future<void> writeFileAsBytes(String path, List<int> bytes,
+    {bool flush = false}) async {
+  final fs = await IndexedDbFileSystem.open(dbName: _dbName);
   if (fs.exists(path)) fs.deleteFile(path);
   fs.createFile(path);
   fs.write(path, Uint8List.fromList(bytes), 0);
@@ -29,7 +31,7 @@ Future<void> writeFileAsBytes(String path, List<int> bytes, {bool flush = false}
 
 /// Read a file as bytes
 Future<Uint8List> readFileAsBytes(String path) async {
-  final fs = await IndexedDbFileSystem.open(dbName: _dbName); 
+  final fs = await IndexedDbFileSystem.open(dbName: _dbName);
   var size = fs.sizeOfFile(path);
   var target = Uint8List(size);
   fs.read(path, target, 0);
@@ -37,7 +39,8 @@ Future<Uint8List> readFileAsBytes(String path) async {
 }
 
 /// Write a file as a string
-Future<void> writeFileAsString(String path, String text, {bool flush = false}) async {
+Future<void> writeFileAsString(String path, String text,
+    {bool flush = false}) async {
   var bytes = const Utf8Encoder().convert(text);
   await writeFileAsBytes(path, bytes, flush: flush);
 }
@@ -51,19 +54,15 @@ Future<String> readFileAsString(String path) async {
 
 /// Check if a path exists.
 Future<bool> pathExists(String path) async {
-  final fs = await IndexedDbFileSystem.open(dbName: _dbName); 
+  final fs = await IndexedDbFileSystem.open(dbName: _dbName);
   return fs.exists(path);
 }
 
 /// Create a directory, on the web this is a noop since files are referred to directly by path
-Future<void> createDirectory(String path) async {
-  
-}
+Future<void> createDirectory(String path) async {}
 
 /// Delete a directory, on the web this is a noop since files are referred to directly by path
-Future<void> deleteDirectory(String path) async {
-  
-}
+Future<void> deleteDirectory(String path) async {}
 
 /// Check if a directory exists, all directories potentially exist on the web since files are referred to directly by path
 Future<bool> existsDirectory(String path) async {

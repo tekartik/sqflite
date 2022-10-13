@@ -4,9 +4,10 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
-import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:test/test.dart';
+
+import 'src/core_import.dart';
 
 export 'package:sqflite_common/sqflite_dev.dart';
 
@@ -100,9 +101,9 @@ void run(SqfliteTestContext context) {
     var databasesPath = await factory.getDatabasesPath();
     // On Android we know it is current a 'databases' folder in the package folder
     print('databasesPath: $databasesPath');
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       expect(basename(databasesPath), 'databases');
-    } else if (Platform.isIOS) {
+    } else if (platform.isIOS) {
       expect(basename(databasesPath), 'Documents');
     }
     var path =

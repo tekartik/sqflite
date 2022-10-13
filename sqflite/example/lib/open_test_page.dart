@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -13,7 +14,6 @@ import 'package:sqflite/src/factory_mixin.dart' // ignore: implementation_import
         SqfliteDatabaseFactoryMixin;
 import 'package:sqflite_example/src/dev_utils.dart';
 import 'package:synchronized/synchronized.dart';
-import 'package:universal_io/io.dart' show Platform;
 
 import 'test_page.dart';
 // ignore_for_file: avoid_slow_async_io
@@ -884,8 +884,7 @@ class OpenTestPage extends TestPage {
       expect(await isDatabase(path), isFalse);
       // try read-write
       const minExpectedSize = 1000;
-      expect(
-          (await readFileAsBytes(path)).length, lessThan(minExpectedSize));
+      expect((await readFileAsBytes(path)).length, lessThan(minExpectedSize));
 
       var db = await factory.openDatabase(path);
       if (Platform.isIOS || Platform.isMacOS && !kIsWeb) {
@@ -919,8 +918,8 @@ class OpenTestPage extends TestPage {
 
       if (Platform.isAndroid) {
         // Content has changed, it is a big file now!
-        expect((await readFileAsBytes(path)).length,
-            greaterThan(minExpectedSize));
+        expect(
+            (await readFileAsBytes(path)).length, greaterThan(minExpectedSize));
       }
     });
   }
