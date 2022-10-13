@@ -1,5 +1,5 @@
-import 'main_ffi.dart' as main_ffi;
+import 'main_ffi.dart';
 
 void main() {
-  main_ffi.main();
+  mainFfi();
 }

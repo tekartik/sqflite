@@ -11,7 +11,7 @@ import 'package:sqlite3/sqlite3.dart' as ffi;
 import 'database_tracker.dart';
 
 /// Ffi handler.
-class SqfliteFfiHandlerIo extends SqfliteFfiHandler {
+class _SqfliteFfiHandlerIo extends SqfliteFfiHandler {
   /// Opens the database using an ffi implementation
   @override
   Future<common.CommonDatabase> openPlatform(Map argumentsMap) async {
@@ -50,24 +50,30 @@ class SqfliteFfiHandlerIo extends SqfliteFfiHandler {
 
     return ffiDb;
   }
-}
 
-/// Delete the database file.
-Future<void> deleteDatabasePlatform(String path) async {
-  await File(path).delete();
-}
+  /// Delete the database file.
+  @override
+  Future<void> deleteDatabasePlatform(String path) async {
+    await File(path).delete();
+  }
 
-/// Check if database file exists
-Future<bool> handleDatabaseExistsPlatform(String path) async {
-  // Ignore failure
-  try {
-    return (File(path)).existsSync();
-  } catch (_) {
-    return false;
+  /// Check if database file exists
+  @override
+  Future<bool> handleDatabaseExistsPlatform(String path) async {
+    // Ignore failure
+    try {
+      return (File(path)).existsSync();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Default database path.
+  @override
+  String getDatabasesPathPlatform() {
+    return absolute(join('.dart_tool', 'sqflite_common_ffi', 'databases'));
   }
 }
 
-/// Default database path.
-String getDatabasesPathPlatform() {
-  return absolute(join('.dart_tool', 'sqflite_common_ffi', 'databases'));
-}
+/// Io handler
+SqfliteFfiHandler sqfliteFfiHandlerIo = _SqfliteFfiHandlerIo();

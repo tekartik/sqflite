@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'dart:convert';
 import 'dart:isolate';
 import 'dart:typed_data';
 
@@ -8,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common/sqflite_dev.dart';
+import 'package:sqflite_example/src/common_import.dart';
 
 import 'test_page.dart';
 
@@ -393,17 +392,29 @@ INSERT INTO test (value) VALUES (1);
 INSERT INTO test (value) VALUES (10);
 ''';
         await db.execute(sql);
-
         // that should be the expected result
         // var expectedResult = [
         //   {'value': 1},
         //   {'value': 10}
         // ];
         final result = await db.rawQuery('SELECT * FROM $table');
+        print(json.encode(result));
+
         // However (at least on Android)
         // result is empty, only the first statement is executed
-        print(json.encode(result));
-        expect(result, []);
+        // Ok when using ffi...
+        if (platform.isLinux) {
+          // Ok when using ffi linux implementation
+          // TODO check windows and mac.
+          // that should be the expected result
+          var expectedResult = [
+            {'value': 1},
+            {'value': 10}
+          ];
+          expect(result, expectedResult);
+        } else {
+          expect(result, []);
+        }
       } finally {
         await db.close();
       }

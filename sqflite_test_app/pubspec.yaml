@@ -35,7 +35,8 @@ dependencies:
   dev_test:
   process_run: '>=0.11.0+2'
   path:
-
+  sqflite_common_ffi_web:
+    path: ../packages_web/sqflite_common_ffi_web
 dev_dependencies:
   flutter_lints:
   flutter_test:
@@ -79,6 +80,7 @@ flutter:
   assets:
     - assets/example.db
     - assets/issue_64.db
+    # - packages/sqflite_common_ffi_web/src/web/sqlite3.wasm
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

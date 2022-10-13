@@ -19,6 +19,15 @@ final _debug = false; // devWarning(true); // false
 abstract class SqfliteFfiHandler {
   /// Opens the database using an ffi implementation
   Future<common.CommonDatabase> openPlatform(Map argumentsMap);
+
+  /// Delete the database file.
+  Future<void> deleteDatabasePlatform(String path);
+
+  /// Check if database file exists
+  Future<bool> handleDatabaseExistsPlatform(String path);
+
+  /// Default database path.
+  String getDatabasesPathPlatform();
 }
 
 String _prefix = '[sqflite]';
@@ -175,7 +184,7 @@ SqfliteFfiHandler? _sqfliteFfiHandler;
 
 /// Base handler, might be overriden by web implementation
 SqfliteFfiHandler get sqfliteFfiHandler =>
-    _sqfliteFfiHandler ??= SqfliteFfiHandlerIo();
+    _sqfliteFfiHandler ??= sqfliteFfiHandlerIo;
 set sqfliteFfiHandler(SqfliteFfiHandler handler) =>
     _sqfliteFfiHandler = handler;
 
@@ -274,6 +283,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Handle a method call
   Future<dynamic> rawHandle() async {
+    // devPrint('Handle method $method options $arguments');
     switch (method) {
       case 'openDatabase':
         return await handleOpenDatabase();
@@ -308,7 +318,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Default database path.
   String getDatabasesPath() {
-    return getDatabasesPathPlatform();
+    return sqfliteFfiHandler.getDatabasesPathPlatform();
   }
 
   /// Read arguments as a map;
@@ -677,14 +687,14 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
     // Ignore failure
     try {
-      await deleteDatabasePlatform(path!);
+      await sqfliteFfiHandler.deleteDatabasePlatform(path!);
     } catch (_) {}
   }
 
   /// Handle `databaseExists`.
   Future<bool> handleDatabaseExists() async {
     var path = getPath();
-    return handleDatabaseExistsPlatform(path!);
+    return sqfliteFfiHandler.handleDatabaseExistsPlatform(path!);
   }
 }
 

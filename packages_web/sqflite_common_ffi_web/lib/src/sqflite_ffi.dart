@@ -1,1 +1,1 @@
-export 'sqflite_ffi_io.dart' if (dart.library.js) 'sqflite_ffi_web.dart';
+export 'sqflite_ffi_io.dart' if (dart.library.html) 'sqflite_ffi_web.dart';

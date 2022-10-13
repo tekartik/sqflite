@@ -1,1 +1,2 @@
-export 'src/sqflite_ffi.dart' show databaseFactoryFfiWebNoWebWorker;
+export 'src/sqflite_ffi.dart'
+    show databaseFactoryFfiWeb, databaseFactoryFfiWebNoWebWorker;
