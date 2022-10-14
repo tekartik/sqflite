@@ -29,6 +29,9 @@ abstract class SqfliteFfiHandler {
 
   /// Default database path.
   String getDatabasesPathPlatform();
+
+  /// Ffi specific options (for the web contains the sqlite3 wasm url)
+  Future<void> handleOptionsPlatform(Map argumentMap);
 }
 
 String _prefix = '[sqflite]';
@@ -337,6 +340,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Handle open database.
   Future<Map> handleOpenDatabase() async {
+    // devPrint('handleOpenDatabase $argumentsMap');
     var path = argumentsMap['path'] as String;
 
     Map wrapDbId(int id) {
@@ -526,7 +530,10 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Handle options.
   Future handleOptions() async {
     if (arguments is Map) {
-      logLevel = (argumentsMap['logLevel'] as int?) ?? sqfliteLogLevelNone;
+      if (argumentsMap.containsKey('logLevel')) {
+        logLevel = (argumentsMap['logLevel'] as int?) ?? sqfliteLogLevelNone;
+      }
+      await sqfliteFfiHandler.handleOptionsPlatform(argumentsMap);
     }
     return null;
   }

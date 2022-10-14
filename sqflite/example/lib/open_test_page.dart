@@ -22,7 +22,7 @@ class OpenCallbacks {
   /// Open callbacks.
   OpenCallbacks() {
     onConfigure = (Database db) {
-      //print('onConfigure');
+      // devPrint('onConfigure');
       //verify(!onConfigureCalled, 'onConfigure must be called once');
       expect(onConfigureCalled, false,
           reason:
@@ -447,46 +447,48 @@ class OpenTestPage extends TestPage {
       var step = 1;
       final openCallbacks = OpenCallbacks();
       var db = await openCallbacks.open(path, version: 1);
-      verify(openCallbacks.onConfigureCalled, 'onConfiguredCalled $step');
-      verify(openCallbacks.onCreateCalled, 'onCreateCalled $step');
-      verify(openCallbacks.onOpenCalled, 'onOpenCalled $step');
-      verify(!openCallbacks.onUpgradeCalled!, 'onUpgradeCalled $step');
-      verify(!openCallbacks.onDowngradeCalled!, 'onDowngradCalled $step');
-      await db.close();
+      try {
+        verify(openCallbacks.onConfigureCalled, 'onConfiguredCalled $step');
+        verify(openCallbacks.onCreateCalled, 'onCreateCalled $step');
+        verify(openCallbacks.onOpenCalled, 'onOpenCalled $step');
+        verify(!openCallbacks.onUpgradeCalled!, 'onUpgradeCalled $step');
+        verify(!openCallbacks.onDowngradeCalled!, 'onDowngradeCalled $step');
+        await db.close();
 
-      ++step;
-      db = await openCallbacks.open(path, version: 3);
-      verify(openCallbacks.onConfigureCalled, 'onConfiguredCalled $step');
-      verify(!openCallbacks.onCreateCalled!, 'onCreateCalled $step');
-      verify(openCallbacks.onOpenCalled, 'onOpenCalled $step');
-      verify(openCallbacks.onUpgradeCalled, 'onUpgradeCalled $step');
-      verify(!openCallbacks.onDowngradeCalled!, 'onDowngradCalled $step');
-      await db.close();
+        ++step;
+        db = await openCallbacks.open(path, version: 3);
+        verify(openCallbacks.onConfigureCalled, 'onConfiguredCalled $step');
+        verify(!openCallbacks.onCreateCalled!, 'onCreateCalled $step');
+        verify(openCallbacks.onOpenCalled, 'onOpenCalled $step');
+        verify(openCallbacks.onUpgradeCalled, 'onUpgradeCalled $step');
+        verify(!openCallbacks.onDowngradeCalled!, 'onDowngradeCalled $step');
+        await db.close();
 
-      ++step;
-      db = await openCallbacks.open(path, version: 2);
-      verify(openCallbacks.onConfigureCalled, 'onConfiguredCalled $step');
-      verify(!openCallbacks.onCreateCalled!, 'onCreateCalled $step');
-      verify(openCallbacks.onOpenCalled, 'onOpenCalled $step');
-      verify(!openCallbacks.onUpgradeCalled!, 'onUpgradeCalled $step');
-      verify(openCallbacks.onDowngradeCalled, 'onDowngradCalled $step');
-      await db.close();
+        ++step;
+        // devPrint('downgrading');
+        db = await openCallbacks.open(path, version: 2);
+        verify(openCallbacks.onConfigureCalled, 'onConfiguredCalled $step');
+        verify(!openCallbacks.onCreateCalled!, 'onCreateCalled $step');
+        verify(openCallbacks.onOpenCalled, 'onOpenCalled $step');
+        verify(!openCallbacks.onUpgradeCalled!, 'onDowngradeCalled $step');
+        verify(openCallbacks.onDowngradeCalled, 'onDowngradCalled $step');
+        await db.close();
+        // devPrint('downgrading delete');
+        openCallbacks.onDowngrade = onDatabaseDowngradeDelete;
+        var configureCount = 0;
+        final callback = openCallbacks.onConfigure;
+        // allow being called twice
+        openCallbacks.onConfigure = (Database db) {
+          if (configureCount == 1) {
+            openCallbacks.onConfigureCalled = false;
+          }
+          configureCount++;
+          callback!(db);
+        };
+        ++step;
+        db = await openCallbacks.open(path, version: 1);
 
-      openCallbacks.onDowngrade = onDatabaseDowngradeDelete;
-      var configureCount = 0;
-      final callback = openCallbacks.onConfigure;
-      // allow being called twice
-      openCallbacks.onConfigure = (Database db) {
-        if (configureCount == 1) {
-          openCallbacks.onConfigureCalled = false;
-        }
-        configureCount++;
-        callback!(db);
-      };
-      ++step;
-      db = await openCallbacks.open(path, version: 1);
-
-      /*
+        /*
       verify(openCallbacks.onConfigureCalled,'onConfiguredCalled $step');
       verify(configureCount == 2, 'onConfigure count');
       verify(openCallbacks.onCreateCalled, 'onCreateCalled $step');
@@ -494,7 +496,9 @@ class OpenTestPage extends TestPage {
       verify(!openCallbacks.onUpgradeCalled, 'onUpgradeCalled $step');
       verify(!openCallbacks.onDowngradeCalled, 'onDowngradCalled $step');
       */
-      await db.close();
+      } finally {
+        await db.close();
+      }
     });
 
     test('Open batch', () async {

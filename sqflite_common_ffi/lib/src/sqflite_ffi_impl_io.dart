@@ -73,6 +73,11 @@ class _SqfliteFfiHandlerIo extends SqfliteFfiHandler {
   String getDatabasesPathPlatform() {
     return absolute(join('.dart_tool', 'sqflite_common_ffi', 'databases'));
   }
+
+  @override
+  Future<void> handleOptionsPlatform(Map argumentMap) async {
+    // None yet, needed for the web
+  }
 }
 
 /// Io handler
