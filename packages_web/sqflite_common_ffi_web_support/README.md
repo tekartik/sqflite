@@ -1,0 +1,1 @@
+Simple pure web app.

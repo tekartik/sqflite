@@ -10,3 +10,4 @@ export 'package:sqflite_common/src/exception.dart'
 export 'package:sqflite_common/src/mixin/constant.dart' show methodOpenDatabase;
 export 'package:sqflite_common/src/mixin/factory.dart'
     show buildDatabaseFactory, SqfliteInvokeHandler;
+export 'package:sqflite_common_ffi/src/method_call.dart' show FfiMethodCall;

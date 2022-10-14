@@ -11,7 +11,7 @@ void main() {
       for (dynamic value in <dynamic>[
         FfiMethodCall,
         SqfliteFfiException,
-        const FfiMethodCall('dummy').handleInIsolate,
+        ffiMethodCallhandleInIsolate(const FfiMethodCall('dummy')),
       ]) {
         expect(value, isNotNull);
       }

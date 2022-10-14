@@ -1,13 +1,6 @@
-import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common_ffi/src/method_call.dart';
-import 'package:sqflite_common_ffi/src/sqflite_import.dart';
-import 'package:synchronized/synchronized.dart';
-
-import 'isolate.dart';
-import 'mixin/handler_mixin.dart';
-import 'sqflite_ffi_impl.dart';
-
+export 'database_factory_ffi_io.dart'
+    if (dart.library.html) 'database_factory_ffi_web.dart';
+/*
 /// The Ffi database factory.
 var databaseFactoryFfiImpl = createDatabaseFactoryFfiImpl();
 
@@ -96,3 +89,4 @@ extension FfiMethodCallHandler on FfiMethodCall {
     return await _isolate!.handle(this);
   }
 }
+*/

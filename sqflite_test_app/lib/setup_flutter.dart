@@ -12,8 +12,8 @@ void sqfliteFfiInitAsMockMethodCallHandler() {
 
   channel.setMethodCallHandler((MethodCall methodCall) async {
     try {
-      return await FfiMethodCall(methodCall.method, methodCall.arguments)
-          .handleInIsolate();
+      return await ffiMethodCallhandleInIsolate(
+          FfiMethodCall(methodCall.method, methodCall.arguments));
     } on SqfliteFfiException catch (e) {
       // Re-convert to a Platform exception to make flutter services happy
       throw PlatformException(

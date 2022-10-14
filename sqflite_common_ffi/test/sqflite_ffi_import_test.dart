@@ -10,7 +10,7 @@ void main() {
         if (isRunningAsJavascript) {
           fail('should fail');
         }
-      } on UnimplementedError catch (_) {}
+      } on UnsupportedError catch (_) {}
     });
   });
 }

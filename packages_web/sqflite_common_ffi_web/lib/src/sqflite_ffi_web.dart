@@ -9,8 +9,7 @@ import 'database_factory_web.dart';
 /// Check support documentation.
 ///
 /// Currently supports Win/Mac/Linux.
-DatabaseFactory get databaseFactoryFfiWeb =>
-    databaseFactoryFfiWebNoWebWorkerImpl;
+DatabaseFactory get databaseFactoryFfiWeb => databaseFactoryFfiWebImpl;
 
 /// The database factory to use for ffi web without web worker.
 ///

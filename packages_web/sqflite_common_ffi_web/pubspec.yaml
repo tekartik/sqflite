@@ -1,7 +1,6 @@
 name: sqflite_common_ffi_web
-description: An absolute bare-bones web app.
+description: Sqflite web implementation using sqlite3 ffi and sqlite3 wasm.
 version: 1.0.0
-# homepage: https://www.example.com
 
 environment:
   sdk: '>=2.18.1 <3.0.0'
@@ -12,9 +11,11 @@ dependencies:
   sqflite_common: '>=2.3.0 <4.0.0'
   sqlite3: '>=1.9.0 <3.0.0'
   http: '>=0.13.4 <2.0.0'
-
+  js: '>=0.6.4 <2.0.0'
+  service_worker: '>=0.3.0-dev <2.0.0'
+  synchronized:
 dev_dependencies:
-  lints: ^2.0.0
+  lints: '>=2.0.0 <4.0.0'
 
 dependency_overrides:
   sqflite_common_ffi:

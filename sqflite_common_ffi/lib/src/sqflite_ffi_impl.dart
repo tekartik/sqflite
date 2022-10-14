@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:path/path.dart';
 import 'package:sqflite_common/src/mixin/constant.dart'; // ignore: implementation_imports
 import 'package:sqflite_common_ffi/src/constant.dart';
-import 'package:sqflite_common_ffi/src/method_call.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
 import 'package:sqlite3/common.dart' as common;
 import 'package:synchronized/extension.dart';
