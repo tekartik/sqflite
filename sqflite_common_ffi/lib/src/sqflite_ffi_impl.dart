@@ -9,6 +9,7 @@ import 'package:sqlite3/common.dart' as common;
 import 'package:synchronized/extension.dart';
 
 import 'database_tracker.dart' if (dart.library.js) 'database_tracker_web.dart';
+import 'import.dart';
 import 'sqflite_ffi_impl_io.dart'
     if (dart.library.js) 'sqflite_ffi_impl_web.dart';
 
@@ -43,6 +44,11 @@ var _lastFfiId = 0;
 /// Ffi log level.
 int logLevel = sqfliteLogLevelNone;
 
+/// Temp until exported from sqflite_common.
+String _sqlArgumentsToString(String? sql, List<Object?>? arguments) {
+  return '$sql${(arguments?.isNotEmpty ?? false) ? ' ${argumentsToString(arguments!)}' : ''}';
+}
+
 /// Ffi operation.
 class SqfliteFfiOperation {
   /// Method.
@@ -53,6 +59,9 @@ class SqfliteFfiOperation {
 
   /// SQL arguments.
   List<Object?>? sqlArguments;
+
+  @override
+  String toString() => '$method ${_sqlArgumentsToString(sql, sqlArguments)}';
 }
 
 /// Ffi database
@@ -127,6 +136,7 @@ class SqfliteFfiDatabase {
     logSql(sql: sql, sqlArguments: sqlArguments);
     //database.ffiDb.execute(sql);
     if (sqlArguments?.isNotEmpty ?? false) {
+      // devPrint('execute $sql $sqlArguments');
       var preparedStatement = _ffiDb.prepare(sql);
       try {
         preparedStatement.execute(_ffiArguments(sqlArguments));
@@ -135,6 +145,7 @@ class SqfliteFfiDatabase {
         preparedStatement.dispose();
       }
     } else {
+      // devPrint('execute no args $sql');
       _ffiDb.execute(sql);
     }
   }
@@ -325,10 +336,13 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   Map get argumentsMap => arguments as Map;
 
   /// Handle open database.
-  Future handleOpenDatabase() async {
+  Future<Map> handleOpenDatabase() async {
     var path = argumentsMap['path'] as String;
 
-    //devPrint('opening $path');
+    Map wrapDbId(int id) {
+      return <String, Object?>{'id': id};
+    }
+
     var singleInstance = (argumentsMap['singleInstance'] as bool?) ?? false;
     var readOnly = (argumentsMap['readOnly'] as bool?) ?? false;
     if (singleInstance) {
@@ -338,7 +352,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
           database.logResult(
               result: 'Reopening existing single database $database');
         }
-        return database;
+        return wrapDbId(database.id);
       }
     }
 
@@ -359,9 +373,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     if (singleInstance) {
       ffiSingleInstanceDbs[path] = database;
     }
-    //devPrint('opened: $database');
-
-    return <String, Object?>{'id': id};
+    return wrapDbId(id);
   }
 
   /// Handle close database.
@@ -507,6 +519,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     var database = getDatabaseOrThrow();
     var sql = getSql()!;
     var sqlArguments = getSqlArguments();
+
     return database.handleExecute(sql: sql, sqlArguments: sqlArguments);
   }
 
@@ -561,7 +574,6 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Handle batch.
   Future handleBatch() async {
-    //devPrint(arguments);
     var database = getDatabaseOrThrow();
     var operations = getOperations();
     List<Map<String, Object?>>? results;
@@ -571,6 +583,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       results = <Map<String, Object?>>[];
     }
     for (var operation in operations) {
+      // devPrint('operation $operation');
       Map<String, Object?> getErrorMap(SqfliteFfiException e) {
         return <String, Object?>{
           'error': <String, Object?>{
@@ -702,6 +715,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 Map<String, Object?> packResult(common.ResultSet result) {
   var columns = result.columnNames;
   var rows = result.rows;
-  // This is what sqflite expected
+
+  /// This is what sqflite expects as query response
   return <String, Object?>{'columns': columns, 'rows': rows};
 }
