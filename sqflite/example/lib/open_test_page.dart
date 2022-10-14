@@ -9,6 +9,7 @@ import 'package:sqflite/src/database_mixin.dart' // ignore: implementation_impor
 import 'package:sqflite/src/factory_mixin.dart' // ignore: implementation_imports
     show
         SqfliteDatabaseFactoryMixin;
+import 'package:sqflite_example/utils.dart';
 import 'package:synchronized/synchronized.dart';
 
 import 'src/common_import.dart';
@@ -508,13 +509,15 @@ class OpenTestPage extends TestPage {
 
       Future onCreate(Database db, int version) async {
         final batch = db.batch();
-        batch.rawInsert('INSERT INTO Test(value) VALUES("value1")');
+        // await db.execute('INSERT INTO Test(value) VALUES("value1")'); This does not work using ffi!
+        batch.execute('INSERT INTO Test(value) VALUES(?)', ['value1']);
         await batch.commit();
       }
 
       Future onOpen(Database db) async {
         final batch = db.batch();
-        batch.rawInsert('INSERT INTO Test(value) VALUES("value2")');
+        //batch.rawInsert('INSERT INTO Test(value) VALUES("value2")');
+        batch.rawInsert('INSERT INTO Test(value) VALUES(?)', ['value2']);
         await batch.commit();
       }
 
@@ -537,7 +540,8 @@ class OpenTestPage extends TestPage {
       Future onCreate(Database db, int version) async {
         final batch = db.batch();
         batch.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
-        batch.rawInsert('INSERT INTO Test(value) VALUES("value1")');
+        //batch.rawInsert('INSERT INTO Test(value) VALUES("value1")'); This does not work using ffi
+        batch.rawInsert('INSERT INTO Test(value) VALUES(?)', ['value1']);
         await batch.commit();
       }
 
@@ -554,7 +558,7 @@ class OpenTestPage extends TestPage {
           1);
 
       try {
-        await db.rawInsert('INSERT INTO Test(value) VALUES("value1")');
+        await db.rawInsert('INSERT INTO Test(value) VALUES(?)', ['value1']);
         fail('should fail');
       } on DatabaseException catch (e) {
         // Error DatabaseException(attempt to write a readonly database (code 8)) running Open read-only
@@ -813,9 +817,9 @@ class OpenTestPage extends TestPage {
       }
     });
 
-    test('open in transaction', () async {
+    test('Open in transaction', () async {
       // await Sqflite.devSetDebugModeOn(true);
-      const path = 'test_close_in_transaction.db';
+      const path = 'test_open_in_transaction.db';
       final factory = databaseFactory;
       await factory.deleteDatabase(path);
       var db = await factory.openDatabase(path,
@@ -884,7 +888,9 @@ class OpenTestPage extends TestPage {
       expect((await readFileAsBytes(path)).length, lessThan(minExpectedSize));
 
       var db = await factory.openDatabase(path);
-      if (platform.isIOS || platform.isMacOS && !kIsWeb) {
+      var versionShouldFail =
+          !supportsCompatMode || platform.isIOS || platform.isMacOS;
+      if (versionShouldFail) {
         // On iOS it fails
         try {
           await db.getVersion();
@@ -897,7 +903,7 @@ class OpenTestPage extends TestPage {
       }
       await db.close();
 
-      if (platform.isIOS || platform.isMacOS && !kIsWeb) {
+      if (versionShouldFail) {
         // On iOS it fails
         try {
           db = await factory.openDatabase(path,

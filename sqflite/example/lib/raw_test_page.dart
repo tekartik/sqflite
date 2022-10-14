@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/utils/utils.dart';
+import 'package:sqflite_example/utils.dart';
 
 import 'src/common_import.dart';
 import 'test_page.dart';
@@ -57,33 +58,38 @@ class RawTestPage extends TestPage {
         await batch.commit();
 
         // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-        var sqfliteOptions = SqfliteOptions()..queryAsMapList = true;
-        // ignore: deprecated_member_use
-        await Sqflite.devSetOptions(sqfliteOptions);
+        // Ok to fail if ffi implementation
+        // For now check based on the platform, could
+        if (queryAsMapListSupported) {
+          // ignore: deprecated_member_use
+          var sqfliteOptions = SqfliteOptions()..queryAsMapList = true;
+          // ignore: deprecated_member_use
+          await databaseFactory.debugSetOptions(sqfliteOptions);
+          var sql = 'SELECT id, name FROM Test';
+          // ignore: deprecated_member_use
+          var result = await db.devInvokeSqlMethod('query', sql);
+          var expected = [
+            {'id': 1, 'name': 'item 1'},
+            {'id': 2, 'name': 'item 2'}
+          ];
+          print('result as map list $result');
+          expect(result, expected);
+
+          // empty
+          sql = 'SELECT id, name FROM Test WHERE id=1234';
+          // ignore: deprecated_member_use
+          result = await db.devInvokeSqlMethod('query', sql);
+          expected = [];
+          print('result as map list $result');
+          expect(result, expected);
+
+          // ignore: deprecated_member_use, deprecated_member_use_from_same_package
+          sqfliteOptions = SqfliteOptions()..queryAsMapList = false;
+          // ignore: deprecated_member_use
+          await Sqflite.devSetOptions(sqfliteOptions);
+        }
+
         var sql = 'SELECT id, name FROM Test';
-        // ignore: deprecated_member_use
-        var result = await db.devInvokeSqlMethod('query', sql);
-        var expected = [
-          {'id': 1, 'name': 'item 1'},
-          {'id': 2, 'name': 'item 2'}
-        ];
-        print('result as map list $result');
-        expect(result, expected);
-
-        // empty
-        sql = 'SELECT id, name FROM Test WHERE id=1234';
-        // ignore: deprecated_member_use
-        result = await db.devInvokeSqlMethod('query', sql);
-        expected = [];
-        print('result as map list $result');
-        expect(result, expected);
-
-        // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-        sqfliteOptions = SqfliteOptions()..queryAsMapList = false;
-        // ignore: deprecated_member_use
-        await Sqflite.devSetOptions(sqfliteOptions);
-
-        sql = 'SELECT id, name FROM Test';
         // ignore: deprecated_member_use
         var resultSet = await db.devInvokeSqlMethod('query', sql);
         var expectedResultSetMap = {
@@ -102,7 +108,17 @@ class RawTestPage extends TestPage {
         resultSet = await db.devInvokeSqlMethod('query', sql);
         expectedResultSetMap = {};
         print('result as r/c $resultSet');
-        expect(resultSet, expectedResultSetMap);
+        try {
+          // This might be just for compatibility
+          expect(resultSet, expectedResultSetMap);
+        } catch (e) {
+          // Allow empty result
+          expectedResultSetMap = {
+            'columns': ['id', 'name'],
+            'rows': []
+          };
+          expect(resultSet, expectedResultSetMap);
+        }
       } finally {
         await db.close();
       }
@@ -313,25 +329,27 @@ class RawTestPage extends TestPage {
       }
     });
 
-    test('Debug mode (log)', () async {
-      //await Sqflite.devSetDebugModeOn(false);
-      final path = await initDeleteDb('debug_mode.db');
-      final db = await openDatabase(path);
-      try {
-        final debugModeOn = await Sqflite.getDebugModeOn();
-        await Sqflite.setDebugModeOn(true);
-        await db.setVersion(1);
-        await Sqflite.setDebugModeOn(false);
-        // this message should not appear
-        await db.setVersion(2);
-        await Sqflite.setDebugModeOn(true);
-        await db.setVersion(3);
-        // restore
-        await Sqflite.setDebugModeOn(debugModeOn);
-      } finally {
-        await db.close();
-      }
-    });
+    if (supportsCompatMode) {
+      test('Debug mode (log)', () async {
+        //await Sqflite.devSetDebugModeOn(false);
+        final path = await initDeleteDb('debug_mode.db');
+        final db = await openDatabase(path);
+        try {
+          final debugModeOn = await Sqflite.getDebugModeOn();
+          await Sqflite.setDebugModeOn(true);
+          await db.setVersion(1);
+          await Sqflite.setDebugModeOn(false);
+          // this message should not appear
+          await db.setVersion(2);
+          await Sqflite.setDebugModeOn(true);
+          await db.setVersion(3);
+          // restore
+          await Sqflite.setDebugModeOn(debugModeOn);
+        } finally {
+          await db.close();
+        }
+      });
+    }
 
     test('Demo', () async {
       // await Sqflite.devSetDebugModeOn();
@@ -350,8 +368,11 @@ class RawTestPage extends TestPage {
             'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
         print('table created');
         var id = await database.rawInsert(
-            'INSERT INTO Test(name, value, num) VALUES("some name",1234,?)',
-            [456.789]);
+            // This does not work using ffi
+            // 'INSERT INTO Test(name, value, num) VALUES("some name",1234,?)',
+            // [456.789]);
+            'INSERT INTO Test(name, value, num) VALUES(?,1234,?)',
+            ['some name', 456.789]);
         print('inserted1: $id');
         id = await database.rawInsert(
             'INSERT INTO Test(name, value) VALUES(?, ?)',
@@ -419,7 +440,9 @@ class RawTestPage extends TestPage {
       // Insert some records in a transaction
       await database.transaction((txn) async {
         final id1 = await txn.rawInsert(
-            'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
+            // 'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)'); This does not work using ffi
+            'INSERT INTO Test(name, value, num) VALUES(?, 1234, 456.789)',
+            ['some name']);
         print('inserted1: $id1');
         final id2 = await txn.rawInsert(
             'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
@@ -504,7 +527,7 @@ class RawTestPage extends TestPage {
       }
     });
 
-    test('without rowid', () async {
+    test('Without rowid', () async {
       // Sqflite.devSetDebugModeOn(true);
       // this fails on iOS
 
@@ -517,15 +540,19 @@ class RawTestPage extends TestPage {
         await db
             .execute('CREATE TABLE Test (name TEXT PRIMARY KEY) WITHOUT ROWID');
         var id = await db.insert('Test', {'name': 'test'});
-        // it seems to always return 1 on Android, 0 on iOS...
-        if (platform.isIOS || platform.isMacOS && !kIsWeb) {
+
+        // it seems to always return 1 on Android, 0 on iOS..., 0 using ffi
+        var rowIdAlways0 =
+            (!supportsCompatMode || (platform.isIOS || platform.isMacOS));
+
+        if (rowIdAlways0) {
           expect(id, 0);
         } else {
           expect(id, 1);
         }
         id = await db.insert('Test', {'name': 'other'});
         // it seems to always return 1
-        if (platform.isIOS || platform.isMacOS && !kIsWeb) {
+        if (rowIdAlways0) {
           expect(id, 0);
         } else {
           expect(id, 1);

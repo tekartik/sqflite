@@ -9,7 +9,7 @@ class BatchTestPage extends TestPage {
   BatchTestPage({Key? key}) : super('Batch tests', key: key) {
     test('BatchQuery', () async {
       // await Sqflite.devSetDebugModeOn();
-      final path = await initDeleteDb('batch.db');
+      final path = await initDeleteDb('batch_query.db');
       final db = await openDatabase(path);
 
       // empty batch
@@ -42,7 +42,7 @@ class BatchTestPage extends TestPage {
       await db.close();
     });
     test('Batch', () async {
-      // await Sqflite.devSetDebugModeOn();
+      // await databaseFactory.devSetDebugModeOn();
       final path = await initDeleteDb('batch.db');
       final db = await openDatabase(path);
 

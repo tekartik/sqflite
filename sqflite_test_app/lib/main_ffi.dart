@@ -20,7 +20,10 @@ Future<void> mainFfi() async {
 }
 
 /// Init Ffi for io or web
-Future<void> initFfi() async {
+///
+/// if [noWorker] is true, no isolate is used on io and no web worker is used on the web.
+Future<void> initFfi({bool? noWorker}) async {
+  noWorker ??= false;
   // getDatabasesPath implementation is lame, use the default one
   // but we could also use path_provider
   var isSqfliteCompatible =
@@ -33,12 +36,20 @@ Future<void> initFfi() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
-    databaseFactory = databaseFactoryFfiWeb;
+    if (noWorker) {
+      databaseFactory = databaseFactoryFfiWebNoWebWorker;
+    } else {
+      databaseFactory = databaseFactoryFfiWeb;
+    }
     // Platform handler for the example app
     platformHandler = platformHandlerWeb;
   } else {
     sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
+    if (noWorker) {
+      databaseFactory = databaseFactoryFfiNoIsolate;
+    } else {
+      databaseFactory = databaseFactoryFfi;
+    }
   }
   // Use sqflite databases path provider (ffi implementation is lame))
   if (isSqfliteCompatible) {

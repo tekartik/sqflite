@@ -3,6 +3,9 @@ import 'package:sqflite/src/factory.dart';
 import 'package:sqflite/src/factory_impl.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
+export 'package:sqflite/src/factory_impl.dart'
+    show sqfliteDatabaseFactoryDefault;
+
 /// Change the default factory used.
 ///
 /// Test only.
