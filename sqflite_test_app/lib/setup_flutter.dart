@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// ignore: implementation_imports
-import 'package:sqflite_common_ffi/src/mixin/handler_mixin.dart';
+import 'package:sqflite_common_ffi/src/mixin/handler_mixin.dart'; // ignore: implementation_imports
 
 /// Use `sqflite_ffi` as the mock implementation for unit test or regular
 ///

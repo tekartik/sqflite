@@ -1,19 +1,20 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
-import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart';
+import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'
+    show SqfliteFfiHandlerWeb, sendRawMessage;
+import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
+    show SqfliteFfiWebContextExt;
 import 'package:synchronized/synchronized.dart';
 
 import 'import.dart';
 
 /// The Ffi database factory.
 var databaseFactoryFfiWebNoWebWorkerImpl = () {
-  sqfliteFfiHandler = SqfliteFfiHandlerWeb();
   return createDatabaseFactoryFfiWeb(noWebWorker: true);
 }();
 
 /// The Ffi database factory.
 var databaseFactoryFfiWebImpl = () {
-  sqfliteFfiHandler = SqfliteFfiHandlerWeb();
   return createDatabaseFactoryFfiWeb();
 }();
 
@@ -32,33 +33,40 @@ DatabaseFactory createDatabaseFactoryFfiWeb(
           if (context == null) {
             await _initLock.synchronized(() async {
               context ??= await sqfliteFfiWebLoadSqlite3Wasm(webOptions);
+              sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
             });
           }
           return ffiMethodCallHandleNoWebWorker(methodCall, context!);
         } else {
           await _initLock.synchronized(() async {
             context ??= await sqfliteFfiWebStartWebWorker(webOptions);
+            sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
           });
 
-          return ffiMethodCallHandleInWebWorker(methodCall, context!);
+          return ffiMethodCallSendToWebWorker(methodCall, context!);
         }
       });
 }
 
+// Debug database factory web
 bool _debug = false; // devWarning(true);
 
-/// Handle method call not in a web worker.
-Future<dynamic> ffiMethodCallHandleInWebWorker(
+/// Handle method call not to call the web worker.
+Future<dynamic> ffiMethodCallSendToWebWorker(
     FfiMethodCall methodCall, SqfliteFfiWebContext context) async {
   try {
     if (_debug) {
       print('main_send: $methodCall');
     }
-    var result = {'TODO': 1}; // TODO await _isolateHandle();
+    var sw = context.serviceWorker!;
+    //var result = context.serviceWorker{'TODO': 1}; // TODO await _isolateHandle();
+    Object? response; // = {'TODO': 1}; // TODO await _isolateHandle();
+    var map = methodCall.toDataMap();
+    response = await sendRawMessage(sw, map);
     if (_debug) {
-      print('main_recv: $result');
+      print('main_recv: $response');
     }
-    return result;
+    return responseToResultOrThrow(response);
   } catch (e, st) {
     if (_debug) {
       print(e);

@@ -4,3 +4,5 @@
 
 # Conventional directory for build output.
 build/
+/example/sqflite/
+/web/sqflite/

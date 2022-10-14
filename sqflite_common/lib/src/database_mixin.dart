@@ -554,7 +554,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     // doing first on Android without breaking ios
     final openResult =
         await safeInvokeMethod<Object?>(methodOpenDatabase, params);
-    // devPrint('open result $openResult');
     if (openResult is int) {
       return openResult;
     } else if (openResult is Map) {

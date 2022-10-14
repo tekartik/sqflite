@@ -2,9 +2,8 @@ import 'dart:js_util';
 
 import 'package:service_worker/worker.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
-
+import 'package:sqflite_common_ffi_web/src/import.dart';
 import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'; // ignore: implementation_imports
-import 'package:sqflite_common_ffi_web_support/src/import.dart';
 
 import 'constants.dart';
 

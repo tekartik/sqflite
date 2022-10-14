@@ -8,6 +8,8 @@ environment:
 
 dependencies:
   path: ^1.7.0
+  sqflite_common:
+  sqflite_common_ffi:
   service_worker: '>=0.3.0-dev <2.0.0'
   sqflite_common_ffi_web:
     path: ../sqflite_common_ffi_web
@@ -15,6 +17,8 @@ dev_dependencies:
   build_runner: '>=2.1.4 <4.0.0'
   build_web_compilers: '>=3.2.1 <5.0.0'
   lints: '>=2.0.0 <4.0.0'
+  dev_test:
+  process_run:
 
 dependency_overrides:
   sqflite_common_ffi:

@@ -63,3 +63,4 @@ GeneratedPluginRegistrant.java
 
 # Local files
 .local/
+/packages_web/sqflite_common_ffi_web/web/sqflite/

@@ -36,7 +36,7 @@ dependencies:
   process_run: '>=0.11.0+2'
   path:
   sqflite_common_ffi_web:
-    path: ../packages_web/sqflite_common_ffi_web
+
 dev_dependencies:
   flutter_lints:
   flutter_test:
@@ -58,7 +58,8 @@ dependency_overrides:
     path: ../sqflite_common
   sqflite_common_ffi:
     path: ../sqflite_common_ffi
-
+  sqflite_common_ffi_web:
+    path: ../packages_web/sqflite_common_ffi_web
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
