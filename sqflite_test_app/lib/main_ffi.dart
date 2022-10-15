@@ -8,7 +8,6 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_example/database/database.dart';
 import 'package:sqflite_example/main.dart';
 import 'package:sqflite_test_app/database/database.dart';
-import 'package:sqflite_test_app/src/import.dart';
 
 Future<void> main() async {
   await mainFfi();
@@ -41,7 +40,6 @@ Future<void> initFfi({bool? noWorker}) async {
     if (noWorker) {
       databaseFactory = databaseFactoryFfiWebNoWebWorker;
     } else {
-      devPrint('1');
       databaseFactory = databaseFactoryFfiWeb;
     }
     // Platform handler for the example app

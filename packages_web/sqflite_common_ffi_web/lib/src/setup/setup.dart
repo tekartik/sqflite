@@ -87,7 +87,7 @@ Future<void> setupBinaries([String path = '.']) async {
   await shell.run('dart pub get');
   try {
     await Directory('build').delete(recursive: true);
-  } catch (e) {}
+  } catch (_) {}
   await shell.run('webdev build -o web:build');
 
   await context.copyBinaries();

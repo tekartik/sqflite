@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
 import 'package:sqflite_common_ffi_web/src/import.dart';
 import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'; // ignore: implementation_imports
+import 'package:sqflite_common_ffi_web/src/utils.dart';
 
 import 'constants.dart';
 
@@ -17,7 +18,7 @@ SqfliteFfiWebOptions? _swOptions;
 
 /// Main service worker entry point.
 void mainServiceWorker(List<String> args) {
-  sqliteFfiWebDebugWebWorker = devWarning(true);
+  // sqliteFfiWebDebugWebWorker = devWarning(true);
   if (_debug) {
     print('/sw_worker main()');
   }
@@ -27,9 +28,6 @@ void mainServiceWorker(List<String> args) {
     }
   });
   onMessage.listen((ExtendableMessageEvent event) async {
-    if (_debug) {
-      devPrint('/sw_worker recv some data');
-    }
     var port = event.ports!.first;
 
     try {
@@ -69,10 +67,14 @@ void mainServiceWorker(List<String> args) {
           }
         } else if (rawData is Map) {
           var ffiMethodCall = FfiMethodCall.fromDataMap(rawData);
+
           if (_debug) {
             print('/sw_worker method call $ffiMethodCall');
           }
           if (ffiMethodCall != null) {
+            // Fix data
+            ffiMethodCall = FfiMethodCall(ffiMethodCall.method,
+                dataFromEncodable(ffiMethodCall.arguments));
             // Init context on first call
             if (_swContext == null) {
               if (_debug) {
@@ -83,11 +85,16 @@ void mainServiceWorker(List<String> args) {
                   fromServiceWorker: true);
               sqfliteFfiHandler = SqfliteFfiHandlerWeb(_swContext!);
             }
+            void postResponse(FfiMethodResponse response) {
+              port.postMessage(response.toDataMap());
+            }
+
             try {
               var result = await ffiMethodCall.handleImpl();
-              port.postMessage(FfiMethodResponse(result: result).toDataMap());
+              result = dataToEncodable(result);
+              postResponse(FfiMethodResponse(result: result));
             } catch (e, st) {
-              port.postMessage(FfiMethodResponse.fromException(e, st));
+              postResponse(FfiMethodResponse.fromException(e, st));
             }
           } else {
             print('/sw_worker $rawData unknown');

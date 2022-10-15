@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/main.dart';
 import 'package:sqflite_test_app/main_ffi.dart';
-import 'package:sqflite_test_app/src/import.dart';
 
 // Special entry point for dev where logs are activated
 Future<void> main() async {
@@ -14,7 +13,7 @@ Future<void> main() async {
 
 /// Special entry point for dev where logs are activated
 Future<void> mainDev({bool? noWorker}) async {
-  sqliteFfiWebDebugWebWorker = devWarning(true);
+  // sqliteFfiWebDebugWebWorker = devWarning(true);
 
   /// Use ffi on the web
   if (kIsWeb || Platform.isWindows || Platform.isLinux) {

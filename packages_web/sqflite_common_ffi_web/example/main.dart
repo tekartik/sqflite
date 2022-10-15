@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:js_util';
+import 'dart:math';
 
 import 'package:service_worker/window.dart' as sw;
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
-import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
-import 'package:sqflite_common_ffi_web/src/import.dart';
 import 'package:sqflite_common_ffi_web/src/sw/constants.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
     show SqfliteFfiWebContextExt;
@@ -26,6 +25,77 @@ Future incrementWork() async {
       tag: 'work');
 }
 
+Future exceptionWork() async {
+  try {
+    var factory = databaseFactoryWebLocal;
+    var db = await factory.openDatabase('test_missing');
+    await db.query('Test');
+  } catch (e) {
+    write('exception $e');
+  }
+}
+
+class _Data {
+  late Database db;
+}
+
+/// Out internal data.
+// ignore: library_private_types_in_public_api
+final _Data data = _Data();
+
+/// Get the value field from a given id
+Future<dynamic> getValue(int id) async {
+  return ((await data.db.query('Test', where: 'id = $id')).first)['value'];
+}
+
+/// insert the value field and return the id
+Future<int> insertValue(dynamic value) async {
+  return await data.db.insert('Test', {'value': value});
+}
+
+/// insert the value field and return the id
+Future<int> updateValue(int id, dynamic value) async {
+  return await data.db.update('Test', {'value': value}, where: 'id = $id');
+}
+
+Future bigInt() async {
+  try {
+    var factory = databaseFactoryWebLocal;
+    var db = data.db = await factory.openDatabase('test_big_int');
+    await db.execute(
+        'CREATE TABLE IF NOT EXISTS Test (id INTEGER PRIMARY KEY AUTOINCREMENT, value INTEGER)');
+    await db.query('Test');
+  } catch (e) {
+    write('exception $e');
+  }
+  var id = await insertValue(-1);
+  assert(await getValue(id) == -1);
+
+  // less than 32 bits
+  id = await insertValue(pow(2, 31));
+  assert(await getValue(id) == pow(2, 31));
+
+  // more than 32 bits
+  id = await insertValue(pow(2, 33));
+  //devPrint('2^33: ${await getValue(id)}');
+  assert(await getValue(id) == pow(2, 33));
+
+  id = await insertValue(pow(2, 62));
+  //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
+  assert(await getValue(id) == pow(2, 62));
+  /*
+  var value = pow(2, 63).round() - 1;
+  id = await insertValue(value);
+  //devPrint('${value} ${await getValue(id)}');
+  expect(await getValue(id), value, reason: '$value ${await getValue(id)}');
+
+  value = -(pow(2, 63)).round();
+  id = await insertValue(value);
+  //devPrint('${value} ${await getValue(id)}');
+  expect(await getValue(id), value, reason: '$value ${await getValue(id)}');
+  */
+}
+
 Future incrementNoWebWorker() async {
   await incrementSqfliteValueInDatabaseFactory(
       databaseFactoryWebNoWebWorkerLocal,
@@ -34,8 +104,10 @@ Future incrementNoWebWorker() async {
 
 Future<void> main() async {
   initUi();
-  sqliteFfiWebDebugWebWorker = devWarning(true);
+  // sqliteFfiWebDebugWebWorker = devWarning(true);
   write('running');
+  // await devWarning(bigInt());
+  //await devWarning(exceptionWork());
   // await devWarning(incrementWork());
   //await devWarning(incrementPrebuilt());
   // await incrementVarInServiceWorker();
@@ -47,6 +119,7 @@ Future<void> main() async {
 }
 
 var _registerAndReady = sqfliteFfiWebStartWebWorker(swOptions);
+
 Future<sw.ServiceWorker> registerAndReady() async =>
     (await _registerAndReady).serviceWorker!;
 
@@ -78,6 +151,7 @@ Future<Object?> sendRawMessage(sw.ServiceWorker sw, Object message) {
 }
 
 var key = 'testValue';
+
 Future<Object?> getTestValue(sw.ServiceWorker sw) async {
   var response = await sendRawMessage(sw, [
     commandVarGet,
@@ -111,7 +185,7 @@ Future<void> incrementSqfliteValueInDatabaseFactory(DatabaseFactory factory,
   tag ??= 'db';
   try {
     write('/$tag accessing db...');
-    await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
+    // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
     var db = await factory.openDatabase('test.db',
         options: OpenDatabaseOptions(
             version: 1,
@@ -145,15 +219,15 @@ void initUi() {
     await incrementVarInServiceWorker();
   });
   addButton('increment sqflite value in main thread', () async {
-    var factory = databaseFactoryWebNoWebWorkerLocal;
-    await incrementSqfliteValueInDatabaseFactory(factory);
+    await incrementNoWebWorker();
   });
   addButton('increment sqflite value in web worker', () async {
-    var factory = databaseFactoryWebLocal;
-    await incrementSqfliteValueInDatabaseFactory(factory);
+    await incrementWork();
+  });
+  addButton('exception in web worker', () async {
+    await exceptionWork();
   });
   addButton('increment sqflite value in pre-built web worker', () async {
-    var factory = databaseFactoryFfiWeb;
-    await incrementSqfliteValueInDatabaseFactory(factory);
+    await incrementPrebuilt();
   });
 }
