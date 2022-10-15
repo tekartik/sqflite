@@ -1,3 +1,7 @@
+## 2.4.0-dev.0
+
+* base experimental web support
+
 ## 2.3.0
 
 - Add `apply()` method to `Batch`. It will execute statements in that batch
