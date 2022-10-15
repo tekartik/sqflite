@@ -11,6 +11,9 @@ include: package:lints/recommended.yaml
 # https://github.com/flutter/flutter/blob/master/analysis_options.yaml
 
 analyzer:
+  exclude:
+    - build/**
+
   # Strong mode is sometimes harder to keep
   strong-mode:
     implicit-casts: false

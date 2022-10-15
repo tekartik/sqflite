@@ -1,3 +1,3 @@
-# sqflite_web
+# sqflite_common_ffi_web
 
-Web implementation (experimental)
+sqlite Web implementation (experimental)
