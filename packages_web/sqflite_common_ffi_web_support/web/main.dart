@@ -72,14 +72,14 @@ Future<void> setTestValue(sw.ServiceWorker sw, Object? value) async {
 Future<void> incrementVarInServiceWorker() async {
   var sw = await registerAndReady();
   var value = await getTestValue(sw);
-  write('read before $value');
+  write('var before $value');
   if (value is! int) {
     value = 0;
   }
 
   await setTestValue(sw, value + 1);
   value = await getTestValue(sw);
-  write('read after $value');
+  write('var after $value');
 }
 
 Future<void> incrementSqfliteValueInDatabaseFactory(

@@ -4,10 +4,13 @@ import 'dart:html' as html;
 import 'package:js/js_util.dart';
 import 'package:service_worker/window.dart' as sw;
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart';
 import 'package:sqlite3/wasm.dart';
 
 import 'import.dart';
+
+bool get _debug => sqliteFfiWebDebugWebWorker;
 
 /// Ffi web handler for custom open/delete operation
 class SqfliteFfiHandlerWeb extends SqfliteFfiHandler {
@@ -88,7 +91,13 @@ Future<Object?> sendRawMessage(sw.ServiceWorker sw, Object message) {
   var messageChannel = html.MessageChannel();
   //var receivePort =ReceivePort();
 
+  if (_debug) {
+    print('/sw_client sending $message');
+  }
   messageChannel.port1.onMessage.listen((event) {
+    if (_debug) {
+      print('/sw_client recv ${event.data}');
+    }
     print('Receiving from sw:  ${event.data}');
     completer.complete(event.data);
   });

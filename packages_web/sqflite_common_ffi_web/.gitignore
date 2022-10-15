@@ -6,3 +6,7 @@
 build/
 /example/sqflite/
 /web/sqflite/
+/example/sqflite_sw.dart.js
+/example/sqlite3.wasm
+/web/sqlite3.wasm
+/example/sqflite_sw.dart.js.map

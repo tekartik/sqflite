@@ -1,5 +1,6 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
 import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'
     show SqfliteFfiHandlerWeb, sendRawMessage;
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
@@ -29,6 +30,9 @@ DatabaseFactory createDatabaseFactoryFfiWeb(
       tag: tag ?? 'ffi_web',
       invokeMethod: (String method, [dynamic arguments]) async {
         final methodCall = FfiMethodCall(method, arguments);
+        if (_debug) {
+          devPrint('invokeMethod $methodCall');
+        }
         if (noWebWorker) {
           if (context == null) {
             await _initLock.synchronized(() async {
@@ -38,6 +42,9 @@ DatabaseFactory createDatabaseFactoryFfiWeb(
           }
           return ffiMethodCallHandleNoWebWorker(methodCall, context!);
         } else {
+          if (_debug) {
+            devPrint('sending $methodCall');
+          }
           await _initLock.synchronized(() async {
             context ??= await sqfliteFfiWebStartWebWorker(webOptions);
             sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
@@ -49,7 +56,7 @@ DatabaseFactory createDatabaseFactoryFfiWeb(
 }
 
 // Debug database factory web
-bool _debug = false; // devWarning(true);
+bool get _debug => sqliteFfiWebDebugWebWorker;
 
 /// Handle method call not to call the web worker.
 Future<dynamic> ffiMethodCallSendToWebWorker(

@@ -38,18 +38,29 @@ class SetupContext {
   /// Copy generated binaries to the current project web folder.
   Future<void> copyBinaries({String? outputDir}) async {
     var context = await getSetupContext();
-    outputDir ??= join('web', 'sqflite');
+    // outputDir ??= join('web', 'sqflite');
+    outputDir ??= join('web');
     var out = join(context.path, outputDir);
     await Directory(out).create(recursive: true);
 
-    var swFile = join(out, 'sqflite_sw.dart.js');
-    await File(join(context.ffiWebPath, 'build', 'sqflite_sw.dart.js'))
-        .copy(swFile);
-    print('created: $swFile');
-    var wasmBytes = await readBytes(_sqlite3WasmReleaseUri);
-    var wasmFile = join(out, 'sqlite3.wasm');
-    await File(wasmFile).writeAsBytes(wasmBytes);
-    print('created: $wasmFile');
+    // Prevent conflicting output for ourself
+    if (!File(join(out, 'sqflite_sw.dart')).existsSync()) {
+      var swFile = join(out, 'sqflite_sw.dart.js');
+      await File(join(context.ffiWebPath, 'build', 'sqflite_sw.dart.js'))
+          .copy(swFile);
+      print('created: $swFile');
+      var swMapFile = join(out, 'sqflite_sw.dart.js.map');
+      await File(join(context.ffiWebPath, 'build', 'sqflite_sw.dart.js.map'))
+          .copy(swMapFile);
+      print('created: $swMapFile');
+
+      var wasmBytes = await readBytes(_sqlite3WasmReleaseUri);
+      var wasmFile = join(out, 'sqlite3.wasm');
+      await File(wasmFile).writeAsBytes(wasmBytes);
+      print('created: $wasmFile');
+    } else {
+      print('no file created here, we are the generator');
+    }
   }
 }
 
@@ -74,6 +85,9 @@ Future<void> setupBinaries([String path = '.']) async {
   var shell = context.ffiWebShell;
   print(shell.path);
   await shell.run('dart pub get');
+  try {
+    await Directory('build').delete(recursive: true);
+  } catch (e) {}
   await shell.run('webdev build -o web:build');
 
   await context.copyBinaries();

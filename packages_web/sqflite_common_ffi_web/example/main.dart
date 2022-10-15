@@ -6,6 +6,8 @@ import 'package:service_worker/window.dart' as sw;
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
+import 'package:sqflite_common_ffi_web/src/import.dart';
 import 'package:sqflite_common_ffi_web/src/sw/constants.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
     show SqfliteFfiWebContextExt;
@@ -14,19 +16,41 @@ import 'ui.dart';
 
 var swOptions = SqfliteFfiWebOptions(serviceWorkerUri: Uri.parse('sw.dart.js'));
 
+Future incrementPrebuilt() async {
+  await incrementSqfliteValueInDatabaseFactory(databaseFactoryWebPrebuilt,
+      tag: 'prebuilt');
+}
+
+Future incrementWork() async {
+  await incrementSqfliteValueInDatabaseFactory(databaseFactoryWebLocal,
+      tag: 'work');
+}
+
+Future incrementNoWebWorker() async {
+  await incrementSqfliteValueInDatabaseFactory(
+      databaseFactoryWebNoWebWorkerLocal,
+      tag: 'ui');
+}
+
 Future<void> main() async {
   initUi();
+  sqliteFfiWebDebugWebWorker = devWarning(true);
   write('running');
+  // await devWarning(incrementWork());
+  //await devWarning(incrementPrebuilt());
   // await incrementVarInServiceWorker();
   // await incrementSqfliteValueInDatabaseFactory(
   //     databaseFactoryWebNoWebWorkerLocal);
   // await incrementSqfliteValueInDatabaseFactory(databaseFactoryWebLocal);
+  //await devWarning(
+  //  incrementSqfliteValueInDatabaseFactory(databaseFactoryWebPrebuilt));
 }
 
 var _registerAndReady = sqfliteFfiWebStartWebWorker(swOptions);
 Future<sw.ServiceWorker> registerAndReady() async =>
     (await _registerAndReady).serviceWorker!;
 
+var databaseFactoryWebPrebuilt = databaseFactoryFfiWeb;
 var databaseFactoryWebNoWebWorkerLocal = databaseFactoryFfiWebNoWebWorker;
 var databaseFactoryWebLocal = createDatabaseFactoryFfiWeb(options: swOptions);
 
@@ -72,20 +96,22 @@ Future<void> setTestValue(sw.ServiceWorker sw, Object? value) async {
 Future<void> incrementVarInServiceWorker() async {
   var sw = await registerAndReady();
   var value = await getTestValue(sw);
-  write('read before $value');
+  write('var before $value');
   if (value is! int) {
     value = 0;
   }
 
   await setTestValue(sw, value + 1);
   value = await getTestValue(sw);
-  write('read after $value');
+  write('var after $value');
 }
 
-Future<void> incrementSqfliteValueInDatabaseFactory(
-    DatabaseFactory factory) async {
+Future<void> incrementSqfliteValueInDatabaseFactory(DatabaseFactory factory,
+    {String? tag}) async {
+  tag ??= 'db';
   try {
-    write('accessing db...');
+    write('/$tag accessing db...');
+    await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
     var db = await factory.openDatabase('test.db',
         options: OpenDatabaseOptions(
             version: 1,
@@ -102,13 +128,13 @@ Future<void> incrementSqfliteValueInDatabaseFactory(
     }
 
     var value = await readValue();
-    write('read before $value');
+    write('/$tag read before $value');
     await db.insert('Test', {'id': 1, 'value': (value ?? 0) + 1},
         conflictAlgorithm: ConflictAlgorithm.replace);
     value = await readValue() ?? 0;
-    write('read after $value');
+    write('/$tag read after $value');
   } catch (e) {
-    write('error: $e');
+    write('/$tag error: $e');
     rethrow;
   }
 }
@@ -124,6 +150,10 @@ void initUi() {
   });
   addButton('increment sqflite value in web worker', () async {
     var factory = databaseFactoryWebLocal;
+    await incrementSqfliteValueInDatabaseFactory(factory);
+  });
+  addButton('increment sqflite value in pre-built web worker', () async {
+    var factory = databaseFactoryFfiWeb;
     await incrementSqfliteValueInDatabaseFactory(factory);
   });
 }
