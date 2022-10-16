@@ -9,6 +9,12 @@ var _debugCheckPrinted = <String, bool>{};
 
 void _checkArg(dynamic arg) {
   if ((arg is! String) && (arg is! num) && (arg is! Uint8List)) {
+    // Big int ok on the web only
+    if (kSqfliteIsWeb) {
+      if (arg is BigInt) {
+        return;
+      }
+    }
     final type = arg.runtimeType.toString();
 
     final text = '''

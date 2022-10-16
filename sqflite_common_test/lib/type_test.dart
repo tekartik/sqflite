@@ -3,8 +3,10 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common/src/env_utils.dart'; // ignore: implementation_imports
 import 'package:sqflite_common/utils/utils.dart' as utils;
 import 'package:sqflite_common_test/sqflite_test.dart';
+import 'package:sqflite_common_test/src/sqflite_import.dart';
 import 'package:test/test.dart';
 
 class _Data {
@@ -69,33 +71,51 @@ void run(SqfliteTestContext context) {
 
       id = await _insertValue(pow(2, 62));
       //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
-      expect(await _getValue(id), pow(2, 62),
+      expect(await _getValue(id),
+          context.isWeb ? BigInt.parse('4611686018427387904') : pow(2, 62),
           reason: '2^62: ${pow(2, 62)} ${await _getValue(id)}');
 
-      var value = pow(2, 63).round() - 1;
+      var maxValue = pow(2, 63).round() - 1;
+      var maxValueBigInt = BigInt.parse('9223372036854775807');
+      if (!context.isWeb) {
+        expect(maxValueBigInt.isValidInt, true);
+        expect(maxValueBigInt.toInt(), maxValue);
+      } else {
+        expect(maxValueBigInt.isValidInt, false);
+      }
+      var value = context.isWeb ? maxValueBigInt : maxValue;
       id = await _insertValue(value);
       //devPrint('${value} ${await getValue(id)}');
       expect(await _getValue(id), value,
           reason: '$value ${await _getValue(id)}');
 
-      value = -(pow(2, 63)).round();
+      var minValue = -(pow(2, 63)).round();
+      var minValueBigInt = BigInt.parse('-9223372036854775808');
+      if (!context.isWeb) {
+        expect(minValueBigInt.isValidInt, true);
+        expect(minValueBigInt.toInt(), minValue);
+      } else {
+        expect(minValueBigInt.isValidInt, true); // !!
+        expect(minValueBigInt.toInt(), minValue);
+      }
+
+      value = context.isWeb ? minValueBigInt : minValue;
       id = await _insertValue(value);
       //devPrint('${value} ${await getValue(id)}');
       expect(await _getValue(id), value,
           reason: '$value ${await _getValue(id)}');
-      /*
-      id = await insertValue(pow(2, 63));
-      devPrint('2^63: ${pow(2, 63)} ${await getValue(id)}');
-      assert(await getValue(id) == pow(2, 63), '2^63: ${pow(2, 63)} ${await getValue(id)}');
 
-      // more then 64 bits
-      id = await insertValue(pow(2, 65));
-      assert(await getValue(id) == pow(2, 65));
-
-      // more then 128 bits
-      id = await insertValue(pow(2, 129));
-      assert(await getValue(id) == pow(2, 129));
-      */
+      if (!kSqfliteIsWeb) {
+        // BigInt not supported
+        await expectLater(() async => await _insertValue(BigInt.one),
+            throwsA(isA<SqfliteDatabaseException>()));
+      } else {
+        // Too big!
+        await expectLater(
+            () async =>
+                await _insertValue(BigInt.parse('92233720368547758080000')),
+            throwsA(isA<SqfliteDatabaseException>()));
+      }
       await _data.db.close();
     });
 

@@ -10,6 +10,7 @@ Future main() async {
     'sqflite',
     'sqflite_test_app',
     'sqflite_support',
+    join('packages_web', 'sqflite_common_ffi_web'),
   ]) {
     await packageRunCi(join('..', dir));
   }

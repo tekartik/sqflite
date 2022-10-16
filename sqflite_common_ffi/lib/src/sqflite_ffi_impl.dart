@@ -458,6 +458,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
           } else if (argument is num) {
           } else if (argument is String) {
           } else if (argument is Uint8List) {
+            // Support needed for the web and web only
+          } else if (argument is BigInt) {
           } else {
             throw ArgumentError(
                 'Invalid sql argument type \'${argument.runtimeType}\': $argument');
