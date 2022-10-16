@@ -26,23 +26,25 @@ void main() {
     checkBuiltFilesSync(exists: false);
   }
 
-  test('force setup', () async {
-    dir = join('.dart_tool', packageName, 'test', 'force_setup');
-    deleteBuiltFilesSync();
-    await setupBinaries(options: SetupOptions(dir: dir, force: true));
-    checkBuiltFilesSync();
-  });
-  test('normal setup', () async {
-    dir = join('.dart_tool', packageName, 'test', 'normal_setup');
-    deleteBuiltFilesSync();
-    await setupBinaries(options: SetupOptions(dir: dir));
-    checkBuiltFilesSync();
-  });
-  test('bin setup', () async {
-    dir = join('.dart_tool', packageName, 'test', 'bin_setup');
-    deleteBuiltFilesSync();
-    await run(
-        'dart run sqflite_common_ffi_web:setup --verbose --dir ${shellArgument(dir)}');
-    checkBuiltFilesSync();
-  });
+  group('setup', () {
+    test('force setup', () async {
+      dir = join('.dart_tool', packageName, 'test', 'force_setup');
+      deleteBuiltFilesSync();
+      await setupBinaries(options: SetupOptions(dir: dir, force: true));
+      checkBuiltFilesSync();
+    });
+    test('normal setup', () async {
+      dir = join('.dart_tool', packageName, 'test', 'normal_setup');
+      deleteBuiltFilesSync();
+      await setupBinaries(options: SetupOptions(dir: dir));
+      checkBuiltFilesSync();
+    });
+    test('bin setup', () async {
+      dir = join('.dart_tool', packageName, 'test', 'bin_setup');
+      deleteBuiltFilesSync();
+      await run(
+          'dart run sqflite_common_ffi_web:setup --verbose --dir ${shellArgument(dir)}');
+      checkBuiltFilesSync();
+    });
+  }, timeout: const Timeout(Duration(minutes: 5)));
 }
