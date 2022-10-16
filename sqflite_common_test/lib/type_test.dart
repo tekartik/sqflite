@@ -106,10 +106,14 @@ void run(SqfliteTestContext context) {
           reason: '$value ${await _getValue(id)}');
 
       if (!kSqfliteIsWeb) {
-        // BigInt not supported
-        await expectLater(() async => await _insertValue(BigInt.one),
-            throwsA(isA<SqfliteDatabaseException>()));
+        // BigInt not supported but no exception is thrown...yet
+        id = await _insertValue(BigInt.one);
+        expect(await _getValue(id), 1);
       } else {
+        // Insert big int, read int
+        id = await _insertValue(BigInt.one);
+        expect(await _getValue(id), 1);
+
         // Too big!
         await expectLater(
             () async =>

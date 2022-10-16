@@ -138,7 +138,7 @@ Future<Object?> sendRawMessage(sw.ServiceWorker sw, Object message) {
   //var receivePort =ReceivePort();
 
   messageChannel.port1.onMessage.listen((event) {
-    print('Receiving from sw:  ${event.data}');
+    // print('Receiving from sw:  ${event.data}');
     completer.complete(event.data);
   });
 
