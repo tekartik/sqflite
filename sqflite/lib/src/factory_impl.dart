@@ -64,7 +64,11 @@ set sqlfliteDatabaseFactory(SqfliteDatabaseFactory? databaseFactory) =>
 /// sqflite Default factory
 @visibleForTesting
 SqfliteDatabaseFactory get sqfliteDatabaseFactory =>
-    _databaseFactory ??= SqfliteDatabaseFactoryImpl();
+    _databaseFactory ??= sqfliteDatabaseFactoryDefault;
+
+/// Default factory that uses the plugin.
+SqfliteDatabaseFactory sqfliteDatabaseFactoryDefault =
+    SqfliteDatabaseFactoryImpl();
 
 /// Change the default factory. test only.
 @visibleForTesting

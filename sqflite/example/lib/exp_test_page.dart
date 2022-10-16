@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
@@ -9,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common/sqflite_dev.dart';
+import 'package:sqflite_example/src/common_import.dart';
+import 'package:sqflite_example/utils.dart';
 
 import 'test_page.dart';
 
@@ -349,7 +348,7 @@ class ExpTestPage extends TestPage {
       final data = await rootBundle.load(join('assets', 'issue_64.db'));
       final bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      await File(path).writeAsBytes(bytes);
+      await writeFileAsBytes(path, bytes);
 
       // open the database
       final db = await openDatabase(path);
@@ -394,17 +393,29 @@ INSERT INTO test (value) VALUES (1);
 INSERT INTO test (value) VALUES (10);
 ''';
         await db.execute(sql);
-
         // that should be the expected result
         // var expectedResult = [
         //   {'value': 1},
         //   {'value': 10}
         // ];
         final result = await db.rawQuery('SELECT * FROM $table');
+        print(json.encode(result));
+
         // However (at least on Android)
         // result is empty, only the first statement is executed
-        print(json.encode(result));
-        expect(result, []);
+        // Ok when using ffi...
+        if (platform.isLinux) {
+          // Ok when using ffi linux implementation
+          // TODO check windows and mac.
+          // that should be the expected result
+          var expectedResult = [
+            {'value': 1},
+            {'value': 10}
+          ];
+          expect(result, expectedResult);
+        } else {
+          expect(result, []);
+        }
       } finally {
         await db.close();
       }
@@ -506,46 +517,50 @@ CREATE TABLE test (
       }
     });
 
-    test('Issue#206', () async {
-      //await Sqflite.devSetDebugModeOn(true);
-      final path = await initDeleteDb('issue_206.db');
+    /// fts4
+    var fts4Supports = supportsCompatMode;
+    if (fts4Supports) {
+      test('Issue#206', () async {
+        //await Sqflite.devSetDebugModeOn(true);
+        final path = await initDeleteDb('issue_206.db');
 
-      final db = await openDatabase(path);
-      try {
-        final sqls = LineSplitter.split(
-            '''CREATE VIRTUAL TABLE Food using fts4(description TEXT)
+        final db = await openDatabase(path);
+        try {
+          final sqls = LineSplitter.split(
+              '''CREATE VIRTUAL TABLE Food using fts4(description TEXT)
         INSERT Into Food (description) VALUES ('banana')
         INSERT Into Food (description) VALUES ('apple')''');
-        final batch = db.batch();
-        for (var sql in sqls) {
-          batch.execute(sql);
-        }
-        await batch.commit();
+          final batch = db.batch();
+          for (var sql in sqls) {
+            batch.execute(sql);
+          }
+          await batch.commit();
 
-        final results = await db.rawQuery(
-            'SELECT description, matchinfo(Food) as matchinfo FROM Food WHERE Food MATCH ?',
-            ['ban*']);
-        print(results);
-        // matchinfo is currently returned as binary bloc
-        expect(results.length, 1);
-        final map = results.first;
-        final matchInfo = map['matchinfo'] as Uint8List;
+          final results = await db.rawQuery(
+              'SELECT description, matchinfo(Food) as matchinfo FROM Food WHERE Food MATCH ?',
+              ['ban*']);
+          print(results);
+          // matchinfo is currently returned as binary bloc
+          expect(results.length, 1);
+          final map = results.first;
+          final matchInfo = map['matchinfo'] as Uint8List;
 
-        // Convert to Uint32List
-        final uint32ListLength = matchInfo.length ~/ 4;
-        final uint32List = Uint32List(uint32ListLength);
-        final data = ByteData.view(
-            matchInfo.buffer, matchInfo.offsetInBytes, matchInfo.length);
-        for (var i = 0; i < uint32ListLength; i++) {
-          uint32List[i] = data.getUint32(i * 4, Endian.host);
+          // Convert to Uint32List
+          final uint32ListLength = matchInfo.length ~/ 4;
+          final uint32List = Uint32List(uint32ListLength);
+          final data = ByteData.view(
+              matchInfo.buffer, matchInfo.offsetInBytes, matchInfo.length);
+          for (var i = 0; i < uint32ListLength; i++) {
+            uint32List[i] = data.getUint32(i * 4, Endian.host);
+          }
+          // print(uint32List);
+          expect(uint32List, [1, 1, 1, 1, 1]);
+          expect(map['matchinfo'], const TypeMatcher<Uint8List>());
+        } finally {
+          await db.close();
         }
-        // print(uint32List);
-        expect(uint32List, [1, 1, 1, 1, 1]);
-        expect(map['matchinfo'], const TypeMatcher<Uint8List>());
-      } finally {
-        await db.close();
-      }
-    });
+      });
+    }
 
     test('Log level', () async {
       // test setting log level
@@ -699,7 +714,12 @@ CREATE TABLE test (
       var db = await openDatabase(inMemoryDatabasePath);
       await db.execute(
           'CREATE TABLE IF NOT EXISTS foo (id int primary key, name text)');
-      await db.rawQuery('SELECT * FROM foo WHERE id=?');
+      var missingParameterShouldFail = !supportsCompatMode;
+      try {
+        await db.rawQuery('SELECT * FROM foo WHERE id=?');
+      } catch (e) {
+        expect(missingParameterShouldFail, isTrue);
+      }
       await db.close();
     });
   }

@@ -1,5 +1,4 @@
 // ignore: implementation_imports
-import 'package:sqflite_common/src/arg_utils.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_impl.dart';
 import 'package:sqflite_common_ffi/src/sqflite_import.dart';
 

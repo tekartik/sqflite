@@ -49,6 +49,26 @@ In release mode, add [sqlite3.dll](https://github.com/tekartik/sqflite/raw/maste
 `sqfliteFfiInit` is provided as an implementation reference for loading the sqlite library. Please look at [sqlite3](https://pub.dev/packages/sqlite3)
 if you want to override the behavior.
 
+### Web
+
+This branch uses the experimental web support from sqlite3. You will need to use sqlite_common_ffi and sqlite_common from this branch.
+sqlite3.wasm needs to placed in the web directory of your application at `/web/sqlite3.wasm` 
+Apparently this file can be found in the sqlite3 release, I could only find it at https://storage.googleapis.com/simon-public-euw3/assets/sqlite3.wasm
+
+The following sample code should then work on the web.
+
+```
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+Future<Database> openWebDb() async {
+  databaseFactory = databaseFactoryFfi;
+  Database db = await openDatabase('/test/test.db');
+  return db;
+}
+```
+
+
 ## Sample code
 
 ### Unit test code

@@ -1,3 +1,7 @@
+## 2.2.0-dev.0
+
+* dependency update
+
 ## 2.1.0+1
 
 * Android: fix parameter binding for non string parameters

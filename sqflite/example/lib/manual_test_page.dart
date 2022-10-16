@@ -27,6 +27,12 @@ class _ManualTestPageState extends State<ManualTestPage> {
   Database? database;
   static const String dbName = 'manual_test.db';
 
+  Future<void> showToast(String message) async {
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   Future<Database> _openDatabase() async {
     return database ??= await databaseFactory.openDatabase(dbName);
   }
@@ -72,12 +78,21 @@ class _ManualTestPageState extends State<ManualTestPage> {
       SqfMenuItem('Factory information', () async {
         var info = databaseFactory.toString();
         print('sqlite database factory: $info');
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(info)));
+        unawaited(showToast(info));
       }, summary: 'toString()'),
       SqfMenuItem('openDatabase', () async {
         await _openDatabase();
       }, summary: 'Open the database'),
+      SqfMenuItem('sql add and query', () async {
+        var db = await _openDatabase();
+        await db.execute(
+            'CREATE TABLE IF NOT EXISTS Task(id INTEGER PRIMARY KEY, name TEXT)');
+        await db.execute('INSERT INTO Task(name) VALUES (?)',
+            ['task ${DateTime.now().toIso8601String()}']);
+        var count =
+            firstIntValue(await db.query('Task', columns: [sqlCountColumn]));
+        unawaited(showToast('$count task(s)'));
+      }, summary: 'open/create table/add/query'),
       SqfMenuItem('BEGIN EXCLUSIVE', () async {
         final db = await _openDatabase();
         await db.execute('BEGIN EXCLUSIVE');

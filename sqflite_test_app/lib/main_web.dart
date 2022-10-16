@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:sqflite_example/main.dart' as example;
+import 'main_ffi.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  example.main();
+  mainFfi();
 }

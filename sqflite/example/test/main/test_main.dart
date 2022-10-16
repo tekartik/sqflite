@@ -1,4 +1,3 @@
-import 'package:sqflite_example/main.dart' as app;
 import 'package:sqflite_example/main.dart';
 
 Future main() async {
@@ -10,5 +9,5 @@ Future main() async {
   // debugAutoStartRouteName = testTypeRoute;
   debugAutoStartRouteName = testExpRoute;
 
-  app.main();
+  mainExampleApp();
 }

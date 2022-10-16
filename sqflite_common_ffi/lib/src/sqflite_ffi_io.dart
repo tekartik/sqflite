@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common_ffi/src/database_factory_ffi.dart';
 import 'package:sqflite_common_ffi/src/windows/setup.dart';
+
+import 'database_factory_ffi_io.dart';
 
 /// The database factory to use for ffi.
 ///
@@ -19,6 +20,18 @@ DatabaseFactory get databaseFactoryFfi => databaseFactoryFfiImpl;
 /// Currently supports Win/Mac/Linux.
 DatabaseFactory get databaseFactoryFfiNoIsolate =>
     databaseFactoryFfiNoIsolateImpl;
+
+/// Optional. Initialize ffi loader.
+///
+/// Call in main until you find a loader for your needs.
+///
+/// Currently this only performs windows specific operations. Implementation
+/// is provided for reference only.
+void sqfliteFfiInit() {
+  if (Platform.isWindows) {
+    windowsInit();
+  }
+}
 
 /// Creates an FFI database factory.
 /// Optionally the FFIInit function can be provided if you want to override
@@ -47,16 +60,4 @@ DatabaseFactory get databaseFactoryFfiNoIsolate =>
 DatabaseFactory createDatabaseFactoryFfi(
     {SqfliteFfiInit? ffiInit, bool noIsolate = false}) {
   return createDatabaseFactoryFfiImpl(ffiInit: ffiInit, noIsolate: noIsolate);
-}
-
-/// Optional. Initialize ffi loader.
-///
-/// Call in main until you find a loader for your needs.
-///
-/// Currently this only performs windows specific operations. Implementation
-/// is provided for reference only.
-void sqfliteFfiInit() {
-  if (Platform.isWindows) {
-    windowsInit();
-  }
 }

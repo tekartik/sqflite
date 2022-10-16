@@ -22,3 +22,8 @@ String? argumentToString(Object? argument) {
 /// Convert sql arguments to a printable string, truncating if necessary
 String argumentsToString(List<Object?> arguments) =>
     '[${arguments.map((e) => argumentToString(e)).join(', ')}]';
+
+/// Sql command and arguments formatted for logs
+String sqlArgumentsToString(String sql, List<Object?>? arguments) {
+  return '$sql${(arguments?.isNotEmpty ?? false) ? ' ${argumentsToString(arguments!)}' : ''}';
+}

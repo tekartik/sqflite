@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_example/utils.dart';
 
 import 'test_page.dart';
 
@@ -142,7 +143,10 @@ class TypeTestPage extends TestPage {
         //print(await getValue(id));
         //assert(eq.equals(await getValue(id), []));
 
-        final blob1234 = [1, 2, 3, 4];
+        var blob1234 = [1, 2, 3, 4];
+        if (!supportsCompatMode) {
+          blob1234 = Uint8List.fromList(blob1234);
+        }
         id = await insertValue(blob1234);
         dynamic value = (await getValue(id)) as List;
         print(value);
@@ -234,8 +238,10 @@ class TypeTestPage extends TestPage {
         } on ArgumentError catch (_) {
           failed = true;
         }
-        print('for now bool are accepted but inconsistent on iOS/Android');
-        expect(failed, isFalse);
+        if (supportsCompatMode) {
+          print('for now bool are accepted but inconsistent on iOS/Android');
+          expect(failed, isFalse);
+        }
       } finally {
         await data.db.close();
       }

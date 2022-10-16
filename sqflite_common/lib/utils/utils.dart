@@ -55,3 +55,6 @@ void setLockWarningInfo({Duration? duration, void Function()? callback}) {
   impl.lockWarningDuration = duration ?? impl.lockWarningDuration;
   impl.lockWarningCallback = callback ?? impl.lockWarningCallback;
 }
+
+/// count column.
+const sqlCountColumn = 'COUNT(*)';

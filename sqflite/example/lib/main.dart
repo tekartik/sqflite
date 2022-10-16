@@ -17,18 +17,26 @@ import 'todo_test_page.dart';
 import 'type_test_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  mainExampleApp();
+}
+
+/// Example app main entry point, exported for external application
+///
+/// might move to a different shared package.
+void mainExampleApp() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const SqfliteExampleApp());
 }
 
 /// Sqflite test app
-class MyApp extends StatefulWidget {
+class SqfliteExampleApp extends StatefulWidget {
   /// test app.
-  const MyApp({Key? key}) : super(key: key);
+  const SqfliteExampleApp({Key? key}) : super(key: key);
   // This widget is the root of your application.
 
   @override
   // ignore: library_private_types_in_public_api
-  _MyAppState createState() => _MyAppState();
+  _SqfliteExampleAppState createState() => _SqfliteExampleAppState();
 }
 
 /// Simple test page.
@@ -61,7 +69,7 @@ const String testExpRoute = '/test/exp';
 /// Deprecated test page.
 const String testDeprecatedRoute = '/test/deprecated';
 
-class _MyAppState extends State<MyApp> {
+class _SqfliteExampleAppState extends State<SqfliteExampleApp> {
   var routes = <String, WidgetBuilder>{
     '/test': (BuildContext context) => MyHomePage(),
     testRawRoute: (BuildContext context) => RawTestPage(),

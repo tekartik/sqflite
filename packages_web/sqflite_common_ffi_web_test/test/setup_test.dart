@@ -1,0 +1,48 @@
+@TestOn('vm')
+import 'dart:io';
+
+import 'package:path/path.dart';
+import 'package:process_run/shell.dart';
+import 'package:sqflite_common_ffi_web/src/constant.dart';
+import 'package:sqflite_common_ffi_web/src/setup/setup.dart';
+import 'package:test/test.dart';
+
+void deleteFileSync(String path) {
+  try {
+    File(path).deleteSync();
+  } catch (_) {}
+}
+
+void main() {
+  late String dir;
+  void checkBuiltFilesSync({bool exists = true}) {
+    expect(File(join(dir, sqfliteSwJsFile)).existsSync(), exists);
+    expect(File(join(dir, sqlite3WasmFile)).existsSync(), exists);
+  }
+
+  void deleteBuiltFilesSync() {
+    deleteFileSync(join(dir, sqfliteSwJsFile));
+    deleteFileSync(join(dir, sqlite3WasmFile));
+    checkBuiltFilesSync(exists: false);
+  }
+
+  test('force setup', () async {
+    dir = join('.dart_tool', packageName, 'test', 'force_setup');
+    deleteBuiltFilesSync();
+    await setupBinaries(options: SetupOptions(dir: dir, force: true));
+    checkBuiltFilesSync();
+  });
+  test('normal setup', () async {
+    dir = join('.dart_tool', packageName, 'test', 'normal_setup');
+    deleteBuiltFilesSync();
+    await setupBinaries(options: SetupOptions(dir: dir));
+    checkBuiltFilesSync();
+  });
+  test('bin setup', () async {
+    dir = join('.dart_tool', packageName, 'test', 'bin_setup');
+    deleteBuiltFilesSync();
+    await run(
+        'dart run sqflite_common_ffi_web:setup --verbose --dir ${shellArgument(dir)}');
+    checkBuiltFilesSync();
+  });
+}

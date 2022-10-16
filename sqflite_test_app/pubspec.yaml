@@ -35,6 +35,7 @@ dependencies:
   dev_test:
   process_run: '>=0.11.0+2'
   path:
+  sqflite_common_ffi_web:
 
 dev_dependencies:
   flutter_lints:
@@ -57,7 +58,8 @@ dependency_overrides:
     path: ../sqflite_common
   sqflite_common_ffi:
     path: ../sqflite_common_ffi
-
+  sqflite_common_ffi_web:
+    path: ../packages_web/sqflite_common_ffi_web
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -76,9 +78,10 @@ flutter:
   #      fileName: src/sqflite_web_sim.dart
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/example.db
+    - assets/issue_64.db
+    # - packages/sqflite_common_ffi_web/src/web/sqlite3.wasm
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
