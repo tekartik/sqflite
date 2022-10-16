@@ -1,4 +1,4 @@
-## 2.4.0-dev.0
+## 2.4.0-dev.1
 
 * base experimental web support
 
