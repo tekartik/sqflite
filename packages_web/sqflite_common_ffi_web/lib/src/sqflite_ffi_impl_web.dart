@@ -98,7 +98,6 @@ Future<Object?> sendRawMessage(sw.ServiceWorker sw, Object message) {
     if (_debug) {
       print('/sw_client recv ${event.data}');
     }
-    print('Receiving from sw:  ${event.data}');
     completer.complete(event.data);
   });
 
