@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:service_worker/window.dart' as sw;
 import 'package:service_worker/worker.dart';
+import 'package:sqflite_common_ffi_web/src/constant.dart';
 import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
 import 'package:sqlite3/wasm.dart';
 
@@ -22,7 +23,7 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3FileSystem(
 // var _defaultSqlite3WasmUri = Uri.parse('sqflite/sqlite3.wasm');
 // var _defaultServiceWorkerUri = Uri.parse('sqflite/sqflite_sw.dart.js');
 var _defaultSqlite3WasmUri = Uri.parse('sqlite3.wasm');
-var _defaultServiceWorkerUri = Uri.parse('sqflite_sw.dart.js');
+var _defaultServiceWorkerUri = Uri.parse(sqfliteSwJsFile);
 //var uri = options.sqlite3WasmUri ?? _defaultSqlite3WasmUri;
 /// Default indexedDB name is /sqflite
 Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(

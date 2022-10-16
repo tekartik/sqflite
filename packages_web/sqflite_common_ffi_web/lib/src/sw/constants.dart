@@ -1,8 +1,8 @@
 /// Counter simple test
-const commandVarSet = 'counterSet';
+const commandVarSet = 'varSet';
 // key: value:
 // no response
 /// Counter simple test
-const commandVarGet = 'counterGet';
+const commandVarGet = 'varGet';
 // key:
 // response value

@@ -99,4 +99,4 @@ linter:
     - use_rethrow_when_possible
 
     # === doc rules ===
-    - public_member_api_docs
+    # - public_member_api_docs

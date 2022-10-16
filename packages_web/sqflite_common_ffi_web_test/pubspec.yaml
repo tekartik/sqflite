@@ -18,7 +18,7 @@ dev_dependencies:
   build_web_compilers: ^3.2.1
   lints: ^2.0.0
   process_run:
-
+  test:
 dependency_overrides:
   sqflite_common_ffi_web:
     path: ../sqflite_common_ffi_web

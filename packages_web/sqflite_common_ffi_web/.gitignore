@@ -4,9 +4,5 @@
 
 # Conventional directory for build output.
 build/
-/example/sqflite/
-/web/sqflite/
-/example/sqflite_sw.dart.js
+/example/sqflite_sw.js
 /example/sqlite3.wasm
-/web/sqlite3.wasm
-/example/sqflite_sw.dart.js.map
