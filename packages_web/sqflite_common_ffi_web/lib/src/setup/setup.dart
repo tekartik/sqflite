@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dev_test/build_support.dart';
 import 'package:http/http.dart';
-import 'package:io/io.dart';
+import 'package:path/path.dart' as p;
 import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -59,9 +60,15 @@ class SetupContext {
   /// Version.
   final Version version;
 
+  /// If overriden in pubspec
+  final String? overridenSwJsFile;
+
   /// Setup Context.
   SetupContext(
-      {required this.options, required this.ffiWebPath, required this.version});
+      {required this.options,
+      required this.ffiWebPath,
+      required this.version,
+      required this.overridenSwJsFile});
 }
 
 /// Easy path access
@@ -100,7 +107,7 @@ extension SetupContextExt on SetupContext {
       print(shell.path);
       if (!runningFromPackage) {
         await Directory(workPath).create(recursive: true);
-        await copyPath(ffiWebPath, workPath);
+        await copySourcesPath(ffiWebPath, workPath);
       }
 
       await shell.run('dart pub get');
@@ -120,7 +127,8 @@ extension SetupContextExt on SetupContext {
     if (File(join(out, 'sqflite_sw.dart')).existsSync()) {
       print('no files created here, we are the generator');
     } else {
-      var sqfliteSwJsOutFile = join(out, sqfliteSwJsFile);
+      var swJsFile = overridenSwJsFile ?? sqfliteSwJsFile;
+      var sqfliteSwJsOutFile = join(out, swJsFile);
 
       await File(builtSwJsFilePath).copy(sqfliteSwJsOutFile);
       print(
@@ -144,12 +152,27 @@ Future<SetupContext> getSetupContext({SetupOptions? options}) async {
   var config = await pathGetPackageConfigMap(path);
   var pubspec = await pathGetPubspecYamlMap(path);
   var version = pubspecYamlGetVersion(pubspec);
+  // sqflite:
+  //   # Update for force changing file name for service worker
+  //   # to force an app update until a better solution is found
+  //   # default being sqflite_sw.ja
+  //   # Could be sqflite_sw_v1.js
+  //   # Re run setup
+  //   sqflite_common_ffi_web:
+  //     sw_js_file: sqflite_sw_v1.js
+  var overridenSwJsFile =
+      ((pubspec['sqflite'] as Map?)?[packageName] as Map?)?['sw_js_file']
+          ?.toString();
+
   var ffiWebPath =
       pathPackageConfigMapGetPackagePath(path, config, packageName)!;
 
   ffiWebPath = absolute(normalize(ffiWebPath));
   return SetupContext(
-      options: options, ffiWebPath: ffiWebPath, version: version);
+      options: options,
+      ffiWebPath: ffiWebPath,
+      version: version,
+      overridenSwJsFile: overridenSwJsFile);
 }
 
 Future<void> main() async {
@@ -174,4 +197,60 @@ Future<void> setupBinaries({SetupOptions? options}) async {
 
   await context.build();
   await context.copyBinaries();
+}
+
+bool _doNothing(String from, String to) {
+  if (p.canonicalize(from) == p.canonicalize(to)) {
+    return true;
+  }
+  if (p.isWithin(from, to)) {
+    throw ArgumentError('Cannot copy from $from to $to');
+  }
+  return false;
+}
+
+bool _topLevelFileShouldIgnore(String path) {
+  // devPrint(path);
+  var name = basename(path);
+  if (name.startsWith('.')) {
+    return true;
+  }
+  if (name == 'build') {
+    return true;
+  }
+  if (extension(name).endsWith('.iml')) {
+    return true;
+  }
+  // devPrint('ok');
+  return false;
+}
+
+/// Copies all of the files in the [from] directory to [to].
+///
+/// This is similar to `cp -R <from> <to>`:
+/// * Symlinks are supported.
+/// * Existing files are over-written, if any.
+/// * If [to] is within [from], throws [ArgumentError] (an infinite operation).
+/// * If [from] and [to] are canonically the same, no operation occurs.
+///
+/// Returns a future that completes when complete.
+Future<void> copySourcesPath(String from, String to) async {
+  if (_doNothing(from, to)) {
+    return;
+  }
+  await Directory(to).create(recursive: true);
+  await for (final file in Directory(from)
+      .list(recursive: false)
+      .where((event) => !_topLevelFileShouldIgnore(event.path))) {
+    final copyTo = p.join(to, p.relative(file.path, from: from));
+    if (file is Directory) {
+      await Directory(copyTo).create(recursive: true);
+      await copySourcesPath(
+          join(from, basename(file.path)), join(to, basename(file.path)));
+    } else if (file is File) {
+      await File(file.path).copy(copyTo);
+    } else if (file is Link) {
+      await Link(copyTo).create(await file.target(), recursive: true);
+    }
+  }
 }

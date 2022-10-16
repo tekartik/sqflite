@@ -5,6 +5,7 @@
 # Conventional directory for build output.
 build/
 /web/sqflite_sw.js
+/web/sqflite_sw_v1.js
 /web/sqlite3.wasm
 /test/sqflite_sw.js
 /test/sqlite3.wasm

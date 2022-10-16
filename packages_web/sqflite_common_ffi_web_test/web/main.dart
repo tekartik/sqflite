@@ -7,6 +7,16 @@ import 'ui.dart';
 Future<void> main() async {
 // Use the ffi web factory in web apps (flutter or dart)
   var factory = databaseFactoryFfiWeb;
+
+  // test: custom uri
+  // ignore: dead_code
+  if (false) {
+    // devWarning(true)) {
+    factory = createDatabaseFactoryFfiWeb(
+        options: SqfliteFfiWebOptions(
+            serviceWorkerUri: Uri.parse('sqflite_sw_v2.js')));
+  }
+
   var db = await factory.openDatabase(inMemoryDatabasePath);
   var sqliteVersion =
       (await db.rawQuery('select sqlite_version()')).first.values.first;
