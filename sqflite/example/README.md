@@ -26,7 +26,16 @@ Some project files is no longer in source control but can be re-created using
     # With a emulator running
     ./gradlew connectedAndroidTest
 
-## Getting Started
+## iOS
 
-For help getting started with Flutter, view the online
-[documentation](https://flutter.io/).
+Project files are no longer in source control but can be re-created using
+
+    flutter create --platforms ios .
+
+## MacOS
+
+Project files are no longer in source control but can be re-created using
+
+    flutter create --platforms macos .
+    flutter run -d macos
+
