@@ -14,5 +14,6 @@ sqflite_example.iml
 .local/
 tmp/
 
-# no web support
+# no project files support
 /web/
+/android/

@@ -11,6 +11,17 @@ flutter create  .
 flutter run
 ```
 
+### Web support
+
+```bash
+# Create the project
+flutter create --platforms web .
+# Setup the binaries
+flutter pub run sqflite_common_ffi_web:setup
+# Run it
+flutter run -d chrome
+```
+
 ## Included test_driver
 
 Flutter driver test to execute.
