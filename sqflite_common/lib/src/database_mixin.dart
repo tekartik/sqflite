@@ -2,6 +2,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/batch.dart';
 import 'package:sqflite_common/src/collection_utils.dart';
 import 'package:sqflite_common/src/constant.dart';
+import 'package:sqflite_common/src/cursor.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/exception.dart';
 import 'package:sqflite_common/src/factory.dart';
@@ -138,6 +139,22 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
       String sql, List<Object?>? arguments, QueryByPageOptions options) {
     db.checkNotClosed();
     return db.txnRawQueryByPage(txn, sql, arguments, options);
+  }
+
+  /// Execute a raw SQL SELECT query
+  ///
+  /// list of rows are sent in the callback
+  @override
+  Future<QueryCursor> rawQueryByPageCursor(String sql, List<Object?>? arguments,
+      {required int pageSize}) {
+    checkRawArgs(arguments);
+    return _rawQueryByPageCursor(sql, arguments, pageSize);
+  }
+
+  Future<QueryCursor> _rawQueryByPageCursor(
+      String sql, List<Object?>? arguments, int pageSize) {
+    db.checkNotClosed();
+    return db.txnRawQueryByPageCursor(txn, sql, arguments, pageSize);
   }
 
   /// Execute a raw SQL UPDATE query
@@ -480,6 +497,96 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         }
       }
     });
+  }
+
+  @override
+  Future<SqfliteQueryCursor> txnRawQueryByPageCursor(SqfliteTransaction? txn,
+      String sql, List<Object?>? arguments, int pageSize) {
+    return txnSynchronized(txn, (_) async {
+      dynamic result = await safeInvokeMethod<dynamic>(
+          methodQuery,
+          <String, Object?>{
+            paramSql: sql,
+            paramSqlArguments: arguments,
+            paramCursorPageSize: pageSize
+          }..addAll(baseDatabaseMethodArguments));
+
+      var cursorId = queryResultCursorId(result);
+      var resultList = queryResultToList(result);
+      return SqfliteQueryCursor(this, txn, cursorId, resultList);
+    });
+  }
+
+  /// Cursor current row.
+  @override
+  Map<String, Object?> txnQueryCursorGetCurrent(
+      SqfliteTransaction? txn, SqfliteQueryCursor cursor) {
+    if (cursor.currentIndex < 0 ||
+        cursor.currentIndex >= cursor.resultList.length) {
+      throw StateError(
+          'You must have a successful moveNext() before getting the current row');
+    }
+    return cursor.resultList[cursor.currentIndex];
+  }
+
+  Future<void> _closeCursor(SqfliteQueryCursor cursor) async {
+    var cursorId = cursor.cursorId;
+    if (cursorId != null) {
+      cursor.cursorId = null;
+      await safeInvokeMethod<dynamic>(
+          methodQueryCursorNext,
+          <String, Object?>{paramCursorId: cursorId, paramCursorCancel: true}
+            ..addAll(baseDatabaseMethodArguments));
+    }
+  }
+
+  @override
+  Future<bool> txnQueryCursorMoveNext(
+      SqfliteTransaction? txn, SqfliteQueryCursor cursor) async {
+    if (cursor.currentIndex < cursor.resultList.length - 1) {
+      cursor.currentIndex++;
+      return true;
+    }
+    var cursorId = cursor.cursorId;
+    if (cursorId == null) {
+      // At end, let's quit
+      return false;
+    } else {
+      return txnSynchronized(txn, (_) async {
+        var cursorId = cursor.cursorId;
+        if (cursorId == null) {
+          // At end, let's quit
+          return false;
+        }
+        // Ok let's fetch the next batch of data
+        var result = await safeInvokeMethod<dynamic>(
+            methodQueryCursorNext,
+            <String, Object?>{
+              paramCursorId: cursorId,
+            }..addAll(baseDatabaseMethodArguments));
+        var updatedCursorId = queryResultCursorId(result);
+        cursor.cursorId = updatedCursorId;
+        cursor.currentIndex = 0;
+        cursor.resultList = queryResultToList(result);
+        if (cursor.resultList.isEmpty) {
+          // cursor id should be null, but who knows...
+          await _closeCursor(cursor);
+          return false;
+        } else {
+          return true;
+        }
+      });
+    }
+  }
+
+  @override
+  Future<void> txnQueryCursorClose(
+      SqfliteTransaction? txn, SqfliteQueryCursor cursor) async {
+    if (cursor.cursorId != null) {
+      return txnSynchronized(txn, (_) async {
+        await _closeCursor(cursor);
+      });
+    }
   }
 
   /// for Update sql query
