@@ -7,7 +7,8 @@ environment:
   sdk: '>=2.12.0-29 <3.0.0'
 
 dependencies:
-  sqflite_common: '>=2.0.0-nullsafety.0'
+  sqflite_common_ffi:
+  sqflite_common:
   test:
   path:
   synchronized:
@@ -15,9 +16,9 @@ dev_dependencies:
   process_run: '>=0.11.0+2'
 
   lints: '>=1.0.1'
-  sqflite_common_ffi:
-    path: ../sqflite_common_ffi
 
 dependency_overrides:
   sqflite_common:
     path: ../sqflite_common
+  sqflite_common_ffi:
+    path: ../sqflite_common_ffi
