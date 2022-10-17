@@ -215,7 +215,9 @@ void run(SqfliteTestContext context) {
   test('Open no version onCreate', () async {
     // should fail
     var path = await context.initDeleteDb('open_no_version_on_create.db');
-    verify(!(File(path).existsSync()));
+    if (!context.isWeb) {
+      verify(!(File(path).existsSync()));
+    }
     Database? db;
     try {
       db = await factory.openDatabase(path,

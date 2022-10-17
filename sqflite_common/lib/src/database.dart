@@ -95,6 +95,10 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
   Future<List<Map<String, Object?>>> txnRawQuery(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments);
 
+  /// Execute a raw SELECT command by page.
+  Future<void> txnRawQueryByPage(SqfliteTransaction? txn, String sql,
+      List<Object?>? arguments, QueryByPageOptions options);
+
   /// Execute a raw UPDATE/DELETE command.
   Future<int> txnRawUpdate(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments);

@@ -752,6 +752,69 @@ void run(SqfliteTestContext context) {
         map = Map.from(map);
         map['name'] = 'other';
       });
+
+      test('query by page', () async {
+        await db.execute('''
+      CREATE TABLE test (
+        id INTEGER PRIMARY KEY
+      )''');
+        await db.insert('test', {'id': 1});
+        await db.insert('test', {'id': 2});
+        await db.insert('test', {'id': 3});
+        var resultsList = <List>[];
+        await db.rawQueryByPage(
+            'SELECT * FROM test',
+            null,
+            QueryByPageOptions(
+                pageSize: 2,
+                resultCallback: (result) {
+                  resultsList.add(result);
+                  return true;
+                }));
+        expect(resultsList, [
+          [
+            {'id': 1},
+            {'id': 2}
+          ],
+          [
+            {'id': 3}
+          ]
+        ]);
+        resultsList.clear();
+        await db.rawQueryByPage(
+            'SELECT * FROM test',
+            null,
+            QueryByPageOptions(
+                pageSize: 2,
+                resultCallback: (result) {
+                  resultsList.add(result);
+                  return false;
+                }));
+        expect(resultsList, [
+          [
+            {'id': 1},
+            {'id': 2}
+          ]
+        ]);
+        await db.transaction((txn) async {
+          resultsList.clear();
+          await txn.rawQueryByPage(
+              'SELECT * FROM test',
+              null,
+              QueryByPageOptions(
+                  pageSize: 2,
+                  resultCallback: (result) {
+                    resultsList.add(result);
+                    return false;
+                  }));
+          expect(resultsList, [
+            [
+              {'id': 1},
+              {'id': 2}
+            ]
+          ]);
+        });
+      });
     });
   });
 }

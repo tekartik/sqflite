@@ -1,5 +1,6 @@
-## 2.2.0-dev.0
+## 2.2.0-dev.2
 
+* Implements `Database.rawQueryByPage()`
 * base for experimental web support
 
 ## 2.1.1

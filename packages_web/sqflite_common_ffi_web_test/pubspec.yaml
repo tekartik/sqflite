@@ -28,3 +28,13 @@ dependency_overrides:
     path: ../../sqflite_common
   sqflite_common_test:
     path: ../../sqflite_common_test
+
+sqflite:
+  # Update for force changing file name for service worker
+  # to force an app update until a better solution is found
+  # default being sqflite_sw.ja
+  # Could be sqflite_sw_v1.js
+  # Re run setup then
+  #
+  sqflite_common_ffi_web:
+    sw_js_file: sqflite_sw_v1.js

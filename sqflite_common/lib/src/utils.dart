@@ -12,14 +12,6 @@ int? parseInt(Object? object) {
   return null;
 }
 
-/// Deprecated on purpose to avoid keep in the code.
-///
-/// Used during development to add a quick log (and to not forget to remove it)
-@Deprecated('Dev only')
-void devPrint(Object object) {
-  print(object);
-}
-
 /// Debug mode activated
 ///
 /// To deprecated since 1.1.7
@@ -51,4 +43,22 @@ void Function()? lockWarningCallback = _lockWarningCallbackDefault;
 void _lockWarningCallbackDefault() {
   print('Warning database has been locked for $lockWarningDuration. '
       'Make sure you always use the transaction object for database operations during a transaction');
+}
+
+/// Split a list in sub list with a maximum size.
+///
+/// Never returns list. if list is null, returns an empty list.
+/// If [chunkSize] is null or 0, returns all in one list;
+List<List<T>> listChunk<T>(List<T> list, int? chunkSize) {
+  var chunks = <List<T>>[];
+  final len = list.length;
+  if ((chunkSize ?? 0) == 0) {
+    chunkSize = len;
+  }
+  for (var i = 0; i < len; i += chunkSize) {
+    final size = i + chunkSize!;
+    chunks.add(list.sublist(i, size > len ? len : size));
+  }
+
+  return chunks;
 }

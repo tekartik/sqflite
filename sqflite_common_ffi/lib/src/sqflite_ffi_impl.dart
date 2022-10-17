@@ -66,6 +66,18 @@ class SqfliteFfiOperation {
   String toString() => '$method ${_sqlArgumentsToString(sql, sqlArguments)}';
 }
 
+class _SqfliteFfiCursorInfo {
+  final int id;
+  final common.CommonPreparedStatement statement;
+  final int pageSize;
+  final common.IteratingCursor cursor;
+
+  /// mutable
+  var atEnd = false;
+
+  _SqfliteFfiCursorInfo(this.id, this.statement, this.pageSize, this.cursor);
+}
+
 /// Ffi database
 class SqfliteFfiDatabase {
   /// ffi database.
@@ -94,6 +106,10 @@ class SqfliteFfiDatabase {
   final int logLevel;
 
   String get _prefix => '[sqflite-$id]';
+
+  // Saved cursors
+  final _cursors = <int, _SqfliteFfiCursorInfo>{};
+  var _lastCursorId = 0;
 
   /// Debug map.
   Map<String, Object?> toDebugMap() {
@@ -169,7 +185,18 @@ class SqfliteFfiDatabase {
   }
 
   /// Query handling.
-  Future handleQuery({required String sql, List? sqlArguments}) async {
+  Future handleQuery(
+      {required String sql, List? sqlArguments, int? pageSize}) async {
+    if (pageSize == null) {
+      return _handleQuery(sqlArguments: sqlArguments, sql: sql);
+    } else {
+      return _handleQueryByPage(
+          sqlArguments: sqlArguments, sql: sql, pageSize: pageSize);
+    }
+  }
+
+  /// Query handling.
+  Future _handleQuery({required String sql, List? sqlArguments}) async {
     var preparedStatement = _ffiDb.prepare(sql);
 
     try {
@@ -180,6 +207,76 @@ class SqfliteFfiDatabase {
       return packResult(result);
     } finally {
       preparedStatement.dispose();
+    }
+  }
+
+  Map _resultFromCursor(_SqfliteFfiCursorInfo cursorInfo) {
+    var cursorId = cursorInfo.id;
+    try {
+      var cursor = cursorInfo.cursor;
+      var columns = cursor.columnNames;
+      var rows = <List<Object?>>[];
+
+      while (true) {
+        if (cursor.moveNext()) {
+          var row = cursor.current;
+          var data = List.generate(row.length, (index) => row[index]);
+          rows.add(data.toList());
+        } else {
+          cursorInfo.atEnd = true;
+          break;
+        }
+        if (rows.length >= cursorInfo.pageSize) {
+          break;
+        }
+      }
+      var pack = packColumnsRowsResult(columns, rows);
+      if (!cursorInfo.atEnd) {
+        pack[paramCursorId] = cursorInfo.id;
+      }
+      return pack;
+    } catch (_) {
+      _closeCursor(cursorId);
+      rethrow;
+    } finally {
+      if (cursorInfo.atEnd) {
+        _closeCursor(cursorId);
+      }
+    }
+  }
+
+  /// Query handling.
+  Future<Object?> _handleQueryByPage(
+      {required String sql, List? sqlArguments, required int pageSize}) async {
+    var preparedStatement = _ffiDb.prepare(sql);
+
+    logSql(sql: sql, sqlArguments: sqlArguments);
+
+    var cursor = preparedStatement.selectCursor(_ffiArguments(sqlArguments));
+
+    var cursorId = ++_lastCursorId;
+    var cursorInfo =
+        _SqfliteFfiCursorInfo(cursorId, preparedStatement, pageSize, cursor);
+
+    _cursors[cursorId] = cursorInfo;
+    return _resultFromCursor(cursorInfo);
+  }
+
+  /// Query handling.
+  Future<Object?> handleQueryCursorNext(
+      {required int cursorId, bool? cancel}) async {
+    var cursorInfo = _cursors[cursorId];
+    if (cursorInfo == null) {
+      throw StateError('Cursor $cursorId not found');
+    }
+    return _resultFromCursor(cursorInfo);
+  }
+
+  void _closeCursor(int cursorId) {
+    // devPrint('Closing cursor $cursorId in ${_cursors.keys}');
+    var info = _cursors.remove(cursorId);
+    if (info != null) {
+      info.statement.dispose();
     }
   }
 
@@ -198,6 +295,7 @@ SqfliteFfiHandler? _sqfliteFfiHandler;
 /// Base handler, might be overriden by web implementation
 SqfliteFfiHandler get sqfliteFfiHandler =>
     _sqfliteFfiHandler ??= sqfliteFfiHandlerIo;
+
 set sqfliteFfiHandler(SqfliteFfiHandler handler) =>
     _sqfliteFfiHandler = handler;
 
@@ -298,29 +396,31 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   Future<dynamic> rawHandle() async {
     // devPrint('Handle method $method options $arguments');
     switch (method) {
-      case 'openDatabase':
+      case methodOpenDatabase:
         return await handleOpenDatabase();
-      case 'closeDatabase':
+      case methodCloseDatabase:
         return await handleCloseDatabase();
 
-      case 'query':
+      case methodQuery:
         return await handleQuery();
-      case 'execute':
+      case methodQueryCursorNext:
+        return await handleQueryCursorNext();
+      case methodExecute:
         return await handleExecute();
-      case 'insert':
+      case methodInsert:
         return await handleInsert();
-      case 'update':
+      case methodUpdate:
         return await handleUpdate();
-      case 'batch':
+      case methodBatch:
         return await handleBatch();
 
-      case 'getDatabasesPath':
+      case methodGetDatabasesPath:
         return await handleGetDatabasesPath();
-      case 'deleteDatabase':
+      case methodDeleteDatabase:
         return await handleDeleteDatabase();
-      case 'databaseExists':
+      case methodDatabaseExists:
         return await handleDatabaseExists();
-      case 'options':
+      case methodOptions:
         return await handleOptions();
       case 'debugMode':
         return await handleDebugMode();
@@ -458,6 +558,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
           } else if (argument is num) {
           } else if (argument is String) {
           } else if (argument is Uint8List) {
+            // Support needed for the web and web only
+          } else if (argument is BigInt) {
           } else {
             throw ArgumentError(
                 'Invalid sql argument type \'${argument.runtimeType}\': $argument');
@@ -503,7 +605,17 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     var database = getDatabaseOrThrow();
     var sql = getSql()!;
     var sqlArguments = getSqlArguments();
-    return database.handleQuery(sqlArguments: sqlArguments, sql: sql);
+    var pageSize = argumentsMap['cursorPageSize'] as int?;
+    return database.handleQuery(
+        sqlArguments: sqlArguments, sql: sql, pageSize: pageSize);
+  }
+
+  /// Handle query.
+  Future handleQueryCursorNext() async {
+    var database = getDatabaseOrThrow();
+    var cursorId = argumentsMap[paramCursorId] as int;
+    var cancel = argumentsMap[paramCursorCancel] as bool?;
+    return database.handleQueryCursorNext(cursorId: cursorId, cancel: cancel);
   }
 
   /// Wrap SQL exception.
@@ -722,6 +834,13 @@ Map<String, Object?> packResult(common.ResultSet result) {
   var columns = result.columnNames;
   var rows = result.rows;
 
+  /// This is what sqflite expects as query response
+  return packColumnsRowsResult(columns, rows);
+}
+
+/// Pack the result in the expected sqflite format.
+Map<String, Object?> packColumnsRowsResult(
+    List<String?> columns, List<List<Object?>> rows) {
   /// This is what sqflite expects as query response
   return <String, Object?>{'columns': columns, 'rows': rows};
 }
