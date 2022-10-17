@@ -1,6 +1,6 @@
-## 2.2.0-dev.2
+## 2.2.0-dev.3
 
-* Implements `Database.rawQueryByPage()`
+* Implements `Database.rawQueryByPage()` and `Database.rawQueryByPageCursor()`
 * base for experimental web support
 
 ## 2.1.1
