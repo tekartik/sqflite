@@ -232,7 +232,7 @@ class SqfliteFfiDatabase {
       }
       var pack = packColumnsRowsResult(columns, rows);
       if (!cursorInfo.atEnd) {
-        pack['cursorId'] = cursorInfo.id;
+        pack[paramCursorId] = cursorInfo.id;
       }
       return pack;
     } catch (_) {
@@ -396,31 +396,31 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   Future<dynamic> rawHandle() async {
     // devPrint('Handle method $method options $arguments');
     switch (method) {
-      case 'openDatabase':
+      case methodOpenDatabase:
         return await handleOpenDatabase();
-      case 'closeDatabase':
+      case methodCloseDatabase:
         return await handleCloseDatabase();
 
       case methodQuery:
         return await handleQuery();
-      case 'queryCursorNext':
+      case methodQueryCursorNext:
         return await handleQueryCursorNext();
-      case 'execute':
+      case methodExecute:
         return await handleExecute();
-      case 'insert':
+      case methodInsert:
         return await handleInsert();
-      case 'update':
+      case methodUpdate:
         return await handleUpdate();
-      case 'batch':
+      case methodBatch:
         return await handleBatch();
 
-      case 'getDatabasesPath':
+      case methodGetDatabasesPath:
         return await handleGetDatabasesPath();
-      case 'deleteDatabase':
+      case methodDeleteDatabase:
         return await handleDeleteDatabase();
-      case 'databaseExists':
+      case methodDatabaseExists:
         return await handleDatabaseExists();
-      case 'options':
+      case methodOptions:
         return await handleOptions();
       case 'debugMode':
         return await handleDebugMode();
@@ -613,8 +613,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Handle query.
   Future handleQueryCursorNext() async {
     var database = getDatabaseOrThrow();
-    var cursorId = argumentsMap['cursorId'] as int;
-    var cancel = argumentsMap['cancel'] as bool?;
+    var cursorId = argumentsMap[paramCursorId] as int;
+    var cancel = argumentsMap[paramCursorCancel] as bool?;
     return database.handleQueryCursorNext(cursorId: cursorId, cancel: cancel);
   }
 
