@@ -1,6 +1,6 @@
-## 2.4.0-dev.3
+## 2.4.0-dev.4
 
-* add support for `Database.rawQueryByPage()`
+* add support for `Database.rawQueryByPage()` and `Database.rawQueryByPageCursor()`
 * base experimental web support
 
 ## 2.3.0

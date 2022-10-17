@@ -623,8 +623,8 @@ class RawTestPage extends TestPage {
       }
     });
 
-    solo_test('Query by page', () async {
-      await Sqflite.devSetDebugModeOn(true);
+    test('Query by page', () async {
+      // await Sqflite.devSetDebugModeOn(true);
 
       //final path = await initDeleteDb('query_by_page.db');
       //final db = await openDatabase(path);
