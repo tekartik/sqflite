@@ -521,6 +521,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   Map<String, Object?> txnQueryCursorGetCurrent(
       SqfliteTransaction? txn, SqfliteQueryCursor cursor) {
+    if (cursor.closed) {
+      throw StateError('Cursor is closed, cannot get current row');
+    }
     if (cursor.currentIndex < 0 ||
         cursor.currentIndex >= cursor.resultList.length) {
       throw StateError(
@@ -530,19 +533,25 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   }
 
   Future<void> _closeCursor(SqfliteQueryCursor cursor) async {
-    var cursorId = cursor.cursorId;
-    if (cursorId != null) {
-      cursor.cursorId = null;
-      await safeInvokeMethod<dynamic>(
-          methodQueryCursorNext,
-          <String, Object?>{paramCursorId: cursorId, paramCursorCancel: true}
-            ..addAll(baseDatabaseMethodArguments));
+    if (!cursor.closed) {
+      cursor.closed = true;
+      var cursorId = cursor.cursorId;
+      if (cursorId != null) {
+        cursor.cursorId = null;
+        await safeInvokeMethod<dynamic>(
+            methodQueryCursorNext,
+            <String, Object?>{paramCursorId: cursorId, paramCursorCancel: true}
+              ..addAll(baseDatabaseMethodArguments));
+      }
     }
   }
 
   @override
   Future<bool> txnQueryCursorMoveNext(
       SqfliteTransaction? txn, SqfliteQueryCursor cursor) async {
+    if (cursor.closed) {
+      return false;
+    }
     if (cursor.currentIndex < cursor.resultList.length - 1) {
       cursor.currentIndex++;
       return true;
@@ -550,12 +559,17 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     var cursorId = cursor.cursorId;
     if (cursorId == null) {
       // At end, let's quit
+      await txnQueryCursorClose(txn, cursor);
       return false;
     } else {
       return txnSynchronized(txn, (_) async {
+        if (cursor.closed) {
+          return false;
+        }
         var cursorId = cursor.cursorId;
         if (cursorId == null) {
           // At end, let's quit
+          await _closeCursor(cursor);
           return false;
         }
         // Ok let's fetch the next batch of data
@@ -582,10 +596,14 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   Future<void> txnQueryCursorClose(
       SqfliteTransaction? txn, SqfliteQueryCursor cursor) async {
-    if (cursor.cursorId != null) {
-      return txnSynchronized(txn, (_) async {
-        await _closeCursor(cursor);
-      });
+    if (!cursor.closed) {
+      if (cursor.cursorId != null) {
+        return txnSynchronized(txn, (_) async {
+          await _closeCursor(cursor);
+        });
+      } else {
+        cursor.closed = true;
+      }
     }
   }
 

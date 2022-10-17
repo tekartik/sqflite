@@ -622,5 +622,117 @@ class RawTestPage extends TestPage {
         await db.close();
       }
     });
+
+    solo_test('Query by page', () async {
+      await Sqflite.devSetDebugModeOn(true);
+
+      //final path = await initDeleteDb('query_by_page.db');
+      //final db = await openDatabase(path);
+      final db = await openDatabase(inMemoryDatabasePath);
+      try {
+        await db.execute('''
+      CREATE TABLE test (
+        id INTEGER PRIMARY KEY
+      )''');
+        await db.insert('test', {'id': 1});
+        await db.insert('test', {'id': 2});
+        await db.insert('test', {'id': 3});
+        var resultsList = <List>[];
+        await db.rawQueryByPage(
+            'SELECT * FROM test',
+            null,
+            QueryByPageOptions(
+                pageSize: 2,
+                resultCallback: (result) {
+                  resultsList.add(result);
+                  return true;
+                }));
+        expect(resultsList, [
+          [
+            {'id': 1},
+            {'id': 2}
+          ],
+          [
+            {'id': 3}
+          ]
+        ]);
+        resultsList.clear();
+        await db.rawQueryByPage(
+            'SELECT * FROM test',
+            null,
+            QueryByPageOptions(
+                pageSize: 2,
+                resultCallback: (result) {
+                  resultsList.add(result);
+                  return false;
+                }));
+        expect(resultsList, [
+          [
+            {'id': 1},
+            {'id': 2}
+          ]
+        ]);
+        await db.transaction((txn) async {
+          resultsList.clear();
+          await txn.rawQueryByPage(
+              'SELECT * FROM test',
+              null,
+              QueryByPageOptions(
+                  pageSize: 2,
+                  resultCallback: (result) {
+                    resultsList.add(result);
+                    return false;
+                  }));
+          expect(resultsList, [
+            [
+              {'id': 1},
+              {'id': 2}
+            ]
+          ]);
+        });
+
+        // Use a cursor
+        var cursor = await db.rawQueryByPageCursor('SELECT * FROM test', null,
+            pageSize: 2);
+        resultsList.clear();
+        var results = <Map<String, Object?>>[];
+        while (await cursor.moveNext()) {
+          results.add(cursor.current);
+        }
+        expect(results, [
+          {'id': 1},
+          {'id': 2},
+          {'id': 3}
+        ]);
+
+        // Multiple cursors a cursor
+        var cursor1 = await db.rawQueryByPageCursor('SELECT * FROM test', null,
+            pageSize: 2);
+        var cursor2 = await db.rawQueryByPageCursor('SELECT * FROM test', null,
+            pageSize: 1);
+        await cursor1.moveNext();
+        expect(cursor1.current.values, [1]);
+        await cursor2.moveNext();
+        await cursor2.moveNext();
+        expect(cursor2.current.values, [2]);
+        await cursor1.moveNext();
+        expect(cursor1.current.values, [2]);
+        await cursor1.close();
+        try {
+          cursor1.current.values;
+          fail('should fail get current');
+        } on StateError catch (_) {}
+        await cursor2.moveNext();
+        expect(cursor2.current.values, [3]);
+        expect(await cursor2.moveNext(), isFalse);
+        expect(await cursor1.moveNext(), isFalse);
+        try {
+          cursor2.current.values;
+          fail('should fail get current');
+        } on StateError catch (_) {}
+      } finally {
+        await db.close();
+      }
+    });
   }
 }

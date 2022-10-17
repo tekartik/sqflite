@@ -113,7 +113,7 @@ void main() {
       scenario.end();
     });
 
-    test('query by page insert', () async {
+    test('query by page', () async {
       final scenario = startScenario([
         openStep,
         [

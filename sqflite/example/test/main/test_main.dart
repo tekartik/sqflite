@@ -5,9 +5,9 @@ Future main() async {
   // debugAutoStartRouteName = testExceptionRoute;
   // debugAutoStartRouteName = testOpenRoute;
   // debugAutoStartRouteName = testManualRoute;
-  // debugAutoStartRouteName = testRawRoute;
+  debugAutoStartRouteName = testRawRoute;
   // debugAutoStartRouteName = testTypeRoute;
-  debugAutoStartRouteName = testExpRoute;
+  // debugAutoStartRouteName = testExpRoute;
 
   mainExampleApp();
 }

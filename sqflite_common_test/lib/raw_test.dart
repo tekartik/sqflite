@@ -842,10 +842,13 @@ void run(SqfliteTestContext context) {
         await cursor1.moveNext();
         expect(cursor1.current.values, [2]);
         await cursor1.close();
-        await cursor2.moveNext();
+        expect(() => cursor1.current, throwsStateError);
+        expect(await cursor2.moveNext(), isTrue);
         expect(cursor2.current.values, [3]);
+
         expect(await cursor2.moveNext(), isFalse);
         expect(await cursor1.moveNext(), isFalse);
+        expect(() => cursor2.current, throwsStateError);
       });
     });
   });

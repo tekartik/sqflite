@@ -108,6 +108,7 @@ try {
     // ...
   }
 } finally {
+  // Important don't forget to close the cursor in case any exception is thrown before
   await cursor.close();
 }
 ```

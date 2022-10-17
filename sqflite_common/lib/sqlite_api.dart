@@ -561,7 +561,7 @@ class QueryByPageOptions {
 typedef QueryByPageResultCallback = FutureOr<bool> Function(
     List<Map<String, Object?>> result);
 
-/// Cursor for query by page cursor
+/// Cursor for query by page cursor.
 abstract class QueryCursor {
   /// Move to the next row.
   ///

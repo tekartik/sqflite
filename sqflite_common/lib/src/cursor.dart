@@ -6,6 +6,10 @@ import 'package:sqflite_common/src/transaction.dart';
 class SqfliteQueryCursor implements QueryCursor {
   final SqfliteDatabase _database;
   final SqfliteTransaction? _txn; // transaction if any
+
+  /// True when closed. moveNext should fail but current row remains ok
+  var closed = false;
+
   /// The native cursor id, null if not supported or if closed
   int? cursorId;
 
