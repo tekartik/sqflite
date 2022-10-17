@@ -67,6 +67,34 @@ map = Map.from(map);
 map['name'] = 'other';
 ```
 
+#### Query by page
+
+If you perform a query on a huge table, you might want to avoid allocating all the rows at once.
+There is no cursor support however you can read by page:
+
+```dart
+await db.rawQueryByPage(
+  // The query
+  'SELECT * FROM Product',
+  // The arguments
+  null,
+  QueryByPageOptions(
+    // Read from the cursor 10 by 10
+    pageSize: 10,
+    resultCallback: (page) {
+      // Read the list of results by page
+      // Don't spend too much time here and don't call another sqflite function
+      // The function can be asynchronous though.
+      for (var item in page) {
+        // ...
+      }
+      // return true to continue, false for cancel
+      return true;
+    }));
+```
+
+As of 2022-10-17, this is only supported on the ffi implementation.
+
 ### delete
 
 `delete` is for deleting content in a table. It returns the number of rows deleted.

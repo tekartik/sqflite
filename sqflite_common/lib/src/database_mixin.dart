@@ -124,6 +124,22 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
     return db.txnRawQuery(txn, sql, arguments);
   }
 
+  /// Execute a raw SQL SELECT query
+  ///
+  /// list of rows are sent in the callback
+  @override
+  Future<void> rawQueryByPage(
+      String sql, List<Object?>? arguments, QueryByPageOptions options) {
+    checkRawArgs(arguments);
+    return _rawQueryByPage(sql, arguments, options);
+  }
+
+  Future<void> _rawQueryByPage(
+      String sql, List<Object?>? arguments, QueryByPageOptions options) {
+    db.checkNotClosed();
+    return db.txnRawQueryByPage(txn, sql, arguments, options);
+  }
+
   /// Execute a raw SQL UPDATE query
   ///
   /// Returns the number of changes made
@@ -406,6 +422,63 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           <String, Object?>{paramSql: sql, paramSqlArguments: arguments}
             ..addAll(baseDatabaseMethodArguments));
       return queryResultToList(result);
+    });
+  }
+
+  @override
+  Future<void> txnRawQueryByPage(SqfliteTransaction? txn, String sql,
+      List<Object?>? arguments, QueryByPageOptions options) {
+    return txnSynchronized(txn, (_) async {
+      dynamic result = await safeInvokeMethod<dynamic>(
+          methodQuery,
+          <String, Object?>{
+            paramSql: sql,
+            paramSqlArguments: arguments,
+            paramCursorPageSize: options.pageSize
+          }..addAll(baseDatabaseMethodArguments));
+
+      int? cursorId;
+
+      try {
+        while (true) {
+          // Get cursor id
+          if (result is Map) {
+            cursorId = result[paramCursorId] as int?;
+          } else {
+            cursorId = null;
+          }
+          var resultList = queryResultToList(result);
+
+          bool? callbackResult;
+          for (var chunk in utils.listChunk(resultList, options.pageSize)) {
+            callbackResult = await options.resultCallback(chunk);
+            if (callbackResult != true) {
+              break;
+            }
+          }
+
+          if (cursorId != null) {
+            if (callbackResult == true) {
+              result = await safeInvokeMethod<dynamic>(
+                  methodQueryCursorNext,
+                  <String, Object?>{
+                    paramCursorId: cursorId,
+                  }..addAll(baseDatabaseMethodArguments));
+              continue;
+            }
+          }
+          break;
+        }
+      } finally {
+        if (cursorId != null) {
+          await safeInvokeMethod<dynamic>(
+              methodQueryCursorNext,
+              <String, Object?>{
+                paramCursorId: cursorId,
+                paramCursorCancel: true
+              }..addAll(baseDatabaseMethodArguments));
+        }
+      }
     });
   }
 

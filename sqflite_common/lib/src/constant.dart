@@ -29,6 +29,9 @@ const String methodUpdate = 'update';
 /// Native sql SELECT method.
 const String methodQuery = 'query';
 
+/// Native sql SELECT method.
+const String methodQueryCursorNext = 'queryCursorNext';
+
 /// deprecated.
 const String methodGetPlatformVersion = 'getPlatformVersion';
 
@@ -113,6 +116,25 @@ const String paramSql = 'sql';
 ///
 /// List.
 const String paramSqlArguments = 'arguments';
+
+/// SQL query cursorId parameter.
+///
+/// Integer.
+const String paramCursorId = 'cursorId';
+
+/// SQL query cursor page size parameter.
+///
+/// If null to cursor is used
+///
+/// Integer.
+const String paramCursorPageSize = 'cursorPageSize';
+
+/// SQL query cursor next cancel parameter.
+///
+/// true or false
+///
+/// boolean.
+const String paramCursorCancel = 'cancel';
 
 /// SQLite error code
 const String sqliteErrorCode = 'sqlite_error';

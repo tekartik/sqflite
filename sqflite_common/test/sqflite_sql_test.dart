@@ -112,5 +112,60 @@ void main() {
       await db.close();
       scenario.end();
     });
+
+    test('query by page insert', () async {
+      final scenario = startScenario([
+        openStep,
+        [
+          'query',
+          {
+            'sql': '_',
+            'arguments': null,
+            'id': 1,
+            'cursorPageSize': 2,
+          },
+          {
+            'cursorId': 1,
+            'rows': [
+              [{}]
+            ],
+            'columns': []
+          }
+        ],
+        [
+          'queryCursorNext',
+          {'cursorId': 1, 'id': 1},
+          {'cursorId': 1},
+          {
+            'rows': [
+              [{}]
+            ],
+            'columns': []
+          }
+        ],
+        [
+          'queryCursorNext',
+          {'cursorId': 1, 'cancel': true, 'id': 1},
+          null
+        ],
+        closeStep
+      ]);
+      var resultList = <List<Map<String, Object?>>>[];
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+      await db.rawQueryByPage(
+          '_',
+          null,
+          QueryByPageOptions(
+              pageSize: 2,
+              resultCallback: (result) {
+                resultList.add(result);
+                return true;
+              }));
+      expect(resultList, [
+        [{}]
+      ]);
+      await db.close();
+      scenario.end();
+    });
   });
 }

@@ -1,3 +1,4 @@
+import 'package:sqflite_common/src/utils.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:test/test.dart';
 
@@ -63,6 +64,33 @@ void main() {
         hex(<int>[256]);
         fail('should fail');
       } on FormatException catch (_) {}
+    });
+
+    test('chunk', () {
+      expect(listChunk([], null), []);
+      expect(listChunk([1], null), [
+        [1]
+      ]);
+      expect(listChunk([1], 0), [
+        [1]
+      ]);
+      expect(listChunk([1, 2], 0), [
+        [1, 2]
+      ]);
+      expect(listChunk([1, 2], 2), [
+        [1, 2]
+      ]);
+      expect(listChunk([1, 2], 3), [
+        [1, 2]
+      ]);
+      expect(listChunk([1, 2], 1), [
+        [1],
+        [2]
+      ]);
+      expect(listChunk([1, 2, 3], 2), [
+        [1, 2],
+        [3]
+      ]);
     });
   });
 }

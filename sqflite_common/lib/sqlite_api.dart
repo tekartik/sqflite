@@ -151,6 +151,18 @@ abstract class DatabaseExecutor {
   Future<List<Map<String, Object?>>> rawQuery(String sql,
       [List<Object?>? arguments]);
 
+  /// Executes a raw SQL SELECT query by page.
+  ///
+  /// The list of the rows that were found are sent to the callback.
+  /// If the callback returns true, the query continue, otherwise
+  /// the query ends
+  ///
+  /// ```
+  /// await database.rawQuery('SELECT * FROM Test');
+  /// ```
+  Future<void> rawQueryByPage(
+      String sql, List<Object?>? arguments, QueryByPageOptions options);
+
   /// Executes a raw SQL UPDATE query and returns
   /// the number of changes made.
   ///
@@ -518,3 +530,26 @@ abstract class Batch {
   /// See [Database.query];
   void rawQuery(String sql, [List<Object?>? arguments]);
 }
+
+/// Options for [Database.rawQueryByPage]
+///
+/// This allow getting result of a single query by page so that it can handle
+/// huge queries.
+class QueryByPageOptions {
+  /// Page size, the maximum number of rows in the callback.
+  final int pageSize;
+
+  /// The result callback similar to [Database.query] result.
+  ///
+  /// Return true to continue, false to cancel.
+  final QueryByPageResultCallback resultCallback;
+
+  /// Options.
+  QueryByPageOptions({required this.pageSize, required this.resultCallback});
+}
+
+/// Query result callback.
+///
+/// Return true to continue, false to cancel
+typedef QueryByPageResultCallback = FutureOr<bool> Function(
+    List<Map<String, Object?>> result);

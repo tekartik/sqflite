@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -345,6 +347,24 @@ CREATE TABLE Product (
 
         var result = await db.query('Product');
         expect(result.length, 1, reason: 'list $result');
+
+        await db.rawQueryByPage(
+            // The query
+            'SELECT * FROM Product',
+            // The arguments
+            null,
+            QueryByPageOptions(
+                pageSize: 10,
+                resultCallback: (page) {
+                  // Read the list of results by page
+                  // Don't spend too much time here and don't call another sqflite function
+                  // The function can be asynchronous though.
+                  // return true to continue, false for cancel
+                  for (var item in page) {
+                    // ...
+                  }
+                  return true;
+                }));
         await db.close();
       }
     });
