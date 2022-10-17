@@ -1,5 +1,6 @@
-## 2.4.0-dev.1
+## 2.4.0-dev.2
 
+* add support for `Database.rawQueryByPage()`
 * base experimental web support
 
 ## 2.3.0
