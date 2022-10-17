@@ -3,6 +3,8 @@ import 'package:sqflite_common/src/batch.dart';
 import 'package:sqflite_common/src/factory.dart';
 import 'package:sqflite_common/src/transaction.dart';
 
+import 'cursor.dart';
+
 /// Base database executor.
 abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
   /// Executor transaction if any.
@@ -98,6 +100,22 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
   /// Execute a raw SELECT command by page.
   Future<void> txnRawQueryByPage(SqfliteTransaction? txn, String sql,
       List<Object?>? arguments, QueryByPageOptions options);
+
+  /// Execute a raw SELECT command by page.
+  Future<SqfliteQueryCursor> txnRawQueryByPageCursor(SqfliteTransaction? txn,
+      String sql, List<Object?>? arguments, int pageSize);
+
+  /// Cursor move next.
+  Future<bool> txnQueryCursorMoveNext(
+      SqfliteTransaction? txn, SqfliteQueryCursor cursor);
+
+  /// Cursor current row.
+  Map<String, Object?> txnQueryCursorGetCurrent(
+      SqfliteTransaction? txn, SqfliteQueryCursor cursor);
+
+  /// Close the cursor.
+  Future<void> txnQueryCursorClose(
+      SqfliteTransaction? txn, SqfliteQueryCursor cursor);
 
   /// Execute a raw UPDATE/DELETE command.
   Future<int> txnRawUpdate(

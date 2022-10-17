@@ -67,7 +67,15 @@ List<Map<String, Object?>> queryResultToList(dynamic queryResult) {
     return rows;
   }
 
-  throw 'Unsupported queryResult type $queryResult';
+  throw UnsupportedError('Unsupported queryResult type $queryResult');
+}
+
+/// Native result to a map list as expected by the sqflite API
+int? queryResultCursorId(dynamic queryResult) {
+  if (queryResult is Map) {
+    return queryResult[paramCursorId] as int?;
+  }
+  throw UnsupportedError('Unsupported queryResult type $queryResult');
 }
 
 /// Query native result

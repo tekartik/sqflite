@@ -365,6 +365,21 @@ CREATE TABLE Product (
                   }
                   return true;
                 }));
+
+        // Query cursor
+        var cursor = await db.rawQueryByPageCursor(
+          'SELECT * FROM Product',
+          null,
+          pageSize: 10,
+        );
+        try {
+          while (await cursor.moveNext()) {
+            var row = cursor.current;
+            // ...
+          }
+        } finally {
+          await cursor.close();
+        }
         await db.close();
       }
     });

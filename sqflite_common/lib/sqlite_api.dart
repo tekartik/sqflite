@@ -156,12 +156,19 @@ abstract class DatabaseExecutor {
   /// The list of the rows that were found are sent to the callback.
   /// If the callback returns true, the query continue, otherwise
   /// the query ends
-  ///
-  /// ```
-  /// await database.rawQuery('SELECT * FROM Test');
-  /// ```
   Future<void> rawQueryByPage(
       String sql, List<Object?>? arguments, QueryByPageOptions options);
+
+  /// Executes a raw SQL SELECT query by page.
+  ///
+  /// Returns a cursor, that must either be closed when reaching the end or
+  /// that must be closed manually
+  ///
+  /// ```
+  /// var cursor = await database.rawQueryCursor('SELECT * FROM Test');
+  /// ```
+  Future<QueryCursor> rawQueryByPageCursor(String sql, List<Object?>? arguments,
+      {required int pageSize});
 
   /// Executes a raw SQL UPDATE query and returns
   /// the number of changes made.
@@ -553,3 +560,19 @@ class QueryByPageOptions {
 /// Return true to continue, false to cancel
 typedef QueryByPageResultCallback = FutureOr<bool> Function(
     List<Map<String, Object?>> result);
+
+/// Cursor for query by page cursor
+abstract class QueryCursor {
+  /// Move to the next row.
+  ///
+  /// If false is returned, the cursor is closed and is no longer valid.
+  Future<bool> moveNext();
+
+  /// Current row data.
+  Map<String, Object?> get current;
+
+  /// Close the current cursor.
+  ///
+  /// Not needed when reaching the end of the cursor (moveNext returning false.
+  Future<void> close();
+}

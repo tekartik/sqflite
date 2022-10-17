@@ -93,7 +93,26 @@ await db.rawQueryByPage(
     }));
 ```
 
-As of 2022-10-17, this is only supported on the ffi implementation.
+You can also use a cursor, that has to be closed:
+
+```dart
+// Query cursor
+var cursor = await db.rawQueryByPageCursor(
+  'SELECT * FROM Product',
+  null,
+  pageSize: 10,
+);
+try {
+  while (await cursor.moveNext()) {
+    var row = cursor.current;
+    // ...
+  }
+} finally {
+  await cursor.close();
+}
+```
+
+As of 2022-10-17, this is only supported on the ffi implementation, it works on all platforms though without optimizations.
 
 ### delete
 

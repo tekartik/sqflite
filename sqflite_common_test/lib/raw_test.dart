@@ -814,6 +814,38 @@ void run(SqfliteTestContext context) {
             ]
           ]);
         });
+
+        // Use a cursor
+        var cursor = await db.rawQueryByPageCursor('SELECT * FROM test', null,
+            pageSize: 2);
+        resultsList.clear();
+        var results = <Map<String, Object?>>[];
+        while (await cursor.moveNext()) {
+          results.add(cursor.current);
+        }
+        expect(results, [
+          {'id': 1},
+          {'id': 2},
+          {'id': 3}
+        ]);
+
+        // Multiple cursors a cursor
+        var cursor1 = await db.rawQueryByPageCursor('SELECT * FROM test', null,
+            pageSize: 2);
+        var cursor2 = await db.rawQueryByPageCursor('SELECT * FROM test', null,
+            pageSize: 1);
+        await cursor1.moveNext();
+        expect(cursor1.current.values, [1]);
+        await cursor2.moveNext();
+        await cursor2.moveNext();
+        expect(cursor2.current.values, [2]);
+        await cursor1.moveNext();
+        expect(cursor1.current.values, [2]);
+        await cursor1.close();
+        await cursor2.moveNext();
+        expect(cursor2.current.values, [3]);
+        expect(await cursor2.moveNext(), isFalse);
+        expect(await cursor1.moveNext(), isFalse);
       });
     });
   });
