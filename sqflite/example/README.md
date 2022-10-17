@@ -12,14 +12,17 @@ Specific app entry point
 
 ## Android
 
-Project file is no longer in source control but can be re-created using
+Some project files is no longer in source control but can be re-created using
 
     flutter create --platforms android .
 
 ### Tests
 
     cd android
-    
+
+    # Java unit test
+    ./gradlew test
+
     # With a emulator running
     ./gradlew connectedAndroidTest
 
