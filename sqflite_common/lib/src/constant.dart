@@ -165,3 +165,6 @@ final sqfliteLogLevelVerbose = 2;
 // @deprecated
 /// deprecated
 const String methodSetDebugModeOn = 'debugMode';
+
+/// Default buffer size for queryCursor
+const int queryCursorBufferSizeDefault = 100;
