@@ -842,6 +842,7 @@ void run(SqfliteTestContext context) {
         await cursor1.moveNext();
         expect(cursor1.current.values, [2]);
         await cursor1.close();
+        await cursor1.close(); // ok to call twice
         expect(() => cursor1.current, throwsStateError);
         expect(await cursor2.moveNext(), isTrue);
         expect(cursor2.current.values, [3]);

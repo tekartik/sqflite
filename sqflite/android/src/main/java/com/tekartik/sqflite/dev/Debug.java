@@ -1,8 +1,8 @@
 package com.tekartik.sqflite.dev;
 
-import android.util.Log;
-
 import static android.content.ContentValues.TAG;
+
+import android.util.Log;
 
 /**
  * Created by alex on 09/01/18.

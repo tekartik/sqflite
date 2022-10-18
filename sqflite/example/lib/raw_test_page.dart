@@ -719,6 +719,7 @@ class RawTestPage extends TestPage {
         await cursor1.moveNext();
         expect(cursor1.current.values, [2]);
         await cursor1.close();
+        await cursor1.close(); // ok to call twice
         try {
           cursor1.current.values;
           fail('should fail get current');
