@@ -220,8 +220,7 @@ class SqfliteFfiDatabase {
       while (true) {
         if (cursor.moveNext()) {
           var row = cursor.current;
-          var data = List.generate(row.length, (index) => row[index]);
-          rows.add(data.toList());
+          rows.add(row.values);
         } else {
           cursorInfo.atEnd = true;
           break;

@@ -1,4 +1,4 @@
-## 2.2.0-dev.4
+## 2.2.0-dev.5
 
 * Implements `Database.queryCursor()` and `Database.rawQueryCursor()`
 * base for experimental web support
