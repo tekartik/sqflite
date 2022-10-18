@@ -1,15 +1,19 @@
 package com.tekartik.sqflite.operation;
 
 
-import com.tekartik.sqflite.SqlCommand;
-
-import java.util.List;
-
 import static com.tekartik.sqflite.Constant.PARAM_CONTINUE_OR_ERROR;
+import static com.tekartik.sqflite.Constant.PARAM_CURSOR_ID;
+import static com.tekartik.sqflite.Constant.PARAM_CURSOR_PAGE_SIZE;
 import static com.tekartik.sqflite.Constant.PARAM_IN_TRANSACTION;
 import static com.tekartik.sqflite.Constant.PARAM_NO_RESULT;
 import static com.tekartik.sqflite.Constant.PARAM_SQL;
 import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
+
+import androidx.annotation.Nullable;
+
+import com.tekartik.sqflite.SqlCommand;
+
+import java.util.List;
 
 /**
  * Created by alex on 09/01/18.

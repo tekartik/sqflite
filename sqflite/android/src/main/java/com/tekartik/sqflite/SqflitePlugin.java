@@ -1,5 +1,38 @@
 package com.tekartik.sqflite;
 
+import static com.tekartik.sqflite.Constant.CMD_GET;
+import static com.tekartik.sqflite.Constant.EMPTY_STRING_ARRAY;
+import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
+import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
+import static com.tekartik.sqflite.Constant.METHOD_BATCH;
+import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
+import static com.tekartik.sqflite.Constant.METHOD_QUERY_CURSOR_NEXT;
+import static com.tekartik.sqflite.Constant.METHOD_DEBUG;
+import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
+import static com.tekartik.sqflite.Constant.METHOD_DELETE_DATABASE;
+import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
+import static com.tekartik.sqflite.Constant.METHOD_GET_DATABASES_PATH;
+import static com.tekartik.sqflite.Constant.METHOD_GET_PLATFORM_VERSION;
+import static com.tekartik.sqflite.Constant.METHOD_INSERT;
+import static com.tekartik.sqflite.Constant.METHOD_OPEN_DATABASE;
+import static com.tekartik.sqflite.Constant.METHOD_OPTIONS;
+import static com.tekartik.sqflite.Constant.METHOD_QUERY;
+import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
+import static com.tekartik.sqflite.Constant.PARAM_CMD;
+import static com.tekartik.sqflite.Constant.PARAM_CURSOR_PAGE_SIZE;
+import static com.tekartik.sqflite.Constant.PARAM_ID;
+import static com.tekartik.sqflite.Constant.PARAM_IN_TRANSACTION;
+import static com.tekartik.sqflite.Constant.PARAM_LOG_LEVEL;
+import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
+import static com.tekartik.sqflite.Constant.PARAM_PATH;
+import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
+import static com.tekartik.sqflite.Constant.PARAM_RECOVERED;
+import static com.tekartik.sqflite.Constant.PARAM_RECOVERED_IN_TRANSACTION;
+import static com.tekartik.sqflite.Constant.PARAM_SINGLE_INSTANCE;
+import static com.tekartik.sqflite.Constant.PARAM_SQL;
+import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
+import static com.tekartik.sqflite.Constant.TAG;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
@@ -11,7 +44,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQuery;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
 
@@ -37,44 +69,12 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.StandardMethodCodec;
 
-import static com.tekartik.sqflite.Constant.CMD_GET;
-import static com.tekartik.sqflite.Constant.EMPTY_STRING_ARRAY;
-import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
-import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
-import static com.tekartik.sqflite.Constant.METHOD_BATCH;
-import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
-import static com.tekartik.sqflite.Constant.METHOD_DEBUG;
-import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
-import static com.tekartik.sqflite.Constant.METHOD_DELETE_DATABASE;
-import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
-import static com.tekartik.sqflite.Constant.METHOD_GET_DATABASES_PATH;
-import static com.tekartik.sqflite.Constant.METHOD_GET_PLATFORM_VERSION;
-import static com.tekartik.sqflite.Constant.METHOD_INSERT;
-import static com.tekartik.sqflite.Constant.METHOD_OPEN_DATABASE;
-import static com.tekartik.sqflite.Constant.METHOD_OPTIONS;
-import static com.tekartik.sqflite.Constant.METHOD_QUERY;
-import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
-import static com.tekartik.sqflite.Constant.PARAM_CMD;
-import static com.tekartik.sqflite.Constant.PARAM_ID;
-import static com.tekartik.sqflite.Constant.PARAM_IN_TRANSACTION;
-import static com.tekartik.sqflite.Constant.PARAM_LOG_LEVEL;
-import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
-import static com.tekartik.sqflite.Constant.PARAM_PATH;
-import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
-import static com.tekartik.sqflite.Constant.PARAM_RECOVERED;
-import static com.tekartik.sqflite.Constant.PARAM_RECOVERED_IN_TRANSACTION;
-import static com.tekartik.sqflite.Constant.PARAM_SINGLE_INSTANCE;
-import static com.tekartik.sqflite.Constant.PARAM_SQL;
-import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
-import static com.tekartik.sqflite.Constant.TAG;
-
 /**
  * SqflitePlugin Android implementation
  */
 public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
     static final Map<String, Integer> _singleInstancesByPath = new HashMap<>();
-    static private boolean QUERY_AS_MAP_LIST = false; // set by options
     static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_DEFAULT;
     static int logLevel = LogLevel.none;
 
@@ -118,8 +118,8 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
         this.context = applicationContext;
         methodChannel = new MethodChannel(messenger, Constant.PLUGIN_KEY,
-                                          StandardMethodCodec.INSTANCE,
-                                          messenger.makeBackgroundTaskQueue());
+                StandardMethodCodec.INSTANCE,
+                messenger.makeBackgroundTaskQueue());
         methodChannel.setMethodCallHandler(this);
     }
 
@@ -128,72 +128,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         context = null;
         methodChannel.setMethodCallHandler(null);
         methodChannel = null;
-    }
-
-    private static Object cursorValue(Cursor cursor, int index) {
-        switch (cursor.getType(index)) {
-            case Cursor.FIELD_TYPE_NULL:
-                return null;
-            case Cursor.FIELD_TYPE_INTEGER:
-                return cursor.getLong(index);
-            case Cursor.FIELD_TYPE_FLOAT:
-                return cursor.getDouble(index);
-            case Cursor.FIELD_TYPE_STRING:
-                return cursor.getString(index);
-            case Cursor.FIELD_TYPE_BLOB:
-                return cursor.getBlob(index);
-        }
-        return null;
-    }
-
-    private static List<Object> cursorRowToList(Cursor cursor, int length) {
-        List<Object> list = new ArrayList<>(length);
-
-        for (int i = 0; i < length; i++) {
-            Object value = cursorValue(cursor, i);
-            if (Debug.EXTRA_LOGV) {
-                String type = null;
-                if (value != null) {
-                    if (value.getClass().isArray()) {
-                        type = "array(" + value.getClass().getComponentType().getName() + ")";
-                    } else {
-                        type = value.getClass().getName();
-                    }
-                }
-                Log.d(TAG, "column " + i + " " + cursor.getType(i) + ": " + value + (type == null ? "" : " (" + type + ")"));
-            }
-            list.add(value);
-        }
-        return list;
-    }
-
-    private static Map<String, Object> cursorRowToMap(Cursor cursor) {
-        Map<String, Object> map = new HashMap<>();
-        String[] columns = cursor.getColumnNames();
-        int length = columns.length;
-        for (int i = 0; i < length; i++) {
-            if (Debug.EXTRA_LOGV) {
-                Log.d(TAG, "column " + i + " " + cursor.getType(i));
-            }
-            switch (cursor.getType(i)) {
-                case Cursor.FIELD_TYPE_NULL:
-                    map.put(columns[i], null);
-                    break;
-                case Cursor.FIELD_TYPE_INTEGER:
-                    map.put(columns[i], cursor.getLong(i));
-                    break;
-                case Cursor.FIELD_TYPE_FLOAT:
-                    map.put(columns[i], cursor.getDouble(i));
-                    break;
-                case Cursor.FIELD_TYPE_STRING:
-                    map.put(columns[i], cursor.getString(i));
-                    break;
-                case Cursor.FIELD_TYPE_BLOB:
-                    map.put(columns[i], cursor.getBlob(i));
-                    break;
-            }
-        }
-        return map;
     }
 
     static private Map<String, Object> fixMap(Map<Object, Object> map) {
@@ -305,20 +239,30 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     // query
     //
     private void onQueryCall(final MethodCall call, final Result result) {
-
         final Database database = getDatabaseOrError(call, result);
         if (database == null) {
             return;
         }
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                MethodCallOperation operation = new MethodCallOperation(call, result);
-                query(database, operation);
-
-            }
+        handler.post(() -> {
+            MethodCallOperation operation = new MethodCallOperation(call, result);
+            database.query(operation);
         });
     }
+
+    //
+    // cursor query next
+    //
+    private void onQueryCursorNextCall(final MethodCall call, final Result result) {
+        final Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
+        }
+        handler.post(() -> {
+            MethodCallOperation operation = new MethodCallOperation(call, result);
+            database.queryCursorNext(operation);
+        });
+    }
+
 
     //
     // Sqflite.batch
@@ -371,7 +315,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                             }
                             break;
                         case METHOD_QUERY:
-                            if (query(database, operation)) {
+                            if (database.query(operation)) {
                                 //devLog(TAG, "results: " + operation.getBatchResults());
                                 operation.handleSuccess(results);
                             } else if (continueOnError) {
@@ -464,70 +408,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             }
             operation.success(null);
             return true;
-        } catch (Exception exception) {
-            handleException(exception, operation, database);
-            return false;
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-    }
-
-    // Return true on success
-    private boolean query(Database database, final Operation operation) {
-        final SqlCommand command = operation.getSqlCommand();
-
-        List<Map<String, Object>> results = new ArrayList<>();
-        Map<String, Object> newResults = null;
-        List<List<Object>> rows = null;
-        int newColumnCount = 0;
-        if (LogLevel.hasSqlLevel(database.logLevel)) {
-            Log.d(TAG, database.getThreadLogPrefix() + command);
-        }
-        Cursor cursor = null;
-        final boolean queryAsMapList = QUERY_AS_MAP_LIST;
-        try {
-            // For query we sanitize as it only takes String which does not work
-            // for references. Simply embed the int/long into the query itself
-            cursor = database.getReadableDatabase().rawQueryWithFactory(
-                    new SQLiteDatabase.CursorFactory() {
-                        @Override
-                        public Cursor newCursor(SQLiteDatabase sqLiteDatabase, SQLiteCursorDriver sqLiteCursorDriver, String s, SQLiteQuery sqLiteQuery) {
-                            command.bindTo(sqLiteQuery);
-                            return new SQLiteCursor(sqLiteCursorDriver, s, sqLiteQuery);
-                        }
-                    }, command.getSql(), EMPTY_STRING_ARRAY, null);
-
-            while (cursor.moveToNext()) {
-                if (queryAsMapList) {
-                    Map<String, Object> map = cursorRowToMap(cursor);
-                    if (LogLevel.hasSqlLevel(database.logLevel)) {
-                        Log.d(TAG, database.getThreadLogPrefix() + SqflitePlugin.toString(map));
-                    }
-                    results.add(map);
-                } else {
-                    if (newResults == null) {
-                        rows = new ArrayList<>();
-                        newResults = new HashMap<>();
-                        newColumnCount = cursor.getColumnCount();
-                        newResults.put("columns", Arrays.asList(cursor.getColumnNames()));
-                        newResults.put("rows", rows);
-                    }
-                    rows.add(cursorRowToList(cursor, newColumnCount));
-                }
-            }
-            if (queryAsMapList) {
-                operation.success(results);
-            } else {
-                // Handle empty
-                if (newResults == null) {
-                    newResults = new HashMap<>();
-                }
-                operation.success(newResults);
-            }
-            return true;
-
         } catch (Exception exception) {
             handleException(exception, operation, database);
             return false;
@@ -1003,6 +883,11 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                 onDebugCall(call, result);
                 break;
             }
+            case METHOD_QUERY_CURSOR_NEXT: {
+                onQueryCursorNextCall(call, result);
+                break;
+            }
+
             // Obsolete
             case METHOD_DEBUG_MODE: {
                 onDebugModeCall(call, result);
@@ -1015,11 +900,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     void onOptionsCall(final MethodCall call, final Result result) {
-        Object paramAsList = call.argument(Constant.PARAM_QUERY_AS_MAP_LIST);
-        if (paramAsList != null) {
-            QUERY_AS_MAP_LIST = Boolean.TRUE.equals(paramAsList);
-        }
-        Object threadPriority = call.argument(Constant.PARAM_THREAD_PRIORITY);
+       Object threadPriority = call.argument(Constant.PARAM_THREAD_PRIORITY);
         if (threadPriority != null) {
             THREAD_PRIORITY = (Integer) threadPriority;
         }

@@ -624,6 +624,7 @@ class RawTestPage extends TestPage {
     });
 
     test('Query by page', () async {
+      // await databaseFactory.debugSetLogLevel(sqfliteLogLevelVerbose);
       // await Sqflite.devSetDebugModeOn(true);
 
       //final path = await initDeleteDb('query_by_page.db');

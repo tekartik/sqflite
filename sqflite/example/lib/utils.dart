@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqflite_dev.dart';
 
@@ -7,9 +9,11 @@ Future sleep([int milliseconds = 0]) =>
 
 /// Only the native plugin supports this
 /// could drop support soon
+/// 2022-10-18 drop Android support
 bool get queryAsMapListSupported {
   // ignore: invalid_use_of_visible_for_testing_member
-  return databaseFactory == sqfliteDatabaseFactoryDefault;
+  return databaseFactory == sqfliteDatabaseFactoryDefault &&
+      (!Platform.isAndroid);
 }
 
 /// Supports compat mode (devSetDebugModeOn, queryAsMap, fts4, some error handled - missing parameter, bad file)

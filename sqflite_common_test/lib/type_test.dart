@@ -140,7 +140,6 @@ void run(SqfliteTestContext context) {
       // null
       id = await _insertValue(null);
       expect(await _getValue(id), null);
-
       id = await _insertValue(-1);
       expect(await _getValue(id), -1);
       id = await _insertValue(-1.1);
@@ -148,19 +147,25 @@ void run(SqfliteTestContext context) {
       // big float
       id = await _insertValue(1 / 3);
       expect(await _getValue(id), 1 / 3);
-      id = await _insertValue(pow(2, 63) + .1);
+      id = await _insertValue(pow(2.0, 63) + .1);
       try {
-        expect(await _getValue(id), pow(2, 63) + 0.1);
+        expect(await _getValue(id), pow(2.0, 63) + 0.1);
       } on TestFailure catch (_) {
         // we might still get the positive value
         // This happens when use the server app
-        expect(await _getValue(id), -(pow(2, 63) + 0.1));
+        expect(await _getValue(id), -(pow(2.0, 63) + 0.1));
       }
 
       // integer?
-      id = await _insertValue(pow(2, 62));
-      expect(await _getValue(id), pow(2, 62));
-      await _data.db.close();
+      id = await _insertValue(pow(2, 50));
+      expect(await _getValue(id), pow(2, 50));
+
+      // big integer?
+      if (!context.isWeb) {
+        id = await _insertValue(pow(2, 62));
+        expect(await _getValue(id), pow(2, 62));
+        await _data.db.close();
+      }
     });
 
     test('text', () async {
