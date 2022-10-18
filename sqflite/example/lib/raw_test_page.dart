@@ -593,7 +593,6 @@ class RawTestPage extends TestPage {
 
     test('Query by page', () async {
       // await databaseFactory.debugSetLogLevel(sqfliteLogLevelVerbose);
-      // await Sqflite.devSetDebugModeOn(true);
 
       //final path = await initDeleteDb('query_by_page.db');
       //final db = await openDatabase(path);
@@ -700,6 +699,20 @@ class RawTestPage extends TestPage {
           cursor2.current.values;
           fail('should fail get current');
         } on StateError catch (_) {}
+
+        // No data
+        cursor = await db.rawQueryByPageCursor(
+            'SELECT * FROM test WHERE id > ?', [3],
+            pageSize: 2);
+        expect(await cursor.moveNext(), isFalse);
+
+        // Matching page size
+        cursor = await db.rawQueryByPageCursor(
+            'SELECT * FROM test WHERE id > ?', [1],
+            pageSize: 2);
+        expect(await cursor.moveNext(), isTrue);
+        expect(await cursor.moveNext(), isTrue);
+        expect(await cursor.moveNext(), isFalse);
       } finally {
         await db.close();
       }

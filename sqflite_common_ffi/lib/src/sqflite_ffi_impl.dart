@@ -265,6 +265,11 @@ class SqfliteFfiDatabase {
   /// Query handling.
   Future<Object?> handleQueryCursorNext(
       {required int cursorId, bool? cancel}) async {
+    if (logLevel >= sqfliteLogLevelVerbose) {
+      logResult(
+          result:
+              'queryCursorNext $cursorId${cancel == true ? ' (cancel)' : ''}');
+    }
     var cursorInfo = _cursors[cursorId];
 
     // Cancel?
@@ -283,6 +288,9 @@ class SqfliteFfiDatabase {
     // devPrint('Closing cursor $cursorId in ${_cursors.keys}');
     var info = _cursors.remove(cursorId);
     if (info != null) {
+      if (logLevel >= sqfliteLogLevelVerbose) {
+        logResult(result: 'Closing cursor $cursorId');
+      }
       info.statement.dispose();
     }
   }

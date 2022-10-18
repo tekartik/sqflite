@@ -71,6 +71,20 @@ NSString *const SqfliteParamErrorData = @"data";
 // iOS workaround bug #214
 NSString *const SqfliteSqlPragmaSqliteDefensiveOff = @"PRAGMA sqflite -- db_config_defensive_off";
 
+// Import hidden method
+@interface FMDatabase ()
+- (void)resultSetDidClose:(FMResultSet *)resultSet;
+@end
+
+// Cursor information
+@interface SqfliteCursor : NSObject
+
+@property (atomic, retain) NSNumber* cursorId;
+@property (atomic, retain) NSNumber* pageSize;
+@property (atomic, retain) FMResultSet *resultSet;
+
+@end
+
 @interface SqfliteDatabase : NSObject
 
 @property (atomic, retain) FMDatabaseQueue *fmDatabaseQueue;
@@ -79,6 +93,8 @@ NSString *const SqfliteSqlPragmaSqliteDefensiveOff = @"PRAGMA sqflite -- db_conf
 @property (nonatomic) bool singleInstance;
 @property (nonatomic) bool inTransaction;
 @property (nonatomic) int logLevel;
+@property (nonatomic) int lastCursorId;
+@property (atomic, retain) NSMutableDictionary<NSNumber*, SqfliteCursor*>* cursorMap;
 
 @end
 
@@ -90,23 +106,10 @@ NSString *const SqfliteSqlPragmaSqliteDefensiveOff = @"PRAGMA sqflite -- db_conf
 
 @end
 
-@implementation SqfliteDatabase
-
-@synthesize databaseId;
-@synthesize fmDatabaseQueue;
-
-@end
-
-@implementation SqflitePlugin
-
-@synthesize databaseMap;
-@synthesize mapLock;
-
+// Static helpers
 static const int logLevelNone = 0;
 static const int logLevelSql = 1;
 static const int logLevelVerbose = 2;
-
-static int logLevel = logLevelNone;
 
 // True for basic debugging (open/close and sql)
 static bool hasSqlLogLevel(int logLevel) {
@@ -117,6 +120,59 @@ static bool hasSqlLogLevel(int logLevel) {
 static bool hasVerboseLogLevel(int logLevel) {
     return logLevel >= logLevelVerbose;
 }
+
+//
+// Implementation
+//
+
+@implementation SqfliteCursor
+
+@synthesize cursorId;
+@synthesize pageSize;
+@synthesize resultSet;
+
+@end
+
+@implementation SqfliteDatabase
+
+@synthesize databaseId;
+@synthesize fmDatabaseQueue;
+@synthesize cursorMap;
+@synthesize logLevel;
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.cursorMap = [NSMutableDictionary new];
+        self.lastCursorId = 0;
+    }
+    return self;
+}
+
+- (void)closeCursorById:(NSNumber*)cursorId {
+    SqfliteCursor* cursor = cursorMap[cursorId];
+    if (cursor != nil) {
+        [self closeCursor:cursor];
+    }
+}
+
+- (void)closeCursor:(SqfliteCursor*)cursor {
+    NSNumber* cursorId = cursor.cursorId;
+    if (hasVerboseLogLevel(logLevel)) {
+        NSLog(@"closing cursor %@", cursorId);
+    }
+    [cursorMap removeObjectForKey:cursorId];
+    [cursor.resultSet close];
+}
+
+@end
+
+@implementation SqflitePlugin
+
+@synthesize databaseMap;
+@synthesize mapLock;
+
+static int logLevel = logLevelNone;
 
 // static BOOL _log = false;
 static BOOL _extra_log = false;
@@ -360,25 +416,61 @@ static NSInteger _databaseOpenCount = 0;
     return returnValue;
 }
 
+// if cursorPageSize is not null, we limit the result count
+- (NSMutableDictionary*)resultSetToResults:(FMResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize {
+    NSMutableDictionary* results = [NSMutableDictionary new];
+    NSMutableArray* columns = nil;
+    NSMutableArray* rows;
+    int columnCount = 0;
+    
+    while ([resultSet next]) {
+        if (columns == nil) {
+            columnCount = [resultSet columnCount];
+            columns = [NSMutableArray new];
+            rows = [NSMutableArray new];
+            for (int i = 0; i < columnCount; i++) {
+                [columns addObject:[resultSet columnNameForIndex:i]];
+            }
+            [results setValue:columns forKey:@"columns"];
+            [results setValue:rows forKey:@"rows"];
+            
+        }
+        NSMutableArray* row = [NSMutableArray new];
+        for (int i = 0; i < columnCount; i++) {
+            [row addObject:[SqflitePlugin fromSqlValue:[self rsObjectForColumn:resultSet index:i]]];
+        }
+        [rows addObject:row];
+        
+        if (cursorPageSize != nil) {
+            if ([rows count] >= [cursorPageSize intValue]) {
+                break;
+            }
+        }
+    }
+    return results;
+}
 //
 // query
 //
 - (bool)query:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
-    BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
+    bool argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
+    // Non null means use a cursor
+    NSNumber* cursorPageSize = [operation getArgument:_paramCursorPageSize];
+    
     if (hasSqlLogLevel(database.logLevel)) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     
-    FMResultSet *rs;
+    FMResultSet *resultSet;
     if (!argumentsEmpty) {
-        rs = [db executeQuery:sql withArgumentsInArray:sqlArguments];
+        resultSet = [db executeQuery:sql withArgumentsInArray:sqlArguments];
     } else {
         // rs = [db executeQuery:sql];
         // This crashes on MacOS if there is any ? in the query
         // Workaround using an empty array
-        rs = [db executeQuery:sql withArgumentsInArray:@[]];
+        resultSet = [db executeQuery:sql withArgumentsInArray:@[]];
     }
     
     // handle error
@@ -387,31 +479,22 @@ static NSInteger _databaseOpenCount = 0;
         return false;
     }
     
-    NSMutableDictionary* results = [NSMutableDictionary new];
-    NSMutableArray* columns = nil;
-    NSMutableArray* rows;
-    int columnCount = 0;
-    while ([rs next]) {
-        if (columns == nil) {
-            columnCount = [rs columnCount];
-            columns = [NSMutableArray new];
-            rows = [NSMutableArray new];
-            for (int i = 0; i < columnCount; i++) {
-                [columns addObject:[rs columnNameForIndex:i]];
-            }
-            [results setValue:columns forKey:@"columns"];
-            [results setValue:rows forKey:@"rows"];
-            
-        }
-        NSMutableArray* row = [NSMutableArray new];
-        for (int i = 0; i < columnCount; i++) {
-            [row addObject:[SqflitePlugin fromSqlValue:[self rsObjectForColumn:rs index:i]]];
-        }
-        [rows addObject:row];
-    }
+    NSMutableDictionary* results = [self resultSetToResults:resultSet cursorPageSize:cursorPageSize];
     
-    if (hasVerboseLogLevel(database.logLevel)) {
-        NSLog(@"columns %@ rows %@", columns, rows);
+    if (cursorPageSize != nil) {
+        bool cursorHasMoreData = [resultSet hasAnotherRow];
+        if (cursorHasMoreData) {
+            NSNumber* cursorId = [NSNumber numberWithInt:++database.lastCursorId];
+            SqfliteCursor* cursor = [SqfliteCursor new];
+            cursor.cursorId = cursorId;
+            cursor.pageSize = cursorPageSize;
+            cursor.resultSet = resultSet;
+            database.cursorMap[cursorId] = cursor;
+            // Notify cursor support in the result
+            results[_paramCursorId] = cursorId;
+            // Prevent FMDB warning, we keep a result set open on purpose
+            [db resultSetDidClose:resultSet];
+        }
     }
     [operation success:results];
     
@@ -427,6 +510,55 @@ static NSInteger _databaseOpenCount = 0;
         [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
             SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
             [self query:database fmdb:db operation:operation];
+        }];
+    });
+}
+
+
+- (void)handleQueryCursorNextCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    SqfliteDatabase* database = [self getDatabaseOrError:call result:result];
+    if (database == nil) {
+        return;
+    }
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [database.fmDatabaseQueue inDatabase:^(FMDatabase *db) {
+            NSNumber* cursorId = call.arguments[_paramCursorId];
+            NSNumber* cancelValue = call.arguments[_paramCancel];
+            bool cancel = [cancelValue boolValue] == true;
+            if (hasVerboseLogLevel(database.logLevel))
+            {            NSLog(@"queryCursorNext %@%s", cursorId, cancel ? " (cancel)" : "");
+            }
+            
+            if (cancel) {
+                [database closeCursorById:cursorId];
+                result(nil);
+                return;
+            } else {
+                SqfliteCursor* cursor = database.cursorMap[cursorId];
+                if (cursor == nil) {
+                    NSLog(@"cursor %@ not found.", cursorId);
+                    result([FlutterError errorWithCode:_sqliteErrorCode
+                                               message: @"Cursor not found"
+                                               details:nil]);
+                    return;
+                }
+                FMResultSet* resultSet = cursor.resultSet;
+                NSMutableDictionary* results = [self resultSetToResults:resultSet cursorPageSize:cursor.pageSize];
+                
+                bool cursorHasMoreData = [resultSet hasAnotherRow];
+                if (cursorHasMoreData) {
+                    // Keep the cursorId to specify that we have more data.
+                    results[_paramCursorId] = cursorId;
+                    // Prevent FMDB warning, we keep a result set open on purpose
+                    [db resultSetDidClose:resultSet];
+                } else {
+                    [database closeCursor:cursor];
+                }
+                result(results);
+                
+                
+            }
+            
         }];
     });
 }
@@ -920,6 +1052,9 @@ static NSInteger _databaseOpenCount = 0;
         [self handleExecuteCall:call result:result];
     } else if ([_methodBatch isEqualToString:call.method]) {
         [self handleBatchCall:call result:result];
+    }else if ([_methodQueryCursorNext isEqualToString:call.method]) {
+        [self handleQueryCursorNextCall:call result:result];
+        
     } else if ([_methodGetDatabasesPath isEqualToString:call.method]) {
         [self handleGetDatabasesPath:call result:result];
     } else if ([_methodCloseDatabase isEqualToString:call.method]) {

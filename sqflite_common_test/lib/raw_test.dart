@@ -691,6 +691,7 @@ void run(SqfliteTestContext context) {
       late Database db;
 
       setUp(() async {
+        // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
         db = await factory.openDatabase(inMemoryDatabasePath);
       });
       tearDown(() async {
@@ -850,6 +851,20 @@ void run(SqfliteTestContext context) {
         expect(await cursor2.moveNext(), isFalse);
         expect(await cursor1.moveNext(), isFalse);
         expect(() => cursor2.current, throwsStateError);
+
+        // No data
+        cursor = await db.rawQueryByPageCursor(
+            'SELECT * FROM test WHERE id > ?', [3],
+            pageSize: 2);
+        expect(await cursor.moveNext(), isFalse);
+
+        // Matching page size
+        cursor = await db.rawQueryByPageCursor(
+            'SELECT * FROM test WHERE id > ?', [1],
+            pageSize: 2);
+        expect(await cursor.moveNext(), isTrue);
+        expect(await cursor.moveNext(), isTrue);
+        expect(await cursor.moveNext(), isFalse);
       });
     });
   });
