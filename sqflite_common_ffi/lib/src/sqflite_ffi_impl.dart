@@ -266,6 +266,13 @@ class SqfliteFfiDatabase {
   Future<Object?> handleQueryCursorNext(
       {required int cursorId, bool? cancel}) async {
     var cursorInfo = _cursors[cursorId];
+
+    // Cancel?
+    if (cancel == true) {
+      _closeCursor(cursorId);
+      return null;
+    }
+
     if (cursorInfo == null) {
       throw StateError('Cursor $cursorId not found');
     }
