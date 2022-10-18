@@ -1,4 +1,4 @@
-## 2.2.0-dev.1
+## 2.2.0-dev.2
 
 * Implements `Database.queryCursor()` and `Database.rawQueryCursor()`
 * dependency update
