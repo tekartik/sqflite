@@ -1,4 +1,4 @@
-name: Run CI Web
+name: Android build
 on:
   push:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }} / ${{ matrix.dart }}
+    name: Test on ${{ matrix.os }} / ${{ matrix.flutter }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -16,14 +16,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        dart: [stable, beta, dev]
+        os: [ubuntu-latest]
+        flutter: [stable, beta]
     steps:
       - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v1.3
+      - uses: actions/setup-java@v1
         with:
-          sdk: ${{ matrix.dart }}
-      - run: dart --version
+          java-version: '12.x'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ matrix.flutter }}
       - run: dart pub get
-      - run: dart run tool/setup_env.dart
-      - run: dart run tool/run_ci_web.dart
+      - run: dart run tool/run_ci_android.dart
