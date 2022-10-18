@@ -57,38 +57,6 @@ class RawTestPage extends TestPage {
         batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item 2']);
         await batch.commit();
 
-        // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-        // Ok to fail if ffi implementation
-        // For now check based on the platform, could
-        if (queryAsMapListSupported) {
-          // ignore: deprecated_member_use
-          var sqfliteOptions = SqfliteOptions()..queryAsMapList = true;
-          // ignore: deprecated_member_use
-          await databaseFactory.debugSetOptions(sqfliteOptions);
-          var sql = 'SELECT id, name FROM Test';
-          // ignore: deprecated_member_use
-          var result = await db.devInvokeSqlMethod('query', sql);
-          var expected = [
-            {'id': 1, 'name': 'item 1'},
-            {'id': 2, 'name': 'item 2'}
-          ];
-          print('result as map list $result');
-          expect(result, expected);
-
-          // empty
-          sql = 'SELECT id, name FROM Test WHERE id=1234';
-          // ignore: deprecated_member_use
-          result = await db.devInvokeSqlMethod('query', sql);
-          expected = [];
-          print('result as map list $result');
-          expect(result, expected);
-
-          // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-          sqfliteOptions = SqfliteOptions()..queryAsMapList = false;
-          // ignore: deprecated_member_use
-          await Sqflite.devSetOptions(sqfliteOptions);
-        }
-
         var sql = 'SELECT id, name FROM Test';
         // ignore: deprecated_member_use
         var resultSet = await db.devInvokeSqlMethod('query', sql);

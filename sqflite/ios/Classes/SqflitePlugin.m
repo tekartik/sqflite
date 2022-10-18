@@ -20,6 +20,7 @@ static NSString *const _methodExecute = @"execute";
 static NSString *const _methodInsert = @"insert";
 static NSString *const _methodUpdate = @"update";
 static NSString *const _methodQuery = @"query";
+static NSString *const _methodQueryCursorNext = @"queryCursorNext";
 static NSString *const _methodBatch = @"batch";
 
 // For open
@@ -42,14 +43,16 @@ static NSString *const _errorBadParam = @"bad_param"; // internal only
 static NSString *const _errorOpenFailed = @"open_failed";
 static NSString *const _errorDatabaseClosed = @"database_closed";
 
-// options
-static NSString *const _paramQueryAsMapList = @"queryAsMapList";
-
 // debug
 static NSString *const _paramDatabases = @"databases";
 static NSString *const _paramLogLevel = @"logLevel";
 static NSString *const _paramCmd = @"cmd";
 static NSString *const _paramCmdGet = @"get";
+
+// query
+static NSString *const _paramCancel = @"cancel";
+static NSString *const _paramCursorId = @"cursorId";
+static NSString *const _paramCursorPageSize = @"cursorPageSize";
 
 // Shared
 NSString *const SqfliteParamSql = @"sql";
@@ -99,7 +102,6 @@ NSString *const SqfliteSqlPragmaSqliteDefensiveOff = @"PRAGMA sqflite -- db_conf
 @synthesize databaseMap;
 @synthesize mapLock;
 
-static bool _queryAsMapList = false;
 static const int logLevelNone = 0;
 static const int logLevelSql = 1;
 static const int logLevelVerbose = 2;
@@ -385,44 +387,34 @@ static NSInteger _databaseOpenCount = 0;
         return false;
     }
     
-    bool queryAsMapList = _queryAsMapList;
-    
-    // NSLog(@"queryAsMapList %d", (int)queryAsMapList);
-    if (queryAsMapList) {
-        NSMutableArray* results = [NSMutableArray new];
-        while ([rs next]) {
-            [results addObject:[SqflitePlugin fromSqlDictionary:[rs resultDictionary]]];
-        }
-        [operation success:results];
-    } else {
-        NSMutableDictionary* results = [NSMutableDictionary new];
-        NSMutableArray* columns = nil;
-        NSMutableArray* rows;
-        int columnCount = 0;
-        while ([rs next]) {
-            if (columns == nil) {
-                columnCount = [rs columnCount];
-                columns = [NSMutableArray new];
-                rows = [NSMutableArray new];
-                for (int i = 0; i < columnCount; i++) {
-                    [columns addObject:[rs columnNameForIndex:i]];
-                }
-                [results setValue:columns forKey:@"columns"];
-                [results setValue:rows forKey:@"rows"];
-                
-            }
-            NSMutableArray* row = [NSMutableArray new];
+    NSMutableDictionary* results = [NSMutableDictionary new];
+    NSMutableArray* columns = nil;
+    NSMutableArray* rows;
+    int columnCount = 0;
+    while ([rs next]) {
+        if (columns == nil) {
+            columnCount = [rs columnCount];
+            columns = [NSMutableArray new];
+            rows = [NSMutableArray new];
             for (int i = 0; i < columnCount; i++) {
-                [row addObject:[SqflitePlugin fromSqlValue:[self rsObjectForColumn:rs index:i]]];
+                [columns addObject:[rs columnNameForIndex:i]];
             }
-            [rows addObject:row];
+            [results setValue:columns forKey:@"columns"];
+            [results setValue:rows forKey:@"rows"];
+            
         }
-        
-        if (hasVerboseLogLevel(database.logLevel)) {
-            NSLog(@"columns %@ rows %@", columns, rows);
+        NSMutableArray* row = [NSMutableArray new];
+        for (int i = 0; i < columnCount; i++) {
+            [row addObject:[SqflitePlugin fromSqlValue:[self rsObjectForColumn:rs index:i]]];
         }
-        [operation success:results];
+        [rows addObject:row];
     }
+    
+    if (hasVerboseLogLevel(database.logLevel)) {
+        NSLog(@"columns %@ rows %@", columns, rows);
+    }
+    [operation success:results];
+    
     return true;
 }
 
@@ -880,10 +872,6 @@ static NSInteger _databaseOpenCount = 0;
 // Options
 //
 - (void)handleOptionsCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    NSNumber* queryAsMapList = call.arguments[_paramQueryAsMapList];
-    if (queryAsMapList) {
-        _queryAsMapList = [queryAsMapList boolValue];
-    }
     NSNumber* logLevelNumber = call.arguments[_paramLogLevel];
     
     if (logLevelNumber) {
