@@ -21,3 +21,4 @@ extern NSString *const SqfliteParamError;
 extern NSString *const SqfliteParamErrorCode;
 extern NSString *const SqfliteParamErrorMessage;
 extern NSString *const SqfliteParamErrorData;
+

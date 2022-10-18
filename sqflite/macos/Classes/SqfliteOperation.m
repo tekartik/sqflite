@@ -34,6 +34,10 @@
 
 - (void)error:(NSObject*)error {}
 
+- (id)getArgument:(NSString*)key {
+    return nil;
+}
+
 @end
 
 @implementation SqfliteBatchOperation
@@ -102,6 +106,10 @@
     result(error);
 }
 
+- (id)getArgument:(NSString*)key {
+    return [dictionary objectForKey:key];
+}
+
 @end
 
 @implementation SqfliteMethodCallOperation
@@ -146,7 +154,13 @@
 - (void)success:(NSObject*)results {
     flutterResult(results);
 }
+
 - (void)error:(NSObject*)error {
     flutterResult(error);
 }
+
+- (id)getArgument:(NSString*)key {
+    return flutterMethodCall.arguments[key];
+}
+
 @end
