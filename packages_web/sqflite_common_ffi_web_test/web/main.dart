@@ -5,16 +5,18 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'ui.dart';
 
 Future<void> main() async {
-// Use the ffi web factory in web apps (flutter or dart)
-  var factory = databaseFactoryFfiWeb;
+  // Use the ffi web factory in web apps (flutter or dart) with an overriden file name for testing
+  var factory = createDatabaseFactoryFfiWeb(
+      options:
+          SqfliteFfiWebOptions(sharedWorkerUri: Uri.parse('sqflite_sw_v1.js')));
 
-  // test: custom uri
+  // test: custom uri dummy
   // ignore: dead_code
   if (false) {
     // devWarning(true)) {
     factory = createDatabaseFactoryFfiWeb(
         options: SqfliteFfiWebOptions(
-            serviceWorkerUri: Uri.parse('sqflite_sw_v2.js')));
+            sharedWorkerUri: Uri.parse('sqflite_sw_v2.js')));
   }
 
   var db = await factory.openDatabase(inMemoryDatabasePath);

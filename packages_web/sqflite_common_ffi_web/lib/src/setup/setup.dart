@@ -13,12 +13,28 @@ var _sqlite3WasmVersion = Version(1, 9, 0);
 var _sqlite3WasmReleaseUri = Uri.parse(
     'https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-$_sqlite3WasmVersion/sqlite3.wasm');
 
+/// dhttpd simple server (testing only
+var dhttpdReady = () async {
+  // setup common alias
+  shellEnvironment = ShellEnvironment()
+    ..aliases['dhttpd'] = 'dart pub global run dhttpd';
+  try {
+    await run('dhttpd --help', verbose: false);
+  } catch (e) {
+    await run('dart pub global activate dhttpd');
+  }
+}();
+
 /// webdev must be activated.
 var webdevReady = () async {
+  // setup common alias
+  shellEnvironment = ShellEnvironment()
+    ..aliases['webdev'] = 'dart pub global run webdev';
   try {
     await run('webdev --version', verbose: false);
   } catch (e) {
     await run('dart pub global activate webdev');
+    await run('webdev --version');
   }
 }();
 
@@ -71,6 +87,8 @@ class SetupContext {
       required this.overridenSwJsFile});
 }
 
+var _sourceBuild = 'web';
+
 /// Easy path access
 extension SetupContextExt on SetupContext {
   /// Working path for setup
@@ -78,14 +96,15 @@ extension SetupContextExt on SetupContext {
       ? path
       : join(path, '.dart_tool', packageName, 'setup', version.toString());
 
-  /// Resulting service worker file
-  String get builtSwJsFilePath => join(workPath, 'build', 'sqflite_sw.dart.js');
+  /// Resulting shared worker file
+  String get builtSwJsFilePath =>
+      join(workPath, 'build', sqfliteSharedWorkerJsFile);
 
   /// running from ourself, skip copy
   bool get runningFromPackage =>
       (canonicalize(path) == canonicalize(ffiWebPath));
 
-  /// Build service worker.
+  /// Build shared worker.
   Future build() async {
     var force = options.force;
 
@@ -96,7 +115,7 @@ extension SetupContextExt on SetupContext {
       }
     }
     if (needBuild) {
-      print('Building $packageName service worker');
+      print('Building $packageName shared worker');
 
       if (force) {
         if (!runningFromPackage) {
@@ -111,7 +130,7 @@ extension SetupContextExt on SetupContext {
       }
 
       await shell.run('dart pub get');
-      await shell.run('webdev build -o web:build');
+      await shell.run('webdev build -o $_sourceBuild:build');
     } else {
       print('$packageName binaries up to date');
     }
@@ -127,7 +146,7 @@ extension SetupContextExt on SetupContext {
     if (File(join(out, 'sqflite_sw.dart')).existsSync()) {
       print('no files created here, we are the generator');
     } else {
-      var swJsFile = overridenSwJsFile ?? sqfliteSwJsFile;
+      var swJsFile = overridenSwJsFile ?? sqfliteSharedWorkerJsFile;
       var sqfliteSwJsOutFile = join(out, swJsFile);
 
       await File(builtSwJsFilePath).copy(sqfliteSwJsOutFile);
@@ -153,7 +172,7 @@ Future<SetupContext> getSetupContext({SetupOptions? options}) async {
   var pubspec = await pathGetPubspecYamlMap(path);
   var version = pubspecYamlGetVersion(pubspec);
   // sqflite:
-  //   # Update for force changing file name for service worker
+  //   # Update for force changing file name for shared worker
   //   # to force an app update until a better solution is found
   //   # default being sqflite_sw.ja
   //   # Could be sqflite_sw_v1.js
@@ -189,9 +208,6 @@ Future<void> deleteDirectory(String path) async {
 
 /// Build and copy the binaries
 Future<void> setupBinaries({SetupOptions? options}) async {
-  // Common alias
-  shellEnvironment = ShellEnvironment()
-    ..aliases['webdev'] = 'dart pub global run webdev';
   await webdevReady;
   var context = await getSetupContext(options: options);
 

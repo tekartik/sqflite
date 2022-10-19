@@ -9,10 +9,11 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3FileSystem(
 Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(
         SqfliteFfiWebOptions options,
         {SqfliteFfiWebContext? context,
-        bool? fromServiceWorker}) =>
+        bool? fromSharedWorker}) =>
     throw UnsupportedError('loadSqlite3Wasm not supported on io');
 
 /// Web only
-Future<SqfliteFfiWebContext> sqfliteFfiWebStartWebWorker(
+Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
         SqfliteFfiWebOptions options) =>
-    throw UnsupportedError('sqfliteFfiWebStartWebWorker not supported on io');
+    throw UnsupportedError(
+        'sqfliteFfiWebStartSharedWorker not supported on io');

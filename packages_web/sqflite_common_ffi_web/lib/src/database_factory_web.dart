@@ -41,7 +41,7 @@ DatabaseFactory createDatabaseFactoryFfiWeb(
           return ffiMethodCallHandleNoWebWorker(methodCall, context!);
         } else {
           await _initLock.synchronized(() async {
-            context ??= await sqfliteFfiWebStartWebWorker(webOptions);
+            context ??= await sqfliteFfiWebStartSharedWorker(webOptions);
             sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
           });
 
@@ -60,11 +60,10 @@ Future<dynamic> ffiMethodCallSendToWebWorker(
     if (_debug) {
       print('main_send: $methodCall');
     }
-    var sw = context.serviceWorker!;
-    //var result = context.serviceWorker{'TODO': 1}; // TODO await _isolateHandle();
-    Object? response; // = {'TODO': 1}; // TODO await _isolateHandle();
+    var sw = context.sharedWorker!;
+
     var map = dataToEncodable(methodCall.toDataMap())!;
-    response = await sendRawMessage(sw, map);
+    var response = await sendRawMessage(sw, map);
     if (_debug) {
       print('main_recv: $response');
     }

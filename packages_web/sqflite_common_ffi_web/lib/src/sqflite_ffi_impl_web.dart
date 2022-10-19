@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:html' as html;
 
-import 'package:js/js_util.dart';
-import 'package:service_worker/window.dart' as sw;
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart';
@@ -82,7 +80,7 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler {
 }
 
 /// Returns response
-Future<Object?> sendRawMessage(sw.ServiceWorker sw, Object message) {
+Future<Object?> sendRawMessage(html.SharedWorker sw, Object message) {
   var completer = Completer<Object?>();
   // This wraps the message posting/response in a promise, which will resolve if the response doesn't
   // contain an error, and reject with the error if it does. If you'd prefer, it's possible to call
@@ -101,10 +99,10 @@ Future<Object?> sendRawMessage(sw.ServiceWorker sw, Object message) {
     completer.complete(event.data);
   });
 
-  // This sends the message data as well as transferring messageChannel.port2 to the service worker.
-  // The service worker can then use the transferred port to reply via postMessage(), which
+  // This sends the message data as well as transferring messageChannel.port2 to the shared worker.
+  // The shared worker can then use the transferred port to reply via postMessage(), which
   // will in turn trigger the onmessage handler on messageChannel.port1.
   // See https://html.spec.whatwg.org/multipage/workers.html#dom-worker-postmessage
-  sw.postMessage(jsify(message), (jsify([messageChannel.port2]) as List));
+  (sw.port as html.MessagePort).postMessage(message, [messageChannel.port2]);
   return completer.future;
 }

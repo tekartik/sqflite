@@ -17,7 +17,7 @@ Add the dependency:
 ### Setup binaries
 
 Implementation requires sqlite3.wasm binaries into your web folder
-as well as a sqflite specific service worker.
+as well as a sqflite specific shared worker.
 
 You can install binaries using the command:
 

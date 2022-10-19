@@ -16,12 +16,12 @@ void deleteFileSync(String path) {
 void main() {
   late String dir;
   void checkBuiltFilesSync({bool exists = true}) {
-    expect(File(join(dir, sqfliteSwJsFile)).existsSync(), exists);
+    expect(File(join(dir, sqfliteSharedWorkerJsFile)).existsSync(), exists);
     expect(File(join(dir, sqlite3WasmFile)).existsSync(), exists);
   }
 
   void deleteBuiltFilesSync() {
-    deleteFileSync(join(dir, sqfliteSwJsFile));
+    deleteFileSync(join(dir, sqfliteSharedWorkerJsFile));
     deleteFileSync(join(dir, sqlite3WasmFile));
     checkBuiltFilesSync(exists: false);
   }

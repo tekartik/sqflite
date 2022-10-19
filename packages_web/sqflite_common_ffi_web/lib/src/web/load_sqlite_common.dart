@@ -9,15 +9,15 @@ class SqfliteFfiWebOptions {
   /// Indexed db name holder the databases.
   final String? indexedDbName;
 
-  /// If using a service worker, the one to spawn.
-  final Uri? serviceWorkerUri;
+  /// If using a shared worker, the one to spawn.
+  final Uri? sharedWorkerUri;
 
   /// Default ok for regular dart applications but not flutter app.
   SqfliteFfiWebOptions(
       {this.inMemory,
       this.sqlite3WasmUri,
       this.indexedDbName,
-      this.serviceWorkerUri});
+      this.sharedWorkerUri});
 }
 
 /// Abstract context for the web (holder file system and wasm)
