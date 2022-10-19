@@ -1,6 +1,6 @@
 name: sqflite_common_ffi_web_test
 description: sqflite web test.
-version: 1.0.0
+version: 0.1.0
 publish_to: none
 
 environment:

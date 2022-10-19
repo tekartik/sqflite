@@ -88,6 +88,7 @@ class SetupContext {
 }
 
 var _sourceBuild = 'web';
+var _rawBuiltSharedWorkerJsFile = 'sqflite_sw.dart.js';
 
 /// Easy path access
 extension SetupContextExt on SetupContext {
@@ -98,7 +99,7 @@ extension SetupContextExt on SetupContext {
 
   /// Resulting shared worker file
   String get builtSwJsFilePath =>
-      join(workPath, 'build', sqfliteSharedWorkerJsFile);
+      join(workPath, 'build', _rawBuiltSharedWorkerJsFile);
 
   /// running from ourself, skip copy
   bool get runningFromPackage =>
@@ -170,7 +171,6 @@ Future<SetupContext> getSetupContext({SetupOptions? options}) async {
   var path = options.path;
   var config = await pathGetPackageConfigMap(path);
   var pubspec = await pathGetPubspecYamlMap(path);
-  var version = pubspecYamlGetVersion(pubspec);
   // sqflite:
   //   # Update for force changing file name for shared worker
   //   # to force an app update until a better solution is found
@@ -187,6 +187,8 @@ Future<SetupContext> getSetupContext({SetupOptions? options}) async {
       pathPackageConfigMapGetPackagePath(path, config, packageName)!;
 
   ffiWebPath = absolute(normalize(ffiWebPath));
+  var ffiPubspec = await pathGetPubspecYamlMap(path);
+  var version = pubspecYamlGetVersion(ffiPubspec);
   return SetupContext(
       options: options,
       ffiWebPath: ffiWebPath,
