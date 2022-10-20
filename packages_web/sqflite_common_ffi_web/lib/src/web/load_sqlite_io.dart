@@ -9,7 +9,7 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3FileSystem(
 Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(
         SqfliteFfiWebOptions options,
         {SqfliteFfiWebContext? context,
-        bool? fromSharedWorker}) =>
+        bool? fromWebWorker}) =>
     throw UnsupportedError('loadSqlite3Wasm not supported on io');
 
 /// Web only

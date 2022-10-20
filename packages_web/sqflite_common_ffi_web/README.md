@@ -2,7 +2,7 @@
 
 sqlite Web implementation (experimental). Features:
 - Persistency (in indexeddb)
-- Cross-tab safe (runs in web worker)
+- Cross-tab safe (runs in a shared worker)
 
 Thanks Simon Binder for the excellent sqlite3 lib.
 
@@ -36,10 +36,17 @@ that you can put in source control or not (personally I don't)
 ```dart
 // Use the ffi web factory in web apps (flutter or dart)
 var factory = databaseFactoryFfiWeb;
-var db = await factory.openDatabase(inMemoryDatabasePath);
+var db = await factory.openDatabase('my_db.db');
 var sqliteVersion = (await db.rawQuery('select sqlite_version()')).first.values.first;
 print(sqliteVersion); // should print 3.39.3
 ```
+
+## Limitations
+
+### No shared worker available
+
+When shared worker are not supported - for example in Android Chrome as of 2022-10-20 -, a basic web worker is used.
+In this case it is not cross-tab safe.
 
 ## Status
 

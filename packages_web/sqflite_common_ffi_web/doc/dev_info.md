@@ -1,6 +1,6 @@
 # sqflite_web dev info
 
-To develop, simply run the web example that has a custom shared worker implementation
+To develop, simply run the example that has a custom shared worker implementation
 
 In chrome View log in:
 

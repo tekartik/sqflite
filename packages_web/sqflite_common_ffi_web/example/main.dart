@@ -11,10 +11,16 @@ import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
 
 import 'ui.dart';
 
+/// quick test open for basic web worker (as we cannot have both shared and simple worker)
+var _useBasicWebWorker = false; // devWarning(true);
+
 var _debugVersion = 1;
 var _shc = '/_shc$_debugVersion';
 
-var swOptions = SqfliteFfiWebOptions(sharedWorkerUri: Uri.parse('sw.dart.js'));
+var swOptions = SqfliteFfiWebOptions(
+    sharedWorkerUri: Uri.parse('sw.dart.js'),
+    // ignore: invalid_use_of_visible_for_testing_member
+    forceAsBasicWorker: _useBasicWebWorker);
 
 Future incrementPrebuilt() async {
   await incrementSqfliteValueInDatabaseFactory(databaseFactoryWebPrebuilt,
@@ -107,7 +113,7 @@ Future<void> main() async {
   initUi();
   // sqliteFfiWebDebugWebWorker = devWarning(true);
   write('$_shc running $_debugVersion');
-  // devWarning(incrementVarInServiceWorker());
+  // devWarning(incrementVarInSharedWorker());
   // await devWarning(bigInt());
   // await devWarning(exceptionWork());
   // await devWarning(incrementWork());
@@ -120,75 +126,46 @@ Future<void> main() async {
   //  incrementSqfliteValueInDatabaseFactory(databaseFactoryWebPrebuilt));
 }
 
-var _sharedWorkerRegisterAndReady = sqfliteFfiWebStartSharedWorker(swOptions);
+var _webContextRegisterAndReady = sqfliteFfiWebStartSharedWorker(swOptions);
 
 Future<html.SharedWorker> sharedWorkerRegisterAndReady() async =>
-    (await _sharedWorkerRegisterAndReady).sharedWorker!;
+    (await _webContextRegisterAndReady).sharedWorker!;
+
+Future<SqfliteFfiWebContext> webContextRegisterAndReady() async =>
+    (await _webContextRegisterAndReady);
 
 var databaseFactoryWebPrebuilt = databaseFactoryFfiWeb;
 var databaseFactoryWebNoWebWorkerLocal = databaseFactoryFfiWebNoWebWorker;
 var databaseFactoryWebLocal = createDatabaseFactoryFfiWeb(options: swOptions);
 
-/// Returns response
-Future<Object?> sharedWorkerSendRawMessage(
-    html.SharedWorker sw, Object message) {
-  var completer = Completer<Object?>();
-  // This wraps the message posting/response in a promise, which will resolve if the response doesn't
-  // contain an error, and reject with the error if it does. If you'd prefer, it's possible to call
-  // controller.postMessage() and set up the onmessage handler independently of a promise, but this is
-  // a convenient wrapper.
-  var messageChannel = html.MessageChannel();
-  //var receivePort =ReceivePort();
-
-  messageChannel.port1.onMessage.listen((event) {
-    print('Receiving from sw:  ${event.data}');
-    completer.complete(event.data);
-  });
-
-  // This sends the message data as well as transferring messageChannel.port2 to the shared worker.
-  // The shared worker can then use the transferred port to reply via postMessage(), which
-  // will in turn trigger the onmessage handler on messageChannel.port1.
-  // See https://html.spec.whatwg.org/multipage/workers.html#dom-worker-postmessage
-  (sw.port as html.MessagePort).postMessage(
-      //
-      message,
-      //
-      [messageChannel.port2]
-      //((jsify([messageChannel.port2]) as List).cast<Object>())
-      //
-      );
-
-  return completer.future;
-}
-
 var key = 'testValue';
 
-Future<Object?> getTestValue(html.SharedWorker sw) async {
-  var response = await sharedWorkerSendRawMessage(sw, [
+Future<Object?> getTestValue(SqfliteFfiWebContext context) async {
+  var response = await context.sendRawMessage([
     commandVarGet,
     {'key': key}
   ]) as Map;
   return (response['result'] as Map)['value'] as Object?;
 }
 
-Future<void> setTestValue(html.SharedWorker sw, Object? value) async {
-  await sharedWorkerSendRawMessage(sw, [
+Future<void> setTestValue(SqfliteFfiWebContext context, Object? value) async {
+  await context.sendRawMessage([
     commandVarSet,
     {'key': key, 'value': value}
   ]);
 }
 
 Future<void> incrementVarInSharedWorker() async {
-  var sw = await sharedWorkerRegisterAndReady();
+  var context = await webContextRegisterAndReady();
   write('shared worker ready');
-  var value = await getTestValue(sw);
+  var value = await getTestValue(context);
   write('var before $value');
   if (value is! int) {
     value = 0;
   }
 
-  await setTestValue(sw, value + 1);
-  value = await getTestValue(sw);
+  await setTestValue(context, value + 1);
+  value = await getTestValue(context);
   write('var after $value');
 }
 
