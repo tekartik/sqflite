@@ -9,7 +9,8 @@ import 'package:process_run/shell.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sqflite_common_ffi_web/src/constant.dart';
 
-var _sqlite3WasmVersion = Version(1, 9, 0);
+// https://github.com/simolus3/sqlite3.dart/releases
+var _sqlite3WasmVersion = Version(1, 9, 1);
 var _sqlite3WasmReleaseUri = Uri.parse(
     'https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-$_sqlite3WasmVersion/sqlite3.wasm');
 
@@ -52,12 +53,21 @@ class SetupOptions {
   /// Verbose mode.
   late final bool verbose;
 
+  /// Don't fetch sqlite3 wasm
+  late final bool noSqlite3Wasm;
+
   /// Setup options.
-  SetupOptions({String? path, String? dir, bool? force, bool? verbose}) {
+  SetupOptions(
+      {String? path,
+      String? dir,
+      bool? force,
+      bool? verbose,
+      bool? noSqlite3Wasm}) {
     this.dir = dir ?? 'web';
     this.path = normalize(absolute(path ?? '.'));
     this.force = force ?? false;
     this.verbose = verbose ?? false;
+    this.noSqlite3Wasm = noSqlite3Wasm ?? false;
     assert(isRelative(this.dir));
   }
 }
@@ -149,15 +159,21 @@ extension SetupContextExt on SetupContext {
     } else {
       var swJsFile = overridenSwJsFile ?? sqfliteSharedWorkerJsFile;
       var sqfliteSwJsOutFile = join(out, swJsFile);
-
       await File(builtSwJsFilePath).copy(sqfliteSwJsOutFile);
+
+      var wasmFile = join(out, sqlite3WasmFile);
+      if (!options.noSqlite3Wasm) {
+        var uri = _sqlite3WasmReleaseUri;
+        print('Fetching: $uri');
+        var wasmBytes = await readBytes(uri);
+        await File(wasmFile).writeAsBytes(wasmBytes);
+      }
+
       print(
           'created: $sqfliteSwJsOutFile (${File(sqfliteSwJsOutFile).statSync().size} bytes)');
-
-      var wasmBytes = await readBytes(_sqlite3WasmReleaseUri);
-      var wasmFile = join(out, sqlite3WasmFile);
-      await File(wasmFile).writeAsBytes(wasmBytes);
-      print('created: $wasmFile');
+      if (!options.noSqlite3Wasm) {
+        print('created: $wasmFile (${File(wasmFile).statSync().size} bytes)');
+      }
     }
   }
 }
