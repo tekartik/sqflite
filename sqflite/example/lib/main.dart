@@ -17,6 +17,7 @@ import 'todo_test_page.dart';
 import 'type_test_page.dart';
 
 void main() {
+  // debugAutoStartRouteName = testRawRoute;
   mainExampleApp();
 }
 

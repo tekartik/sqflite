@@ -1,4 +1,4 @@
-name: Run CI
+name: Run CI Web
 on:
   push:
   pull_request:

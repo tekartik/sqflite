@@ -1,19 +1,55 @@
 package com.tekartik.sqflite;
 
+import static com.tekartik.sqflite.Constant.EMPTY_STRING_ARRAY;
+import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
+import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
+import static com.tekartik.sqflite.Constant.METHOD_INSERT;
+import static com.tekartik.sqflite.Constant.METHOD_QUERY;
+import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
+import static com.tekartik.sqflite.Constant.PARAM_CANCEL;
+import static com.tekartik.sqflite.Constant.PARAM_COLUMNS;
+import static com.tekartik.sqflite.Constant.PARAM_CURSOR_ID;
+import static com.tekartik.sqflite.Constant.PARAM_CURSOR_PAGE_SIZE;
+import static com.tekartik.sqflite.Constant.PARAM_IN_TRANSACTION;
+import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
+import static com.tekartik.sqflite.Constant.PARAM_ROWS;
+import static com.tekartik.sqflite.Constant.PARAM_SQL;
+import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
 import static com.tekartik.sqflite.Constant.TAG;
+import static com.tekartik.sqflite.Utils.cursorRowToList;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
+import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+
+import com.tekartik.sqflite.operation.BatchOperation;
+import com.tekartik.sqflite.operation.ExecuteOperation;
+import com.tekartik.sqflite.operation.MethodCallOperation;
+import com.tekartik.sqflite.operation.Operation;
+import com.tekartik.sqflite.operation.SqlErrorInfo;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
 
 class Database {
     // To turn on when supported fully
@@ -27,6 +63,10 @@ class Database {
     final Context context;
     SQLiteDatabase sqliteDatabase;
     boolean inTransaction;
+
+    // Cursors
+    private int lastCursorId = 0; // incremental cursor id
+    final Map<Integer, SqfliteCursor> cursors = new HashMap<>();
 
     private static final String WAL_ENABLED_META_NAME = "com.tekartik.sqflite.wal_enabled";
 
@@ -93,6 +133,11 @@ class Database {
     }
 
     public void close() {
+        if (!cursors.isEmpty()) {
+            if (LogLevel.hasSqlLevel(logLevel)) {
+                Log.d(TAG, getThreadLogPrefix() + cursors.size() + " cursor(s) are left opened");
+            }
+        }
         sqliteDatabase.close();
     }
 
@@ -126,5 +171,400 @@ class Database {
 
     static void deleteDatabase(String path) {
         SQLiteDatabase.deleteDatabase(new File(path));
+    }
+
+    private Map<String, Object> cursorToResults(Cursor cursor, @Nullable Integer cursorPageSize) {
+        Map<String, Object> results = null;
+        List<List<Object>> rows = null;
+        int columnCount = 0;
+        while (cursor.moveToNext()) {
+
+            if (results == null) {
+                rows = new ArrayList<>();
+                results = new HashMap<>();
+                columnCount = cursor.getColumnCount();
+                results.put(PARAM_COLUMNS, Arrays.asList(cursor.getColumnNames()));
+                results.put(PARAM_ROWS, rows);
+            }
+            rows.add(cursorRowToList(cursor, columnCount));
+
+            // Paging support
+            if (cursorPageSize != null) {
+                if (rows.size() >= cursorPageSize) {
+                    break;
+                }
+            }
+        }
+        // Handle empty
+        if (results == null) {
+            results = new HashMap<>();
+        }
+
+        return results;
+    }
+
+    public boolean query(final @NonNull Operation operation) {
+        // Non null means dealing with saved cursor.
+        Integer cursorPageSize = operation.getArgument(PARAM_CURSOR_PAGE_SIZE);
+        boolean cursorHasMoreData = false;
+
+        final SqlCommand command = operation.getSqlCommand();
+
+
+        // Might be created if reading by page and result don't fit
+        SqfliteCursor sqfliteCursor = null;
+        if (LogLevel.hasSqlLevel(logLevel)) {
+            Log.d(TAG, getThreadLogPrefix() + command);
+        }
+        Cursor cursor = null;
+
+        try {
+            cursor = getReadableDatabase().rawQueryWithFactory(
+                    (sqLiteDatabase, sqLiteCursorDriver, editTable, sqLiteQuery) -> {
+                        command.bindTo(sqLiteQuery);
+                        return new SQLiteCursor(sqLiteCursorDriver, editTable, sqLiteQuery);
+                    }, command.getSql(), EMPTY_STRING_ARRAY, null);
+
+            Map<String, Object> results = cursorToResults(cursor, cursorPageSize);
+            if (cursorPageSize != null) {
+                // We'll have potentially more data to fetch
+                cursorHasMoreData = !(cursor.isLast() || cursor.isAfterLast());
+
+            }
+
+            if (cursorHasMoreData) {
+                int cursorId = ++lastCursorId;
+                results.put(PARAM_CURSOR_ID, cursorId);
+                sqfliteCursor = new SqfliteCursor(cursorId, cursorPageSize, cursor);
+                cursors.put(cursorId, sqfliteCursor);
+            }
+            operation.success(results);
+
+            return true;
+
+        } catch (Exception exception) {
+            handleException(exception, operation);
+            // Cleanup
+            if (sqfliteCursor != null) {
+                closeCursor(sqfliteCursor);
+            }
+            return false;
+        } finally {
+            // Close the cursor for non-paged query
+            if (sqfliteCursor == null) {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+    }
+
+    public boolean queryCursorNext(final @NonNull Operation operation) {
+        // Non null means dealing with saved cursor.
+        int cursorId = operation.getArgument(PARAM_CURSOR_ID);
+        boolean cancel = Boolean.TRUE.equals(operation.getArgument(PARAM_CANCEL));
+        if (LogLevel.hasVerboseLevel(logLevel)) {
+            Log.d(TAG, getThreadLogPrefix() + "cursor " + cursorId + (cancel ? " cancel" : " next"));
+        }
+        if (cancel) {
+            closeCursor(cursorId);
+            operation.success(null);
+            return true;
+        }
+        SqfliteCursor sqfliteCursor = cursors.get(cursorId);
+        boolean cursorHasMoreData = false;
+        try {
+            if (sqfliteCursor == null) {
+                throw new IllegalStateException("Cursor " + cursorId + " not found");
+            }
+            Cursor cursor = sqfliteCursor.cursor;
+
+            Map<String, Object> results = cursorToResults(cursor, sqfliteCursor.pageSize);
+
+            // We'll have potentially more data to fetch
+            cursorHasMoreData = !(cursor.isLast() || cursor.isAfterLast());
+
+            if (cursorHasMoreData) {
+                // Keep the cursor Id in the response to specify that we have more data
+                results.put(PARAM_CURSOR_ID, cursorId);
+            }
+            operation.success(results);
+
+            return true;
+
+        } catch (Exception exception) {
+            handleException(exception, operation);
+            // Cleanup
+            if (sqfliteCursor != null) {
+                closeCursor(sqfliteCursor);
+                sqfliteCursor = null;
+            }
+            return false;
+        } finally {
+            // Close the cursor if we don't have any more data
+            if (!cursorHasMoreData) {
+                if (sqfliteCursor != null) {
+                    closeCursor(sqfliteCursor);
+                }
+            }
+        }
+    }
+
+    private void closeCursor(@NonNull SqfliteCursor sqfliteCursor) {
+        try {
+            int cursorId = sqfliteCursor.cursorId;
+            if (LogLevel.hasVerboseLevel(logLevel)) {
+                Log.d(TAG, getThreadLogPrefix() + "closing cursor " + cursorId);
+            }
+            cursors.remove(cursorId);
+            sqfliteCursor.cursor.close();
+        } catch (Exception ignore) {
+        }
+    }
+
+    // No exception thrown here
+    private void closeCursor(int cursorId) {
+        SqfliteCursor sqfliteCursor = cursors.get(cursorId);
+        if (sqfliteCursor != null) {
+            closeCursor(sqfliteCursor);
+        }
+    }
+
+    void handleException(Exception exception, Operation operation) {
+        if (exception instanceof SQLiteCantOpenDatabaseException) {
+            operation.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
+            return;
+        } else if (exception instanceof SQLException) {
+            operation.error(Constant.SQLITE_ERROR, exception.getMessage(), SqlErrorInfo.getMap(operation));
+            return;
+        }
+        operation.error(Constant.SQLITE_ERROR, exception.getMessage(), SqlErrorInfo.getMap(operation));
+    }
+
+
+    private SqlCommand getSqlCommand(MethodCall call) {
+        String sql = call.argument(PARAM_SQL);
+        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
+        return new SqlCommand(sql, arguments);
+    }
+
+    Database executeOrError(MethodCall call, MethodChannel.Result result) {
+        SqlCommand command = getSqlCommand(call);
+        Boolean inTransaction = call.argument(PARAM_IN_TRANSACTION);
+
+        Operation operation = new ExecuteOperation(result, command, inTransaction);
+        if (executeOrError(operation)) {
+            return this;
+        }
+        return null;
+    }
+
+    // Called during batch, warning duplicated code!
+    private boolean executeOrError(Operation operation) {
+        SqlCommand command = operation.getSqlCommand();
+        if (LogLevel.hasSqlLevel(logLevel)) {
+            Log.d(TAG, getThreadLogPrefix() + command);
+        }
+        boolean operationInTransaction = Boolean.TRUE.equals(operation.getInTransaction());
+
+        try {
+            getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
+
+            // Success handle inTransaction change
+            if (operationInTransaction) {
+                inTransaction = true;
+            }
+            return true;
+        } catch (Exception exception) {
+            handleException(exception, operation);
+            return false;
+        } finally {
+            // failure? ignore for false
+            if (!operationInTransaction) {
+                inTransaction = false;
+            }
+
+        }
+    }
+
+
+    // Return true on success
+    private boolean execute(final Operation operation) {
+        if (!executeOrError(operation)) {
+            return false;
+        }
+        operation.success(null);
+        return true;
+    }
+
+
+    // Return true on success
+    boolean insert(final Operation operation) {
+        if (!executeOrError(operation)) {
+            return false;
+        }
+        // don't get last id if not expected
+        if (operation.getNoResult()) {
+            operation.success(null);
+            return true;
+        }
+
+        Cursor cursor = null;
+        // Read both the changes and last insert row id in on sql call
+        String sql = "SELECT changes(), last_insert_rowid()";
+
+        // Handle ON CONFLICT but ignore error, issue #164
+        // Read the number of changes before getting the inserted id
+        try {
+            SQLiteDatabase db = getWritableDatabase();
+
+            cursor = db.rawQuery(sql, null);
+            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                final int changed = cursor.getInt(0);
+
+                // If the change count is 0, assume the insert failed
+                // and return null
+                if (changed == 0) {
+                    if (LogLevel.hasSqlLevel(logLevel)) {
+                        Log.d(TAG, getThreadLogPrefix() + "no changes (id was " + cursor.getLong(1) + ")");
+                    }
+                    operation.success(null);
+                    return true;
+                } else {
+                    final long id = cursor.getLong(1);
+                    if (LogLevel.hasSqlLevel(logLevel)) {
+                        Log.d(TAG, getThreadLogPrefix() + "inserted " + id);
+                    }
+                    operation.success(id);
+                    return true;
+                }
+            } else {
+                Log.e(TAG, getThreadLogPrefix() + "fail to read changes for Insert");
+            }
+            operation.success(null);
+            return true;
+        } catch (Exception exception) {
+            handleException(exception, operation);
+            return false;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+
+    // Return true on success
+    boolean update(final Operation operation) {
+        if (!executeOrError(operation)) {
+            return false;
+        }
+        // don't get last id if not expected
+        if (operation.getNoResult()) {
+            operation.success(null);
+            return true;
+        }
+        Cursor cursor = null;
+        try {
+            SQLiteDatabase db = getWritableDatabase();
+
+            cursor = db.rawQuery("SELECT changes()", null);
+            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                final int changed = cursor.getInt(0);
+                if (LogLevel.hasSqlLevel(logLevel)) {
+                    Log.d(TAG, getThreadLogPrefix() + "changed " + changed);
+                }
+                operation.success(changed);
+                return true;
+            } else {
+                Log.e(TAG, getThreadLogPrefix() + "fail to read changes for Update/Delete");
+            }
+            operation.success(null);
+            return true;
+        } catch (Exception e) {
+            handleException(e, operation);
+            return false;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    void batch(final MethodCall call, final MethodChannel.Result result) {
+        MethodCallOperation mainOperation = new MethodCallOperation(call, result);
+
+        boolean noResult = mainOperation.getNoResult();
+        boolean continueOnError = mainOperation.getContinueOnError();
+
+        List<Map<String, Object>> operations = mainOperation.getArgument(PARAM_OPERATIONS);
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        //devLog(TAG, "operations " + operations);
+        for (Map<String, Object> map : operations) {
+            //devLog(TAG, "map " + map);
+            BatchOperation operation = new BatchOperation(map, noResult);
+            String method = operation.getMethod();
+            switch (method) {
+                case METHOD_EXECUTE:
+                    if (execute(operation)) {
+                        //devLog(TAG, "results: " + operation.getBatchResults());
+                        operation.handleSuccess(results);
+                    } else if (continueOnError) {
+                        operation.handleErrorContinue(results);
+                    } else {
+                        // we stop at the first error
+                        operation.handleError(result);
+                        return;
+                    }
+                    break;
+                case METHOD_INSERT:
+                    if (insert(operation)) {
+                        //devLog(TAG, "results: " + operation.getBatchResults());
+                        operation.handleSuccess(results);
+                    } else if (continueOnError) {
+                        operation.handleErrorContinue(results);
+                    } else {
+                        // we stop at the first error
+                        operation.handleError(result);
+                        return;
+                    }
+                    break;
+                case METHOD_QUERY:
+                    if (query(operation)) {
+                        //devLog(TAG, "results: " + operation.getBatchResults());
+                        operation.handleSuccess(results);
+                    } else if (continueOnError) {
+                        operation.handleErrorContinue(results);
+                    } else {
+                        // we stop at the first error
+                        operation.handleError(result);
+                        return;
+                    }
+                    break;
+                case METHOD_UPDATE:
+                    if (update(operation)) {
+                        //devLog(TAG, "results: " + operation.getBatchResults());
+                        operation.handleSuccess(results);
+                    } else if (continueOnError) {
+                        operation.handleErrorContinue(results);
+                    } else {
+                        // we stop at the first error
+                        operation.handleError(result);
+                        return;
+                    }
+                    break;
+                default:
+                    result.error(ERROR_BAD_PARAM, "Batch method '" + method + "' not supported", null);
+                    return;
+            }
+        }
+        // Set the results of all operations
+        // devLog(TAG, "results " + results);
+        if (noResult) {
+            result.success(null);
+        } else {
+            result.success(results);
+        }
     }
 }

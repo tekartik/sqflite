@@ -57,38 +57,6 @@ class RawTestPage extends TestPage {
         batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item 2']);
         await batch.commit();
 
-        // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-        // Ok to fail if ffi implementation
-        // For now check based on the platform, could
-        if (queryAsMapListSupported) {
-          // ignore: deprecated_member_use
-          var sqfliteOptions = SqfliteOptions()..queryAsMapList = true;
-          // ignore: deprecated_member_use
-          await databaseFactory.debugSetOptions(sqfliteOptions);
-          var sql = 'SELECT id, name FROM Test';
-          // ignore: deprecated_member_use
-          var result = await db.devInvokeSqlMethod('query', sql);
-          var expected = [
-            {'id': 1, 'name': 'item 1'},
-            {'id': 2, 'name': 'item 2'}
-          ];
-          print('result as map list $result');
-          expect(result, expected);
-
-          // empty
-          sql = 'SELECT id, name FROM Test WHERE id=1234';
-          // ignore: deprecated_member_use
-          result = await db.devInvokeSqlMethod('query', sql);
-          expected = [];
-          print('result as map list $result');
-          expect(result, expected);
-
-          // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-          sqfliteOptions = SqfliteOptions()..queryAsMapList = false;
-          // ignore: deprecated_member_use
-          await Sqflite.devSetOptions(sqfliteOptions);
-        }
-
         var sql = 'SELECT id, name FROM Test';
         // ignore: deprecated_member_use
         var resultSet = await db.devInvokeSqlMethod('query', sql);
@@ -618,6 +586,79 @@ class RawTestPage extends TestPage {
                   'SELECT CASE WHEN 0 = 1 THEN 1 ELSE ? END', [value])),
               value);
         }
+      } finally {
+        await db.close();
+      }
+    });
+
+    test('Query by page', () async {
+      // await databaseFactory.debugSetLogLevel(sqfliteLogLevelVerbose);
+
+      //final path = await initDeleteDb('query_by_page.db');
+      //final db = await openDatabase(path);
+      final db = await openDatabase(inMemoryDatabasePath);
+      try {
+        await db.execute('''
+      CREATE TABLE test (
+        id INTEGER PRIMARY KEY
+      )''');
+        await db.insert('test', {'id': 1});
+        await db.insert('test', {'id': 2});
+        await db.insert('test', {'id': 3});
+        var resultsList = <List>[];
+
+        // Use a cursor
+        var cursor =
+            await db.rawQueryCursor('SELECT * FROM test', null, bufferSize: 2);
+        resultsList.clear();
+        var results = <Map<String, Object?>>[];
+        while (await cursor.moveNext()) {
+          results.add(cursor.current);
+        }
+        expect(results, [
+          {'id': 1},
+          {'id': 2},
+          {'id': 3}
+        ]);
+
+        // Multiple cursors a cursor
+        var cursor1 =
+            await db.rawQueryCursor('SELECT * FROM test', null, bufferSize: 2);
+        var cursor2 =
+            await db.rawQueryCursor('SELECT * FROM test', null, bufferSize: 1);
+        await cursor1.moveNext();
+        expect(cursor1.current.values, [1]);
+        await cursor2.moveNext();
+        await cursor2.moveNext();
+        expect(cursor2.current.values, [2]);
+        await cursor1.moveNext();
+        expect(cursor1.current.values, [2]);
+        await cursor1.close();
+        await cursor1.close(); // ok to call twice
+        try {
+          cursor1.current.values;
+          fail('should fail get current');
+        } on StateError catch (_) {}
+        await cursor2.moveNext();
+        expect(cursor2.current.values, [3]);
+        expect(await cursor2.moveNext(), isFalse);
+        expect(await cursor1.moveNext(), isFalse);
+        try {
+          cursor2.current.values;
+          fail('should fail get current');
+        } on StateError catch (_) {}
+
+        // No data
+        cursor = await db.rawQueryCursor('SELECT * FROM test WHERE id > ?', [3],
+            bufferSize: 2);
+        expect(await cursor.moveNext(), isFalse);
+
+        // Matching page size
+        cursor = await db.rawQueryCursor('SELECT * FROM test WHERE id > ?', [1],
+            bufferSize: 2);
+        expect(await cursor.moveNext(), isTrue);
+        expect(await cursor.moveNext(), isTrue);
+        expect(await cursor.moveNext(), isFalse);
       } finally {
         await db.close();
       }

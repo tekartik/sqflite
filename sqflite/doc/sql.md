@@ -70,37 +70,13 @@ map['name'] = 'other';
 #### Query by page
 
 If you perform a query on a huge table, you might want to avoid allocating all the rows at once.
-There is no cursor support however you can read by page:
-
-```dart
-await db.rawQueryByPage(
-  // The query
-  'SELECT * FROM Product',
-  // The arguments
-  null,
-  QueryByPageOptions(
-    // Read from the cursor 10 by 10
-    pageSize: 10,
-    resultCallback: (page) {
-      // Read the list of results by page
-      // Don't spend too much time here and don't call another sqflite function
-      // The function can be asynchronous though.
-      for (var item in page) {
-        // ...
-      }
-      // return true to continue, false for cancel
-      return true;
-    }));
-```
-
-You can also use a cursor, that has to be closed:
+There is a basic cursor support where you can specify the buffer size (number of rows cached using a look-ahead buffer)
 
 ```dart
 // Query cursor
-var cursor = await db.rawQueryByPageCursor(
-  'SELECT * FROM Product',
-  null,
-  pageSize: 10,
+var cursor = await db.queryCursor(
+  'Product',
+  bufferSize: 10,
 );
 try {
   while (await cursor.moveNext()) {
@@ -108,11 +84,10 @@ try {
     // ...
   }
 } finally {
+  // Important don't forget to close the cursor in case any exception is thrown before
   await cursor.close();
 }
 ```
-
-As of 2022-10-17, this is only supported on the ffi implementation, it works on all platforms though without optimizations.
 
 ### delete
 

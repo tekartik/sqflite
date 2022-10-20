@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart'; // ignore: implementation_imports
 import 'package:sqflite_common_test/sqflite_test.dart';
@@ -64,18 +63,9 @@ void run(SqfliteTestContext context) {
     return null;
   }
 
-  group('log', () {
+  group('service', () {
     test('open single instance in memory', () async {
       factory.clear();
-      /*
-      try {
-        // ignore: deprecated_member_use
-        await factory.setLogLevel(sqfliteLogLevelVerbose);
-      } catch (e) {
-        print('error $e');
-      }
-
-       */
 
       var db = await factory.openDatabase(inMemoryDatabasePath,
           options: OpenDatabaseOptions(singleInstance: false));
@@ -103,12 +93,6 @@ void run(SqfliteTestContext context) {
         {'id': id},
         null
       ]);
-      try {
-        // ignore: deprecated_member_use
-        await factory.setLogLevel(sqfliteLogLevelNone);
-      } catch (e) {
-        print('error $e');
-      }
     });
   });
 }

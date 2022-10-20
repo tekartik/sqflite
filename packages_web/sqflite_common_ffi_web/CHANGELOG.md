@@ -1,3 +1,7 @@
-## 0.1.0
+## 0.3.0
 
-- Initial version.
+- Use (basic) worker if shared worker is not available (android chrome for example)
+
+## 0.2.0+1
+
+- Initial version using shared worker

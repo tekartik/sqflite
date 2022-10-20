@@ -1,12 +1,12 @@
 package com.tekartik.sqflite.operation;
 
+import static com.tekartik.sqflite.Constant.PARAM_SQL;
+import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
+
 import com.tekartik.sqflite.SqlCommand;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.tekartik.sqflite.Constant.PARAM_SQL;
-import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
 
 public class SqlErrorInfo {
 

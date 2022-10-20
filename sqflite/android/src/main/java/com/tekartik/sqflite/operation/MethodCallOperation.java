@@ -9,7 +9,7 @@ import io.flutter.plugin.common.MethodChannel;
 
 public class MethodCallOperation extends BaseOperation {
     final MethodCall methodCall;
-    final Result result;
+    public final Result result;
 
     class Result implements OperationResult {
 

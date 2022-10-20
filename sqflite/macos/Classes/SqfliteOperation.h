@@ -19,6 +19,8 @@
 - (void)error:(FlutterError*)error;
 - (bool)getNoResult;
 - (bool)getContinueOnError;
+// Generic way to get any argument
+- (id)getArgument:(NSString*)key;
 
 @end
 

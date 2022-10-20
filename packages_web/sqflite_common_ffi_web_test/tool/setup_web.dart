@@ -1,5 +1,5 @@
-import 'package:process_run/shell.dart';
+import 'package:sqflite_common_ffi_web/src/setup/setup.dart';
 
 Future<void> main() async {
-  await run('dart run sqflite_common_ffi_web:setup --verbose');
+  await setupBinaries(options: SetupOptions(verbose: true));
 }

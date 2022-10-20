@@ -1,18 +1,10 @@
 package com.tekartik.sqflite;
 
 import android.database.sqlite.SQLiteProgram;
-import android.util.Log;
-
-import com.tekartik.sqflite.dev.Debug;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static com.tekartik.sqflite.Constant.TAG;
 
 public class SqlCommand {
     public String getSql() {
@@ -83,7 +75,7 @@ public class SqlCommand {
                     statement.bindLong(sqlIndex, ((Boolean) arg) ? 1 : 0);
                 } else {
                     throw new IllegalArgumentException("Could not bind " + arg + " from index "
-                        + i + ": Supported types are null, byte[], double, long, boolean and String");
+                            + i + ": Supported types are null, byte[], double, long, boolean and String");
                 }
             }
         }

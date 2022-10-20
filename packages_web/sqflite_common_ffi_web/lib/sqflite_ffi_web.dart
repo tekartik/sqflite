@@ -6,4 +6,4 @@ export 'src/web/load_sqlite.dart'
         SqfliteFfiWebContext,
         SqfliteFfiWebOptions,
         sqfliteFfiWebLoadSqlite3Wasm,
-        sqfliteFfiWebStartWebWorker;
+        sqfliteFfiWebStartSharedWorker;

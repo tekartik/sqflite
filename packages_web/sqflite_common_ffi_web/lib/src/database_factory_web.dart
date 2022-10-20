@@ -2,7 +2,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
 import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'
-    show SqfliteFfiHandlerWeb, sendRawMessage;
+    show SqfliteFfiHandlerWeb;
 import 'package:sqflite_common_ffi_web/src/utils.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
     show SqfliteFfiWebContextExt;
@@ -41,7 +41,7 @@ DatabaseFactory createDatabaseFactoryFfiWeb(
           return ffiMethodCallHandleNoWebWorker(methodCall, context!);
         } else {
           await _initLock.synchronized(() async {
-            context ??= await sqfliteFfiWebStartWebWorker(webOptions);
+            context ??= await sqfliteFfiWebStartSharedWorker(webOptions);
             sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
           });
 
@@ -60,11 +60,8 @@ Future<dynamic> ffiMethodCallSendToWebWorker(
     if (_debug) {
       print('main_send: $methodCall');
     }
-    var sw = context.serviceWorker!;
-    //var result = context.serviceWorker{'TODO': 1}; // TODO await _isolateHandle();
-    Object? response; // = {'TODO': 1}; // TODO await _isolateHandle();
     var map = dataToEncodable(methodCall.toDataMap())!;
-    response = await sendRawMessage(sw, map);
+    var response = await context.sendRawMessage(map);
     if (_debug) {
       print('main_recv: $response');
     }

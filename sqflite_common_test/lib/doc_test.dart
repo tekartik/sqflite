@@ -348,29 +348,11 @@ CREATE TABLE Product (
         var result = await db.query('Product');
         expect(result.length, 1, reason: 'list $result');
 
-        await db.rawQueryByPage(
-            // The query
-            'SELECT * FROM Product',
-            // The arguments
-            null,
-            QueryByPageOptions(
-                pageSize: 10,
-                resultCallback: (page) {
-                  // Read the list of results by page
-                  // Don't spend too much time here and don't call another sqflite function
-                  // The function can be asynchronous though.
-                  // return true to continue, false for cancel
-                  for (var item in page) {
-                    // ...
-                  }
-                  return true;
-                }));
-
         // Query cursor
-        var cursor = await db.rawQueryByPageCursor(
+        var cursor = await db.rawQueryCursor(
           'SELECT * FROM Product',
           null,
-          pageSize: 10,
+          bufferSize: 10,
         );
         try {
           while (await cursor.moveNext()) {

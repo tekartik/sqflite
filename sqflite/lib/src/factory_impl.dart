@@ -77,13 +77,28 @@ set sqfliteDatabaseFactory(SqfliteDatabaseFactory? databaseFactory) =>
 
 /// Factory implementation
 class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
+  /// Only to set for extra debugging
+  // static var _debugInternals = devWarning(true);
+  static const _debugInternals = false;
+
   @override
   Future<T> wrapDatabaseException<T>(Future<T> Function() action) =>
       impl.wrapDatabaseException(action);
 
   @override
   Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
-      impl.invokeMethod(method, arguments);
+      !_debugInternals
+          ? impl.invokeMethod(method, arguments)
+          : _invokeMethodWithLog(method, arguments);
+
+  Future<T> _invokeMethodWithLog<T>(String method, [dynamic arguments]) async {
+    // ignore: avoid_print
+    print('-> $method $arguments');
+    final result = (await impl.invokeMethod(method, arguments)) as T;
+    // ignore: avoid_print
+    print('<- $result');
+    return result;
+  }
 
   /*
   /// Old implementation which does not handle hot-restart and Android restart

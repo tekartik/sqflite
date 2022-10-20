@@ -691,6 +691,7 @@ void run(SqfliteTestContext context) {
       late Database db;
 
       setUp(() async {
+        // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
         db = await factory.openDatabase(inMemoryDatabasePath);
       });
       tearDown(() async {
@@ -762,62 +763,9 @@ void run(SqfliteTestContext context) {
         await db.insert('test', {'id': 2});
         await db.insert('test', {'id': 3});
         var resultsList = <List>[];
-        await db.rawQueryByPage(
-            'SELECT * FROM test',
-            null,
-            QueryByPageOptions(
-                pageSize: 2,
-                resultCallback: (result) {
-                  resultsList.add(result);
-                  return true;
-                }));
-        expect(resultsList, [
-          [
-            {'id': 1},
-            {'id': 2}
-          ],
-          [
-            {'id': 3}
-          ]
-        ]);
-        resultsList.clear();
-        await db.rawQueryByPage(
-            'SELECT * FROM test',
-            null,
-            QueryByPageOptions(
-                pageSize: 2,
-                resultCallback: (result) {
-                  resultsList.add(result);
-                  return false;
-                }));
-        expect(resultsList, [
-          [
-            {'id': 1},
-            {'id': 2}
-          ]
-        ]);
-        await db.transaction((txn) async {
-          resultsList.clear();
-          await txn.rawQueryByPage(
-              'SELECT * FROM test',
-              null,
-              QueryByPageOptions(
-                  pageSize: 2,
-                  resultCallback: (result) {
-                    resultsList.add(result);
-                    return false;
-                  }));
-          expect(resultsList, [
-            [
-              {'id': 1},
-              {'id': 2}
-            ]
-          ]);
-        });
 
         // Use a cursor
-        var cursor = await db.rawQueryByPageCursor('SELECT * FROM test', null,
-            pageSize: 2);
+        var cursor = await db.queryCursor('Test');
         resultsList.clear();
         var results = <Map<String, Object?>>[];
         while (await cursor.moveNext()) {
@@ -830,10 +778,10 @@ void run(SqfliteTestContext context) {
         ]);
 
         // Multiple cursors a cursor
-        var cursor1 = await db.rawQueryByPageCursor('SELECT * FROM test', null,
-            pageSize: 2);
-        var cursor2 = await db.rawQueryByPageCursor('SELECT * FROM test', null,
-            pageSize: 1);
+        var cursor1 =
+            await db.rawQueryCursor('SELECT * FROM test', null, bufferSize: 2);
+        var cursor2 =
+            await db.rawQueryCursor('SELECT * FROM test', null, bufferSize: 1);
         await cursor1.moveNext();
         expect(cursor1.current.values, [1]);
         await cursor2.moveNext();
@@ -842,10 +790,26 @@ void run(SqfliteTestContext context) {
         await cursor1.moveNext();
         expect(cursor1.current.values, [2]);
         await cursor1.close();
-        await cursor2.moveNext();
+        await cursor1.close(); // ok to call twice
+        expect(() => cursor1.current, throwsStateError);
+        expect(await cursor2.moveNext(), isTrue);
         expect(cursor2.current.values, [3]);
+
         expect(await cursor2.moveNext(), isFalse);
         expect(await cursor1.moveNext(), isFalse);
+        expect(() => cursor2.current, throwsStateError);
+
+        // No data
+        cursor = await db.rawQueryCursor('SELECT * FROM test WHERE id > ?', [3],
+            bufferSize: 2);
+        expect(await cursor.moveNext(), isFalse);
+
+        // Matching page size
+        cursor = await db.rawQueryCursor('SELECT * FROM test WHERE id > ?', [1],
+            bufferSize: 2);
+        expect(await cursor.moveNext(), isTrue);
+        expect(await cursor.moveNext(), isTrue);
+        expect(await cursor.moveNext(), isFalse);
       });
     });
   });

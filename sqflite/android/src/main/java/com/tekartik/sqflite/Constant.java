@@ -18,6 +18,7 @@ public class Constant {
     static final public String METHOD_INSERT = "insert";
     static final public String METHOD_EXECUTE = "execute";
     static final public String METHOD_QUERY = "query";
+    static final public String METHOD_QUERY_CURSOR_NEXT = "queryCursorNext";
     static final public String METHOD_UPDATE = "update";
     static final public String METHOD_BATCH = "batch";
     static final public String METHOD_DELETE_DATABASE = "deleteDatabase";
@@ -35,7 +36,6 @@ public class Constant {
     // Result when opening a database
     public static final String PARAM_RECOVERED_IN_TRANSACTION = "recoveredInTransaction";
 
-    static final String PARAM_QUERY_AS_MAP_LIST = "queryAsMapList"; // boolean
     static final String PARAM_THREAD_PRIORITY = "androidThreadPriority"; // int
 
     public static final String PARAM_SQL = "sql";
@@ -43,6 +43,14 @@ public class Constant {
     public static final String PARAM_NO_RESULT = "noResult";
     public static final String PARAM_CONTINUE_OR_ERROR = "continueOnError";
 
+    public static final String PARAM_COLUMNS = "columns";
+    public static final String PARAM_ROWS = "rows";
+    // For query to use a cursor. Integer.
+    public static final String PARAM_CURSOR_PAGE_SIZE = "cursorPageSize";
+    // For queryCursorNext. Integer
+    public static final String PARAM_CURSOR_ID = "cursorId";
+    // For queryCursorNext. Boolean
+    public static final String PARAM_CANCEL = "cancel";
     // debugMode
     static final String PARAM_CMD = "cmd"; // debugMode cmd: get/set
     static final String CMD_GET = "get";

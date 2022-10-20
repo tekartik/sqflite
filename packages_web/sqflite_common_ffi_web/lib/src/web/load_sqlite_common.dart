@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// Web options.
 class SqfliteFfiWebOptions {
   /// In memory options, indexedDbName is ignored
@@ -9,15 +11,20 @@ class SqfliteFfiWebOptions {
   /// Indexed db name holder the databases.
   final String? indexedDbName;
 
-  /// If using a service worker, the one to spawn.
-  final Uri? serviceWorkerUri;
+  /// If using a shared worker, the one to spawn.
+  final Uri? sharedWorkerUri;
+
+  /// Force sharedWorkerUri as a basic worker (i.e. Worker instead of SharedWorker).
+  /// Shared worker don't work on Android mobile web yet.
+  final bool? forceAsBasicWorker;
 
   /// Default ok for regular dart applications but not flutter app.
   SqfliteFfiWebOptions(
       {this.inMemory,
       this.sqlite3WasmUri,
       this.indexedDbName,
-      this.serviceWorkerUri});
+      this.sharedWorkerUri,
+      @visibleForTesting this.forceAsBasicWorker});
 }
 
 /// Abstract context for the web (holder file system and wasm)

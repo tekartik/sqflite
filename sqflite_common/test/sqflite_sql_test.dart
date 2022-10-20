@@ -113,7 +113,7 @@ void main() {
       scenario.end();
     });
 
-    test('query by page insert', () async {
+    test('queryCursor', () async {
       final scenario = startScenario([
         openStep,
         [
@@ -135,13 +135,13 @@ void main() {
         [
           'queryCursorNext',
           {'cursorId': 1, 'id': 1},
-          {'cursorId': 1},
           {
+            'cursorId': 1,
             'rows': [
               [{}]
             ],
             'columns': []
-          }
+          },
         ],
         [
           'queryCursorNext',
@@ -150,20 +150,20 @@ void main() {
         ],
         closeStep
       ]);
-      var resultList = <List<Map<String, Object?>>>[];
+      var resultList = <Map<String, Object?>>[];
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
-      await db.rawQueryByPage(
-          '_',
-          null,
-          QueryByPageOptions(
-              pageSize: 2,
-              resultCallback: (result) {
-                resultList.add(result);
-                return true;
-              }));
-      expect(resultList, [
-        [{}]
-      ]);
+      var cursor = await db.rawQueryCursor(
+        '_',
+        null,
+        bufferSize: 2,
+      );
+      expect(await cursor.moveNext(), isTrue);
+      resultList.add(cursor.current);
+      expect(await cursor.moveNext(), isTrue);
+      resultList.add(cursor.current);
+      await cursor.close();
+
+      expect(resultList, [{}, {}]);
       await db.close();
       scenario.end();
     });

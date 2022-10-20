@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:html' as html;
-import 'dart:js_util';
 import 'dart:math';
 
-import 'package:service_worker/window.dart' as sw;
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
@@ -13,7 +11,16 @@ import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
 
 import 'ui.dart';
 
-var swOptions = SqfliteFfiWebOptions(serviceWorkerUri: Uri.parse('sw.dart.js'));
+/// quick test open for basic web worker (as we cannot have both shared and simple worker)
+var _useBasicWebWorker = false; // devWarning(true);
+
+var _debugVersion = 1;
+var _shc = '/_shc$_debugVersion';
+
+var swOptions = SqfliteFfiWebOptions(
+    sharedWorkerUri: Uri.parse('sw.dart.js'),
+    // ignore: invalid_use_of_visible_for_testing_member
+    forceAsBasicWorker: _useBasicWebWorker);
 
 Future incrementPrebuilt() async {
   await incrementSqfliteValueInDatabaseFactory(databaseFactoryWebPrebuilt,
@@ -105,78 +112,60 @@ Future incrementNoWebWorker() async {
 Future<void> main() async {
   initUi();
   // sqliteFfiWebDebugWebWorker = devWarning(true);
-  write('running');
+  write('$_shc running $_debugVersion');
+  // devWarning(incrementVarInSharedWorker());
   // await devWarning(bigInt());
-  //await devWarning(exceptionWork());
+  // await devWarning(exceptionWork());
   // await devWarning(incrementWork());
-  //await devWarning(incrementPrebuilt());
+  // await devWarning(incrementPrebuilt());
   // await incrementVarInServiceWorker();
   // await incrementSqfliteValueInDatabaseFactory(
-  //     databaseFactoryWebNoWebWorkerLocal);
+  // databaseFactoryWebNoWebWorkerLocal);
   // await incrementSqfliteValueInDatabaseFactory(databaseFactoryWebLocal);
-  //await devWarning(
+  // await devWarning(
   //  incrementSqfliteValueInDatabaseFactory(databaseFactoryWebPrebuilt));
 }
 
-var _registerAndReady = sqfliteFfiWebStartWebWorker(swOptions);
+var _webContextRegisterAndReady = sqfliteFfiWebStartSharedWorker(swOptions);
 
-Future<sw.ServiceWorker> registerAndReady() async =>
-    (await _registerAndReady).serviceWorker!;
+Future<html.SharedWorker> sharedWorkerRegisterAndReady() async =>
+    (await _webContextRegisterAndReady).sharedWorker!;
+
+Future<SqfliteFfiWebContext> webContextRegisterAndReady() async =>
+    (await _webContextRegisterAndReady);
 
 var databaseFactoryWebPrebuilt = databaseFactoryFfiWeb;
 var databaseFactoryWebNoWebWorkerLocal = databaseFactoryFfiWebNoWebWorker;
 var databaseFactoryWebLocal = createDatabaseFactoryFfiWeb(options: swOptions);
 
-/// Returns response
-Future<Object?> sendRawMessage(sw.ServiceWorker sw, Object message) {
-  var completer = Completer<Object?>();
-  // This wraps the message posting/response in a promise, which will resolve if the response doesn't
-  // contain an error, and reject with the error if it does. If you'd prefer, it's possible to call
-  // controller.postMessage() and set up the onmessage handler independently of a promise, but this is
-  // a convenient wrapper.
-  var messageChannel = html.MessageChannel();
-  //var receivePort =ReceivePort();
-
-  messageChannel.port1.onMessage.listen((event) {
-    // print('Receiving from sw:  ${event.data}');
-    completer.complete(event.data);
-  });
-
-  // This sends the message data as well as transferring messageChannel.port2 to the service worker.
-  // The service worker can then use the transferred port to reply via postMessage(), which
-  // will in turn trigger the onmessage handler on messageChannel.port1.
-  // See https://html.spec.whatwg.org/multipage/workers.html#dom-worker-postmessage
-  sw.postMessage(jsify(message), (jsify([messageChannel.port2]) as List));
-  return completer.future;
-}
-
 var key = 'testValue';
 
-Future<Object?> getTestValue(sw.ServiceWorker sw) async {
-  var response = await sendRawMessage(sw, [
+Future<Object?> getTestValue(SqfliteFfiWebContext context) async {
+  var response = await context.sendRawMessage([
     commandVarGet,
     {'key': key}
   ]) as Map;
   return (response['result'] as Map)['value'] as Object?;
 }
 
-Future<void> setTestValue(sw.ServiceWorker sw, Object? value) async {
-  await sendRawMessage(sw, [
+Future<void> setTestValue(SqfliteFfiWebContext context, Object? value) async {
+  await context.sendRawMessage([
     commandVarSet,
     {'key': key, 'value': value}
   ]);
 }
 
-Future<void> incrementVarInServiceWorker() async {
-  var sw = await registerAndReady();
-  var value = await getTestValue(sw);
+Future<void> incrementVarInSharedWorker() async {
+  var context = await webContextRegisterAndReady();
+  write('shared worker ready');
+  var value = await getTestValue(context);
   write('var before $value');
   if (value is! int) {
     value = 0;
   }
 
-  await setTestValue(sw, value + 1);
-  value = await getTestValue(sw);
+  await setTestValue(context, value + 1);
+  value = await getTestValue(context);
   write('var after $value');
 }
 
@@ -215,8 +204,8 @@ Future<void> incrementSqfliteValueInDatabaseFactory(DatabaseFactory factory,
 
 void initUi() {
   addButton('load sqlite', () async {});
-  addButton('increment var in service worker', () async {
-    await incrementVarInServiceWorker();
+  addButton('increment var in shared worker', () async {
+    await incrementVarInSharedWorker();
   });
   addButton('increment sqflite value in main thread', () async {
     await incrementNoWebWorker();

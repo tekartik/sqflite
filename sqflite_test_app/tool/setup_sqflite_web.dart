@@ -5,6 +5,6 @@ Future<void> main() async {
     # Create the web project
     flutter create . --platforms web
     # Build and copy the binaries
-    flutter pub run sqflite_common_ffi_web:setup
+    flutter pub run sqflite_common_ffi_web:setup --force
 ''');
 }

@@ -1,15 +1,17 @@
+import 'dart:html';
+import 'dart:js_util';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
-import 'package:service_worker/window.dart' as sw;
-import 'package:service_worker/worker.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/constant.dart';
 import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
+import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart';
 import 'package:sqlite3/wasm.dart';
 
-import 'load_sqlite.dart';
-
 bool get _debug => sqliteFfiWebDebugWebWorker;
+
+var _swc = workerClientLogPrefix; // Log prefix
 
 /// Load base file system
 Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3FileSystem(
@@ -20,26 +22,27 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3FileSystem(
   return SqfliteFfiWebContextImpl(options: options, fs: fs);
 }
 
-// var _defaultSqlite3WasmUri = Uri.parse('sqflite/sqlite3.wasm');
-// var _defaultServiceWorkerUri = Uri.parse('sqflite/sqflite_sw.dart.js');
 var _defaultSqlite3WasmUri = Uri.parse('sqlite3.wasm');
-var _defaultServiceWorkerUri = Uri.parse(sqfliteSwJsFile);
+var _defaultSharedWorkerUri = Uri.parse(sqfliteSharedWorkerJsFile);
 //var uri = options.sqlite3WasmUri ?? _defaultSqlite3WasmUri;
 /// Default indexedDB name is /sqflite
 Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(
     SqfliteFfiWebOptions options,
     {SqfliteFfiWebContext? context,
-    bool? fromServiceWorker}) async {
+    bool? fromWebWorker}) async {
   context ??= await sqfliteFfiWebLoadSqlite3FileSystem(options);
   var uri = options.sqlite3WasmUri ?? _defaultSqlite3WasmUri;
   Uint8List bodyBytes;
   if (_debug) {
     print('Loading sqlite3.wasm from $uri');
   }
-  if (fromServiceWorker ?? false) {
-    var self = ServiceWorkerGlobalScope.globalScope;
-    final response = await self.fetch(uri.toString());
-    bodyBytes = (await response.arrayBuffer()).asUint8List();
+  if (fromWebWorker ?? false) {
+    var self = WorkerGlobalScope.instance;
+    final response = (await self.fetch(uri.toString())) as Object;
+    bodyBytes =
+        ((await promiseToFuture(callMethod(response, 'arrayBuffer', [])))
+                as ByteBuffer)
+            .asUint8List();
   } else {
     // regular http
     final response = await http.get(uri);
@@ -54,33 +57,34 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(
 }
 
 /// Start web worker (from client)
-Future<SqfliteFfiWebContext> sqfliteFfiWebStartWebWorker(
+Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
     SqfliteFfiWebOptions options) async {
   try {
-    var serviceWorkerUri = options.serviceWorkerUri ?? _defaultServiceWorkerUri;
-    if (_debug) {
-      print('/sw_client registering $serviceWorkerUri');
-    }
-    var registered = sw.register(serviceWorkerUri.toString());
-    if (_debug) {
-      print('/sw_client registered');
-    }
-    Future<sw.ServiceWorker> registerAndReady() async {
-      await registered;
-      if (_debug) {
-        print('/sw_client waiting for ready');
+    var name = 'sqflite_common_ffi_web';
+    var sharedWorkerUri = options.sharedWorkerUri ?? _defaultSharedWorkerUri;
+    SharedWorker? sharedWorker;
+    Worker? worker;
+    try {
+      if (!(options.forceAsBasicWorker ?? false)) {
+        if (_debug) {
+          print(
+              '$_swc registering shared worker $sharedWorkerUri (name: $name)');
+        }
+        sharedWorker = SharedWorker(sharedWorkerUri.toString(), name);
       }
-      var registration = await sw.ready;
+    } catch (e) {
       if (_debug) {
-        print('/sw_client ready!');
+        print('SharedWorker creation failed $e');
       }
-      var serviceWorker = registration.active!;
-      return serviceWorker;
     }
-
-    var serviceWorker = await registerAndReady();
+    if (sharedWorker == null) {
+      if (_debug) {
+        print('$_swc registering worker $sharedWorkerUri');
+      }
+      worker = Worker(sharedWorkerUri.toString());
+    }
     return SqfliteFfiWebContextImpl(
-        options: options, serviceWorker: serviceWorker);
+        options: options, sharedWorker: sharedWorker, worker: worker);
   } catch (e, st) {
     if (_debug) {
       print(e);
@@ -90,24 +94,38 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartWebWorker(
   }
 }
 
-/// Web implementation with service worker
+/// Web implementation with shared worker
 class SqfliteFfiWebContextImpl extends SqfliteFfiWebContext {
-  /// Null when using service worker
+  /// Null when using shared worker
   final FileSystem? fs;
 
-  /// Null when using service worker
+  /// Null when using shared worker
   final WasmSqlite3? wasmSqlite3;
 
-  /// Optional Client service worker
-  final sw.ServiceWorker? serviceWorker;
+  /// Optional Client shared worker
+  final SharedWorker? sharedWorker;
 
-  /// Web implementation with service worker
+  /// Optional Client basic worker (if sharedWorker not working)
+  final Worker? worker;
+
+  /// Raw message sender to either shared worker or basic worker
+  late final RawMessageSender rawMessageSender;
+
+  /// Web implementation with shared worker
   SqfliteFfiWebContextImpl(
       {required SqfliteFfiWebOptions options,
       this.fs,
       this.wasmSqlite3,
-      this.serviceWorker})
-      : super(options: options);
+      this.sharedWorker,
+      this.worker})
+      : super(options: options) {
+    if (sharedWorker != null) {
+      rawMessageSender = RawMessageSenderSharedWorker(sharedWorker!);
+    }
+    if (worker != null) {
+      rawMessageSender = RawMessageSenderToWorker(worker!);
+    }
+  }
 }
 
 /// Web context extension for web only
@@ -117,9 +135,16 @@ extension SqfliteFfiWebContextExt on SqfliteFfiWebContext {
   /// File system if any
   FileSystem? get fs => _context.fs;
 
-  /// Service worker if any
-  sw.ServiceWorker? get serviceWorker => _context.serviceWorker;
+  /// Shared worker if any
+  SharedWorker? get sharedWorker => _context.sharedWorker;
+
+  /// Web worker if any
+  SharedWorker? get webWorker => _context.sharedWorker;
 
   /// Loaded wasm if any
   WasmSqlite3? get wasmSqlite3 => _context.wasmSqlite3;
+
+  /// Send raw message to worker
+  Future<Object?> sendRawMessage(Object message) =>
+      _context.rawMessageSender.sendRawMessage(message);
 }

@@ -16,6 +16,5 @@ tmp/
 
 # no project files support
 /web/
-/android/
 /macos/
 /ios/

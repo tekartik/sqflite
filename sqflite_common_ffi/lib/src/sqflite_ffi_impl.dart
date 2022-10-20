@@ -220,8 +220,7 @@ class SqfliteFfiDatabase {
       while (true) {
         if (cursor.moveNext()) {
           var row = cursor.current;
-          var data = List.generate(row.length, (index) => row[index]);
-          rows.add(data.toList());
+          rows.add(row.values);
         } else {
           cursorInfo.atEnd = true;
           break;
@@ -265,7 +264,19 @@ class SqfliteFfiDatabase {
   /// Query handling.
   Future<Object?> handleQueryCursorNext(
       {required int cursorId, bool? cancel}) async {
+    if (logLevel >= sqfliteLogLevelVerbose) {
+      logResult(
+          result:
+              'queryCursorNext $cursorId${cancel == true ? ' (cancel)' : ''}');
+    }
     var cursorInfo = _cursors[cursorId];
+
+    // Cancel?
+    if (cancel == true) {
+      _closeCursor(cursorId);
+      return null;
+    }
+
     if (cursorInfo == null) {
       throw StateError('Cursor $cursorId not found');
     }
@@ -276,6 +287,9 @@ class SqfliteFfiDatabase {
     // devPrint('Closing cursor $cursorId in ${_cursors.keys}');
     var info = _cursors.remove(cursorId);
     if (info != null) {
+      if (logLevel >= sqfliteLogLevelVerbose) {
+        logResult(result: 'Closing cursor $cursorId');
+      }
       info.statement.dispose();
     }
   }
