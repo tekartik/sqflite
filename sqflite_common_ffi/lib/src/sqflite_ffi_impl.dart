@@ -15,6 +15,9 @@ import 'sqflite_ffi_impl_io.dart'
 final _debug = false; // devWarning(true); // false
 // final _useIsolate = true; // devWarning(true); // true the default!
 
+// TODO use constant when sqflite_common 2.5 published
+var _paramTransactionId = 'transactionId';
+
 /// Ffi handler.
 abstract class SqfliteFfiHandler {
   /// Opens the database using an ffi implementation
@@ -89,6 +92,9 @@ class SqfliteFfiDatabase {
     ffiDbs[id] = this;
   }
 
+  var _lastTransactionId = 0;
+  int? _currentTransactionId;
+
   /// id.
   final int id;
 
@@ -150,7 +156,9 @@ class SqfliteFfiDatabase {
   }
 
   /// Handle execute.
-  Future handleExecute({required String sql, List? sqlArguments}) async {
+  ///
+  /// For transaction, return the created
+  Future<void> handleExecute({required String sql, List? sqlArguments}) async {
     logSql(sql: sql, sqlArguments: sqlArguments);
     //database.ffiDb.execute(sql);
     if (sqlArguments?.isNotEmpty ?? false) {
@@ -158,7 +166,7 @@ class SqfliteFfiDatabase {
       var preparedStatement = _ffiDb.prepare(sql);
       try {
         preparedStatement.execute(_ffiArguments(sqlArguments));
-        return null;
+        return;
       } finally {
         preparedStatement.dispose();
       }
@@ -531,16 +539,36 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   /// Get the id from the arguments.
   int? getDatabaseId() {
     if (arguments is Map) {
-      return argumentsMap['id'] as int?;
+      return argumentsMap[paramId] as int?;
     }
     return null;
   }
 
-  /// Get the sql command.
-  String? getSql() {
-    var sql = argumentsMap['sql'] as String?;
-    return sql;
+  T? _getParam<T>(String key) {
+    if (arguments is Map) {
+      return argumentsMap[key] as T?;
+    }
+    return null;
   }
+
+  /// Get the optional transaction id
+  int? getTransactionId() => _getParam<int>(_paramTransactionId);
+
+  /// true if the map contains it but its value is null
+  bool hasNullTransactionId() {
+    if (arguments is Map) {
+      // TODO use contstant when sqflite_common 2.5 published
+      return argumentsMap.containsKey(_paramTransactionId) &&
+          argumentsMap[_paramTransactionId] == null;
+    }
+    return false;
+  }
+
+  /// null if no transaction change, true if begin, false if commit
+  bool? getInTransactionChange() => _getParam<bool>(paramInTransaction);
+
+  /// Get the sql command.
+  String? getSql() => _getParam<String>(paramSql);
 
   /// Check if path in memory.
   bool isInMemory(String path) {
@@ -549,40 +577,32 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Return the path argument if any
   String? getPath() {
-    var arguments = this.arguments;
-    if (arguments is Map) {
-      var path = argumentsMap['path'] as String?;
-      if ((path != null) && !isInMemory(path) && isRelative(path)) {
-        path = join(getDatabasesPath(), path);
-      }
-      return path;
+    var path = _getParam<String>(paramPath);
+    if ((path != null) && !isInMemory(path) && isRelative(path)) {
+      path = join(getDatabasesPath(), path);
     }
-    return null;
+    return path;
   }
 
   /// Check the arguments
   List<Object?>? getSqlArguments() {
-    var arguments = this.arguments;
-    if (arguments != null) {
-      var sqlArguments = argumentsMap['arguments'] as List?;
-      if (sqlArguments != null) {
-        // Check the argument, make it stricter
-        for (var argument in sqlArguments) {
-          if (argument == null) {
-          } else if (argument is num) {
-          } else if (argument is String) {
-          } else if (argument is Uint8List) {
-            // Support needed for the web and web only
-          } else if (argument is BigInt) {
-          } else {
-            throw ArgumentError(
-                'Invalid sql argument type \'${argument.runtimeType}\': $argument');
-          }
+    var sqlArguments = _getParam<List>(paramSqlArguments);
+    if (sqlArguments != null) {
+      // Check the argument, make it stricter
+      for (var argument in sqlArguments) {
+        if (argument == null) {
+        } else if (argument is num) {
+        } else if (argument is String) {
+        } else if (argument is Uint8List) {
+          // Support needed for the web and web only
+        } else if (argument is BigInt) {
+        } else {
+          throw ArgumentError(
+              'Invalid sql argument type \'${argument.runtimeType}\': $argument');
         }
       }
-      return sqlArguments?.cast<Object?>();
     }
-    return null;
+    return sqlArguments?.cast<Object?>();
   }
 
   /// Get the no result argument.
@@ -644,12 +664,21 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Handle execute.
-  Future handleExecute() async {
+  Future<Object?> handleExecute() async {
     var database = getDatabaseOrThrow();
     var sql = getSql()!;
     var sqlArguments = getSqlArguments();
+    var inTransactionChange = getInTransactionChange();
 
-    return database.handleExecute(sql: sql, sqlArguments: sqlArguments);
+    await database.handleExecute(sql: sql, sqlArguments: sqlArguments);
+    // Transaction v2
+    if (inTransactionChange == true && hasNullTransactionId()) {
+      database._currentTransactionId = ++database._lastTransactionId;
+      return <String, Object?>{
+        _paramTransactionId: database._currentTransactionId
+      };
+    }
+    return null;
   }
 
   /// Handle options.

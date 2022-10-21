@@ -101,6 +101,18 @@ const String paramId = 'id';
 /// True if the database is in a transaction
 const String paramInTransaction = 'inTransaction';
 
+/// For beginTransaction, set it to null
+/// Returned by beingTransaction for new implementation
+///
+/// Transaction param, to set in all calls during a transaction.
+///
+/// To set to null when beginning a transaction, it tells the implementation
+/// that transactionId is supported by the client (compared to a raw BEGIN calls)
+const String paramTransactionId = 'transactionId';
+
+/// Special transaction id to force even if a transaction is running.
+const int paramTransactionIdValueForce = -1;
+
 /// True when opening the database (bool)
 const String paramReadOnly = 'readOnly';
 
