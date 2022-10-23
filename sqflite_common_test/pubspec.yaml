@@ -7,8 +7,8 @@ environment:
   sdk: '>=2.12.0-29 <3.0.0'
 
 dependencies:
-  sqflite_common_ffi:
-  sqflite_common:
+  sqflite_common_ffi: '>=2.2.0-dev.5 <4.0.0'
+  sqflite_common: '>=2.4.0-dev.5 <4.0.0'
   test:
   path:
   synchronized:
