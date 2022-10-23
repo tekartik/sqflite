@@ -12,12 +12,14 @@ import 'raw_test.dart' as raw_test;
 import 'service_impl_test.dart' as log_test;
 import 'service_impl_test.dart' as service_impl_test;
 import 'slow_test.dart' as slow_test;
+import 'sqflite_protocol_test.dart' as protocol_test;
 import 'statement_test.dart' as statement_test;
 import 'type_test.dart' as type_test;
 
 /// Run all common tests.
 void run(SqfliteTestContext context) {
   group('all', () {
+    protocol_test.run(context);
     service_impl_test.run(context);
     batch_test.run(context);
     log_test.run(context);

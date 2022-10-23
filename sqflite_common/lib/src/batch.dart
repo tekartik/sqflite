@@ -15,7 +15,7 @@ abstract class SqfliteBatch implements Batch {
     return <String, Object?>{
       paramMethod: method,
       paramSql: sql,
-      paramSqlArguments: arguments
+      if (arguments != null) paramSqlArguments: arguments
     };
   }
 

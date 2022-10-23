@@ -26,9 +26,9 @@ void main() {
           'execute',
           {
             'sql': 'BEGIN IMMEDIATE',
-            'arguments': null,
             'id': 1,
-            'inTransaction': true
+            'inTransaction': true,
+            'transactionId': null
           },
           null
         ],
@@ -36,7 +36,7 @@ void main() {
           'batch',
           {
             'operations': [
-              {'method': 'execute', 'sql': 'PRAGMA dummy', 'arguments': null}
+              {'method': 'execute', 'sql': 'PRAGMA dummy'}
             ],
             'id': 1
           },
@@ -44,7 +44,7 @@ void main() {
         ],
         [
           'execute',
-          {'sql': 'COMMIT', 'arguments': null, 'id': 1, 'inTransaction': false},
+          {'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
           null
         ],
         ...endCommands,
@@ -64,7 +64,7 @@ void main() {
           'batch',
           {
             'operations': [
-              {'method': 'execute', 'sql': 'PRAGMA dummy', 'arguments': null}
+              {'method': 'execute', 'sql': 'PRAGMA dummy'}
             ],
             'id': 1
           },

@@ -18,6 +18,134 @@ var closeStep = [
 
 void main() {
   group('sqflite', () {
+    test('open execute', () async {
+      final scenario = startScenario([
+        openStep,
+        [
+          'execute',
+          {'sql': 'PRAGMA user_version = 1', 'id': 1},
+          null,
+        ],
+        closeStep
+      ]);
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+      await db.setVersion(1);
+
+      await db.close();
+      scenario.end();
+    });
+    test('transaction v2', () async {
+      final scenario = startScenario([
+        openStep,
+        [
+          'execute',
+          {
+            'sql': 'BEGIN IMMEDIATE',
+            'id': 1,
+            'inTransaction': true,
+            'transactionId': null
+          },
+          {'transactionId': 1},
+        ],
+        [
+          'execute',
+          {
+            'sql': 'COMMIT',
+            'id': 1,
+            'inTransaction': false,
+            'transactionId': 1
+          },
+          null,
+        ],
+        closeStep
+      ]);
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+      await db.transaction((txn) async {});
+
+      await db.close();
+      scenario.end();
+    });
+
+    test('transaction v1', () async {
+      final scenario = startScenario([
+        openStep,
+        [
+          'execute',
+          {
+            'sql': 'BEGIN IMMEDIATE',
+            'id': 1,
+            'inTransaction': true,
+            'transactionId': null
+          },
+          null,
+        ],
+        [
+          'execute',
+          {
+            'sql': 'COMMIT',
+            'id': 1,
+            'inTransaction': false,
+          },
+          null,
+        ],
+        closeStep
+      ]);
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+      await db.transaction((txn) async {});
+
+      await db.close();
+      scenario.end();
+    });
+
+    test('manual begin transaction', () async {
+      final scenario = startScenario([
+        openStep,
+        [
+          'execute',
+          {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
+          null,
+        ],
+        [
+          'execute',
+          {
+            'sql': 'ROLLBACK',
+            'id': 1,
+            'inTransaction': false,
+            'transactionId': -1
+          },
+          null,
+        ],
+        closeStep
+      ]);
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+      await db.execute('BEGIN TRANSACTION');
+
+      await db.close();
+      scenario.end();
+    });
+
+    test('manual begin end transaction', () async {
+      final scenario = startScenario([
+        openStep,
+        [
+          'execute',
+          {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
+          null,
+        ],
+        [
+          'execute',
+          {'sql': 'ROLLBACK TRANSACTION', 'id': 1, 'inTransaction': false},
+          null,
+        ],
+        closeStep
+      ]);
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+      await db.execute('BEGIN TRANSACTION');
+      await db.execute('ROLLBACK TRANSACTION');
+
+      await db.close();
+      scenario.end();
+    });
     test('open insert', () async {
       final scenario = startScenario([
         openStep,
@@ -74,11 +202,11 @@ void main() {
           'execute',
           {
             'sql': 'BEGIN IMMEDIATE',
-            'arguments': null,
             'id': 1,
-            'inTransaction': true
+            'inTransaction': true,
+            'transactionId': null,
           },
-          null
+          {'transactionId': 1}
         ],
         [
           'batch',
@@ -92,13 +220,19 @@ void main() {
                 ]
               }
             ],
-            'id': 1
+            'id': 1,
+            'transactionId': 1
           },
           null
         ],
         [
           'execute',
-          {'sql': 'COMMIT', 'arguments': null, 'id': 1, 'inTransaction': false},
+          {
+            'sql': 'COMMIT',
+            'id': 1,
+            'inTransaction': false,
+            'transactionId': 1
+          },
           null
         ],
         closeStep
@@ -120,7 +254,6 @@ void main() {
           'query',
           {
             'sql': '_',
-            'arguments': null,
             'id': 1,
             'cursorPageSize': 2,
           },

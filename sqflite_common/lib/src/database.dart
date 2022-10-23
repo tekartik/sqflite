@@ -86,8 +86,9 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
       {bool? noResult, bool? continueOnError});
 
   /// Execute a command.
-  Future<T> txnExecute<T>(SqfliteTransaction? txn, String sql,
-      [List<Object?>? arguments]);
+  Future<T> txnExecute<T>(
+      SqfliteTransaction? txn, String sql, List<Object?>? arguments,
+      {bool? beginTransaction});
 
   /// Execute a raw INSERT command.
   Future<int> txnRawInsert(

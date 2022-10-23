@@ -1,7 +1,18 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/batch.dart';
+import 'package:sqflite_common/src/constant.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/database_mixin.dart';
+
+/// Transaction param, new in transaction v2
+class SqfliteTransactionParam {
+  /// null for no transaction
+  ///
+  final int? transactionId;
+
+  /// Transaction param, new in transaction v2.
+  SqfliteTransactionParam(this.transactionId);
+}
 
 /// Transaction implementation
 class SqfliteTransaction
@@ -12,6 +23,9 @@ class SqfliteTransaction
 
   /// The transaction database
   final SqfliteDatabase database;
+
+  /// Optional transaction id, depending on the implementation
+  int? transactionId;
 
   @override
   SqfliteDatabase get db => database;
@@ -25,3 +39,7 @@ class SqfliteTransaction
   @override
   Batch batch() => SqfliteTransactionBatch(this);
 }
+
+/// Special transaction that is run even if a pending transaction is in progress.
+SqfliteTransaction getForcedSqfliteTransaction(SqfliteDatabase database) =>
+    SqfliteTransaction(database)..transactionId = paramTransactionIdValueForce;

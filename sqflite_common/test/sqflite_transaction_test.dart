@@ -20,9 +20,9 @@ void main() {
       'execute',
       {
         'sql': 'BEGIN IMMEDIATE',
-        'arguments': null,
         'id': 1,
-        'inTransaction': true
+        'inTransaction': true,
+        'transactionId': null
       },
       null,
     ];
@@ -30,15 +30,15 @@ void main() {
       'execute',
       {
         'sql': 'BEGIN IMMEDIATE',
-        'arguments': null,
         'id': 1,
-        'inTransaction': true
+        'inTransaction': true,
+        'transactionId': null
       },
       SqfliteDatabaseException('failure', null),
     ];
     final transactionEndStep = [
       'execute',
-      {'sql': 'COMMIT', 'arguments': null, 'id': 1, 'inTransaction': false},
+      {'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
       1
     ];
     test('basic', () async {
@@ -58,7 +58,7 @@ void main() {
       await db.close();
       scenario.end();
     });
-    test('error in begin', () async {
+    test('error in begin after open', () async {
       final scenario = startScenario([
         openStep,
         transactionBeginFailureStep,
@@ -82,27 +82,22 @@ void main() {
         openStep,
         [
           'query',
-          {'sql': 'PRAGMA user_version', 'arguments': null, 'id': 1},
+          {'sql': 'PRAGMA user_version', 'id': 1},
           {},
         ],
         [
           'execute',
           {
             'sql': 'BEGIN EXCLUSIVE',
-            'arguments': null,
             'id': 1,
-            'inTransaction': true
+            'inTransaction': true,
+            'transactionId': null
           },
           SqfliteDatabaseException('failure', null),
         ],
         [
           'execute',
-          {
-            'sql': 'ROLLBACK',
-            'arguments': null,
-            'id': 1,
-            'inTransaction': false
-          },
+          {'sql': 'ROLLBACK', 'id': 1, 'inTransaction': false},
           null,
         ],
         closeStep,

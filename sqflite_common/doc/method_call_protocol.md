@@ -17,6 +17,7 @@ in:
 
 out:
     id: database id (int)
+    clientId:
     recoveredInTransaction: <true|false>
 ```
 
@@ -57,4 +58,53 @@ out:
             ...
           ] 
     cursorId: <id> optional cursor id for queryNext, null if end is reached
+```
+
+### Transaction
+
+#### Transaction v1
+
+Up to 2022-10-21
+
+```
+in:
+    BEGIN TRANSACTION:
+    inTransaction: true
+```
+
+```
+in:
+    <any commmand in transaction>
+```
+
+```
+in:
+    END TRANSACTION:
+    inTransaction: false
+```
+
+#### Transaction v2
+
+As of 2022-10-21 a new transaction mechanism is added, being compatible with the existing
+
+```
+in:
+    BEGIN TRANSACTION:
+    'inTransaction': true
+    'transactionId': null // This tells
+out:
+    // This tells that the implementation supports the new transaction model
+    transactionId: <nnn>
+```
+
+```
+in:
+    <any commmand in transaction>
+```
+
+```
+in:
+    END TRANSACTION:
+    transactionId: <nnn>
+    inTransaction: false
 ```

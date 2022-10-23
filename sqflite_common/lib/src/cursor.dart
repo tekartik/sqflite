@@ -5,7 +5,9 @@ import 'package:sqflite_common/src/transaction.dart';
 /// Sqflite query cursor wrapper.
 class SqfliteQueryCursor implements QueryCursor {
   final SqfliteDatabase _database;
-  final SqfliteTransaction? _txn; // transaction if any
+
+  /// Current transaction if any
+  final SqfliteTransaction? txn; // transaction if any
 
   /// True when closed. moveNext should fail but current row remains ok
   var closed = false;
@@ -20,15 +22,15 @@ class SqfliteQueryCursor implements QueryCursor {
   int currentIndex = -1;
 
   /// Sqflite query cursor wrapper.
-  SqfliteQueryCursor(this._database, this._txn, this.cursorId, this.resultList);
+  SqfliteQueryCursor(this._database, this.txn, this.cursorId, this.resultList);
 
   @override
   Map<String, Object?> get current =>
-      _database.txnQueryCursorGetCurrent(_txn, this);
+      _database.txnQueryCursorGetCurrent(txn, this);
 
   @override
-  Future<bool> moveNext() => _database.txnQueryCursorMoveNext(_txn, this);
+  Future<bool> moveNext() => _database.txnQueryCursorMoveNext(txn, this);
 
   @override
-  Future<void> close() => _database.txnQueryCursorClose(_txn, this);
+  Future<void> close() => _database.txnQueryCursorClose(txn, this);
 }
