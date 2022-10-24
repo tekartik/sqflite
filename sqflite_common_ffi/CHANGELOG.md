@@ -1,7 +1,8 @@
-## 2.2.0-dev.5
+## 2.2.0-dev.6
 
 * Implements `Database.queryCursor()` and `Database.rawQueryCursor()`
 * base for experimental web support
+* Support for transaction v2
 
 ## 2.1.1
 
