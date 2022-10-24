@@ -60,10 +60,12 @@ class _ManualTestPageState extends State<ManualTestPage> {
     return true;
   }
 
-  Future<void> _addAndQuery({int? msDelay}) async {
+  Future<void> _addAndQuery({int? msDelay, bool? noSynchronized}) async {
+    // await databaseFactory.debugSetLogLevel(sqfliteLogLevelVerbose);
     var db = await _openDatabase();
+
     // ignore: invalid_use_of_visible_for_testing_member
-    db.internalsDoNotUseSynchronized = true;
+    db.internalsDoNotUseSynchronized = noSynchronized ?? false;
     await db.transaction((txn) async {
       await txn.execute(
           'CREATE TABLE IF NOT EXISTS Task(id INTEGER PRIMARY KEY, name TEXT)');
@@ -104,9 +106,12 @@ class _ManualTestPageState extends State<ManualTestPage> {
       SqfMenuItem('openDatabase', () async {
         await _openDatabase();
       }, summary: 'Open the database'),
+      SqfMenuItem('transaction add and query and pause', () async {
+        await _addAndQuery(msDelay: 5000);
+      }, summary: 'open/create table/add/query/pause'),
       SqfMenuItem('transaction add and query and pause no synchronized',
           () async {
-        await _addAndQuery(msDelay: 5000);
+        await _addAndQuery(msDelay: 5000, noSynchronized: true);
       }, summary: 'open/create table/add/query/pause'),
       SqfMenuItem('BEGIN EXCLUSIVE', () async {
         final db = await _openDatabase();
