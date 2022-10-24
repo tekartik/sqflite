@@ -58,7 +58,7 @@
 }
 
 - (NSNumber*)getInTransactionArgument {
-    return [dictionary objectForKey:SqfliteParamInTransaction];
+    return [dictionary objectForKey:SqfliteParamInTransactionChange];
 }
 
 - (bool)getNoResult {
@@ -148,7 +148,7 @@
 }
 
 - (NSNumber*)getInTransactionArgument {
-    return flutterMethodCall.arguments[SqfliteParamInTransaction];
+    return flutterMethodCall.arguments[SqfliteParamInTransactionChange];
 }
 
 - (void)success:(NSObject*)results {
@@ -162,5 +162,9 @@
 - (id)getArgument:(NSString*)key {
     return flutterMethodCall.arguments[key];
 }
+
+@end
+
+@implementation SqfliteQueuedOperation
 
 @end

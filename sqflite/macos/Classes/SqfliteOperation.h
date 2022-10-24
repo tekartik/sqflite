@@ -47,4 +47,8 @@
 
 @end
 
-#endif /* SqfliteOperation_h */
+@interface SqfliteQueuedOperation : NSObject
+
+@end
+
+#endif // SqfliteOperation_h
