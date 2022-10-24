@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'package:sqflite_example/utils.dart';
 // ignore_for_file: avoid_print
 
 import 'model/item.dart';
+import 'src/common_import.dart';
 
 /// Manual test page.
 class ManualTestPage extends StatefulWidget {
@@ -30,7 +30,8 @@ class _ManualTestPageState extends State<ManualTestPage> {
   Future<void> showToast(String message) async {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(SnackBar(
+          content: Text(message), duration: const Duration(milliseconds: 300)));
   }
 
   Future<Database> _openDatabase() async {
@@ -59,20 +60,40 @@ class _ManualTestPageState extends State<ManualTestPage> {
     return true;
   }
 
+  Future<void> _addAndQuery({int? msDelay}) async {
+    var db = await _openDatabase();
+    // ignore: invalid_use_of_visible_for_testing_member
+    db.internalsDoNotUseSynchronized = true;
+    await db.transaction((txn) async {
+      await txn.execute(
+          'CREATE TABLE IF NOT EXISTS Task(id INTEGER PRIMARY KEY, name TEXT)');
+      await txn.execute('INSERT INTO Task(name) VALUES (?)',
+          ['task ${DateTime.now().toIso8601String()}']);
+      var count =
+          firstIntValue(await txn.query('Task', columns: [sqlCountColumn]));
+      unawaited(showToast('$count task(s)'));
+      if (msDelay != null) {
+        await Future.delayed(Duration(milliseconds: msDelay));
+      }
+    });
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     items = <SqfMenuItem>[
       SqfMenuItem('SQLite version', () async {
         final db = await openDatabase(inMemoryDatabasePath);
+
         final results = await db.rawQuery('select sqlite_version()');
         print('select sqlite_version(): $results');
         var version = results.first.values.first;
         print('sqlite version: $version');
         await db.close();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('select sqlite_version(): $version')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('select sqlite_version(): $version'),
+          ));
         }
       }, summary: 'select sqlite_version()'),
       SqfMenuItem('Factory information', () async {
@@ -83,16 +104,10 @@ class _ManualTestPageState extends State<ManualTestPage> {
       SqfMenuItem('openDatabase', () async {
         await _openDatabase();
       }, summary: 'Open the database'),
-      SqfMenuItem('sql add and query', () async {
-        var db = await _openDatabase();
-        await db.execute(
-            'CREATE TABLE IF NOT EXISTS Task(id INTEGER PRIMARY KEY, name TEXT)');
-        await db.execute('INSERT INTO Task(name) VALUES (?)',
-            ['task ${DateTime.now().toIso8601String()}']);
-        var count =
-            firstIntValue(await db.query('Task', columns: [sqlCountColumn]));
-        unawaited(showToast('$count task(s)'));
-      }, summary: 'open/create table/add/query'),
+      SqfMenuItem('transaction add and query and pause no synchronized',
+          () async {
+        await _addAndQuery(msDelay: 5000);
+      }, summary: 'open/create table/add/query/pause'),
       SqfMenuItem('BEGIN EXCLUSIVE', () async {
         final db = await _openDatabase();
         await db.execute('BEGIN EXCLUSIVE');

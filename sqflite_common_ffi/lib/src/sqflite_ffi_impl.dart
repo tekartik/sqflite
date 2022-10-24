@@ -120,6 +120,7 @@ class SqfliteFfiDatabase {
   var _lastTransactionId = 0;
   int? _currentTransactionId;
 
+  /// Delayed operations not in the current transaction.
   final _noTransactionHandlerQueue = <_QueuedHandler>[];
 
   final _handlerLock = Lock();

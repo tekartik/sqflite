@@ -210,16 +210,36 @@ void run(SqfliteTestContext context) {
       db.internalsDoNotUseSynchronized = true;
       try {
         var completer = Completer();
-        var transactionFuture = db.transaction((txn) async {
+        unawaited(db.transaction((txn) async {
+          await txn.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
           await completer.future;
-        });
+        }));
         var futureVersion = db.getVersion();
-        await expectLater(
-            () => futureVersion.timeout(const Duration(milliseconds: 500)),
-            throwsA(isA<TimeoutException>()));
+        var futureUpdate = db.update('Test', <String, Object?>{'id': 1});
+        var futureQuery = db.queryCursor('Test');
+        var futureInsert = db.insert('Test', <String, Object?>{'id': 1});
+        var futureQueryCursor = db.queryCursor('Test', bufferSize: 1);
+        var futureExecute = db.execute('PRAGMA user_version = 1');
+
+        var futures = [
+          futureVersion,
+          futureUpdate,
+          futureQuery,
+          futureQueryCursor,
+          futureInsert,
+          futureExecute,
+        ];
+        await Future.wait(futures.map((e) => expectLater(
+            () => e.timeout(const Duration(milliseconds: 500)),
+            throwsA(isA<TimeoutException>()))));
+
         completer.complete();
         expect(await futureVersion, 0);
-        await transactionFuture;
+        expect(await futureUpdate, 0);
+        var cursor = await futureQueryCursor;
+        await cursor.close();
+        await futureExecute;
+        // await transactionFuture;
       } finally {
         await db.close();
       }

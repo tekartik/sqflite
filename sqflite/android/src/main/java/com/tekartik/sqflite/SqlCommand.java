@@ -7,12 +7,15 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SqlCommand {
-    public String getSql() {
-        return sql;
-    }
-
     final private String sql;
     final private List<Object> rawArguments;
+    public SqlCommand(String sql, List<Object> rawArguments) {
+        this.sql = sql;
+        if (rawArguments == null) {
+            rawArguments = new ArrayList<>();
+        }
+        this.rawArguments = rawArguments;
+    }
 
     // Handle list of int as byte[]
     static private Object toValue(Object value) {
@@ -33,12 +36,8 @@ public class SqlCommand {
         }
     }
 
-    public SqlCommand(String sql, List<Object> rawArguments) {
-        this.sql = sql;
-        if (rawArguments == null) {
-            rawArguments = new ArrayList<>();
-        }
-        this.rawArguments = rawArguments;
+    public String getSql() {
+        return sql;
     }
 
     private Object[] getSqlArguments(List<Object> rawArguments) {

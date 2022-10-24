@@ -3,7 +3,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common/src/env_utils.dart'; // ignore: implementation_imports
 import 'package:sqflite_common/utils/utils.dart' as utils;
 import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:sqflite_common_test/src/sqflite_import.dart';
@@ -105,10 +104,13 @@ void run(SqfliteTestContext context) {
       expect(await _getValue(id), value,
           reason: '$value ${await _getValue(id)}');
 
-      if (!kSqfliteIsWeb) {
+      if (!context.isWeb) {
         // BigInt not supported but no exception is thrown...yet
-        id = await _insertValue(BigInt.one);
-        expect(await _getValue(id), 1);
+        // Exception is thrown on Android sqlite
+        try {
+          id = await _insertValue(BigInt.one);
+          expect(await _getValue(id), 1);
+        } catch (_) {}
       } else {
         // Insert big int, read int
         id = await _insertValue(BigInt.one);

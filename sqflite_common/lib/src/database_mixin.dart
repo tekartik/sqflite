@@ -272,11 +272,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   late String path;
 
-  /// Transaction reference count.
-  ///
-  /// Only set during inTransaction to allow transaction during open.
-  int transactionRefCount = 0;
-
   /// Special transaction created during open.
   ///
   /// Only not null during opening.
@@ -663,17 +658,16 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       Transaction? txn, Future<T> Function(Transaction txn) action,
       {bool? exclusive}) async {
     bool? successfull;
-    if (transactionRefCount == 0) {
+    var transactionStarted = txn == null;
+    if (transactionStarted) {
       txn = await beginTransaction(exclusive: exclusive);
     }
-    // Update the ref count after a successful begin
-    transactionRefCount++;
     T result;
     try {
-      result = await action(txn!);
+      result = await action(txn);
       successfull = true;
     } finally {
-      if (--transactionRefCount == 0) {
+      if (transactionStarted) {
         final sqfliteTransaction = txn as SqfliteTransaction;
         sqfliteTransaction.successful = successfull;
         await endTransaction(sqfliteTransaction);
