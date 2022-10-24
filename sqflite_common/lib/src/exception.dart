@@ -54,7 +54,8 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a database closed error
   bool isDatabaseClosedError() {
     if (_message != null) {
-      return _message!.contains('database_closed');
+      return _message!.contains('database_closed') ||
+          _message!.contains('This database has already been closed');
     }
     return false;
   }

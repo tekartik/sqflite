@@ -295,6 +295,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// Set when parsing BEGIN and COMMIT/ROLLBACK
   bool inTransaction = false;
 
+  /// Set internally for testing
+  bool doNotUseSynchronized = false;
+
   /// Base database map parameter.
   Map<String, Object?> getBaseDatabaseMethodArguments(SqfliteTransaction? txn) {
     final map = <String, Object?>{
@@ -365,7 +368,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> txnSynchronized<T>(
       Transaction? txn, Future<T> Function(Transaction? txn) action) async {
     // If in a transaction, execute right away
-    if (txn != null) {
+    if (txn != null || doNotUseSynchronized) {
       return await action(txn);
     } else {
       // Simple timeout warning if we cannot get the lock after XX seconds
