@@ -41,8 +41,15 @@
 - (bool)hasArgument:(NSString*)key {
     return false;
 }
+
+// Either nil or NSNumber
 - (NSNumber*)getTransactionId {
-    return [self getArgument:SqfliteParamTransactionId];
+    // It might be NSNull (for begin transaction)
+    id rawId = [self getArgument:SqfliteParamTransactionId];
+    if ([rawId isKindOfClass:[NSNumber class]]) {
+        return rawId;
+    }
+    return nil;
 }
 
 - (NSNumber*)getInTransactionChange {
@@ -129,7 +136,8 @@
 
 @implementation SqfliteMethodCallOperation
 
-@synthesize flutterMethodCall, flutterResult;
+@synthesize flutterMethodCall;
+@synthesize flutterResult;
 
 + (SqfliteMethodCallOperation*)newWithCall:(FlutterMethodCall*)flutterMethodCall result:(FlutterResult)flutterResult {
     SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation new];
