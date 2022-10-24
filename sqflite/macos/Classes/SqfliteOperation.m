@@ -21,9 +21,7 @@
 - (NSArray*)getSqlArguments {
     return nil;
 }
-- (NSNumber*)getInTransactionArgument {
-    return nil;
-}
+
 - (bool)getNoResult {
     return false;
 }
@@ -34,8 +32,25 @@
 
 - (void)error:(NSObject*)error {}
 
+// To override
 - (id)getArgument:(NSString*)key {
     return nil;
+}
+
+// To override
+- (bool)hasArgument:(NSString*)key {
+    return false;
+}
+- (NSNumber*)getTransactionId {
+    return [self getArgument:SqfliteParamTransactionId];
+}
+
+- (NSNumber*)getInTransactionChange {
+    return [self getArgument:SqfliteParamInTransactionChange];
+}
+
+- (bool)hasNullTransactionId {
+    return [self getArgument:SqfliteParamTransactionId] == [NSNull null];
 }
 
 @end
@@ -55,10 +70,6 @@
 - (NSArray*)getSqlArguments {
     NSArray* arguments = [dictionary objectForKey:SqfliteParamSqlArguments];
     return [SqflitePlugin toSqlArguments:arguments];
-}
-
-- (NSNumber*)getInTransactionArgument {
-    return [dictionary objectForKey:SqfliteParamInTransactionChange];
 }
 
 - (bool)getNoResult {
@@ -110,12 +121,15 @@
     return [dictionary objectForKey:key];
 }
 
+- (bool)hasArgument:(NSString*)key {
+    return [self getArgument:key] != nil;
+}
+
 @end
 
 @implementation SqfliteMethodCallOperation
 
-@synthesize flutterMethodCall;
-@synthesize flutterResult;
+@synthesize flutterMethodCall, flutterResult;
 
 + (SqfliteMethodCallOperation*)newWithCall:(FlutterMethodCall*)flutterMethodCall result:(FlutterResult)flutterResult {
     SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation new];
@@ -147,9 +161,7 @@
     return [SqflitePlugin toSqlArguments:arguments];
 }
 
-- (NSNumber*)getInTransactionArgument {
-    return flutterMethodCall.arguments[SqfliteParamInTransactionChange];
-}
+
 
 - (void)success:(NSObject*)results {
     flutterResult(results);
@@ -166,5 +178,7 @@
 @end
 
 @implementation SqfliteQueuedOperation
+
+@synthesize operation, handler;
 
 @end

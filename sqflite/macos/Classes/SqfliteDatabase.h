@@ -28,12 +28,12 @@
 
 - (void)closeCursorById:(NSNumber*)cursorId;
 - (void)closeCursor:(SqfliteCursor*)cursor;
-- (void)inDatabase:(__attribute__((noescape)) void (^)(FMDatabase *db))block;
+- (void)inDatabase:(void (^)(FMDatabase *db))block;
 - (void)dbBatch:(FMDatabase*)db operation:(SqfliteMethodCallOperation*)mainOperation;
-- (bool)dbExecute:(FMDatabase*)db operation:(SqfliteOperation*)operation;
-- (bool)dbInsert:(FMDatabase*)db operation:(SqfliteOperation*)operation;
-- (bool)dbUpdate:(FMDatabase*)db operation:(SqfliteOperation*)operation;
-- (bool)dbQuery:(FMDatabase*)db operation:(SqfliteOperation*)operation;
+- (void)dbExecute:(FMDatabase*)db operation:(SqfliteOperation*)operation;
+- (void)dbInsert:(FMDatabase*)db operation:(SqfliteOperation*)operation;
+- (void)dbUpdate:(FMDatabase*)db operation:(SqfliteOperation*)operation;
+- (void)dbQuery:(FMDatabase*)db operation:(SqfliteOperation*)operation;
 - (void)dbQueryCursorNext:(FMDatabase*)db operation:(SqfliteOperation*)operation;
 @end
 

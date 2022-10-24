@@ -12,6 +12,8 @@ static NSString *const _paramCancel = @"cancel";
 // For batch
 static NSString *const _paramOperations = @"operations";
 
+static int transactionIdForce = -1;
+
 // Import hidden method
 @interface FMDatabase ()
 - (void)resultSetDidClose:(FMResultSet *)resultSet;
@@ -19,25 +21,22 @@ static NSString *const _paramOperations = @"operations";
 
 @implementation SqfliteDatabase
 
-@synthesize databaseId;
-@synthesize fmDatabaseQueue;
-@synthesize cursorMap;
-@synthesize logLevel;
-@synthesize currentTransactionId;
+@synthesize databaseId, fmDatabaseQueue, cursorMap, logLevel, currentTransactionId, noTransactionOperationQueue, lastCursorId,lastTransactionId;
+
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        self.cursorMap = [NSMutableDictionary new];
-        self.lastCursorId = 0;
-        self.lastTransactionId = 0;
-        self.noTransactionOperationQueue = [NSMutableArray new];
+        cursorMap = [NSMutableDictionary new];
+        lastCursorId = 0;
+        lastTransactionId = 0;
+        noTransactionOperationQueue = [NSMutableArray new];
     }
     return self;
 }
 
 
-- (void)inDatabase:(__attribute__((noescape)) void (^)(FMDatabase *db))block {
+- (void)inDatabase:(void (^)(FMDatabase *db))block {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self.fmDatabaseQueue inDatabase:block];
     });
@@ -68,7 +67,37 @@ static NSString *const _paramOperations = @"operations";
     
 }
 
-- (bool)dbExecute:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (void)dbRunQueuedOperations:(FMDatabase*)db {
+    while (![SqflitePlugin arrayIsEmpy:noTransactionOperationQueue]) {
+        if (currentTransactionId != nil) {
+            break;
+        }
+        SqfliteQueuedOperation* queuedOperation = [noTransactionOperationQueue objectAtIndex:0];
+        [noTransactionOperationQueue removeObjectAtIndex:0];
+        queuedOperation.handler(db, queuedOperation.operation);
+    }
+}
+
+- (void)wrapSqlOperationHandler:(FMDatabase*)db operation:(SqfliteOperation*)operation handler:(SqfliteOperationHandler)handler {
+    NSNumber* transactionId = [operation getTransactionId];
+    if (currentTransactionId == nil) {
+        // ignore
+        handler(db, operation);
+    } else if (transactionId != nil && (transactionId.intValue == currentTransactionId.intValue || transactionId.intValue == transactionIdForce)) {
+        handler(db, operation);
+        if (currentTransactionId == nil && ![SqflitePlugin arrayIsEmpy:noTransactionOperationQueue]) {
+            [self dbRunQueuedOperations:db];
+        }
+    } else {
+        // Queue for later
+        SqfliteQueuedOperation* queuedOperation = [SqfliteQueuedOperation new];
+        queuedOperation.operation = operation;
+        queuedOperation.handler = handler;
+        [noTransactionOperationQueue addObject:queuedOperation];
+        
+    }
+}
+- (bool)dbDoExecute:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     if (![self dbExecuteOrError:db operation:operation]) {
         return false;
     }
@@ -76,10 +105,40 @@ static NSString *const _paramOperations = @"operations";
     return true;
 }
 
+- (void)dbExecute:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+    [self wrapSqlOperationHandler:db operation:operation handler:^(FMDatabase* db, SqfliteOperation* operation) {
+        NSNumber* inTransactionChange = [operation getInTransactionChange];
+        bool hasNullTransactionId  = [operation hasNullTransactionId];
+        bool enteringTransaction = [inTransactionChange boolValue] == true && hasNullTransactionId;
+        
+        if (enteringTransaction) {
+            self.currentTransactionId = [NSNumber numberWithInt:++self.lastTransactionId];
+        }
+        if ([self dbExecuteOrError:db operation:operation]) {
+            if (enteringTransaction) {
+                NSMutableDictionary* result = [NSMutableDictionary new];
+                [result setObject:self.currentTransactionId       forKey:SqfliteParamTransactionId];
+                [operation success:result];
+            } else {
+                bool leavingTransaction = inTransactionChange != nil && [inTransactionChange boolValue] == false;
+                if (leavingTransaction) {
+                    self.currentTransactionId = nil;
+                }
+                [operation success:[NSNull null]];
+            }
+        } else {
+            if (enteringTransaction) {
+                // On error revert change
+                self.currentTransactionId = nil;
+            }
+        }
+    }];
+}
+
 - (bool)dbExecuteOrError:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
-    NSNumber* inTransaction = [operation getInTransactionArgument];
+    NSNumber* inTransaction = [operation getInTransactionChange];
     
     // Handle Hardcoded workarounds
     // Handle issue #525
@@ -126,7 +185,12 @@ static NSString *const _paramOperations = @"operations";
 //
 // insert
 //
-- (bool)dbInsert:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (void)dbInsert:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+    [self wrapSqlOperationHandler:db operation:operation handler:^(FMDatabase* db, SqfliteOperation* operation) {
+        [self dbDoInsert:db operation:operation];
+    }];
+}
+- (bool)dbDoInsert:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     if (![self dbExecuteOrError:db operation:operation]) {
         return false;
     }
@@ -152,7 +216,12 @@ static NSString *const _paramOperations = @"operations";
     return true;
 }
 
-- (bool)dbUpdate:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (void)dbUpdate:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+    [self wrapSqlOperationHandler:db operation:operation handler:^(FMDatabase* db, SqfliteOperation* operation) {
+        [self dbDoUpdate:db operation:operation];
+    }];
+}
+- (bool)dbDoUpdate:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     if (![self dbExecuteOrError:db operation:operation]) {
         return false;
     }
@@ -171,7 +240,13 @@ static NSString *const _paramOperations = @"operations";
 //
 // query
 //
-- (bool)dbQuery:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (void)dbQuery:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+    [self wrapSqlOperationHandler:db operation:operation handler:^(FMDatabase* db, SqfliteOperation* operation) {
+        [self dbDoQuery:db operation:operation];
+    }];
+}
+
+- (bool)dbDoQuery:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     bool argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
@@ -216,14 +291,18 @@ static NSString *const _paramOperations = @"operations";
         }
     }
     [operation success:results];
-    
     return true;
 }
+
+
+
 
 //
 // query
 //
+
 - (void)dbQueryCursorNext:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+    
     NSNumber* cursorId = [operation getArgument:_paramCursorId];
     NSNumber* cancelValue = [operation getArgument:_paramCancel];
     bool cancel = [cancelValue boolValue] == true;
@@ -233,7 +312,7 @@ static NSString *const _paramOperations = @"operations";
     
     if (cancel) {
         [self closeCursorById:cursorId];
-        [operation success:nil];
+        [operation success:[NSNull null]];
         return;
     } else {
         SqfliteCursor* cursor = self.cursorMap[cursorId];
@@ -279,7 +358,7 @@ static NSString *const _paramOperations = @"operations";
         
         NSString* method = [operation getMethod];
         if ([SqfliteMethodInsert isEqualToString:method]) {
-            if ([self dbInsert:db operation:operation]) {
+            if ([self dbDoInsert:db operation:operation]) {
                 [operation handleSuccess:operationResults];
             } else if (continueOnError) {
                 [operation handleErrorContinue:operationResults];
@@ -288,7 +367,7 @@ static NSString *const _paramOperations = @"operations";
                 return;
             }
         } else if ([SqfliteMethodUpdate isEqualToString:method]) {
-            if ([self dbUpdate:db operation:operation]) {
+            if ([self dbDoUpdate:db operation:operation]) {
                 [operation handleSuccess:operationResults];
             } else if (continueOnError) {
                 [operation handleErrorContinue:operationResults];
@@ -297,7 +376,7 @@ static NSString *const _paramOperations = @"operations";
                 return;
             }
         } else if ([SqfliteMethodExecute isEqualToString:method]) {
-            if ([self dbExecute:db operation:operation]) {
+            if ([self dbDoExecute:db operation:operation]) {
                 [operation handleSuccess:operationResults];
             } else if (continueOnError) {
                 [operation handleErrorContinue:operationResults];
@@ -306,7 +385,7 @@ static NSString *const _paramOperations = @"operations";
                 return;
             }
         } else if ([SqfliteMethodQuery isEqualToString:method]) {
-            if ([self dbQuery:db operation:operation]) {
+            if ([self dbDoQuery:db operation:operation]) {
                 [operation handleSuccess:operationResults];
             } else if (continueOnError) {
                 [operation handleErrorContinue:operationResults];
@@ -323,7 +402,7 @@ static NSString *const _paramOperations = @"operations";
     }
     
     if (noResult) {
-        [mainOperation success:nil];
+        [mainOperation success:[NSNull null]];
     } else {
         [mainOperation success:operationResults];
     }

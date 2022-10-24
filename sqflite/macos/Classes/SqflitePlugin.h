@@ -32,6 +32,7 @@ extern NSString *const SqfliteParamError;
 extern NSString *const SqfliteParamErrorCode;
 extern NSString *const SqfliteParamErrorMessage;
 extern NSString *const SqfliteParamErrorData;
+extern NSString *const SqfliteParamTransactionId;
 
 // Static helpers
 static const int sqfliteLogLevelNone = 0;

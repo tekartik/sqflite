@@ -275,7 +275,7 @@ static NSInteger _databaseOpenCount = 0;
 - (bool)executeOrError:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
-    NSNumber* inTransaction = [operation getInTransactionArgument];
+    NSNumber* inTransaction = [operation getInTransactionChange];
     
     // Handle Hardcoded workarounds
     // Handle issue #525
