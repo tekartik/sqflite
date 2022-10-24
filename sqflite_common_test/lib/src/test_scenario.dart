@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common/src/internals.dart'; // ignore: implementation_imports
 import 'package:sqflite_common_test/src/sqflite_import.dart';
 import 'package:test/test.dart';
 

@@ -1,4 +1,5 @@
 // To be imported
+export 'package:sqflite_common/src/internals.dart';
 export 'package:sqflite_common/src/mixin/constant.dart' show paramId;
 export 'package:sqflite_common/src/mixin/dev_utils.dart'
     show

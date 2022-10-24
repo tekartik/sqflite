@@ -8,8 +8,33 @@ import io.flutter.plugin.common.MethodChannel;
  */
 
 public class MethodCallOperation extends BaseOperation {
-    final MethodCall methodCall;
     public final Result result;
+    final MethodCall methodCall;
+
+    public MethodCallOperation(MethodCall methodCall, MethodChannel.Result result) {
+        this.methodCall = methodCall;
+        this.result = new Result(result);
+    }
+
+    @Override
+    public String getMethod() {
+        return methodCall.method;
+    }
+
+    @Override
+    public <T> T getArgument(String key) {
+        return methodCall.argument(key);
+    }
+
+    @Override
+    public boolean hasArgument(String key) {
+        return methodCall.hasArgument(key);
+    }
+
+    @Override
+    public OperationResult getOperationResult() {
+        return result;
+    }
 
     class Result implements OperationResult {
 
@@ -29,26 +54,6 @@ public class MethodCallOperation extends BaseOperation {
             result.error(errorCode, errorMessage, data);
         }
 
-    }
-
-    public MethodCallOperation(MethodCall methodCall, MethodChannel.Result result) {
-        this.methodCall = methodCall;
-        this.result = new Result(result);
-    }
-
-    @Override
-    public String getMethod() {
-        return methodCall.method;
-    }
-
-    @Override
-    public <T> T getArgument(String key) {
-        return methodCall.argument(key);
-    }
-
-    @Override
-    public OperationResult getOperationResult() {
-        return result;
     }
 
 

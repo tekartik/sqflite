@@ -14,6 +14,7 @@ import 'service_impl_test.dart' as service_impl_test;
 import 'slow_test.dart' as slow_test;
 import 'sqflite_protocol_test.dart' as protocol_test;
 import 'statement_test.dart' as statement_test;
+import 'transaction_test.dart' as transaction_test;
 import 'type_test.dart' as type_test;
 
 /// Run all common tests.
@@ -33,5 +34,6 @@ void run(SqfliteTestContext context) {
     exception_test.run(context);
     exp_test.run(context);
     database_factory_test.run(context);
+    transaction_test.run(context);
   });
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -68,26 +69,29 @@ Future _isolate(List<dynamic> args) async {
   // listen for text messages that are sent to us,
   // and respond to them with this algorithm
   await for (var msg in ourReceivePort) {
-    // devPrint(msg);
-    if (msg is Map) {
-      var sendPort = msg['sendPort'];
+    // devPrint('msg: $msg');
+    // Handle message asynchronously
+    unawaited(() async {
+      if (msg is Map) {
+        var sendPort = msg['sendPort'];
 
-      if (sendPort is SendPort) {
-        void sendResponse(FfiMethodResponse response) {
-          sendPort.send(response.toDataMap());
-        }
+        if (sendPort is SendPort) {
+          void sendResponse(FfiMethodResponse response) {
+            sendPort.send(response.toDataMap());
+          }
 
-        var methodCall = FfiMethodCall.fromDataMap(msg);
+          var methodCall = FfiMethodCall.fromDataMap(msg);
 
-        if (methodCall != null) {
-          try {
-            var result = await methodCall.handleImpl();
-            sendResponse(FfiMethodResponse(result: result));
-          } catch (e, st) {
-            sendResponse(FfiMethodResponse.fromException(e, st));
+          if (methodCall != null) {
+            try {
+              var result = await methodCall.handleImpl();
+              sendResponse(FfiMethodResponse(result: result));
+            } catch (e, st) {
+              sendResponse(FfiMethodResponse.fromException(e, st));
+            }
           }
         }
       }
-    }
+    }());
   }
 }

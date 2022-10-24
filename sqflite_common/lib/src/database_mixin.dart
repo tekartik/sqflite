@@ -272,11 +272,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   late String path;
 
-  /// Transaction reference count.
-  ///
-  /// Only set during inTransaction to allow transaction during open.
-  int transactionRefCount = 0;
-
   /// Special transaction created during open.
   ///
   /// Only not null during opening.
@@ -294,6 +289,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   /// Set when parsing BEGIN and COMMIT/ROLLBACK
   bool inTransaction = false;
+
+  /// Set internally for testing
+  bool doNotUseSynchronized = false;
 
   /// Base database map parameter.
   Map<String, Object?> getBaseDatabaseMethodArguments(SqfliteTransaction? txn) {
@@ -365,7 +363,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> txnSynchronized<T>(
       Transaction? txn, Future<T> Function(Transaction? txn) action) async {
     // If in a transaction, execute right away
-    if (txn != null) {
+    if (txn != null || doNotUseSynchronized) {
       return await action(txn);
     } else {
       // Simple timeout warning if we cannot get the lock after XX seconds
@@ -660,17 +658,16 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       Transaction? txn, Future<T> Function(Transaction txn) action,
       {bool? exclusive}) async {
     bool? successfull;
-    if (transactionRefCount == 0) {
+    var transactionStarted = txn == null;
+    if (transactionStarted) {
       txn = await beginTransaction(exclusive: exclusive);
     }
-    // Update the ref count after a successful begin
-    transactionRefCount++;
     T result;
     try {
-      result = await action(txn!);
+      result = await action(txn);
       successfull = true;
     } finally {
-      if (--transactionRefCount == 0) {
+      if (transactionStarted) {
         final sqfliteTransaction = txn as SqfliteTransaction;
         sqfliteTransaction.successful = successfull;
         await endTransaction(sqfliteTransaction);

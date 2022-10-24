@@ -10,12 +10,11 @@ import static com.tekartik.sqflite.Constant.PARAM_CANCEL;
 import static com.tekartik.sqflite.Constant.PARAM_COLUMNS;
 import static com.tekartik.sqflite.Constant.PARAM_CURSOR_ID;
 import static com.tekartik.sqflite.Constant.PARAM_CURSOR_PAGE_SIZE;
-import static com.tekartik.sqflite.Constant.PARAM_IN_TRANSACTION;
 import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
 import static com.tekartik.sqflite.Constant.PARAM_ROWS;
-import static com.tekartik.sqflite.Constant.PARAM_SQL;
-import static com.tekartik.sqflite.Constant.PARAM_SQL_ARGUMENTS;
+import static com.tekartik.sqflite.Constant.PARAM_TRANSACTION_ID;
 import static com.tekartik.sqflite.Constant.TAG;
+import static com.tekartik.sqflite.Constant.TRANSACTION_ID_FORCE;
 import static com.tekartik.sqflite.Utils.cursorRowToList;
 
 import android.content.Context;
@@ -27,6 +26,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -34,9 +34,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.tekartik.sqflite.operation.BatchOperation;
-import com.tekartik.sqflite.operation.ExecuteOperation;
 import com.tekartik.sqflite.operation.MethodCallOperation;
 import com.tekartik.sqflite.operation.Operation;
+import com.tekartik.sqflite.operation.QueuedOperation;
 import com.tekartik.sqflite.operation.SqlErrorInfo;
 
 import org.jetbrains.annotations.NotNull;
@@ -55,22 +55,29 @@ class Database {
     // To turn on when supported fully
     // 2022-09-14 experiments show several corruption issue.
     final static boolean WAL_ENABLED_BY_DEFAULT = false;
-
+    private static final String WAL_ENABLED_META_NAME = "com.tekartik.sqflite.wal_enabled";
+    static private Boolean walGloballyEnabled;
     final boolean singleInstance;
+    @NonNull
     final String path;
     final int id;
     final int logLevel;
+    @NonNull
     final Context context;
+    /// Delayed operations not in the current transaction.
+    final List<QueuedOperation> noTransactionOperationQueue = new ArrayList<>();
+    final Map<Integer, SqfliteCursor> cursors = new HashMap<>();
+    // Set by plugin
+    public Handler handler;
+    @Nullable
     SQLiteDatabase sqliteDatabase;
     boolean inTransaction;
-
+    // Transaction
+    private int lastTransactionId = 0; // incremental transaction id
+    @Nullable
+    private Integer currentTransactionId;
     // Cursors
     private int lastCursorId = 0; // incremental cursor id
-    final Map<Integer, SqfliteCursor> cursors = new HashMap<>();
-
-    private static final String WAL_ENABLED_META_NAME = "com.tekartik.sqflite.wal_enabled";
-
-    static private Boolean walGloballyEnabled;
 
     Database(Context context, String path, int id, boolean singleInstance, int logLevel) {
         this.context = context;
@@ -95,6 +102,10 @@ class Database {
             e.printStackTrace();
         }
         return false;
+    }
+
+    static void deleteDatabase(String path) {
+        SQLiteDatabase.deleteDatabase(new File(path));
     }
 
     public void open() {
@@ -168,11 +179,6 @@ class Database {
         return "[" + getThreadLogTag() + "] ";
     }
 
-
-    static void deleteDatabase(String path) {
-        SQLiteDatabase.deleteDatabase(new File(path));
-    }
-
     private Map<String, Object> cursorToResults(Cursor cursor, @Nullable Integer cursorPageSize) {
         Map<String, Object> results = null;
         List<List<Object>> rows = null;
@@ -203,7 +209,41 @@ class Database {
         return results;
     }
 
-    public boolean query(final @NonNull Operation operation) {
+    private void runQueuedOperations() {
+        while (!noTransactionOperationQueue.isEmpty()) {
+            if (currentTransactionId != null) {
+                break;
+            }
+            QueuedOperation queuedOperation = noTransactionOperationQueue.get(0);
+            queuedOperation.run();
+            noTransactionOperationQueue.remove(0);
+        }
+    }
+
+    private void wrapSqlOperationHandler(final @NonNull Operation operation, Runnable r) {
+        Integer transactionId = operation.getTransactionId();
+        if (currentTransactionId == null) {
+            // ignore transactionId, could be null or -1 or something else if closed...
+            r.run();
+        } else if (transactionId != null && (transactionId == currentTransactionId || transactionId == TRANSACTION_ID_FORCE)) {
+            r.run();
+            // run queued action asynchronously
+            if (currentTransactionId == null && !noTransactionOperationQueue.isEmpty()) {
+                handler.post(this::runQueuedOperations);
+            }
+
+        } else {
+            // Queue for later
+            QueuedOperation queuedOperation = new QueuedOperation(operation, r);
+            noTransactionOperationQueue.add(queuedOperation);
+        }
+    }
+
+    public void query(final @NonNull Operation operation) {
+        wrapSqlOperationHandler(operation, () -> doQuery(operation));
+    }
+
+    private boolean doQuery(final @NonNull Operation operation) {
         // Non null means dealing with saved cursor.
         Integer cursorPageSize = operation.getArgument(PARAM_CURSOR_PAGE_SIZE);
         boolean cursorHasMoreData = false;
@@ -259,7 +299,11 @@ class Database {
         }
     }
 
-    public boolean queryCursorNext(final @NonNull Operation operation) {
+    public void queryCursorNext(final @NonNull Operation operation) {
+        wrapSqlOperationHandler(operation, () -> doQueryCursorNext(operation));
+    }
+
+    private boolean doQueryCursorNext(final @NonNull Operation operation) {
         // Non null means dealing with saved cursor.
         int cursorId = operation.getArgument(PARAM_CURSOR_ID);
         boolean cancel = Boolean.TRUE.equals(operation.getArgument(PARAM_CANCEL));
@@ -341,31 +385,13 @@ class Database {
         operation.error(Constant.SQLITE_ERROR, exception.getMessage(), SqlErrorInfo.getMap(operation));
     }
 
-
-    private SqlCommand getSqlCommand(MethodCall call) {
-        String sql = call.argument(PARAM_SQL);
-        List<Object> arguments = call.argument(PARAM_SQL_ARGUMENTS);
-        return new SqlCommand(sql, arguments);
-    }
-
-    Database executeOrError(MethodCall call, MethodChannel.Result result) {
-        SqlCommand command = getSqlCommand(call);
-        Boolean inTransaction = call.argument(PARAM_IN_TRANSACTION);
-
-        Operation operation = new ExecuteOperation(result, command, inTransaction);
-        if (executeOrError(operation)) {
-            return this;
-        }
-        return null;
-    }
-
     // Called during batch, warning duplicated code!
     private boolean executeOrError(Operation operation) {
         SqlCommand command = operation.getSqlCommand();
         if (LogLevel.hasSqlLevel(logLevel)) {
             Log.d(TAG, getThreadLogPrefix() + command);
         }
-        boolean operationInTransaction = Boolean.TRUE.equals(operation.getInTransaction());
+        boolean operationInTransaction = Boolean.TRUE.equals(operation.getInTransactionChange());
 
         try {
             getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
@@ -387,9 +413,43 @@ class Database {
         }
     }
 
+    /**
+     * Handle inTransactionChange
+     *
+     * @param operation
+     * @return
+     */
+    public void execute(final @NonNull Operation operation) {
+        wrapSqlOperationHandler(operation, () -> {
+            Boolean inTransactionChange = operation.getInTransactionChange();
+            // Transaction v2 support
+            boolean enteringTransaction = Boolean.TRUE.equals(inTransactionChange) && operation.hasNullTransactionId();
+            if (enteringTransaction) {
+                currentTransactionId = ++lastTransactionId;
+            }
+            if (!executeOrError(operation)) {
+                // Revert if needed
+                if (enteringTransaction) {
+                    currentTransactionId = null;
+                }
+
+            } else if (enteringTransaction) {
+                /// Return the transaction id
+                Map<String, Object> result = new HashMap<>();
+                result.put(PARAM_TRANSACTION_ID, currentTransactionId);
+                operation.success(result);
+            } else {
+                if (Boolean.FALSE.equals(inTransactionChange)) {
+                    // We are leaving our current transaction
+                    currentTransactionId = null;
+                }
+                operation.success(null);
+            }
+        });
+    }
 
     // Return true on success
-    private boolean execute(final Operation operation) {
+    private boolean doExecute(final Operation operation) {
         if (!executeOrError(operation)) {
             return false;
         }
@@ -397,9 +457,12 @@ class Database {
         return true;
     }
 
+    public void insert(final Operation operation) {
+        wrapSqlOperationHandler(operation, () -> doInsert(operation));
+    }
 
     // Return true on success
-    boolean insert(final Operation operation) {
+    private boolean doInsert(final Operation operation) {
         if (!executeOrError(operation)) {
             return false;
         }
@@ -454,8 +517,12 @@ class Database {
     }
 
 
+    public void update(final @NonNull Operation operation) {
+        wrapSqlOperationHandler(operation, () -> doUpdate(operation));
+    }
+
     // Return true on success
-    boolean update(final Operation operation) {
+    private boolean doUpdate(final Operation operation) {
         if (!executeOrError(operation)) {
             return false;
         }
@@ -507,7 +574,7 @@ class Database {
             String method = operation.getMethod();
             switch (method) {
                 case METHOD_EXECUTE:
-                    if (execute(operation)) {
+                    if (doExecute(operation)) {
                         //devLog(TAG, "results: " + operation.getBatchResults());
                         operation.handleSuccess(results);
                     } else if (continueOnError) {
@@ -519,7 +586,7 @@ class Database {
                     }
                     break;
                 case METHOD_INSERT:
-                    if (insert(operation)) {
+                    if (doInsert(operation)) {
                         //devLog(TAG, "results: " + operation.getBatchResults());
                         operation.handleSuccess(results);
                     } else if (continueOnError) {
@@ -531,7 +598,7 @@ class Database {
                     }
                     break;
                 case METHOD_QUERY:
-                    if (query(operation)) {
+                    if (doQuery(operation)) {
                         //devLog(TAG, "results: " + operation.getBatchResults());
                         operation.handleSuccess(results);
                     } else if (continueOnError) {
@@ -543,7 +610,7 @@ class Database {
                     }
                     break;
                 case METHOD_UPDATE:
-                    if (update(operation)) {
+                    if (doUpdate(operation)) {
                         //devLog(TAG, "results: " + operation.getBatchResults());
                         operation.handleSuccess(results);
                     } else if (continueOnError) {

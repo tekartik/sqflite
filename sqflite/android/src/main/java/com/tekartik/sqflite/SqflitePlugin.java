@@ -56,21 +56,20 @@ import io.flutter.plugin.common.StandardMethodCodec;
 public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
     static final Map<String, Integer> _singleInstancesByPath = new HashMap<>();
-    static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_DEFAULT;
-    static int logLevel = LogLevel.none;
-
+    @SuppressLint("UseSparseArrays")
+    static final Map<Integer, Database> databaseMap = new HashMap<>();
     static private final Object databaseMapLocker = new Object();
     static private final Object openCloseLocker = new Object();
+    static int logLevel = LogLevel.none;
     // local cache
     static String databasesPath;
-    private Context context;
+    static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_DEFAULT;
     static private int databaseId = 0; // incremental database id
     // Database thread execution
     static private HandlerThread handlerThread;
     static private Handler handler;
+    private Context context;
     private MethodChannel methodChannel;
-    @SuppressLint("UseSparseArrays")
-    static final Map<Integer, Database> databaseMap = new HashMap<>();
 
     // Needed public constructor
     public SqflitePlugin() {
@@ -89,26 +88,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     public static void registerWith(io.flutter.plugin.common.PluginRegistry.Registrar registrar) {
         SqflitePlugin sqflitePlugin = new SqflitePlugin();
         sqflitePlugin.onAttachedToEngine(registrar.context(), registrar.messenger());
-    }
-
-    @Override
-    public void onAttachedToEngine(FlutterPluginBinding binding) {
-        onAttachedToEngine(binding.getApplicationContext(), binding.getBinaryMessenger());
-    }
-
-    private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
-        this.context = applicationContext;
-        methodChannel = new MethodChannel(messenger, Constant.PLUGIN_KEY,
-                StandardMethodCodec.INSTANCE,
-                messenger.makeBackgroundTaskQueue());
-        methodChannel.setMethodCallHandler(this);
-    }
-
-    @Override
-    public void onDetachedFromEngine(FlutterPluginBinding binding) {
-        context = null;
-        methodChannel.setMethodCallHandler(null);
-        methodChannel = null;
     }
 
     static private Map<String, Object> fixMap(Map<Object, Object> map) {
@@ -151,6 +130,42 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         return (path == null || path.equals(MEMORY_DATABASE_PATH));
     }
 
+    // {
+    // 'id': xxx
+    // 'recovered': true // if recovered only for single instance
+    // }
+    static Map makeOpenResult(int databaseId, boolean recovered, boolean recoveredInTransaction) {
+        Map<String, Object> result = new HashMap<>();
+        result.put(PARAM_ID, databaseId);
+        if (recovered) {
+            result.put(PARAM_RECOVERED, true);
+        }
+        if (recoveredInTransaction) {
+            result.put(PARAM_RECOVERED_IN_TRANSACTION, true);
+        }
+        return result;
+    }
+
+    @Override
+    public void onAttachedToEngine(FlutterPluginBinding binding) {
+        onAttachedToEngine(binding.getApplicationContext(), binding.getBinaryMessenger());
+    }
+
+    private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
+        this.context = applicationContext;
+        methodChannel = new MethodChannel(messenger, Constant.PLUGIN_KEY,
+                StandardMethodCodec.INSTANCE,
+                messenger.makeBackgroundTaskQueue());
+        methodChannel.setMethodCallHandler(this);
+    }
+
+    @Override
+    public void onDetachedFromEngine(FlutterPluginBinding binding) {
+        context = null;
+        methodChannel.setMethodCallHandler(null);
+        methodChannel = null;
+    }
+
     private Context getContext() {
         return context;
     }
@@ -170,7 +185,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             return null;
         }
     }
-
 
     //
     // query
@@ -200,7 +214,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         });
     }
 
-
     //
     // Sqflite.batch
     //
@@ -212,7 +225,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         }
         handler.post(() -> database.batch(call, result));
     }
-
 
     //
     // Insert
@@ -239,13 +251,10 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             return;
         }
         handler.post(() -> {
-            if (database.executeOrError(call, result) == null) {
-                return;
-            }
-            result.success(null);
+            MethodCallOperation operation = new MethodCallOperation(call, result);
+            database.execute(operation);
         });
     }
-
 
     //
     // Sqflite.update
@@ -260,22 +269,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             MethodCallOperation operation = new MethodCallOperation(call, result);
             database.update(operation);
         });
-    }
-
-    // {
-    // 'id': xxx
-    // 'recovered': true // if recovered only for single instance
-    // }
-    static Map makeOpenResult(int databaseId, boolean recovered, boolean recoveredInTransaction) {
-        Map<String, Object> result = new HashMap<>();
-        result.put(PARAM_ID, databaseId);
-        if (recovered) {
-            result.put(PARAM_RECOVERED, true);
-        }
-        if (recoveredInTransaction) {
-            result.put(PARAM_RECOVERED_IN_TRANSACTION, true);
-        }
-        return result;
     }
 
     private void onDebugCall(final MethodCall call, final Result result) {
@@ -388,6 +381,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                     Log.d(TAG, database.getThreadLogPrefix() + "starting thread" + handlerThread + " priority " + SqflitePlugin.THREAD_PRIORITY);
                 }
             }
+            database.handler = handler;
             if (LogLevel.hasSqlLevel(database.logLevel)) {
                 Log.d(TAG, database.getThreadLogPrefix() + "opened " + databaseId + " " + path);
             }
@@ -395,52 +389,48 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
             // Open in background thread
             handler.post(
-                    new Runnable() {
-                        @Override
-                        public void run() {
+                    () -> {
 
-                            synchronized (openCloseLocker) {
+                        synchronized (openCloseLocker) {
 
-                                if (!inMemory) {
-                                    File file = new File(path);
-                                    File directory = new File(file.getParent());
-                                    if (!directory.exists()) {
-                                        if (!directory.mkdirs()) {
-                                            if (!directory.exists()) {
-                                                result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
-                                                return;
-                                            }
+                            if (!inMemory) {
+                                File file = new File(path);
+                                File directory = new File(file.getParent());
+                                if (!directory.exists()) {
+                                    if (!directory.mkdirs()) {
+                                        if (!directory.exists()) {
+                                            result.error(Constant.SQLITE_ERROR, Constant.ERROR_OPEN_FAILED + " " + path, null);
+                                            return;
                                         }
                                     }
                                 }
-
-                                // force opening
-                                try {
-                                    if (Boolean.TRUE.equals(readOnly)) {
-                                        database.openReadOnly();
-                                    } else {
-                                        database.open();
-                                    }
-                                } catch (Exception e) {
-                                    MethodCallOperation operation = new MethodCallOperation(call, result);
-                                    database.handleException(e, operation);
-                                    return;
-                                }
-
-                                synchronized (databaseMapLocker) {
-                                    if (singleInstance) {
-                                        _singleInstancesByPath.put(path, databaseId);
-                                    }
-                                    databaseMap.put(databaseId, database);
-                                }
-                                if (LogLevel.hasSqlLevel(database.logLevel)) {
-                                    Log.d(TAG, database.getThreadLogPrefix() + "opened " + databaseId + " " + path);
-                                }
                             }
 
-                            result.success(makeOpenResult(databaseId, false, false));
+                            // force opening
+                            try {
+                                if (Boolean.TRUE.equals(readOnly)) {
+                                    database.openReadOnly();
+                                } else {
+                                    database.open();
+                                }
+                            } catch (Exception e) {
+                                MethodCallOperation operation = new MethodCallOperation(call, result);
+                                database.handleException(e, operation);
+                                return;
+                            }
+
+                            synchronized (databaseMapLocker) {
+                                if (singleInstance) {
+                                    _singleInstancesByPath.put(path, databaseId);
+                                }
+                                databaseMap.put(databaseId, database);
+                            }
+                            if (LogLevel.hasSqlLevel(database.logLevel)) {
+                                Log.d(TAG, database.getThreadLogPrefix() + "opened " + databaseId + " " + path);
+                            }
                         }
 
+                        result.success(makeOpenResult(databaseId, false, false));
                     });
         }
 
