@@ -1,5 +1,8 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member
+import 'package:path/path.dart' as p;
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_test/src/core_import.dart';
+import 'package:sqflite_common_test/src/sqflite_import.dart';
 import 'package:sqflite_common_test/src/test_scenario.dart';
 import 'package:test/test.dart';
 
@@ -25,6 +28,14 @@ void main() {
 /// Run open test.
 void run(SqfliteTestContext? context) {
   var factory = context?.databaseFactory;
+  Future<String> initDeleteDb(String dbName) async {
+    if (context == null) {
+      // Make it absolute to avoid getDatabasesPath to be called
+      return '${p.separator}$dbName';
+    }
+    return await context.initDeleteDb(dbName);
+  }
+
   group('protocol', () {
     test('open close', () async {
       final scenario = wrapStartScenario(factory, [openStep, closeStep]);
@@ -126,6 +137,122 @@ void run(SqfliteTestContext? context) {
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.execute('BEGIN TRANSACTION');
       await db.execute('ROLLBACK');
+
+      await db.close();
+      scenario.end();
+    });
+
+    test('recovered', () async {
+      var dbName = await initDeleteDb('protocol_recovered.db');
+      final scenario = wrapStartScenario(factory, [
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          {'id': 1},
+        ],
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          if (context?.supportsRecoveredInTransaction ?? false)
+            {'recovered': true, 'id': 1}
+          else
+            {'id': 1},
+        ],
+        closeStep
+      ]);
+
+      final db = await scenario.factory.openDatabase(dbName);
+      await scenario.factory.internalsInvokeMethod(
+          'openDatabase', {'path': dbName, 'singleInstance': true});
+
+      await db.close();
+      scenario.end();
+    });
+
+    test('recovered_in_transaction_1', () async {
+      var dbName = await initDeleteDb('protocol_recovered_in_transaction_1.db');
+      final scenario = wrapStartScenario(factory, [
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          {'id': 1},
+        ],
+        [
+          'execute',
+          {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
+          null,
+        ],
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          if (context?.supportsRecoveredInTransaction ?? false)
+            {'recovered': true, 'recoveredInTransaction': true, 'id': 1}
+          else
+            {'id': 1},
+        ],
+        [
+          'execute',
+          {
+            'sql': 'ROLLBACK',
+            'id': 1,
+            'transactionId': -1,
+            'inTransaction': false
+          },
+          null,
+        ],
+        closeStep
+      ]);
+
+      final db = await scenario.factory.openDatabase(dbName);
+      await db.execute('BEGIN TRANSACTION');
+      await scenario.factory.internalsInvokeMethod(
+          'openDatabase', {'path': dbName, 'singleInstance': true});
+
+      await db.close();
+      scenario.end();
+    });
+
+    test('recovered_in_transaction_2', () async {
+      var dbName = await initDeleteDb('protocol_recovered_in_transaction_2.db');
+      final scenario = wrapStartScenario(factory, [
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          {'id': 1}
+        ],
+        [
+          'execute',
+          {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
+          null,
+        ],
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          if (context?.supportsRecoveredInTransaction ?? false)
+            {'recovered': true, 'recoveredInTransaction': true, 'id': 1}
+          else
+            {'id': 1},
+        ],
+        if (context?.supportsRecoveredInTransaction ?? false)
+          [
+            'execute',
+            {
+              'sql': 'ROLLBACK',
+              'id': 1,
+              'transactionId': -1,
+              'inTransaction': false
+            },
+            null,
+          ],
+        closeStep
+      ]);
+      await scenario.factory.internalsInvokeMethod(
+          'openDatabase', {'path': dbName, 'singleInstance': true});
+      await scenario.factory.internalsInvokeMethod(
+        'execute',
+        {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
+      );
+      final db = await scenario.factory.openDatabase(dbName);
 
       await db.close();
       scenario.end();

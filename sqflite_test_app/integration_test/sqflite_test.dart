@@ -15,6 +15,9 @@ import 'package:sqflite_test_app/setup_flutter.dart';
 
 class SqfliteDriverTestContext extends SqfliteLocalTestContext {
   SqfliteDriverTestContext() : super(databaseFactory: databaseFactory);
+
+  @override
+  bool get supportsRecoveredInTransaction => true;
 }
 
 var testContext = SqfliteDriverTestContext();

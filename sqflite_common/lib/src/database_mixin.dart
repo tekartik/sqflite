@@ -404,6 +404,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> txnExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
       {
+
       /// set
       bool? beginTransaction}) {
     return txnWriteSynchronized<T>(txn, (_) {
@@ -435,6 +436,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> invokeExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
       {
+
       /// This is set by parsing the sql command for all commands
       bool? inTransactionChange,
 
@@ -747,14 +749,14 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         if (readOnly != true) {
           // We are not yet open so invoke the plugin directly
           try {
-            await safeInvokeMethod(
-                methodExecute,
-                <String, Object?>{paramSql: 'ROLLBACK'}
-                  ..addAll(getBaseDatabaseMethodArgumentsInTransactionChange(
+            await safeInvokeMethod(methodExecute, <String, Object?>{
+              paramSql: 'ROLLBACK',
+              paramId: id,
 
-                      /// Force the action even if we are in a transaction.
-                      getForcedSqfliteTransaction(this),
-                      false)));
+              /// Force the action even if we are in a transaction.
+              paramTransactionId: paramTransactionIdValueForce,
+              paramInTransaction: false
+            });
           } catch (e) {
             print('ignore recovered database ROLLBACK error $e');
           }
