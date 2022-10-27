@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqlite_api.dart';
-
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/database.dart';
 import 'package:sqflite/src/mixin.dart';
@@ -240,8 +239,8 @@ void run() {
         });
         expect(db.argumentsLists[2], <String, Object?>{
           'sql': 'ROLLBACK',
-          'arguments': null,
           'id': 1,
+          'transactionId': -1,
           'inTransaction': false
         });
       });
@@ -420,8 +419,8 @@ void run() {
           },
           <String, Object?>{
             'sql': 'BEGIN IMMEDIATE',
-            'arguments': null,
             'id': 1,
+            'transactionId': null,
             'inTransaction': true
           },
           <String, Object?>{
@@ -429,78 +428,48 @@ void run() {
               <String, Object?>{
                 'method': 'execute',
                 'sql': 'test1',
-                'arguments': null
               }
             ],
             'id': 1
           },
-          <String, Object?>{
-            'sql': 'COMMIT',
-            'arguments': null,
-            'id': 1,
-            'inTransaction': false
-          },
-          <String, Object?>{
-            'sql': 'PRAGMA user_version',
-            'arguments': null,
-            'id': 1
-          },
+          <String, Object?>{'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
+          <String, Object?>{'sql': 'PRAGMA user_version', 'id': 1},
           <String, Object?>{
             'sql': 'BEGIN EXCLUSIVE',
-            'arguments': null,
             'inTransaction': true,
+            'transactionId': null,
             'id': 1
           },
-          <String, Object?>{
-            'sql': 'PRAGMA user_version',
-            'arguments': null,
-            'id': 1
-          },
+          <String, Object?>{'sql': 'PRAGMA user_version', 'id': 1},
           <String, Object?>{
             'operations': <Map<String, Object?>>[
               <String, Object?>{
                 'method': 'execute',
                 'sql': 'test2',
-                'arguments': null
               }
             ],
             'id': 1,
             'noResult': true
           },
-          <String, Object?>{
-            'sql': 'PRAGMA user_version = 1',
-            'arguments': null,
-            'id': 1
-          },
-          <String, Object?>{
-            'sql': 'COMMIT',
-            'arguments': null,
-            'id': 1,
-            'inTransaction': false
-          },
+          <String, Object?>{'sql': 'PRAGMA user_version = 1', 'id': 1},
+          <String, Object?>{'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
           <String, Object?>{
             'sql': 'BEGIN IMMEDIATE',
-            'arguments': null,
             'id': 1,
             'inTransaction': true,
+            'transactionId': null,
           },
           <String, Object?>{
             'operations': <Map<String, Object?>>[
               <String, Object?>{
                 'method': 'execute',
                 'sql': 'test3',
-                'arguments': null
               }
             ],
             'id': 1,
             'continueOnError': true
           },
-          <String, Object?>{
-            'sql': 'COMMIT',
-            'arguments': null,
-            'id': 1,
-            'inTransaction': false
-          },
+          <String, Object?>{'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
           <String, Object?>{'id': 1}
         ]);
       });
