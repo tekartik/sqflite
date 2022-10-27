@@ -14,11 +14,6 @@ import 'sqflite_ffi_impl_io.dart'
     if (dart.library.js) 'sqflite_ffi_impl_web.dart';
 
 final _debug = false; // devWarning(true); // false
-// final _useIsolate = true; // devWarning(true); // true the default!
-
-// TODO use constant when sqflite_common 2.5 published
-const _paramTransactionId = 'transactionId';
-const _paramTransactionIdValueForce = -1;
 
 final _globalHandlerLock = Lock();
 
@@ -267,7 +262,7 @@ class SqfliteFfiDatabase {
       // ignore transactionId, could be null or -1 or something else if closed...
       return await handler();
     } else if (transactionId == _currentTransactionId ||
-        transactionId == _paramTransactionIdValueForce) {
+        transactionId == paramTransactionIdValueForce) {
       try {
         return await handler();
       } finally {
@@ -659,7 +654,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   Future _wrapSqlHandler(Future Function(SqfliteFfiDatabase database) handler) {
     var database = getDatabaseOrThrow();
 
-    var transactionId = argumentsMap[_paramTransactionId] as int?;
+    var transactionId = argumentsMap[paramTransactionId] as int?;
     return database.handleTransactionId(transactionId, () => handler(database));
   }
 
@@ -808,14 +803,13 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   }
 
   /// Get the optional transaction id
-  int? getTransactionId() => _getParam<int>(_paramTransactionId);
+  int? getTransactionId() => _getParam<int>(paramTransactionId);
 
   /// true if the map contains it but its value is null
   bool hasNullTransactionId() {
     if (arguments is Map) {
-      // TODO use contstant when sqflite_common 2.5 published
-      return argumentsMap.containsKey(_paramTransactionId) &&
-          argumentsMap[_paramTransactionId] == null;
+      return argumentsMap.containsKey(paramTransactionId) &&
+          argumentsMap[paramTransactionId] == null;
     }
     return false;
   }
@@ -951,7 +945,7 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
     if (enteringTransaction) {
       return <String, Object?>{
-        _paramTransactionId: database._currentTransactionId
+        paramTransactionId: database._currentTransactionId
       };
     } else if (inTransactionChange == false) {
       // We are leaving our current transaction

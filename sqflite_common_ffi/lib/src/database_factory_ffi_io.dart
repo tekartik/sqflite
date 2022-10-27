@@ -34,7 +34,7 @@ DatabaseFactory createDatabaseFactoryFfiImpl(
       });
 }
 
-bool _debug = false; // devWarning(true);
+bool _debug = false; // devWarning(true); // false
 
 SqfliteIsolate? _isolate;
 final _isolateLock = Lock();

@@ -366,6 +366,7 @@ void run(SqfliteTestContext context) {
 
   test('Open onDowngrade delete', () async {
     // await utils.devSetDebugModeOn(false);
+    // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
 
     var path = await context.initDeleteDb('open_on_downgrade_delete.db');
     var database = await factory.openDatabase(path,

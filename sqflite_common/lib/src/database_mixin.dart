@@ -404,6 +404,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> txnExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
       {
+
       /// set
       bool? beginTransaction}) {
     return txnWriteSynchronized<T>(txn, (_) {
@@ -435,6 +436,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> invokeExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
       {
+
       /// This is set by parsing the sql command for all commands
       bool? inTransactionChange,
 
@@ -747,14 +749,14 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         if (readOnly != true) {
           // We are not yet open so invoke the plugin directly
           try {
-            await safeInvokeMethod(
-                methodExecute,
-                <String, Object?>{paramSql: 'ROLLBACK'}
-                  ..addAll(getBaseDatabaseMethodArgumentsInTransactionChange(
+            await safeInvokeMethod(methodExecute, <String, Object?>{
+              paramSql: 'ROLLBACK',
+              paramId: id,
 
-                      /// Force the action even if we are in a transaction.
-                      getForcedSqfliteTransaction(this),
-                      false)));
+              /// Force the action even if we are in a transaction.
+              paramTransactionId: paramTransactionIdValueForce,
+              paramInTransaction: false
+            });
           } catch (e) {
             print('ignore recovered database ROLLBACK error $e');
           }
@@ -866,12 +868,13 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
             print(e);
 
             // create a transaction just to make the current transaction happy
-            await db.beginTransaction(exclusive: true);
+            openTransaction = await db.beginTransaction(exclusive: true);
             rethrow;
           }
 
+          // Recreate a new transaction
           // no end transaction it will be done later before calling then onOpen
-          await db.beginTransaction(exclusive: true);
+          openTransaction = await db.beginTransaction(exclusive: true);
           if (options.onCreate != null) {
             await options.onCreate!(db, options.version!);
           }
@@ -881,9 +884,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       }
 
       id = databaseId;
-
-      // create dummy open transaction
-      openTransaction = SqfliteTransaction(this);
 
       // first configure it
       if (options.onConfigure != null) {
@@ -895,33 +895,45 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         // And only create the transaction if needed (https://github.com/tekartik/sqflite/issues/459)
         final oldVersion = await getVersion();
         if (oldVersion != options.version) {
-          await transaction((Transaction txn) async {
-            // Set the current transaction as the open one
-            // to allow direct database call during open
-            final sqfliteTransaction = txn as SqfliteTransaction;
-            openTransaction = sqfliteTransaction;
+          try {
+            await transaction((Transaction txn) async {
+              // Set the current transaction as the open one
+              // to allow direct database call during open and allowing
+              // creating a fake transaction (since we are already in a transaction)
+              final sqfliteTransaction = txn as SqfliteTransaction;
+              openTransaction = sqfliteTransaction;
 
-            // We read again the version to be safe regarding edge cases
-            final oldVersion = await getVersion();
-            if (oldVersion == 0) {
-              if (options.onCreate != null) {
-                await options.onCreate!(this, options.version!);
-              } else if (options.onUpgrade != null) {
-                await options.onUpgrade!(this, 0, options.version!);
+              // We read again the version to be safe regarding edge cases
+              final oldVersion = await getVersion();
+              if (oldVersion == 0) {
+                if (options.onCreate != null) {
+                  await options.onCreate!(this, options.version!);
+                } else if (options.onUpgrade != null) {
+                  await options.onUpgrade!(this, 0, options.version!);
+                }
+              } else if (options.version! > oldVersion) {
+                if (options.onUpgrade != null) {
+                  await options.onUpgrade!(this, oldVersion, options.version!);
+                }
+              } else if (options.version! < oldVersion) {
+                if (options.onDowngrade != null) {
+                  await options.onDowngrade!(
+                      this, oldVersion, options.version!);
+                  // Check and reuse transaction if if needed
+                  // in case downgrade delete was called
+                  if (openTransaction!.transactionId != txn.transactionId) {
+                    txn.transactionId = openTransaction!.transactionId;
+                  }
+                }
               }
-            } else if (options.version! > oldVersion) {
-              if (options.onUpgrade != null) {
-                await options.onUpgrade!(this, oldVersion, options.version!);
+              if (oldVersion != options.version) {
+                await setVersion(options.version!);
               }
-            } else if (options.version! < oldVersion) {
-              if (options.onDowngrade != null) {
-                await options.onDowngrade!(this, oldVersion, options.version!);
-              }
-            }
-            if (oldVersion != options.version) {
-              await setVersion(options.version!);
-            }
-          }, exclusive: true);
+            }, exclusive: true);
+          } finally {
+            // clean up open transaction
+            openTransaction = null;
+          }
         }
       }
 

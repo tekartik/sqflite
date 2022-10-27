@@ -60,6 +60,9 @@ abstract class SqfliteTestContext {
   /// Set debug mode on
   @Deprecated('Deb only')
   Future devSetDebugModeOn(bool on);
+
+  /// Native (android, ios, macos) only for now
+  bool get supportsRecoveredInTransaction;
 }
 
 /// sqflite test context mixin.
@@ -155,9 +158,12 @@ mixin SqfliteLocalTestContextMixin implements SqfliteTestContext {
 
   @override
   bool get isWindows => !kSqfliteIsWeb && Platform.isWindows;
+
+  @override
+  bool get supportsRecoveredInTransaction => false;
 }
 
-/// Based local file based context.sqf
+/// Based local file based context.
 class SqfliteLocalTestContext
     with SqfliteTestContextMixin, SqfliteLocalTestContextMixin {
   /// Local context.
