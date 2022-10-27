@@ -1,8 +1,9 @@
-## 2.2.0-dev.3
+## 2.2.0
 
 * Implements `Database.queryCursor()` and `Database.rawQueryCursor()`
-* dependency update
+* Dependency update
 * Initial support of cross isolate safe
+* Transaction v2 update
 
 ## 2.1.0+1
 
