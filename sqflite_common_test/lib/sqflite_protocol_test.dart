@@ -31,7 +31,8 @@ void run(SqfliteTestContext? context) {
   Future<String> initDeleteDb(String dbName) async {
     if (context == null) {
       // Make it absolute to avoid getDatabasesPath to be called
-      return '${p.separator}$dbName';
+      // The file itself is not used
+      return p.absolute(dbName);
     }
     return await context.initDeleteDb(dbName);
   }
