@@ -1,4 +1,4 @@
-## 2.4.0
+## 2.4.0+1
 
 * add support for `Database.queryCursor()` and `Database.rawQueryCursor()`
 * base experimental web support

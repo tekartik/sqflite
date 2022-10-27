@@ -97,7 +97,12 @@ void main() {
         ],
         [
           'execute',
-          {'sql': 'ROLLBACK', 'id': 1, 'inTransaction': false},
+          {
+            'sql': 'ROLLBACK',
+            'id': 1,
+            'transactionId': -1,
+            'inTransaction': false
+          },
           null,
         ],
         closeStep,
