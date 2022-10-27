@@ -868,12 +868,13 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
             print(e);
 
             // create a transaction just to make the current transaction happy
-            await db.beginTransaction(exclusive: true);
+            openTransaction = await db.beginTransaction(exclusive: true);
             rethrow;
           }
 
+          // Recreate a new transaction
           // no end transaction it will be done later before calling then onOpen
-          await db.beginTransaction(exclusive: true);
+          openTransaction = await db.beginTransaction(exclusive: true);
           if (options.onCreate != null) {
             await options.onCreate!(db, options.version!);
           }
@@ -883,9 +884,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       }
 
       id = databaseId;
-
-      // create dummy open transaction
-      openTransaction = SqfliteTransaction(this);
 
       // first configure it
       if (options.onConfigure != null) {
@@ -899,7 +897,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         if (oldVersion != options.version) {
           await transaction((Transaction txn) async {
             // Set the current transaction as the open one
-            // to allow direct database call during open
+            // to allow direct database call during open and allowing
+            // creating a fake transaction (since we are already in a transaction)
             final sqfliteTransaction = txn as SqfliteTransaction;
             openTransaction = sqfliteTransaction;
 
@@ -918,6 +917,11 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
             } else if (options.version! < oldVersion) {
               if (options.onDowngrade != null) {
                 await options.onDowngrade!(this, oldVersion, options.version!);
+                // Check and reuse transaction if if needed
+                // in case downgrade delete was called
+                if (openTransaction!.transactionId != txn.transactionId) {
+                  txn.transactionId = openTransaction!.transactionId;
+                }
               }
             }
             if (oldVersion != options.version) {

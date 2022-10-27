@@ -92,6 +92,162 @@ void run(SqfliteTestContext? context) {
       scenario.end();
     });
 
+    test('open onCreate', () async {
+      final scenario = wrapStartScenario(factory, [
+        openStep,
+        [
+          'query',
+          {'sql': 'PRAGMA user_version', 'id': 1},
+          {
+            'columns': ['user_version'],
+            'rows': [
+              [0]
+            ]
+          }
+        ],
+        [
+          'execute',
+          {
+            'sql': 'BEGIN EXCLUSIVE',
+            'id': 1,
+            'inTransaction': true,
+            'transactionId': null
+          },
+          {'transactionId': 1},
+        ],
+        [
+          'query',
+          {'sql': 'PRAGMA user_version', 'id': 1, 'transactionId': 1},
+          {
+            'columns': ['user_version'],
+            'rows': [
+              [0]
+            ]
+          }
+        ],
+        [
+          'execute',
+          {'sql': 'PRAGMA user_version = 1', 'id': 1, 'transactionId': 1},
+          null,
+        ],
+        [
+          'execute',
+          {
+            'sql': 'COMMIT',
+            'id': 1,
+            'inTransaction': false,
+            'transactionId': 1
+          },
+          null,
+        ],
+        closeStep
+      ]);
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath,
+          options: OpenDatabaseOptions(onCreate: (_, __) {}, version: 1));
+
+      await db.close();
+      scenario.end();
+    });
+
+    test('open onDowngradeDelete', () async {
+      // Need a real file
+      var dbName = await initDeleteDb('protocol_on_downgrade_delete.db');
+      var db = await factory?.openDatabase(dbName,
+          options: OpenDatabaseOptions(onCreate: (_, __) {}, version: 2));
+      await db?.close();
+
+      final scenario = wrapStartScenario(factory, [
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          {'id': 1}
+        ],
+        [
+          'query',
+          {'sql': 'PRAGMA user_version', 'id': 1},
+          {
+            'columns': ['user_version'],
+            'rows': [
+              [2]
+            ]
+          }
+        ],
+        [
+          'execute',
+          {
+            'sql': 'BEGIN EXCLUSIVE',
+            'id': 1,
+            'inTransaction': true,
+            'transactionId': null
+          },
+          {'transactionId': 1},
+        ],
+        [
+          'query',
+          {'sql': 'PRAGMA user_version', 'id': 1, 'transactionId': 1},
+          {
+            'columns': ['user_version'],
+            'rows': [
+              [2]
+            ]
+          }
+        ],
+        [
+          'execute',
+          {
+            'sql': 'ROLLBACK',
+            'id': 1,
+            'transactionId': 1,
+            'inTransaction': false
+          },
+          null,
+        ],
+        closeStep,
+        [
+          'deleteDatabase',
+          {'path': dbName},
+          null
+        ],
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          {'id': 1}
+        ],
+        [
+          'execute',
+          {
+            'sql': 'BEGIN EXCLUSIVE',
+            'id': 1,
+            'inTransaction': true,
+            'transactionId': null
+          },
+          {'transactionId': 1},
+        ],
+        [
+          'execute',
+          {'sql': 'PRAGMA user_version = 1', 'id': 1, 'transactionId': 1},
+          null,
+        ],
+        [
+          'execute',
+          {
+            'sql': 'COMMIT',
+            'id': 1,
+            'inTransaction': false,
+            'transactionId': 1
+          },
+          null,
+        ],
+        closeStep
+      ]);
+      db = await scenario.factory.openDatabase(dbName,
+          options: OpenDatabaseOptions(
+              onDowngrade: onDatabaseDowngradeDelete, version: 1));
+
+      await db.close();
+      scenario.end();
+    });
+
     test('manual begin transaction', () async {
       final scenario = wrapStartScenario(factory, [
         openStep,
