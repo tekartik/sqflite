@@ -102,6 +102,9 @@ mixin SqfliteTestContextMixin implements SqfliteTestContext {
   Future devSetDebugModeOn(bool on) => databaseFactory
       // ignore: deprecated_member_use
       .setLogLevel(on ? sqfliteLogLevelVerbose : sqfliteLogLevelNone);
+
+  @override
+  bool get supportsRecoveredInTransaction => false;
 }
 
 /// sqflite local test context mixin.
@@ -158,9 +161,6 @@ mixin SqfliteLocalTestContextMixin implements SqfliteTestContext {
 
   @override
   bool get isWindows => !kSqfliteIsWeb && Platform.isWindows;
-
-  @override
-  bool get supportsRecoveredInTransaction => false;
 }
 
 /// Based local file based context.
