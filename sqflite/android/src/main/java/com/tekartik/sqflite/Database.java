@@ -225,7 +225,7 @@ class Database {
         if (currentTransactionId == null) {
             // ignore transactionId, could be null or -1 or something else if closed...
             r.run();
-        } else if (transactionId != null && (transactionId == currentTransactionId || transactionId == TRANSACTION_ID_FORCE)) {
+        } else if (transactionId != null && (transactionId.equals(currentTransactionId) || transactionId == TRANSACTION_ID_FORCE)) {
             r.run();
             // run queued action asynchronously
             if (currentTransactionId == null && !noTransactionOperationQueue.isEmpty()) {
