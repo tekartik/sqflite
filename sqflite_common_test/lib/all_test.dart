@@ -6,6 +6,7 @@ import 'database_factory_test.dart' as database_factory_test;
 import 'doc_test.dart' as doc_test;
 import 'exception_test.dart' as exception_test;
 import 'exp_test.dart' as exp_test;
+import 'issue_test.dart' as issue_test;
 import 'open_flutter_test.dart' as open_flutter_test;
 import 'open_test.dart' as open_test;
 import 'raw_test.dart' as raw_test;
@@ -35,5 +36,6 @@ void run(SqfliteTestContext context) {
     exp_test.run(context);
     database_factory_test.run(context);
     transaction_test.run(context);
+    issue_test.run(context);
   });
 }
