@@ -1,3 +1,7 @@
+## 2.2.1-1
+
+* Fix iOS/MacOS FMDB include
+
 ## 2.2.0+3
 
 * Implements `Database.queryCursor()` and `Database.rawQueryCursor()`
