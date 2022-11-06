@@ -1,9 +1,15 @@
-
-#import "SqfliteImport.h"
-
+//
+//  SqflitePlugin.h
+//  sqflite
+//
+//  Created by Alexandre Roux on 24/10/2022.
+//
 #ifndef SqflitePlugin_h
 #define SqflitePlugin_h
 
+#import "SqfliteImport.h"
+
+@import FMDB;
 
 @interface SqflitePlugin : NSObject<FlutterPlugin>
 
