@@ -3,6 +3,7 @@
 
 #import "SqfliteOperation.h"
 
+@import FMDB;
 #import <sqlite3.h>
 
 static NSString *const _channelName = @"com.tekartik.sqflite";

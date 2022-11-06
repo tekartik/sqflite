@@ -7,7 +7,7 @@
 #ifndef SqfliteCursor_h
 #define SqfliteCursor_h
 
-#import "SqfliteImport.h"
+@import FMDB;
 
 // Cursor information
 @interface SqfliteCursor : NSObject

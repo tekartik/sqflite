@@ -4,10 +4,12 @@
 //
 //  Created by Alexandre Roux on 09/01/2018.
 //
-#import "SqflitePlugin.h"
-
 #ifndef SqfliteOperation_h
 #define SqfliteOperation_h
+
+#import "SqfliteImport.h"
+
+@import FMDB;
 
 @interface SqfliteOperation : NSObject
 

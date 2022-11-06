@@ -13,6 +13,4 @@
 #import <FlutterMacOS/FlutterMacOS.h>
 #endif
 
-#import <fmdb/FMDB.h>
-
 #endif // SqfliteImport_h

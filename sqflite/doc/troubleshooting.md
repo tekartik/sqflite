@@ -202,6 +202,22 @@ end
 Since Flutter templates change over time for new sdk, you might sometimes try to delete the ios folder and re-create
 your project.
 
+### Module 'FMDB' not found
+
+Since v2.2.1-1, you might encounter `Module 'FMDB' not found` on old projects.
+
+You need to add `use_frameworks!` in your Podfile:
+
+```
+target 'Runner' do
+  # Needed since v2.2.1-1
+  # In newly create project, this is set but it is not
+  # always the case on older projects
+  use_frameworks!
+  ...
+end
+```
+
 ## Error in Flutter web
 
 As far as i know, the web does not support sqlite in any acceptable ways (yes there are in memory solution but no 
