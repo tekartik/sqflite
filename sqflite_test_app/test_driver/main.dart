@@ -33,7 +33,7 @@ void main() {
       setUp(() async {
         // ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
         await Sqflite.devSetOptions(
-            SqfliteOptions()..androidThreadNumber = 2);
+            SqfliteOptions()..androidThreadCount = 2);
       });
       all.run(testContext);
     });

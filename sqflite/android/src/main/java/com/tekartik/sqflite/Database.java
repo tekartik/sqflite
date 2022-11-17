@@ -70,7 +70,7 @@ class Database {
     public DatabaseWorkerPool databaseWorkerPool;
     @Nullable
     SQLiteDatabase sqliteDatabase;
-    private boolean inTransaction;
+    private int transactionDepth = 0;
     // Transaction
     private int lastTransactionId = 0; // incremental transaction id
     @Nullable
@@ -393,13 +393,7 @@ class Database {
         Boolean operationInTransaction = operation.getInTransactionChange();
         try {
             getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
-
-            // Enter or leave transaction.
-            if (Boolean.TRUE.equals(operationInTransaction)) {
-                setInTransaction(true);
-            } else if (Boolean.FALSE.equals(operationInTransaction)) {
-                setInTransaction(false);
-            }
+            enterOrLeaveInTransaction(operationInTransaction);
             return true;
         } catch (Exception exception) {
             handleException(exception, operation);
@@ -630,10 +624,14 @@ class Database {
     }
 
     synchronized boolean isInTransaction() {
-        return inTransaction;
+        return transactionDepth > 0;
     }
 
-    synchronized void setInTransaction(boolean value) {
-        inTransaction = value;
+    synchronized void enterOrLeaveInTransaction(Boolean value) {
+        if (Boolean.TRUE.equals(value)) {
+            transactionDepth++;
+        } else if (Boolean.FALSE.equals(value)) {
+            transactionDepth--;
+        }
     }
 }

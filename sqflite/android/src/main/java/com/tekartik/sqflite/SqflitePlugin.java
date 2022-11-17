@@ -62,7 +62,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     // local cache
     static String databasesPath;
     static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_DEFAULT;
-    static private int THREAD_NUMBER = 1;
+    static private int THREAD_COUNT = 1;
     static private int databaseId = 0; // incremental database id
     // Database worker pool execution
     static private DatabaseWorkerPool databaseWorkerPool;
@@ -372,8 +372,8 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         synchronized (databaseMapLocker) {
             // Create worker pool if necessary
             if (databaseWorkerPool == null) {
-                databaseWorkerPool = new DatabaseWorkerPool(
-                        "Sqflite", THREAD_NUMBER, SqflitePlugin.THREAD_PRIORITY);
+                databaseWorkerPool = DatabaseWorkerPool.create(
+                        "Sqflite", THREAD_COUNT, SqflitePlugin.THREAD_PRIORITY);
                 databaseWorkerPool.start();
                 if (LogLevel.hasSqlLevel(database.logLevel)) {
                     Log.d(TAG, database.getThreadLogPrefix() + "starting worker pool with priority " + SqflitePlugin.THREAD_PRIORITY);
@@ -628,10 +628,10 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         if (threadPriority != null) {
             THREAD_PRIORITY = (Integer) threadPriority;
         }
-        Object threadNumber = call.argument(Constant.PARAM_THREAD_NUMBER);
-        if (threadNumber != null) {
-            THREAD_NUMBER = (Integer) threadNumber;
-            // Reset databaseWorkerPool when THREAD_NUMBER change.
+        Object threadCount = call.argument(Constant.PARAM_THREAD_COUNT);
+        if (threadCount != null) {
+            THREAD_COUNT = (Integer) threadCount;
+            // Reset databaseWorkerPool when THREAD_COUNT change.
             if (databaseWorkerPool != null) {
                 databaseWorkerPool.quit();
                 databaseWorkerPool = null;

@@ -1,28 +1,87 @@
 package com.tekartik.sqflite;
 
+import android.os.Handler;
+import android.os.HandlerThread;
+
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 /**
  * Pool that assigns {@link DatabaseTask} to {@link DatabaseWorker}.
  */
-public class DatabaseWorkerPool {
+public interface DatabaseWorkerPool {
+    void start();
+    void quit();
+
+    // Posts a new task.
+    //
+    // Some rules for assigning a task to a worker.
+    // - All tasks in a transaction go to the same worker. Otherwise errors will happen.
+    // - All tasks belonging to the same database run in FIFO manner. No overlapping between any
+    //   two tasks.
+    // - Tasks belonging to different databases could be run simultaneously but not necessarily
+    //   in FIFO manner.
+    void post(Database database, Runnable runnable);
+
+    static DatabaseWorkerPool create(String name, int numberOfWorkers, int priority) {
+        if (numberOfWorkers == 1) {
+            return new SingleDatabaseWorkerPoolImpl(name, priority);
+        }
+        return new DatabaseWorkerPoolImpl(name, numberOfWorkers, priority);
+    }
+}
+
+class SingleDatabaseWorkerPoolImpl implements DatabaseWorkerPool {
+
+    final String name;
+    final int priority;
+
+    private HandlerThread handlerThread;
+    private Handler handler;
+
+    SingleDatabaseWorkerPoolImpl(String name, int priority) {
+        this.name = name;
+        this.priority = priority;
+    }
+
+    @Override
+    public void start() {
+        handlerThread = new HandlerThread(name, priority);
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
+    }
+
+    @Override
+    public void quit() {
+        handlerThread.quit();
+        handlerThread = null;
+        handler = null;
+    }
+
+    @Override
+    public void post(Database database, Runnable runnable) {
+        handler.post(runnable);
+    }
+}
+
+class DatabaseWorkerPoolImpl implements DatabaseWorkerPool {
 
     final String name;
     final int numberOfWorkers;
     final int priority;
 
-    final LinkedList<DatabaseTask> waitingList = new LinkedList<>();
-    final LinkedList<DatabaseWorker> idleWorkers = new LinkedList<>();
-    final LinkedList<DatabaseWorker> busyWorkers = new LinkedList<>();
+    private final LinkedList<DatabaseTask> waitingList = new LinkedList<>();
+    private final LinkedList<DatabaseWorker> idleWorkers = new LinkedList<>();
+    private final LinkedList<DatabaseWorker> busyWorkers = new LinkedList<>();
 
-    DatabaseWorkerPool(String name, int numberOfWorkers, int priority) {
+    DatabaseWorkerPoolImpl(String name, int numberOfWorkers, int priority) {
         this.name = name;
         this.numberOfWorkers = numberOfWorkers;
         this.priority = priority;
     }
 
-    synchronized void start() {
+    @Override
+    public synchronized void start() {
         for (int i = 0; i < numberOfWorkers; i++) {
             DatabaseWorker worker = new DatabaseWorker(name + i, priority);
             worker.start(
@@ -33,7 +92,8 @@ public class DatabaseWorkerPool {
         }
     }
 
-    synchronized void quit() {
+    @Override
+    public synchronized void quit() {
         for (DatabaseWorker worker : idleWorkers) {
             worker.quit();
         }
@@ -42,12 +102,8 @@ public class DatabaseWorkerPool {
         }
     }
 
-    // Posts a new task.
-    //
-    // Tasks of the same database are run in FIFO manner and they are not running simultaneously
-    // for any given moment. Tasks of different databases could run simultaneously but not
-    // necessarily in FIFO manner.
-    synchronized void post(Database database, Runnable runnable) {
+    @Override
+    public synchronized void post(Database database, Runnable runnable) {
         DatabaseTask task = new DatabaseTask(database, runnable);
 
         // Try finding a worker that is already working for the database of the task.

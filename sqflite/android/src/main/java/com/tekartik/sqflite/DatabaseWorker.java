@@ -24,8 +24,11 @@ final class DatabaseWorker {
     // Database that this worker is working on.
     @Nullable
     private Database database;
-    // Tasks which belong to this list must be run by this worker.
-    private HashSet<Integer> allowList = new HashSet<>();
+    // This is a list of database id.
+    //
+    // All tasks in a transaction should go to the same worker (a.k.a. thread). This list tracks
+    // what transactional tasks could be run by this worker.
+    private HashSet<Integer> transactionAllowList = new HashSet<>();
     private int numberOfRunningTask = 0;
 
     DatabaseWorker(String name, int priority) {
@@ -56,7 +59,7 @@ final class DatabaseWorker {
 
     // Accepts or rejects a task.
     synchronized boolean accept(DatabaseTask task) {
-        if (task.isExcludedFrom(allowList)) {
+        if (task.isExcludedFrom(transactionAllowList)) {
             return false;
         }
         if (isIdle() || task.isMatchedWith(database)) {
@@ -78,9 +81,9 @@ final class DatabaseWorker {
                         numberOfRunningTask--;
                         if (database != null) {
                             if (database.isInTransaction()) {
-                                allowList.add(database.id);
+                                transactionAllowList.add(database.id);
                             } else {
-                                allowList.remove(database.id);
+                                transactionAllowList.remove(database.id);
                             }
                         }
                         if (isIdle()) {
