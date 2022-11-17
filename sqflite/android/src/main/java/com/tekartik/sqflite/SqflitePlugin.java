@@ -372,8 +372,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         synchronized (databaseMapLocker) {
             // Create worker pool if necessary
             if (databaseWorkerPool == null) {
-                Log.i(TAG, "cc number " + THREAD_NUMBER);
-
                 databaseWorkerPool = new DatabaseWorkerPool(
                         "Sqflite", THREAD_NUMBER, SqflitePlugin.THREAD_PRIORITY);
                 databaseWorkerPool.start();
