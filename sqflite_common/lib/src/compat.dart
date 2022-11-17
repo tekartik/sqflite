@@ -20,6 +20,9 @@ class SqfliteOptions {
   int? androidThreadPriority;
 
   /// deprecated
+  int? androidThreadNumber;
+
+  /// deprecated
   int? logLevel;
 
   /// deprecated
@@ -30,6 +33,9 @@ class SqfliteOptions {
     }
     if (androidThreadPriority != null) {
       map['androidThreadPriority'] = androidThreadPriority;
+    }
+    if (androidThreadNumber != null) {
+      map['androidThreadNumber'] = androidThreadNumber;
     }
     if (logLevel != null) {
       map[paramLogLevel] = logLevel;
@@ -46,6 +52,10 @@ class SqfliteOptions {
     final dynamic androidThreadPriority = map['androidThreadPriority'];
     if (androidThreadPriority is int) {
       this.androidThreadPriority = androidThreadPriority;
+    }
+    final dynamic androidThreadNumber = map['androidThreadNumber'];
+    if (androidThreadNumber is int) {
+      this.androidThreadNumber = androidThreadNumber;
     }
     final dynamic logLevel = map[paramLogLevel];
     if (logLevel is int) {

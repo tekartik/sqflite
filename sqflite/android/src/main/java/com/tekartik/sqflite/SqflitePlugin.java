@@ -28,8 +28,6 @@ import static com.tekartik.sqflite.Constant.TAG;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Process;
 import android.util.Log;
 
@@ -64,10 +62,10 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     // local cache
     static String databasesPath;
     static private int THREAD_PRIORITY = Process.THREAD_PRIORITY_DEFAULT;
+    static private int THREAD_NUMBER = 1;
     static private int databaseId = 0; // incremental database id
-    // Database thread execution
-    static private HandlerThread handlerThread;
-    static private Handler handler;
+    // Database worker pool execution
+    static private DatabaseWorkerPool databaseWorkerPool;
     private Context context;
     private MethodChannel methodChannel;
 
@@ -194,7 +192,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         if (database == null) {
             return;
         }
-        handler.post(() -> {
+        databaseWorkerPool.post(database, () -> {
             MethodCallOperation operation = new MethodCallOperation(call, result);
             database.query(operation);
         });
@@ -208,7 +206,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         if (database == null) {
             return;
         }
-        handler.post(() -> {
+        databaseWorkerPool.post(database, () -> {
             MethodCallOperation operation = new MethodCallOperation(call, result);
             database.queryCursorNext(operation);
         });
@@ -223,7 +221,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         if (database == null) {
             return;
         }
-        handler.post(() -> database.batch(call, result));
+        databaseWorkerPool.post(database, () -> database.batch(call, result));
     }
 
     //
@@ -235,7 +233,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         if (database == null) {
             return;
         }
-        handler.post(() -> {
+        databaseWorkerPool.post(database, () -> {
             MethodCallOperation operation = new MethodCallOperation(call, result);
             database.insert(operation);
         });
@@ -250,7 +248,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         if (database == null) {
             return;
         }
-        handler.post(() -> {
+        databaseWorkerPool.post(database, () -> {
             MethodCallOperation operation = new MethodCallOperation(call, result);
             database.execute(operation);
         });
@@ -265,7 +263,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         if (database == null) {
             return;
         }
-        handler.post(() -> {
+        databaseWorkerPool.post(database, () -> {
             MethodCallOperation operation = new MethodCallOperation(call, result);
             database.update(operation);
         });
@@ -352,9 +350,9 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                             }
                         } else {
                             if (LogLevel.hasVerboseLevel(logLevel)) {
-                                Log.d(Constant.TAG, database.getThreadLogPrefix() + "re-opened single instance " + (database.inTransaction ? "(in transaction) " : "") + databaseId + " " + path);
+                                Log.d(Constant.TAG, database.getThreadLogPrefix() + "re-opened single instance " + (database.isInTransaction() ? "(in transaction) " : "") + databaseId + " " + path);
                             }
-                            result.success(makeOpenResult(databaseId, true, database.inTransaction));
+                            result.success(makeOpenResult(databaseId, true, database.isInTransaction()));
                             return;
                         }
                     }
@@ -372,23 +370,26 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         final Database database = new Database(context, path, databaseId, singleInstance, logLevel);
 
         synchronized (databaseMapLocker) {
-            // Create handler if necessary
-            if (handler == null) {
-                handlerThread = new HandlerThread("Sqflite", SqflitePlugin.THREAD_PRIORITY);
-                handlerThread.start();
-                handler = new Handler(handlerThread.getLooper());
+            // Create worker pool if necessary
+            if (databaseWorkerPool == null) {
+                Log.i(TAG, "cc number " + THREAD_NUMBER);
+
+                databaseWorkerPool = new DatabaseWorkerPool(
+                        "Sqflite", THREAD_NUMBER, SqflitePlugin.THREAD_PRIORITY);
+                databaseWorkerPool.start();
                 if (LogLevel.hasSqlLevel(database.logLevel)) {
-                    Log.d(TAG, database.getThreadLogPrefix() + "starting thread" + handlerThread + " priority " + SqflitePlugin.THREAD_PRIORITY);
+                    Log.d(TAG, database.getThreadLogPrefix() + "starting worker pool with priority " + SqflitePlugin.THREAD_PRIORITY);
                 }
             }
-            database.handler = handler;
+            database.databaseWorkerPool = databaseWorkerPool;
             if (LogLevel.hasSqlLevel(database.logLevel)) {
                 Log.d(TAG, database.getThreadLogPrefix() + "opened " + databaseId + " " + path);
             }
 
 
             // Open in background thread
-            handler.post(
+            databaseWorkerPool.post(
+                    database,
                     () -> {
 
                         synchronized (openCloseLocker) {
@@ -461,7 +462,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             }
         }
 
-        handler.post(new Runnable() {
+        databaseWorkerPool.post(database, new Runnable() {
             @Override
             public void run() {
                 synchronized (openCloseLocker) {
@@ -491,7 +492,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                 if (database != null) {
                     if (database.sqliteDatabase.isOpen()) {
                         if (LogLevel.hasVerboseLevel(logLevel)) {
-                            Log.d(Constant.TAG, database.getThreadLogPrefix() + "found single instance " + (database.inTransaction ? "(in transaction) " : "") + databaseId + " " + path);
+                            Log.d(Constant.TAG, database.getThreadLogPrefix() + "found single instance " + (database.isInTransaction() ? "(in transaction) " : "") + databaseId + " " + path);
                         }
                         foundOpenedDatabase = database;
 
@@ -525,9 +526,9 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             }
         };
 
-        // handler might not exist yet
-        if (handler != null) {
-            handler.post(deleteRunnable);
+        // worker pool might not exist yet
+        if (databaseWorkerPool != null) {
+            databaseWorkerPool.post(openedDatabase, deleteRunnable);
         } else {
             // Otherwise run in the UI thread
             deleteRunnable.run();
@@ -538,7 +539,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     private void closeDatabase(Database database) {
         try {
             if (LogLevel.hasSqlLevel(database.logLevel)) {
-                Log.d(TAG, database.getThreadLogPrefix() + "closing database " + handlerThread);
+                Log.d(TAG, database.getThreadLogPrefix() + "closing database ");
             }
             database.close();
         } catch (Exception e) {
@@ -546,13 +547,12 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         }
         synchronized (databaseMapLocker) {
 
-            if (databaseMap.isEmpty() && handler != null) {
+            if (databaseMap.isEmpty() && databaseWorkerPool != null) {
                 if (LogLevel.hasSqlLevel(database.logLevel)) {
-                    Log.d(TAG, database.getThreadLogPrefix() + "stopping thread" + handlerThread);
+                    Log.d(TAG, database.getThreadLogPrefix() + "stopping thread");
                 }
-                handlerThread.quit();
-                handlerThread = null;
-                handler = null;
+                databaseWorkerPool.quit();
+                databaseWorkerPool = null;
             }
         }
     }
@@ -629,6 +629,15 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         Object threadPriority = call.argument(Constant.PARAM_THREAD_PRIORITY);
         if (threadPriority != null) {
             THREAD_PRIORITY = (Integer) threadPriority;
+        }
+        Object threadNumber = call.argument(Constant.PARAM_THREAD_NUMBER);
+        if (threadNumber != null) {
+            THREAD_NUMBER = (Integer) threadNumber;
+            // Reset databaseWorkerPool when THREAD_NUMBER change.
+            if (databaseWorkerPool != null) {
+                databaseWorkerPool.quit();
+                databaseWorkerPool = null;
+            }
         }
         Integer logLevel = LogLevel.getLogLevel(call);
         if (logLevel != null) {

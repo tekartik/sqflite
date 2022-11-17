@@ -27,4 +27,15 @@ void main() {
   group('driver', () {
     all.run(testContext);
   });
+
+  if (platform.isAndroid) {
+    group('driver with 2 threads', () {
+      setUp(() async {
+        // ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
+        await Sqflite.devSetOptions(
+            SqfliteOptions()..androidThreadNumber = 2);
+      });
+      all.run(testContext);
+    });
+  }
 }
