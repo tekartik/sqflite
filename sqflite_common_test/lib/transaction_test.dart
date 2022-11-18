@@ -265,7 +265,7 @@ void run(SqfliteTestContext context) {
       await Future.wait([future1, future2, future3]);
 
       // All inserts and transactions success.
-      // (on thread hop during transaction).
+      // (no thread hop during transaction).
       expect(await countRows(db1), 1000);
       expect(await countRows(db2), 1000);
       expect(await countRows(db3), 1000);
