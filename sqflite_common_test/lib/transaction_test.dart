@@ -151,6 +151,152 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    test('Concurrency 3', () async {
+      // utils.devSetDebugModeOn(true);
+      Future createTable(Database db) {
+        return db.execute(
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+        );
+      }
+
+      Future insertMany({
+        required DatabaseExecutor executor,
+        required int count,
+        required void Function(int index) onOneInsert,
+      }) {
+        var all = Completer<dynamic>();
+        var completeCount = 0;
+        for (var i = 0; i < count; i++) {
+          unawaited(
+            executor.rawInsert(
+              'INSERT INTO Test (name) VALUES (?)',
+              ['item $i'],
+            ).then((_) {
+              onOneInsert(i);
+              completeCount++;
+              if (completeCount == count) {
+                all.complete(null);
+              }
+            }),
+          );
+        }
+        return all.future;
+      }
+
+      Future<int> countRows(Database db) async {
+        return utils.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM Test'),
+        )!;
+      }
+
+      void expectInOrder(Map<int, int> orders) {
+        // All tasks belonging to the same database run in FIFO manner.
+        for (var i = 1; i < orders.length; i++) {
+          expect(orders[i - 1]! < orders[i]!, true);
+        }
+      }
+
+      void expectGapInsideTransaction(
+        Map<int, int> orders,
+        int transactionSize,
+      ) {
+        var found = false;
+        for (var i = 1; i < orders.length / transactionSize; i++) {
+          var start = i * transactionSize;
+          if (orders[start + transactionSize - 1]! - orders[start]! >
+              transactionSize) {
+            found = true;
+            break;
+          }
+        }
+        expect(found, true);
+      }
+
+      var path1 = await context.initDeleteDb('concurrency_1.db');
+      var db1 = await factory.openDatabase(path1);
+      var completeOrder1 = <int, int>{};
+      await createTable(db1);
+
+      var path2 = await context.initDeleteDb('concurrency_2.db');
+      var db2 = await factory.openDatabase(path2);
+      var completeOrder2 = <int, int>{};
+      await createTable(db2);
+
+      var path3 = await context.initDeleteDb('concurrency_3.db');
+      var db3 = await factory.openDatabase(path3);
+      var completeOrder3 = <int, int>{};
+      await createTable(db3);
+
+      var completeCount = 0;
+
+      // Run following actions.
+      // db1: insert 1000 rows
+      // db2: make 100 transactions and each one insert 10 rows
+      // db3: make 10 transactions ane each one insert 100 rows
+
+      var future1 = insertMany(
+        executor: db1,
+        count: 1000,
+        onOneInsert: (index) {
+          completeOrder1[index] = completeCount++;
+        },
+      );
+
+      var future2 = Future.wait([
+        for (var i = 0; i < 100; i++)
+          db2.transaction(
+            (txn) => insertMany(
+              executor: txn,
+              count: 10,
+              onOneInsert: (index) {
+                final offset = i * 10 + index;
+                completeOrder2[offset] = completeCount++;
+              },
+            ),
+          ),
+      ]);
+
+      var future3 = Future.wait([
+        for (var i = 0; i < 10; i++)
+          db3.transaction(
+            (txn) => insertMany(
+              executor: txn,
+              count: 100,
+              onOneInsert: (index) {
+                final offset = i * 100 + index;
+                completeOrder3[offset] = completeCount++;
+              },
+            ),
+          ),
+      ]);
+
+      await Future.wait([future1, future2, future3]);
+
+      expect(await countRows(db1), 1000);
+      expect(await countRows(db2), 1000);
+      expect(await countRows(db3), 1000);
+
+      expectInOrder(completeOrder1);
+      expectInOrder(completeOrder2);
+      expectInOrder(completeOrder3);
+
+      // When enabling multiple threads, verify that there are gaps between
+      // tasks of a transaction.
+      //
+      // Without such gaps, there is no chance that other tasks can cut the
+      // transaction execution and the transaction execution will not resume in
+      // other threads. A wrong implementation could also pass this test.
+      // ignore: deprecated_member_use, deprecated_member_use_from_same_package
+      if (context.devGetAndroidThreadCount() > 1) {
+        expectGapInsideTransaction(completeOrder2, 10);
+        expectGapInsideTransaction(completeOrder3, 100);
+      }
+
+      await db1.close();
+      await db2.close();
+      await db3.close();
+    });
+
     test('Transaction recursive', () async {
       var path = await context.initDeleteDb('transaction_recursive.db');
       var db = await factory.openDatabase(path);

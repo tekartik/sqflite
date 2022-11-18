@@ -53,9 +53,11 @@ class SingleDatabaseWorkerPoolImpl implements DatabaseWorkerPool {
 
     @Override
     public void quit() {
-        handlerThread.quit();
-        handlerThread = null;
-        handler = null;
+        if (handlerThread != null) {
+            handlerThread.quit();
+            handlerThread = null;
+            handler = null;
+        }
     }
 
     @Override

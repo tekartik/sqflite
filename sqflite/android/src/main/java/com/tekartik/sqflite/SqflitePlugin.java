@@ -629,7 +629,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             THREAD_PRIORITY = (Integer) threadPriority;
         }
         Object threadCount = call.argument(Constant.PARAM_THREAD_COUNT);
-        if (threadCount != null) {
+        if (threadCount != null && !threadCount.equals(THREAD_COUNT)) {
             THREAD_COUNT = (Integer) threadCount;
             // Reset databaseWorkerPool when THREAD_COUNT change.
             if (databaseWorkerPool != null) {

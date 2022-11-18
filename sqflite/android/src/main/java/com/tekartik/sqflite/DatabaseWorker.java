@@ -44,9 +44,11 @@ final class DatabaseWorker {
     }
 
     synchronized void quit() {
-        handlerThread.quit();
-        handlerThread = null;
-        handler = null;
+        if (handlerThread != null) {
+            handlerThread.quit();
+            handlerThread = null;
+            handler = null;
+        }
     }
 
     synchronized boolean isIdle() {

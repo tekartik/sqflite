@@ -61,6 +61,14 @@ abstract class SqfliteTestContext {
   @Deprecated('Deb only')
   Future devSetDebugModeOn(bool on);
 
+  /// Set android thread count.
+  @Deprecated('Test only')
+  Future devSetAndroidThreadCount(int count);
+
+  /// Get android thread count.
+  @Deprecated('Test only')
+  int devGetAndroidThreadCount();
+
   /// Native (android, ios, macos) only for now
   bool get supportsRecoveredInTransaction;
 }
@@ -102,6 +110,12 @@ mixin SqfliteTestContextMixin implements SqfliteTestContext {
   Future devSetDebugModeOn(bool on) => databaseFactory
       // ignore: deprecated_member_use
       .setLogLevel(on ? sqfliteLogLevelVerbose : sqfliteLogLevelNone);
+
+  @override
+  Future devSetAndroidThreadCount(int count) => Future.value(null);
+
+  @override
+  int devGetAndroidThreadCount() => 1;
 
   @override
   bool get supportsRecoveredInTransaction => false;
