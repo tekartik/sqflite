@@ -9,23 +9,6 @@ import 'package:sqflite_test_app/setup_flutter.dart';
 
 class SqfliteDriverTestContext extends SqfliteLocalTestContext {
   SqfliteDriverTestContext() : super(databaseFactory: databaseFactory);
-
-  var _androidThreadCount = 1;
-
-  @override
-  Future devSetAndroidThreadCount(int count) {
-    if (platform.isAndroid) {
-      _androidThreadCount = count;
-      // ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
-      return Sqflite.devSetOptions(
-          SqfliteOptions()..androidThreadCount = count);
-    } else {
-      return Future.value(null);
-    }
-  }
-
-  @override
-  int devGetAndroidThreadCount() => _androidThreadCount;
 }
 
 var testContext = SqfliteDriverTestContext();
@@ -48,7 +31,8 @@ void main() {
   if (platform.isAndroid) {
     group('driver with 2 threads', () {
       setUpAll(() async {
-        await testContext.devSetAndroidThreadCount(2);
+        // ignore: deprecated_member_use, deprecated_member_use_from_same_package
+        await Sqflite.devSetOptions(SqfliteOptions()..androidThreadCount = 2);
       });
       all.run(testContext);
     });

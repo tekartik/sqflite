@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 import 'dart:async';
+import 'dart:math';
 
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
@@ -161,24 +162,29 @@ void run(SqfliteTestContext context) {
 
       Future insertMany({
         required DatabaseExecutor executor,
+        required String name,
         required int count,
         required void Function(int index) onOneInsert,
-      }) {
+      }) async {
         var all = Completer<dynamic>();
         var completeCount = 0;
+
+        final random = Random();
         for (var i = 0; i < count; i++) {
-          unawaited(
-            executor.rawInsert(
-              'INSERT INTO Test (name) VALUES (?)',
-              ['item $i'],
-            ).then((_) {
-              onOneInsert(i);
-              completeCount++;
-              if (completeCount == count) {
-                all.complete(null);
-              }
-            }),
-          );
+          unawaited(executor.rawInsert(
+            'INSERT INTO Test (name) VALUES (?)',
+            ['$name $i'],
+          ).then((_) {
+            onOneInsert(i);
+            completeCount++;
+            if (completeCount == count) {
+              all.complete(null);
+            }
+          }));
+          // Make random gaps so calls of other database are able to cut the
+          // queue. And the test will not accidentally pass because of lack
+          // of 'concurrency'.
+          await Future.delayed(Duration(microseconds: random.nextInt(50)));
         }
         return all.future;
       }
@@ -190,26 +196,9 @@ void run(SqfliteTestContext context) {
       }
 
       void expectInOrder(Map<int, int> orders) {
-        // All tasks belonging to the same database run in FIFO manner.
         for (var i = 1; i < orders.length; i++) {
           expect(orders[i - 1]! < orders[i]!, true);
         }
-      }
-
-      void expectGapInsideTransaction(
-        Map<int, int> orders,
-        int transactionSize,
-      ) {
-        var found = false;
-        for (var i = 1; i < orders.length / transactionSize; i++) {
-          var start = i * transactionSize;
-          if (orders[start + transactionSize - 1]! - orders[start]! >
-              transactionSize) {
-            found = true;
-            break;
-          }
-        }
-        expect(found, true);
       }
 
       var path1 = await context.initDeleteDb('concurrency_1.db');
@@ -236,6 +225,7 @@ void run(SqfliteTestContext context) {
 
       var future1 = insertMany(
         executor: db1,
+        name: 'db1',
         count: 1000,
         onOneInsert: (index) {
           completeOrder1[index] = completeCount++;
@@ -247,6 +237,7 @@ void run(SqfliteTestContext context) {
           db2.transaction(
             (txn) => insertMany(
               executor: txn,
+              name: 'db2',
               count: 10,
               onOneInsert: (index) {
                 final offset = i * 10 + index;
@@ -261,6 +252,7 @@ void run(SqfliteTestContext context) {
           db3.transaction(
             (txn) => insertMany(
               executor: txn,
+              name: 'db3',
               count: 100,
               onOneInsert: (index) {
                 final offset = i * 100 + index;
@@ -272,25 +264,16 @@ void run(SqfliteTestContext context) {
 
       await Future.wait([future1, future2, future3]);
 
+      // All inserts and transactions success.
+      // (on thread hop during transaction).
       expect(await countRows(db1), 1000);
       expect(await countRows(db2), 1000);
       expect(await countRows(db3), 1000);
 
+      // Tasks of same db run in FIFO manner.
       expectInOrder(completeOrder1);
       expectInOrder(completeOrder2);
       expectInOrder(completeOrder3);
-
-      // When enabling multiple threads, verify that there are gaps between
-      // tasks of a transaction.
-      //
-      // Without such gaps, there is no chance that other tasks can cut the
-      // transaction execution and the transaction execution will not resume in
-      // other threads. A wrong implementation could also pass this test.
-      // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-      if (context.devGetAndroidThreadCount() > 1) {
-        expectGapInsideTransaction(completeOrder2, 10);
-        expectGapInsideTransaction(completeOrder3, 100);
-      }
 
       await db1.close();
       await db2.close();
