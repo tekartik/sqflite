@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 import 'dart:async';
+import 'dart:math';
 
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
@@ -149,6 +150,134 @@ void run(SqfliteTestContext context) {
       expect(count, 1);
 
       await db.close();
+    });
+
+    test('Concurrency 3', () async {
+      // utils.devSetDebugModeOn(true);
+      Future createTable(Database db) {
+        return db.execute(
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+        );
+      }
+
+      Future insertMany({
+        required DatabaseExecutor executor,
+        required String name,
+        required int count,
+        required void Function(int index) onOneInsert,
+      }) async {
+        var all = Completer<dynamic>();
+        var completeCount = 0;
+
+        final random = Random();
+        for (var i = 0; i < count; i++) {
+          unawaited(executor.rawInsert(
+            'INSERT INTO Test (name) VALUES (?)',
+            ['$name $i'],
+          ).then((_) {
+            onOneInsert(i);
+            completeCount++;
+            if (completeCount == count) {
+              all.complete(null);
+            }
+          }));
+          // Make random gaps so calls of other database are able to cut the
+          // queue. And the test will not accidentally pass because of lack
+          // of 'concurrency'.
+          await Future.delayed(Duration(microseconds: random.nextInt(50)));
+        }
+        return all.future;
+      }
+
+      Future<int> countRows(Database db) async {
+        return utils.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM Test'),
+        )!;
+      }
+
+      void expectInOrder(Map<int, int> orders) {
+        for (var i = 1; i < orders.length; i++) {
+          expect(orders[i - 1]! < orders[i]!, true);
+        }
+      }
+
+      var path1 = await context.initDeleteDb('concurrency_1.db');
+      var db1 = await factory.openDatabase(path1);
+      var completeOrder1 = <int, int>{};
+      await createTable(db1);
+
+      var path2 = await context.initDeleteDb('concurrency_2.db');
+      var db2 = await factory.openDatabase(path2);
+      var completeOrder2 = <int, int>{};
+      await createTable(db2);
+
+      var path3 = await context.initDeleteDb('concurrency_3.db');
+      var db3 = await factory.openDatabase(path3);
+      var completeOrder3 = <int, int>{};
+      await createTable(db3);
+
+      var completeCount = 0;
+
+      // Run following actions.
+      // db1: insert 1000 rows
+      // db2: make 100 transactions and each one insert 10 rows
+      // db3: make 10 transactions ane each one insert 100 rows
+
+      var future1 = insertMany(
+        executor: db1,
+        name: 'db1',
+        count: 1000,
+        onOneInsert: (index) {
+          completeOrder1[index] = completeCount++;
+        },
+      );
+
+      var future2 = Future.wait([
+        for (var i = 0; i < 100; i++)
+          db2.transaction(
+            (txn) => insertMany(
+              executor: txn,
+              name: 'db2',
+              count: 10,
+              onOneInsert: (index) {
+                final offset = i * 10 + index;
+                completeOrder2[offset] = completeCount++;
+              },
+            ),
+          ),
+      ]);
+
+      var future3 = Future.wait([
+        for (var i = 0; i < 10; i++)
+          db3.transaction(
+            (txn) => insertMany(
+              executor: txn,
+              name: 'db3',
+              count: 100,
+              onOneInsert: (index) {
+                final offset = i * 100 + index;
+                completeOrder3[offset] = completeCount++;
+              },
+            ),
+          ),
+      ]);
+
+      await Future.wait([future1, future2, future3]);
+
+      // All inserts and transactions success.
+      // (no thread hop during transaction).
+      expect(await countRows(db1), 1000);
+      expect(await countRows(db2), 1000);
+      expect(await countRows(db3), 1000);
+
+      // Tasks of same db run in FIFO manner.
+      expectInOrder(completeOrder1);
+      expectInOrder(completeOrder2);
+      expectInOrder(completeOrder3);
+
+      await db1.close();
+      await db2.close();
+      await db3.close();
     });
 
     test('Transaction recursive', () async {

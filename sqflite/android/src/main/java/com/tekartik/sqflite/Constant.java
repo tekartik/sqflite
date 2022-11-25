@@ -64,6 +64,8 @@ public class Constant {
     static final String PARAM_SINGLE_INSTANCE = "singleInstance"; // boolean
     static final String PARAM_LOG_LEVEL = "logLevel"; // int
     static final String PARAM_THREAD_PRIORITY = "androidThreadPriority"; // int
+    static final String PARAM_THREAD_COUNT = "androidThreadCount"; // int
+
     // debugMode
     static final String PARAM_CMD = "cmd"; // debugMode cmd: get/set
     static final String CMD_GET = "get";

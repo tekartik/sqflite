@@ -26,7 +26,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -68,10 +67,10 @@ class Database {
     final List<QueuedOperation> noTransactionOperationQueue = new ArrayList<>();
     final Map<Integer, SqfliteCursor> cursors = new HashMap<>();
     // Set by plugin
-    public Handler handler;
+    public DatabaseWorkerPool databaseWorkerPool;
     @Nullable
     SQLiteDatabase sqliteDatabase;
-    boolean inTransaction;
+    private int transactionDepth = 0;
     // Transaction
     private int lastTransactionId = 0; // incremental transaction id
     @Nullable
@@ -229,7 +228,7 @@ class Database {
             r.run();
             // run queued action asynchronously
             if (currentTransactionId == null && !noTransactionOperationQueue.isEmpty()) {
-                handler.post(this::runQueuedOperations);
+                databaseWorkerPool.post(this, this::runQueuedOperations);
             }
 
         } else {
@@ -391,25 +390,14 @@ class Database {
         if (LogLevel.hasSqlLevel(logLevel)) {
             Log.d(TAG, getThreadLogPrefix() + command);
         }
-        boolean operationInTransaction = Boolean.TRUE.equals(operation.getInTransactionChange());
-
+        Boolean operationInTransaction = operation.getInTransactionChange();
         try {
             getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
-
-            // Success handle inTransaction change
-            if (operationInTransaction) {
-                inTransaction = true;
-            }
+            enterOrLeaveInTransaction(operationInTransaction);
             return true;
         } catch (Exception exception) {
             handleException(exception, operation);
             return false;
-        } finally {
-            // failure? ignore for false
-            if (!operationInTransaction) {
-                inTransaction = false;
-            }
-
         }
     }
 
@@ -632,6 +620,18 @@ class Database {
             result.success(null);
         } else {
             result.success(results);
+        }
+    }
+
+    synchronized boolean isInTransaction() {
+        return transactionDepth > 0;
+    }
+
+    synchronized void enterOrLeaveInTransaction(Boolean value) {
+        if (Boolean.TRUE.equals(value)) {
+            transactionDepth++;
+        } else if (Boolean.FALSE.equals(value)) {
+            transactionDepth--;
         }
     }
 }
