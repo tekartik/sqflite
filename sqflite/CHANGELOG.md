@@ -1,3 +1,7 @@
+## 2.2.1
+
+* Allow multiple threads on Android, thanks to zhenpingcui
+
 ## 2.2.1-1
 
 * Fix iOS/MacOS FMDB include
