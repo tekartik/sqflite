@@ -14,6 +14,7 @@ class SqfliteOptions {
 
   // true =<0.7.0
   /// deprecated
+  @Deprecated('remove usage')
   bool? queryAsMapList;
 
   /// deprecated
