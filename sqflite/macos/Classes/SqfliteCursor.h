@@ -7,9 +7,8 @@
 #ifndef SqfliteCursor_h
 #define SqfliteCursor_h
 
-@import FMDB;
-
 // Cursor information
+@class FMResultSet;
 @interface SqfliteCursor : NSObject
 
 @property (atomic, retain) NSNumber* cursorId;

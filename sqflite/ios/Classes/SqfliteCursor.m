@@ -1,10 +1,5 @@
 #import "SqfliteCursor.h"
-
-#if __has_include(<fmdb/FMDB.h>)
-#import <fmdb/FMDB.h>
-#else
-@import FMDB;
-#endif
+#import "SqfliteFmdbImport.h"
 
 @implementation SqfliteCursor
 

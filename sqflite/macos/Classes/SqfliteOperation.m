@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "SqfliteOperation.h"
 #import "SqflitePlugin.h"
+#import "SqfliteFmdbImport.h"
 
 // Abstract
 @implementation SqfliteOperation

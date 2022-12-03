@@ -1,3 +1,7 @@
+## 2.2.2-1
+
+* Fix iOS/MacOS FMDB include for non-swift project
+
 ## 2.2.1
 
 * Allow multiple threads on Android, thanks to zhenpingcui

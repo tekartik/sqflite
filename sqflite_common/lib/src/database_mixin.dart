@@ -404,7 +404,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> txnExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
       {
-
       /// set
       bool? beginTransaction}) {
     return txnWriteSynchronized<T>(txn, (_) {
@@ -436,7 +435,6 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> invokeExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
       {
-
       /// This is set by parsing the sql command for all commands
       bool? inTransactionChange,
 

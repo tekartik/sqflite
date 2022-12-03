@@ -9,8 +9,7 @@
 
 #import "SqfliteImport.h"
 
-@import FMDB;
-
+@class FMDatabase;
 @interface SqfliteOperation : NSObject
 
 - (NSString*)getMethod;
