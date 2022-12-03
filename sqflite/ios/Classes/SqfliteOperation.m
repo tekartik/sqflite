@@ -9,6 +9,12 @@
 #import "SqfliteOperation.h"
 #import "SqflitePlugin.h"
 
+#if __has_include(<fmdb/FMDB.h>)
+#import <fmdb/FMDB.h>
+#else
+@import FMDB;
+#endif
+
 // Abstract
 @implementation SqfliteOperation
 
