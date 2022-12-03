@@ -1,4 +1,4 @@
-## 2.2.2-1
+## 2.2.2-2
 
 * Fix iOS/MacOS FMDB include for non-swift project
 
