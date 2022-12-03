@@ -1,5 +1,6 @@
 #import "SqfliteDatabase.h"
 #import "SqflitePlugin.h"
+#import "SqfliteFmdbImport.h"
 
 #import <sqlite3.h>
 

@@ -10,6 +10,7 @@
 #import "SqfliteCursor.h"
 #import "SqfliteOperation.h"
 
+@class FMDatabaseQueue,FMDatabase;
 @interface SqfliteDatabase : NSObject
 
 @property (atomic, retain) FMDatabaseQueue *fmDatabaseQueue;

@@ -1,4 +1,5 @@
 #import "SqfliteCursor.h"
+#import "SqfliteFmdbImport.h"
 
 @implementation SqfliteCursor
 
