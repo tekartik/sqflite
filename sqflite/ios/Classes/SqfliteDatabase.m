@@ -1,13 +1,8 @@
 #import "SqfliteDatabase.h"
 #import "SqflitePlugin.h"
+#import "SqfliteFmdbImport.h"
 
 #import <sqlite3.h>
-
-#if __has_include(<fmdb/FMDB.h>)
-#import <fmdb/FMDB.h>
-#else
-@import FMDB;
-#endif
 
 // iOS workaround bug #214
 static NSString *const SqfliteSqlPragmaSqliteDefensiveOff = @"PRAGMA sqflite -- db_config_defensive_off";

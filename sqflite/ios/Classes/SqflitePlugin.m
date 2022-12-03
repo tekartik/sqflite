@@ -1,15 +1,9 @@
 #import "SqflitePlugin.h"
 #import "SqfliteDatabase.h"
-
 #import "SqfliteOperation.h"
+#import "SqfliteFmdbImport.h"
 
 #import <sqlite3.h>
-
-#if __has_include(<fmdb/FMDB.h>)
-#import <fmdb/FMDB.h>
-#else
-@import FMDB;
-#endif
 
 static NSString *const _channelName = @"com.tekartik.sqflite";
 static NSString *const _inMemoryPath = @":memory:";
