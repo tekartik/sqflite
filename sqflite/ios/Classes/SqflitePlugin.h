@@ -9,8 +9,7 @@
 
 #import "SqfliteImport.h"
 
-@import FMDB;
-
+@class FMResultSet;
 @interface SqflitePlugin : NSObject<FlutterPlugin>
 
 + (NSArray*)toSqlArguments:(NSArray*)rawArguments;
