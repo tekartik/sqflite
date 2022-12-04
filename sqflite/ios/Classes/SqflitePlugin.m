@@ -1,12 +1,7 @@
 #import "SqflitePlugin.h"
 #import "SqfliteDatabase.h"
 #import "SqfliteOperation.h"
-
-#if __has_include(<fmdb/FMDB.h>)
-#import <fmdb/FMDB.h>
-#else
-@import FMDB;
-#endif
+#import "SqfliteFmdbImport.m"
 
 #import <sqlite3.h>
 

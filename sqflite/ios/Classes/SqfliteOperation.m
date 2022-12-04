@@ -8,12 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "SqfliteOperation.h"
 #import "SqflitePlugin.h"
-
-#if __has_include(<fmdb/FMDB.h>)
-#import <fmdb/FMDB.h>
-#else
-@import FMDB;
-#endif
+#import "SqfliteFmdbImport.m"
 
 // Abstract
 @implementation SqfliteOperation
