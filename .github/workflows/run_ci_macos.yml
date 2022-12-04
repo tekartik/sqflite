@@ -1,0 +1,28 @@
+name: MacOS/iOS build
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # every sunday at midnight
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }} / ${{ matrix.flutter }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./sqflite_support
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest]
+        flutter: [stable]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ matrix.flutter }}
+      - run: dart pub get
+      - run: dart run tool/run_ci_ios.dart
+      - run: dart run tool/run_ci_macos.dart
