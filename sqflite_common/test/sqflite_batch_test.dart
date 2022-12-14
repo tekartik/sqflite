@@ -52,8 +52,10 @@ void main() {
       final factory = scenario.factory;
       final db = await factory.openDatabase(inMemoryDatabasePath);
       var batch = db.batch();
+      expect(batch.length, 0);
       batch.execute('PRAGMA dummy');
-      await batch.commit();
+      expect(batch.length, 1);
+      expect(await batch.commit(), []); // Mock return values
       await db.close();
       scenario.end();
     });
