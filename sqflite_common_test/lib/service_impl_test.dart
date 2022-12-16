@@ -50,6 +50,12 @@ class FactoryServiceDelegate with SqfliteDatabaseFactoryMixin {
     _ins.clear();
     _outs.clear();
   }
+
+  @override
+  Future<bool> encryptDatabase(String path, String password) {
+    // TODO: implement encryptDatabase
+    throw UnimplementedError();
+  }
 }
 
 /// Run log test

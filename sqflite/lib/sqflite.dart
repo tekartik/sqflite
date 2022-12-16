@@ -180,3 +180,10 @@ Future<void> deleteDatabase(String path) =>
 ///
 Future<bool> databaseExists(String path) =>
     databaseFactory.databaseExists(path);
+
+///
+/// Encrypt an existed database using SQLCipher
+///
+Future<bool> encryptDatabase(String path, String password) {
+  return databaseFactory.encryptDatabase(path, password);
+}

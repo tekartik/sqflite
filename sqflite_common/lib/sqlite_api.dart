@@ -50,6 +50,9 @@ abstract class DatabaseFactory {
 
   /// Check if a database exists
   Future<bool> databaseExists(String path);
+
+  /// Encrypt an existed database
+  Future<bool> encryptDatabase(String path, String password);
 }
 
 ///

@@ -1,12 +1,14 @@
 package com.tekartik.sqflite;
 
 import static com.tekartik.sqflite.Constant.CMD_GET;
+import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
 import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_BATCH;
 import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
 import static com.tekartik.sqflite.Constant.METHOD_DELETE_DATABASE;
+import static com.tekartik.sqflite.Constant.METHOD_ENCRYPT_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
 import static com.tekartik.sqflite.Constant.METHOD_GET_DATABASES_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_GET_PLATFORM_VERSION;
@@ -25,6 +27,7 @@ import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
 import static com.tekartik.sqflite.Constant.PARAM_RECOVERED;
 import static com.tekartik.sqflite.Constant.PARAM_RECOVERED_IN_TRANSACTION;
 import static com.tekartik.sqflite.Constant.PARAM_SINGLE_INSTANCE;
+import static com.tekartik.sqflite.Constant.SQLITE_ERROR;
 import static com.tekartik.sqflite.Constant.TAG;
 
 import android.annotation.SuppressLint;
@@ -36,12 +39,15 @@ import com.tekartik.sqflite.dev.Debug;
 import com.tekartik.sqflite.operation.MethodCallOperation;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
+import net.zetetic.database.sqlcipher.SQLiteException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
@@ -620,6 +626,10 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                 onQueryCursorNextCall(call, result);
                 break;
             }
+            case METHOD_ENCRYPT_DATABASE: {
+                onEncryptDatabaseCall(call, result);
+                break;
+            }
 
             // Obsolete
             case METHOD_DEBUG_MODE: {
@@ -662,5 +672,59 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             databasesPath = file.getParent();
         }
         result.success(databasesPath);
+    }
+
+    private void onEncryptDatabaseCall(final MethodCall call, final Result result) {
+        String path = call.argument(PARAM_PATH);
+        String password = call.argument(PARAM_PASSWORD);
+
+        if (path == null || password == null) {
+            result.error(Constant.ERROR_BAD_PARAM, "database file path or password for encryption is null", null);
+            return;
+        }
+
+        File targetDBFile = new File(path);
+
+        if (targetDBFile.exists()) {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                SQLiteDatabase targetDB;
+                try {
+                    targetDB = SQLiteDatabase.openDatabase(path, "", null, SQLiteDatabase.OPEN_READWRITE, null);
+                } catch (SQLiteException e) {
+                    e.printStackTrace();
+                    result.error(SQLITE_ERROR, "Can't open database: " + targetDBFile.getName(), e);
+                    return;
+                }
+                File tempEncryptedDB = new File(targetDBFile.getParent() + "\\" + System.currentTimeMillis());
+
+                if (!tempEncryptedDB.exists()) {
+                    try {
+                        if (!tempEncryptedDB.createNewFile()) {
+                            result.error(SQLITE_ERROR, "Can't create temp db file for writing", null);
+                            return;
+                        }
+                    } catch (IOException e) {
+                        result.error(SQLITE_ERROR, "Can't open temp db for writing", e);
+                        e.printStackTrace();
+                    }
+                }
+
+                String firstCommand = String.format("ATTACH DATABASE '%s' as encrypted KEY '%s'", tempEncryptedDB.getAbsoluteFile(), password);
+                targetDB.rawExecSQL(firstCommand);
+                targetDB.rawExecSQL("SELECT sqlcipher_export('encrypted')");
+                targetDB.rawExecSQL("DETACH DATABASE encrypted");
+                targetDB.close();
+
+                boolean isRenameSuccess = targetDBFile.delete() && tempEncryptedDB.renameTo(targetDBFile);
+                if (isRenameSuccess) {
+                    result.success(true);
+                } else {
+                    result.error(SQLITE_ERROR, "Can't rename new encrypted database", null);
+                    tempEncryptedDB.delete();
+                }
+            });
+        } else {
+            result.error(ERROR_BAD_PARAM, "database path doesn't exist: " + path, null);
+        }
     }
 }

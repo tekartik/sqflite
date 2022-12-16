@@ -213,6 +213,15 @@ mixin SqfliteDatabaseFactoryMixin
 
   @override
   String toString() => 'SqfliteDatabaseFactory(${tag ?? 'sqflite'})';
+
+  @override
+  Future<bool> encryptDatabase(String path, String password) {
+    return safeInvokeMethod<bool>(methodEncryptDatabase, {
+      paramPath: path,
+      paramPassword: password,
+    });
+  }
+
 }
 
 // When opening the database (bool)

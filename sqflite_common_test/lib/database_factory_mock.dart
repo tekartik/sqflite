@@ -28,6 +28,12 @@ class DatabaseFactoryMock implements DatabaseFactory {
   Future<void> setDatabasesPath(String path) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<bool> encryptDatabase(String path, String password) {
+    // TODO: implement encryptDatabase
+    throw UnimplementedError();
+  }
 }
 
 /// Bare minimum mock.

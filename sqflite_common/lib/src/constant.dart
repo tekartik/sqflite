@@ -44,6 +44,9 @@ const String methodDatabaseExists = 'databaseExists';
 /// Native database delete method.
 const String methodDeleteDatabase = 'deleteDatabase';
 
+/// Native encrypt database method.
+const String methodEncryptDatabase = 'encryptDatabase';
+
 /// Native batch operations parameter.
 const String paramOperations = 'operations';
 
