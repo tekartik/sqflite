@@ -283,9 +283,9 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
   Future<Database> _openDatabase() async {
     // await Sqflite.devSetOptions(SqfliteOptions(logLevel: sqfliteLogLevelVerbose));
     return database ??= await databaseFactory.openDatabase(widget.dbName,
+        password: 'database-password',
         options: OpenDatabaseOptions(
             version: 1,
-            password: 'database-password',
             onCreate: (db, version) async {
               await db.execute('CREATE TABLE Test (value TEXT)');
             }));

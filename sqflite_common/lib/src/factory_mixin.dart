@@ -53,8 +53,8 @@ mixin SqfliteDatabaseFactoryMixin
   @override
   @override
   SqfliteDatabase newDatabase(
-      SqfliteDatabaseOpenHelper openHelper, String path) {
-    return SqfliteDatabaseBase(openHelper, path);
+      SqfliteDatabaseOpenHelper openHelper, String path, [String? password]) {
+    return SqfliteDatabaseBase(openHelper, path, password: password);
   }
 
   @override
@@ -79,7 +79,7 @@ mixin SqfliteDatabaseFactoryMixin
 
   @override
   Future<Database> openDatabase(String path,
-      {OpenDatabaseOptions? options}) async {
+      {OpenDatabaseOptions? options, String? password}) async {
     path = await fixPath(path);
     // Lock per database name
     final lock = _getDatabaseOpenLock(path);
@@ -103,7 +103,7 @@ mixin SqfliteDatabaseFactoryMixin
 
         final firstOpen = databaseOpenHelper == null;
         if (firstOpen) {
-          databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options);
+          databaseOpenHelper = SqfliteDatabaseOpenHelper(this, path, options, password);
           setDatabaseOpenHelper(databaseOpenHelper);
         }
         try {

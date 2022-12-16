@@ -14,13 +14,13 @@ abstract class SqfliteDatabaseFactory
 
   /// Create a new database object.
   SqfliteDatabase newDatabase(
-      SqfliteDatabaseOpenHelper openHelper, String path);
+      SqfliteDatabaseOpenHelper openHelper, String path, [String? password]);
 
   /// Remove our internal open helper.
   void removeDatabaseOpenHelper(String path);
 
   @override
-  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options});
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options, String? password});
 
   /// Close the database.
   ///

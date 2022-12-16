@@ -19,9 +19,10 @@ class SqfliteDatabaseBase
     with SqfliteDatabaseMixin, SqfliteDatabaseExecutorMixin {
   /// ctor
   SqfliteDatabaseBase(SqfliteDatabaseOpenHelper openHelper, String path,
-      {OpenDatabaseOptions? options}) {
+      {OpenDatabaseOptions? options, String? password}) {
     this.openHelper = openHelper;
     this.path = path;
+    this.password = password;
   }
 }
 
@@ -271,6 +272,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   @override
   late String path;
+
+  @override
+  late String? password;
 
   /// Special transaction created during open.
   ///
@@ -718,7 +722,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   /// Open a database and returns its id.
   Future<int> openDatabase() async {
-    final params = <String, Object?>{paramPath: path};
+    final params = <String, Object?>{paramPath: path, paramPassword: password};
     if (readOnly == true) {
       params[paramReadOnly] = true;
     }

@@ -143,7 +143,7 @@ class MockInvalidFactory extends DatabaseFactory {
 
   @override
   Future<Database> openDatabase(String path,
-      {OpenDatabaseOptions? options}) async {
+      {OpenDatabaseOptions? options, String? password}) async {
     throw UnimplementedError('openDatabase');
   }
 

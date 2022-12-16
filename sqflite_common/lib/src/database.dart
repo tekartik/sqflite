@@ -17,7 +17,7 @@ abstract class SqfliteDatabaseExecutor implements DatabaseExecutor {
 /// Open helper.
 class SqfliteDatabaseOpenHelper {
   /// Creates a database helper.
-  SqfliteDatabaseOpenHelper(this.factory, this.path, this.options);
+  SqfliteDatabaseOpenHelper(this.factory, this.path, this.options, [this.password]);
 
   /// Our database factory
   final SqfliteDatabaseFactory factory;
@@ -28,11 +28,15 @@ class SqfliteDatabaseOpenHelper {
   /// Our database pathy
   final String path;
 
+  /// Our database password
+  final String? password;
+
+
   /// The database once opened.
   SqfliteDatabase? sqfliteDatabase;
 
   /// Creates a new database object.
-  SqfliteDatabase newDatabase(String path) => factory.newDatabase(this, path);
+  SqfliteDatabase newDatabase(String path, [String? password]) => factory.newDatabase(this, path, this.password);
 
   /// True if the database is opened
   bool get isOpen => sqfliteDatabase != null;
@@ -42,7 +46,7 @@ class SqfliteDatabaseOpenHelper {
   /// Open or return the one opened.
   Future<SqfliteDatabase> openDatabase() async {
     if (!isOpen) {
-      final database = newDatabase(path);
+      final database = newDatabase(path, password);
       await database.doOpen(options!);
       sqfliteDatabase = database;
     }

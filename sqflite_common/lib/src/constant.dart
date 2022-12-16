@@ -92,6 +92,9 @@ const String paramRecoveredInTransaction = 'recoveredInTransaction';
 /// The database path (string).
 const String paramPath = 'path';
 
+/// The database password (string).
+const String paramPassword = 'password';
+
 /// The database version (int).
 const String paramVersion = 'version';
 

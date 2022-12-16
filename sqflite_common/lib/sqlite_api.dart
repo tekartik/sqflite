@@ -29,7 +29,7 @@ abstract class DatabaseFactory {
   ///   });
   ///```
   /// Notice, `join` is a part of the [path](https://pub.dev/packages/path) package
-  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options});
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options, String? password});
 
   /// Get the default databases location path.
   ///
@@ -265,6 +265,9 @@ abstract class Database implements DatabaseExecutor {
   /// The path of the database
   String get path;
 
+  /// Password of the database
+  String? get password;
+
   /// Close the database. Cannot be accessed anymore
   Future<void> close();
 
@@ -414,7 +417,8 @@ abstract class OpenDatabaseOptions {
       OnDatabaseVersionChangeFn? onDowngrade,
       OnDatabaseOpenFn? onOpen,
       bool readOnly = false,
-      bool singleInstance = true}) {
+      bool singleInstance = true,
+      }) {
     return impl.SqfliteOpenDatabaseOptions(
         version: version,
         onConfigure: onConfigure,
@@ -423,7 +427,8 @@ abstract class OpenDatabaseOptions {
         onDowngrade: onDowngrade,
         onOpen: onOpen,
         readOnly: readOnly,
-        singleInstance: singleInstance);
+        singleInstance: singleInstance,
+    );
   }
 
   /// Specify the expected version.
