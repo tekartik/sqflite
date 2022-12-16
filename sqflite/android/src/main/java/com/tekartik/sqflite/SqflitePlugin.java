@@ -19,6 +19,7 @@ import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
 import static com.tekartik.sqflite.Constant.PARAM_CMD;
 import static com.tekartik.sqflite.Constant.PARAM_ID;
 import static com.tekartik.sqflite.Constant.PARAM_LOG_LEVEL;
+import static com.tekartik.sqflite.Constant.PARAM_PASSWORD;
 import static com.tekartik.sqflite.Constant.PARAM_PATH;
 import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
 import static com.tekartik.sqflite.Constant.PARAM_RECOVERED;
@@ -150,11 +151,17 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
+        loadLibs();
+
         this.context = applicationContext;
         methodChannel = new MethodChannel(messenger, Constant.PLUGIN_KEY,
                 StandardMethodCodec.INSTANCE,
                 messenger.makeBackgroundTaskQueue());
         methodChannel.setMethodCallHandler(this);
+    }
+
+    private void loadLibs() {
+        System.loadLibrary("sqlcipher");
     }
 
     @Override
@@ -329,6 +336,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         final boolean inMemory = isInMemoryPath(path);
 
         final boolean singleInstance = !Boolean.FALSE.equals(call.argument(PARAM_SINGLE_INSTANCE)) && !inMemory;
+        final String password = call.argument(PARAM_PASSWORD);
 
         // For single instance we create or reuse a thread right away
         // DO NOT TRY TO LOAD existing instance, the database has been closed
@@ -367,7 +375,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         }
         final int databaseId = newDatabaseId;
 
-        final Database database = new Database(context, path, databaseId, singleInstance, logLevel);
+        final Database database = new Database(context, path, password, databaseId, singleInstance, logLevel);
 
         synchronized (databaseMapLocker) {
             // Create worker pool if necessary

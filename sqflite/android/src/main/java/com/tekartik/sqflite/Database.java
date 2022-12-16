@@ -20,12 +20,15 @@ import static com.tekartik.sqflite.Utils.cursorRowToList;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+
+import net.zetetic.database.DatabaseErrorHandler;
+import net.zetetic.database.sqlcipher.SQLiteCantOpenDatabaseException;
+
+import net.zetetic.database.SQLException;
+import net.zetetic.database.sqlcipher.SQLiteCursor;
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+
 import android.database.Cursor;
-import android.database.DatabaseErrorHandler;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteCantOpenDatabaseException;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -78,12 +81,15 @@ class Database {
     // Cursors
     private int lastCursorId = 0; // incremental cursor id
 
-    Database(Context context, String path, int id, boolean singleInstance, int logLevel) {
+    public String password;
+
+    Database(Context context, String path, String password, int id, boolean singleInstance, int logLevel) {
         this.context = context;
         this.path = path;
         this.singleInstance = singleInstance;
         this.id = id;
         this.logLevel = logLevel;
+        this.password = password;
     }
 
     @VisibleForTesting
@@ -124,12 +130,12 @@ class Database {
             flags |= SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING;
         }
 
-        sqliteDatabase = SQLiteDatabase.openDatabase(path, null, flags);
+        sqliteDatabase = SQLiteDatabase.openDatabase(path, password, null, flags, null);
     }
 
     // Change default error handler to avoid erasing the existing file.
     public void openReadOnly() {
-        sqliteDatabase = SQLiteDatabase.openDatabase(path, null,
+        sqliteDatabase = SQLiteDatabase.openDatabase(path, password, null,
                 SQLiteDatabase.OPEN_READONLY, new DatabaseErrorHandler() {
                     @Override
                     public void onCorruption(SQLiteDatabase dbObj) {
@@ -139,7 +145,7 @@ class Database {
                         // This happens asynchronously so cannot be tracked. However a simple
                         // access should fail
                     }
-                });
+                }, null);
     }
 
     public void close() {

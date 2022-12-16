@@ -285,6 +285,7 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
     return database ??= await databaseFactory.openDatabase(widget.dbName,
         options: OpenDatabaseOptions(
             version: 1,
+            password: 'database-password',
             onCreate: (db, version) async {
               await db.execute('CREATE TABLE Test (value TEXT)');
             }));

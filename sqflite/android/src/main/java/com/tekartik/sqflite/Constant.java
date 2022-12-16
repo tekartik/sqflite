@@ -62,6 +62,7 @@ public class Constant {
     // when opening a database
     static final String PARAM_READ_ONLY = "readOnly"; // boolean
     static final String PARAM_SINGLE_INSTANCE = "singleInstance"; // boolean
+    static final String PARAM_PASSWORD = "password"; // boolean
     static final String PARAM_LOG_LEVEL = "logLevel"; // int
     static final String PARAM_THREAD_PRIORITY = "androidThreadPriority"; // int
     static final String PARAM_THREAD_COUNT = "androidThreadCount"; // int

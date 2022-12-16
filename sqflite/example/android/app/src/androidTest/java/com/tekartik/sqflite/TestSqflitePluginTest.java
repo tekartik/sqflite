@@ -36,7 +36,7 @@ public class TestSqflitePluginTest {
     @Test
     public void missingFile() {
         File file = new File(appContext.getFilesDir(), "missing.db");
-        Database database = new Database(appContext, file.getPath(), 0, true, 0);
+        Database database = new Database(appContext, file.getPath(), null, 0, true, 0);
         Exception exception = null;
         try {
             database.openReadOnly();
@@ -54,7 +54,7 @@ public class TestSqflitePluginTest {
         FileWriter fileWriter = new FileWriter(file);
         fileWriter.write("");
         fileWriter.close();
-        Database database = new Database(appContext, file.getPath(), 0, true, 0);
+        Database database = new Database(appContext, file.getPath(), null, 0, true, 0);
         database.openReadOnly();
         database.close();
     }
@@ -65,7 +65,7 @@ public class TestSqflitePluginTest {
         FileWriter fileWriter = new FileWriter(file);
         fileWriter.write("test");
         fileWriter.close();
-        Database database = new Database(appContext, file.getPath(), 0, true, 0);
+        Database database = new Database(appContext, file.getPath(), null,0, true, 0);
         database.openReadOnly();
         database.close();
         assertEquals(FileUtils.getStringFromFile(file), "test");
