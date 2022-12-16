@@ -20,7 +20,7 @@ class DatabaseFactoryMock implements DatabaseFactory {
   }
 
   @override
-  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options}) {
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options, String? password}) {
     throw UnimplementedError();
   }
 

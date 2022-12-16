@@ -35,6 +35,8 @@ import android.util.Log;
 import com.tekartik.sqflite.dev.Debug;
 import com.tekartik.sqflite.operation.MethodCallOperation;
 
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -340,7 +342,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
         // For single instance we create or reuse a thread right away
         // DO NOT TRY TO LOAD existing instance, the database has been closed
-
 
         if (singleInstance) {
             // Look for in memory instance
