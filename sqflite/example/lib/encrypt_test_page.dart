@@ -34,7 +34,7 @@ class EncryptDatabaseTestPage extends TestPage {
       await encryptedDb.close();
 
       try {
-        //must throw and error here
+        //must throw an error here
         await openDatabase('test.db', password: '');
         expect(0, 1);
       } catch (e) {

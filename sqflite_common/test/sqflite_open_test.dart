@@ -9,7 +9,7 @@ void main() {
       final scenario = startScenario([
         [
           'openDatabase',
-          {'path': ':memory:', 'singleInstance': true},
+          {'path': ':memory:', 'singleInstance': true, 'password': null},
           1
         ],
         [
@@ -27,7 +27,7 @@ void main() {
       final scenario = startScenario([
         [
           'openDatabase',
-          {'path': ':memory:', 'singleInstance': true},
+          {'path': ':memory:', 'singleInstance': true, 'password':  null},
           1
         ],
         [
