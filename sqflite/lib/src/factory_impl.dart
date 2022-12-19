@@ -125,10 +125,4 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
     } catch (_) {}
     return false;
   }
-
-  @override
-  Future<bool> encryptDatabase(String path, String password) {
-    // TODO: implement encryptDatabase
-    throw UnimplementedError();
-  }
 }

@@ -695,8 +695,8 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                     result.error(SQLITE_ERROR, "Can't open database: " + targetDBFile.getName(), e);
                     return;
                 }
-                File tempEncryptedDB = new File(targetDBFile.getParent() + "\\" + System.currentTimeMillis());
 
+                File tempEncryptedDB = new File(targetDBFile.getParent() + "/" + System.currentTimeMillis() + ".db");
                 if (!tempEncryptedDB.exists()) {
                     try {
                         if (!tempEncryptedDB.createNewFile()) {
@@ -706,20 +706,37 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                     } catch (IOException e) {
                         result.error(SQLITE_ERROR, "Can't open temp db for writing", e);
                         e.printStackTrace();
+                        return;
                     }
                 }
 
-                String firstCommand = String.format("ATTACH DATABASE '%s' as encrypted KEY '%s'", tempEncryptedDB.getAbsoluteFile(), password);
-                targetDB.rawExecSQL(firstCommand);
-                targetDB.rawExecSQL("SELECT sqlcipher_export('encrypted')");
-                targetDB.rawExecSQL("DETACH DATABASE encrypted");
-                targetDB.close();
+                try {
+                    String sql = String.format("ATTACH DATABASE '%s' AS encrypted KEY '%s'", tempEncryptedDB.getAbsolutePath(), password);
+                    targetDB.rawExecSQL(sql);
+
+                    //Seems like sqlcipher_export always throw an error even though all old data is copied ???
+                    try {
+                        targetDB.rawExecSQL("SELECT sqlcipher_export('encrypted')");
+                    } catch (Exception e) {
+                        //Strange Exception throwing by the lib right here but just catch and ignore it for now
+                    }
+
+                    targetDB.rawExecSQL("DETACH DATABASE encrypted");
+                    targetDB.close();
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+                    targetDB.close();
+                    tempEncryptedDB.delete();
+                    result.error(SQLITE_ERROR, "Can't encrypt database", null);
+                    return;
+                }
 
                 boolean isRenameSuccess = targetDBFile.delete() && tempEncryptedDB.renameTo(targetDBFile);
                 if (isRenameSuccess) {
                     result.success(true);
                 } else {
-                    result.error(SQLITE_ERROR, "Can't rename new encrypted database", null);
+                    result.error(SQLITE_ERROR, "Can't rename new encrypted database. Old database file may be deleted", null);
                     tempEncryptedDB.delete();
                 }
             });

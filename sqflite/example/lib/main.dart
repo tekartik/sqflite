@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sqflite_example/batch_test_page.dart';
 import 'package:sqflite_example/deprecated_test_page.dart';
+import 'package:sqflite_example/encrypt_test_page.dart';
 import 'package:sqflite_example/exception_test_page.dart';
 import 'package:sqflite_example/exp_test_page.dart';
 import 'package:sqflite_example/manual_test_page.dart';
@@ -70,6 +71,9 @@ const String testExpRoute = '/test/exp';
 /// Deprecated test page.
 const String testDeprecatedRoute = '/test/deprecated';
 
+/// Encrypt test page.
+const String testEncryptRoute = '/test/encrypt';
+
 class _SqfliteExampleAppState extends State<SqfliteExampleApp> {
   var routes = <String, WidgetBuilder>{
     '/test': (BuildContext context) => MyHomePage(),
@@ -83,6 +87,7 @@ class _SqfliteExampleAppState extends State<SqfliteExampleApp> {
     testExceptionRoute: (BuildContext context) => ExceptionTestPage(),
     testExpRoute: (BuildContext context) => ExpTestPage(),
     testDeprecatedRoute: (BuildContext context) => DeprecatedTestPage(),
+    testEncryptRoute: (BuildContext context) => EncryptDatabaseTestPage(),
   };
 
   @override
@@ -132,6 +137,9 @@ class MyHomePage extends StatefulWidget {
     _items.add(MainItem('Deprecated test',
         'Keeping some old tests for deprecated functionalities',
         route: testDeprecatedRoute));
+    _items.add(MainItem('Encrypt database test',
+        'Test encrypt an existed database',
+        route: testEncryptRoute));
 
     // Uncomment to view all logs
     //Sqflite.devSetDebugModeOn(true);
