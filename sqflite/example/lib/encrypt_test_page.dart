@@ -28,11 +28,9 @@ class EncryptDatabaseTestPage extends TestPage {
       await tempDb.close();
 
       expect(await encryptDatabase('${await getDatabasesPath()}/test.db', '#123@'), true);
-      var encryptedDb = await openDatabase('test.db', password: '#123@');
+    });
 
-      expect ((await encryptedDb.query('students')).length, 2);
-      await encryptedDb.close();
-
+    test('re-open after encrypted', () async {
       try {
         //must throw an error here
         await openDatabase('test.db', password: '');
@@ -40,6 +38,11 @@ class EncryptDatabaseTestPage extends TestPage {
       } catch (e) {
         //
       }
+
+      var encryptedDb = await openDatabase('test.db', password: '#123@');
+
+      expect ((await encryptedDb.query('students')).length, 2);
+      await encryptedDb.close();
     });
   }
 
