@@ -215,11 +215,11 @@ mixin SqfliteDatabaseFactoryMixin
   String toString() => 'SqfliteDatabaseFactory(${tag ?? 'sqflite'})';
 
   @override
-  Future<bool> encryptDatabase(String path, String password) {
-    return safeInvokeMethod<bool>(methodEncryptDatabase, {
+  Future<bool> encryptDatabase(String path, String password) async {
+    return await safeInvokeMethod<bool?>(methodEncryptDatabase, {
       paramPath: path,
       paramPassword: password,
-    });
+    }) ?? false;
   }
 
 }
@@ -263,6 +263,7 @@ class SqfliteDatabaseDebugInfo {
 
   @override
   String toString() => toDebugMap().toString();
+
 }
 
 /// Internal debug info
