@@ -47,6 +47,13 @@ const String methodDeleteDatabase = 'deleteDatabase';
 /// Native encrypt database method.
 const String methodEncryptDatabase = 'encryptDatabase';
 
+/// Native decrypt database method.
+const String methodDecryptDatabase = 'decryptDatabase';
+
+/// Native change database's password method.
+const String methodChangePassword = 'changePassword';
+
+
 /// Native batch operations parameter.
 const String paramOperations = 'operations';
 

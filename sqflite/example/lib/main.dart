@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sqflite_example/batch_test_page.dart';
 import 'package:sqflite_example/deprecated_test_page.dart';
-import 'package:sqflite_example/encrypt_test_page.dart';
 import 'package:sqflite_example/exception_test_page.dart';
 import 'package:sqflite_example/exp_test_page.dart';
 import 'package:sqflite_example/manual_test_page.dart';
+import 'package:sqflite_example/sql_cipher_test_page.dart';
 import 'package:sqflite_example/src/dev_utils.dart';
 
 import 'model/main_item.dart';
@@ -72,7 +72,7 @@ const String testExpRoute = '/test/exp';
 const String testDeprecatedRoute = '/test/deprecated';
 
 /// Encrypt test page.
-const String testEncryptRoute = '/test/encrypt';
+const String testSQLCipherRoute = '/test/sqlcipher';
 
 class _SqfliteExampleAppState extends State<SqfliteExampleApp> {
   var routes = <String, WidgetBuilder>{
@@ -87,7 +87,7 @@ class _SqfliteExampleAppState extends State<SqfliteExampleApp> {
     testExceptionRoute: (BuildContext context) => ExceptionTestPage(),
     testExpRoute: (BuildContext context) => ExpTestPage(),
     testDeprecatedRoute: (BuildContext context) => DeprecatedTestPage(),
-    testEncryptRoute: (BuildContext context) => EncryptDatabaseTestPage(),
+    testSQLCipherRoute: (BuildContext context) => SQLCipherTestPage(),
   };
 
   @override
@@ -139,7 +139,7 @@ class MyHomePage extends StatefulWidget {
         route: testDeprecatedRoute));
     _items.add(MainItem('Encrypt database test',
         'Test encrypt an existed database',
-        route: testEncryptRoute));
+        route: testSQLCipherRoute));
 
     // Uncomment to view all logs
     //Sqflite.devSetDebugModeOn(true);

@@ -222,6 +222,14 @@ mixin SqfliteDatabaseFactoryMixin
     }) ?? false;
   }
 
+  @override
+  Future<bool> decryptDatabase(String path, String password) async {
+    return await safeInvokeMethod<bool?>(methodDecryptDatabase, {
+      paramPath: path,
+      paramPassword: password,
+    }) ?? false;
+  }
+
 }
 
 // When opening the database (bool)

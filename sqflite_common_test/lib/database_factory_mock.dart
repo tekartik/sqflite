@@ -34,6 +34,12 @@ class DatabaseFactoryMock implements DatabaseFactory {
     // TODO: implement encryptDatabase
     throw UnimplementedError();
   }
+
+  @override
+  Future<bool> decryptDatabase(String path, String password) {
+    // TODO: implement decryptDatabase
+    throw UnimplementedError();
+  }
 }
 
 /// Bare minimum mock.

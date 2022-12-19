@@ -187,3 +187,10 @@ Future<bool> databaseExists(String path) =>
 Future<bool> encryptDatabase(String path, String password) {
   return databaseFactory.encryptDatabase(path, password);
 }
+
+///
+/// Decrypt an existed database using SQLCipher
+///
+Future<bool> decryptDatabase(String path, String password) {
+  return databaseFactory.decryptDatabase(path, password);
+}

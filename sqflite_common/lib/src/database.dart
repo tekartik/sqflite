@@ -126,4 +126,7 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
   ///
   /// Throw an exception if closed.
   void checkNotClosed();
+
+  ///change database password using sqlcipher
+  Future<bool> invokeChangePassword(String password);
 }

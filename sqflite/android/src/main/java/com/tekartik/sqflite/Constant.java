@@ -23,6 +23,8 @@ public class Constant {
     static final public String METHOD_BATCH = "batch";
     static final public String METHOD_DELETE_DATABASE = "deleteDatabase";
     static final public String METHOD_ENCRYPT_DATABASE = "encryptDatabase";
+    static final public String METHOD_DECRYPT_DATABASE = "decryptDatabase";
+    static final public String METHOD_CHANGE_PASSWORD = "changePassword";
     // true when entering, false when leaving, null otherwise, should be named inTransactionChange instead
     public static final String PARAM_IN_TRANSACTION_CHANGE = "inTransaction";
     // Set for calls within a transaction

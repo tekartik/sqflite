@@ -114,12 +114,6 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   Future<String> getDatabasesPath() async {
     return join('.dart_tool', 'sqlite', 'test', 'mock');
   }
-
-  @override
-  Future<bool> encryptDatabase(String path, String password) {
-    // TODO: implement encryptDatabase
-    throw UnimplementedError();
-  }
 }
 
 class MockDatabaseFactoryEmpty extends SqfliteDatabaseFactoryBase {
@@ -167,6 +161,12 @@ class MockInvalidFactory extends DatabaseFactory {
   @override
   Future<bool> encryptDatabase(String path, String password) {
     // TODO: implement encryptDatabase
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> decryptDatabase(String path, String password) {
+    // TODO: implement decryptDatabase
     throw UnimplementedError();
   }
 }

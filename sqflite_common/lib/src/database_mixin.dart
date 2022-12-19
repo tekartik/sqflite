@@ -241,6 +241,12 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
         SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
     return _rawDelete(builder.sql, builder.arguments);
   }
+
+  @override
+  Future<bool> changePassword(String newPassword) {
+    db.checkNotClosed();
+    return db.invokeChangePassword(newPassword);
+  }
 }
 
 /// Sqflite database mixin.
@@ -952,5 +958,13 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       // clean up open transaction
       openTransaction = null;
     }
+  }
+
+  @override
+  Future<bool> invokeChangePassword(String newPassword) async {
+    return await safeInvokeMethod<bool?>(methodChangePassword, {
+      paramId: id,
+      paramPassword: newPassword,
+    }) ?? false;
   }
 }

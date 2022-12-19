@@ -4,9 +4,11 @@ import static com.tekartik.sqflite.Constant.CMD_GET;
 import static com.tekartik.sqflite.Constant.ERROR_BAD_PARAM;
 import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_BATCH;
+import static com.tekartik.sqflite.Constant.METHOD_CHANGE_PASSWORD;
 import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
+import static com.tekartik.sqflite.Constant.METHOD_DECRYPT_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_DELETE_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_ENCRYPT_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_EXECUTE;
@@ -630,6 +632,14 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                 onEncryptDatabaseCall(call, result);
                 break;
             }
+            case METHOD_DECRYPT_DATABASE: {
+                onDecryptDatabaseCall(call, result);
+                break;
+            }
+            case METHOD_CHANGE_PASSWORD: {
+                onChangePasswordCall(call, result);
+                break;
+            }
 
             // Obsolete
             case METHOD_DEBUG_MODE: {
@@ -675,11 +685,19 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void onEncryptDatabaseCall(final MethodCall call, final Result result) {
+        onEncryptOrDecryptDatabaseCall(call, result, true);
+    }
+
+    private void onDecryptDatabaseCall(final MethodCall call, final Result result) {
+        onEncryptOrDecryptDatabaseCall(call, result, false);
+    }
+
+    private void onEncryptOrDecryptDatabaseCall(final MethodCall call, final Result result, boolean encrypt) {
         String path = call.argument(PARAM_PATH);
         String password = call.argument(PARAM_PASSWORD);
 
         if (path == null || password == null) {
-            result.error(Constant.ERROR_BAD_PARAM, "database file path or password for encryption is null", null);
+            result.error(Constant.ERROR_BAD_PARAM, "database file path or password for encryption/decryption is null", null);
             return;
         }
 
@@ -689,7 +707,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             Executors.newSingleThreadExecutor().execute(() -> {
                 SQLiteDatabase targetDB;
                 try {
-                    targetDB = SQLiteDatabase.openDatabase(path, "", null, SQLiteDatabase.OPEN_READWRITE, null);
+                    targetDB = SQLiteDatabase.openDatabase(path, encrypt? "": password, null, SQLiteDatabase.OPEN_READWRITE, null);
                 } catch (SQLiteException e) {
                     e.printStackTrace();
                     result.error(SQLITE_ERROR, "Can't open database: " + targetDBFile.getName(), e);
@@ -711,17 +729,17 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                 }
 
                 try {
-                    String sql = String.format("ATTACH DATABASE '%s' AS encrypted KEY '%s'", tempEncryptedDB.getAbsolutePath(), password);
+                    String sql = String.format("ATTACH DATABASE '%s' AS result_db KEY '%s'", tempEncryptedDB.getAbsolutePath(), encrypt? password: "");
                     targetDB.rawExecSQL(sql);
 
                     //Seems like sqlcipher_export always throw an error even though all old data is copied ???
                     try {
-                        targetDB.rawExecSQL("SELECT sqlcipher_export('encrypted')");
+                        targetDB.rawExecSQL("SELECT sqlcipher_export('result_db')");
                     } catch (Exception e) {
                         //Strange Exception throwing by the lib right here but just catch and ignore it for now
                     }
 
-                    targetDB.rawExecSQL("DETACH DATABASE encrypted");
+                    targetDB.rawExecSQL("DETACH DATABASE result_db");
                     targetDB.close();
                 } catch (Exception e) {
 
@@ -743,5 +761,21 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         } else {
             result.error(ERROR_BAD_PARAM, "database path doesn't exist: " + path, null);
         }
+    }
+
+    void onChangePasswordCall(final MethodCall call, final Result result) {
+        final Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
+        }
+        databaseWorkerPool.post(database, () -> {
+            try {
+                database.changePassword(call.argument(PARAM_PASSWORD));
+                result.success(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                result.success(false);
+            }
+        });
     }
 }

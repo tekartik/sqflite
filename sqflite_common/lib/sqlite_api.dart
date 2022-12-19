@@ -53,6 +53,9 @@ abstract class DatabaseFactory {
 
   /// Encrypt an existed database
   Future<bool> encryptDatabase(String path, String password);
+
+  /// decrypt an existed database
+  Future<bool> decryptDatabase(String path, String password);
 }
 
 ///
@@ -255,6 +258,9 @@ abstract class DatabaseExecutor {
   /// a [Transaction], committing the batch is deferred to when the transaction
   /// completes (but [Batch.apply] or [Batch.commit] still need to be called).
   Batch batch();
+
+  /// change password of this database
+  Future<bool> changePassword(String newPassword);
 }
 
 /// Database transaction
