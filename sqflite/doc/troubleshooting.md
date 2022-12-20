@@ -94,7 +94,8 @@ Before raising this issue, try adding another well established plugin (the simpl
 
 ## Warning database has been locked for... 
 
-I you get this output in debug mode:
+If you get this output in debug mode:
+
 > Warning database has been locked for 0:00:10.000000. Make sure you always use the transaction object for database operations during a transaction
 
 One common mistake is to use the db object in a transaction:
