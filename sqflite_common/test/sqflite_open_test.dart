@@ -33,6 +33,7 @@ void main() {
         [
           'query',
           {'sql': 'PRAGMA user_version', 'id': 1},
+          // ignore: inference_failure_on_collection_literal
           {}
         ],
         [
@@ -48,6 +49,7 @@ void main() {
         [
           'query',
           {'sql': 'PRAGMA user_version', 'id': 1},
+          // ignore: inference_failure_on_collection_literal
           {}
         ],
         [

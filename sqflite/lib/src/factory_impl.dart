@@ -94,7 +94,7 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   Future<T> _invokeMethodWithLog<T>(String method, [dynamic arguments]) async {
     // ignore: avoid_print
     print('-> $method $arguments');
-    final result = (await impl.invokeMethod(method, arguments)) as T;
+    final result = await impl.invokeMethod<T>(method, arguments);
     // ignore: avoid_print
     print('<- $result');
     return result;

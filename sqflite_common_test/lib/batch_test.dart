@@ -49,11 +49,13 @@ void run(SqfliteTestContext context) {
       var batch = db.batch();
       var results = await batch.commit();
       expect(results.length, 0);
-      expect(results, []);
+      expect(results, isEmpty);
 
       // one create table
       batch = db.batch();
+      expect(batch.length, 0);
       batch.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+      expect(batch.length, 1);
       results = await batch.commit();
       // devPrint('1 $results ${results?.first}');
       expect(results, [null]);
@@ -69,7 +71,9 @@ void run(SqfliteTestContext context) {
       batch = db.batch();
       batch.rawQuery('SELECT id, name FROM Test');
       batch.query('Test', columns: ['id', 'name']);
+
       results = await batch.commit();
+      expect(batch.length, results.length);
       // devPrint('select $results ${results?.first}');
       expect(results, [
         [
@@ -85,6 +89,7 @@ void run(SqfliteTestContext context) {
       batch.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item2']);
       batch.insert('Test', {'name': 'item3'});
       results = await batch.commit();
+      expect(batch.length, results.length);
       expect(results, [2, 3]);
 
       // update
@@ -111,7 +116,8 @@ void run(SqfliteTestContext context) {
           where: 'name = ?', whereArgs: <String>['item']);
       batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
       results = await batch.commit(noResult: true);
-      expect(results, []);
+      expect(batch.length, 3);
+      expect(results, isEmpty);
 
       await db.close();
     });

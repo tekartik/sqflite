@@ -109,6 +109,10 @@ abstract class SqfliteBatch implements Batch {
     final inTransaction = getSqlInTransactionArgument(sql);
     _addExecute(methodExecute, sql, arguments, inTransaction);
   }
+
+  /// Batch size
+  @override
+  int get length => operations.length;
 }
 
 /// Batch on a given database

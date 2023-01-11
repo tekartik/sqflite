@@ -164,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    Future.delayed(Duration.zero).then((_) async {
+    Future<void>.delayed(Duration.zero).then((_) async {
       if (mounted) {
         // Use it to auto start a test page
         if (debugAutoStartRouteName != null) {

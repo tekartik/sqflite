@@ -414,7 +414,7 @@ INSERT INTO test (value) VALUES (10);
           ];
           expect(result, expectedResult);
         } else {
-          expect(result, []);
+          expect(result, isEmpty);
         }
       } finally {
         await db.close();
@@ -680,7 +680,7 @@ CREATE TABLE test (
           int index = 0;
           SendPort sendPort;
           List<Map<String, Object?>> results;
-          var completer = Completer();
+          var completer = Completer<void>();
           var subscription = receivePort.listen((data) {
             switch (index++) {
               case 0:

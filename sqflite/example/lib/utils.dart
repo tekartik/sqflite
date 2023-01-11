@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite_dev.dart';
 
 /// Usage: await sleep(500);
 Future sleep([int milliseconds = 0]) =>
-    Future.delayed(Duration(milliseconds: milliseconds));
+    Future<void>.delayed(Duration(milliseconds: milliseconds));
 
 /// Supports compat mode (devSetDebugModeOn, queryAsMap, fts4, some error handled - missing parameter, bad file)
 bool get supportsCompatMode {

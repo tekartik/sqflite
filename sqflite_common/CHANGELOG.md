@@ -1,3 +1,8 @@
+## 2.4.1-1
+
+* add support for `Batch.length` to help finding the last added operation index.
+* strict-casts and sdk 2.18 support
+
 ## 2.4.0+2
 
 * add support for `Database.queryCursor()` and `Database.rawQueryCursor()`

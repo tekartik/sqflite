@@ -546,6 +546,9 @@ abstract class Batch {
 
   /// See [Database.query];
   void rawQuery(String sql, [List<Object?>? arguments]);
+
+  /// Current batch size
+  int get length;
 }
 
 /// Cursor for query by page cursor.

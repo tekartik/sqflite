@@ -11,9 +11,9 @@ include: package:lints/recommended.yaml
 # https://github.com/flutter/flutter/blob/master/analysis_options.yaml
 
 analyzer:
-  # Strong mode is sometimes harder to keep
-  strong-mode:
-    implicit-casts: false
+  language:
+    strict-casts: true
+    strict-inference: true
 
   errors:
     # treat missing required parameters as a warning (not a hint)

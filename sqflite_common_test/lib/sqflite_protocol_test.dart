@@ -319,7 +319,7 @@ void run(SqfliteTestContext? context) {
       ]);
 
       final db = await scenario.factory.openDatabase(dbName);
-      await scenario.factory.internalsInvokeMethod(
+      await scenario.factory.internalsInvokeMethod<Object?>(
           'openDatabase', {'path': dbName, 'singleInstance': true});
 
       await db.close();
@@ -362,7 +362,7 @@ void run(SqfliteTestContext? context) {
 
       final db = await scenario.factory.openDatabase(dbName);
       await db.execute('BEGIN TRANSACTION');
-      await scenario.factory.internalsInvokeMethod(
+      await scenario.factory.internalsInvokeMethod<Object?>(
           'openDatabase', {'path': dbName, 'singleInstance': true});
 
       await db.close();
@@ -403,9 +403,9 @@ void run(SqfliteTestContext? context) {
           ],
         closeStep
       ]);
-      await scenario.factory.internalsInvokeMethod(
+      await scenario.factory.internalsInvokeMethod<Object?>(
           'openDatabase', {'path': dbName, 'singleInstance': true});
-      await scenario.factory.internalsInvokeMethod(
+      await scenario.factory.internalsInvokeMethod<Object?>(
         'execute',
         {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
       );

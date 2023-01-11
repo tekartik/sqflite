@@ -39,7 +39,7 @@ bool _isBasicType(Object? value) {
   return false;
 }
 
-bool _isCollectionType(value) {
+bool _isCollectionType(Object? value) {
   if (_isBasicType(value)) {
     return false;
   }

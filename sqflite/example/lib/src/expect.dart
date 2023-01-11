@@ -50,10 +50,10 @@ typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
 /// you want to wait for the matcher to complete before continuing the test, you
 /// can call [expectLater] instead and `await` the result.
 void expect(
-  actual,
-  matcher, {
+  Object? actual,
+  Object? matcher, {
   String? reason,
-  skip,
+  Object? skip,
 }) {
   _expect(actual, matcher, reason: reason, skip: skip);
 }
@@ -69,10 +69,11 @@ void expect(
 ///
 /// If the matcher fails asynchronously, that failure is piped to the returned
 /// future where it can be handled by user code.
-Future expectLater(actual, matcher, {String? reason, skip}) =>
+Future expectLater(Object? actual, Object? matcher,
+        {String? reason, Object? skip}) =>
     _expect(actual, matcher, reason: reason, skip: skip) as Future;
 
-String _formatFailure(Matcher expected, actual, String which,
+String _formatFailure(Matcher expected, Object? actual, String which,
     {String? reason}) {
   final buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
@@ -83,9 +84,9 @@ String _formatFailure(Matcher expected, actual, String which,
 }
 
 /// The implementation of [expect] and [expectLater].
-FutureOr _expect(actual, matcher,
+FutureOr _expect(Object? actual, Object? matcher,
     {String? reason,
-    skip,
+    Object? skip,
     bool verbose = false,
     // ignore: deprecated_member_use, deprecated_member_use_from_same_package
     ErrorFormatter? formatter}) {
@@ -104,7 +105,7 @@ FutureOr _expect(actual, matcher,
 
   matcher = wrapMatcher(matcher);
 
-  final matchState = {};
+  final matchState = <Object?, Object?>{};
   try {
     if ((matcher as Matcher).matches(actual, matchState)) {
       return Future.sync(() {});
@@ -138,7 +139,8 @@ String prettyPrint(dynamic text, {String? first}) {
 
 /// The default error formatter.
 @Deprecated('Will be removed in 0.13.0.')
-String formatFailure(Matcher expected, actual, String which, {String? reason}) {
+String formatFailure(Matcher expected, Object? actual, String which,
+    {String? reason}) {
   final buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
   buffer.writeln(indent(prettyPrint(actual), first: '  Actual: '));

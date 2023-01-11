@@ -260,8 +260,10 @@ void main() {
           {
             'cursorId': 1,
             'rows': [
+              // ignore: inference_failure_on_collection_literal
               [{}]
             ],
+            // ignore: inference_failure_on_collection_literal
             'columns': []
           }
         ],
@@ -271,8 +273,10 @@ void main() {
           {
             'cursorId': 1,
             'rows': [
+              // ignore: inference_failure_on_collection_literal
               [{}]
             ],
+            // ignore: inference_failure_on_collection_literal
             'columns': []
           },
         ],
@@ -296,6 +300,7 @@ void main() {
       resultList.add(cursor.current);
       await cursor.close();
 
+      // ignore: inference_failure_on_collection_literal
       expect(resultList, [{}, {}]);
       await db.close();
       scenario.end();

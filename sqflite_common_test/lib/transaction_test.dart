@@ -184,7 +184,8 @@ void run(SqfliteTestContext context) {
           // Make random gaps so calls of other database are able to cut the
           // queue. And the test will not accidentally pass because of lack
           // of 'concurrency'.
-          await Future.delayed(Duration(microseconds: random.nextInt(50)));
+          await Future<void>.delayed(
+              Duration(microseconds: random.nextInt(50)));
         }
         return all.future;
       }
@@ -338,7 +339,7 @@ void run(SqfliteTestContext context) {
       // Special trick to avoid the built-in synchronization
       db.internalsDoNotUseSynchronized = true;
       try {
-        var completer = Completer();
+        var completer = Completer<void>();
         unawaited(db.transaction((txn) async {
           await txn.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
           await completer.future;

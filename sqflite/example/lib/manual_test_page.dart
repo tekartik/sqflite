@@ -75,7 +75,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
           firstIntValue(await txn.query('Task', columns: [sqlCountColumn]));
       unawaited(showToast('$count task(s)'));
       if (msDelay != null) {
-        await Future.delayed(Duration(milliseconds: msDelay));
+        await Future<void>.delayed(Duration(milliseconds: msDelay));
       }
     });
   }
@@ -156,7 +156,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
         print(await _incrementVersion());
       }, summary: 'Implementation info (dev only)'),
       SqfMenuItem('Multiple db', () async {
-        await Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+        await Navigator.of(context).push<void>(MaterialPageRoute(builder: (_) {
           return const MultipleDbTestPage();
         }));
       }, summary: 'Open multiple databases'),
@@ -240,7 +240,7 @@ class MultipleDbTestPage extends StatelessWidget {
       return ListTile(
         title: Text(name),
         onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+          Navigator.of(context).push<void>(MaterialPageRoute(builder: (_) {
             return SimpleDbTestPage(
               dbName: name,
             );

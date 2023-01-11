@@ -404,6 +404,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> txnExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
       {
+
       /// set
       bool? beginTransaction}) {
     return txnWriteSynchronized<T>(txn, (_) {
@@ -435,6 +436,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<T> invokeExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
       {
+
       /// This is set by parsing the sql command for all commands
       bool? inTransactionChange,
 
@@ -747,7 +749,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         if (readOnly != true) {
           // We are not yet open so invoke the plugin directly
           try {
-            await safeInvokeMethod(methodExecute, <String, Object?>{
+            await safeInvokeMethod<Object?>(methodExecute, <String, Object?>{
               paramSql: 'ROLLBACK',
               paramId: id,
 

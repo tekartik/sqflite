@@ -760,8 +760,8 @@ void run(SqfliteTestContext context) {
     var path1 = await context.initDeleteDb('multiple_open_1.db');
     var path2 = await context.initDeleteDb('multiple_open_2.db');
 
-    var onCreateCompleter1 = Completer();
-    var onCreateCompleter2 = Completer();
+    var onCreateCompleter1 = Completer<void>();
+    var onCreateCompleter2 = Completer<void>();
 
     Database? db1;
     Database? db2;
@@ -800,8 +800,8 @@ void run(SqfliteTestContext context) {
     var path1 = await context.initDeleteDb('multiple_open_same.db');
     var path2 = path1;
 
-    var onCreateCompleter1 = Completer();
-    var onCreateCompleter2 = Completer();
+    var onCreateCompleter1 = Completer<void>();
+    var onCreateCompleter2 = Completer<void>();
 
     Database? db1;
     Database db2;
