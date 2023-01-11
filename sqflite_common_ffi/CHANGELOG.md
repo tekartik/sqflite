@@ -1,3 +1,7 @@
+## 2.2.1-1
+
+* strict-casts and sdk 2.18 support
+
 ## 2.2.0+1
 
 * Implements `Database.queryCursor()` and `Database.rawQueryCursor()`

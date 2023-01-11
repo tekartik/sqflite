@@ -1,3 +1,7 @@
+## 2.2.3-1
+
+* strict-casts and sdk 2.18 support
+* 
 ## 2.2.2
 
 * Fix iOS/MacOS FMDB include for non-swift project
