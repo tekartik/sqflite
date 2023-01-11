@@ -40,7 +40,7 @@ class SqfMenuItem extends Item {
   /// Run the item.
   Future run() {
     state = ItemState.running;
-    return Future.delayed(const Duration()).then((_) async {
+    return Future<void>.delayed(const Duration()).then((_) async {
       try {
         await body();
         state = ItemState.success;

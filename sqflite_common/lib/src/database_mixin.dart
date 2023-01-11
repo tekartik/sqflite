@@ -749,7 +749,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         if (readOnly != true) {
           // We are not yet open so invoke the plugin directly
           try {
-            await safeInvokeMethod(methodExecute, <String, Object?>{
+            await safeInvokeMethod<Object?>(methodExecute, <String, Object?>{
               paramSql: 'ROLLBACK',
               paramId: id,
 

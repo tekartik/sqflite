@@ -25,7 +25,7 @@ void main() {
     await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
     await db.execute('ALTER TABLE Test ADD COLUMN name TEXT');
     // should succeed, but empty
-    expect(await db.query('Test'), []);
+    expect(await db.query('Test'), isEmpty);
 
     await db.close();
   });

@@ -55,7 +55,7 @@ void main() {
       expect(batch.length, 0);
       batch.execute('PRAGMA dummy');
       expect(batch.length, 1);
-      expect(await batch.commit(), []); // Mock return values
+      expect(await batch.commit(), isEmpty); // Mock return values
       await db.close();
       scenario.end();
     });

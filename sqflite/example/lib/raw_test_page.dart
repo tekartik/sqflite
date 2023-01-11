@@ -59,7 +59,7 @@ class RawTestPage extends TestPage {
 
         var sql = 'SELECT id, name FROM Test';
         // ignore: deprecated_member_use
-        var resultSet = await db.devInvokeSqlMethod('query', sql);
+        var resultSet = await db.devInvokeSqlMethod<Object?>('query', sql);
         var expectedResultSetMap = {
           'columns': ['id', 'name'],
           'rows': [
@@ -104,7 +104,7 @@ class RawTestPage extends TestPage {
           await db.transaction((txn) async {
             final count = Sqflite.firstIntValue(
                 await txn.rawQuery('SELECT COUNT(*) FROM Test'))!;
-            await Future.delayed(const Duration(milliseconds: 40));
+            await Future<void>.delayed(const Duration(milliseconds: 40));
             await txn
                 .rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
             //print(await db.query('SELECT COUNT(*) FROM Test'));
@@ -129,9 +129,9 @@ class RawTestPage extends TestPage {
       final path = await initDeleteDb('simple_concurrency_1.db');
       final db = await openDatabase(path);
       try {
-        final step1 = Completer();
-        final step2 = Completer();
-        final step3 = Completer();
+        final step1 = Completer<void>();
+        final step2 = Completer<void>();
+        final step3 = Completer<void>();
 
         Future action1() async {
           await db
@@ -185,9 +185,9 @@ class RawTestPage extends TestPage {
       final path = await initDeleteDb('simple_concurrency_2.db');
       final db = await openDatabase(path);
       try {
-        final step1 = Completer();
-        final step2 = Completer();
-        final step3 = Completer();
+        final step1 = Completer<void>();
+        final step2 = Completer<void>();
+        final step3 = Completer<void>();
 
         Future action1() async {
           await db

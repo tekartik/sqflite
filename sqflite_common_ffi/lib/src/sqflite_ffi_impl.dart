@@ -81,7 +81,7 @@ class _SqfliteFfiCursorInfo {
 /// Queued handler when a transaction is in progress
 class _QueuedHandler {
   final Future Function() handler;
-  final _completer = Completer();
+  final _completer = Completer<void>();
 
   _QueuedHandler(this.handler);
 
