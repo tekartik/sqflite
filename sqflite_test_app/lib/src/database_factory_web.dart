@@ -12,7 +12,7 @@ DatabaseFactory? _databaseFactoryWebImpl;
 DatabaseFactory get databaseFactoryWeb =>
     _databaseFactoryWebImpl ??= buildDatabaseFactory(
         tag: 'web',
-        invokeMethod: (String method, [dynamic arguments]) {
+        invokeMethod: (String method, [Object? arguments]) {
           final methodCall = SqfliteMethodCall(method, arguments);
           return methodCall.handle();
         });

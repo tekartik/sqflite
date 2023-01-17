@@ -18,7 +18,7 @@ class SqfliteMethodCall {
   /// The arguments for the method.
   ///
   /// Must be a valid value for the [MethodCodec] used.
-  final dynamic arguments;
+  final Object? arguments;
 
   /// To map
   Map<String, Object?> toMap() {

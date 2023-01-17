@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:sqflite_common/sql.dart' show ConflictAlgorithm;
+import 'package:sqflite_common/src/database.dart';
+import 'package:sqflite_common/src/database_mixin.dart';
 import 'package:sqflite_common/src/open_options.dart' as impl;
+import 'package:sqflite_common/src/transaction.dart';
 
 export 'package:sqflite_common/sql.dart' show ConflictAlgorithm;
 export 'package:sqflite_common/src/constant.dart'
@@ -252,6 +255,9 @@ abstract class DatabaseExecutor {
   /// a [Transaction], committing the batch is deferred to when the transaction
   /// completes (but [Batch.apply] or [Batch.commit] still need to be called).
   Batch batch();
+
+  /// Get the database.
+  Database get database;
 }
 
 /// Database transaction
@@ -283,28 +289,40 @@ abstract class Database implements DatabaseExecutor {
   Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
       {bool? exclusive});
 
-  ///
-  /// Get the database inner version
-  ///
-  Future<int> getVersion();
-
   /// Tell if the database is open, returns false once close has been called
   bool get isOpen;
 
-  ///
-  /// Set the database inner version
-  /// Used internally for open helpers and automatic versioning
-  ///
-  Future<void> setVersion(int version);
 
   /// testing only
   @Deprecated('Dev only')
-  Future<T> devInvokeMethod<T>(String method, [dynamic arguments]);
+  Future<T> devInvokeMethod<T>(String method, [Object? arguments]);
 
   /// testing only
   @Deprecated('Dev only')
   Future<T> devInvokeSqlMethod<T>(String method, String sql,
       [List<Object?>? arguments]);
+}
+
+/// Helpers
+extension SqfliteDatabaseExecutorExt on DatabaseExecutor {
+  SqfliteDatabase get _db => (this as SqfliteDatabaseExecutor).db;
+  SqfliteTransaction? get _txn => (this as SqfliteDatabaseExecutor).txn;
+
+  ///
+  /// Set the database inner version
+  /// Used internally for open helpers and automatic versioning
+  ///
+  Future<void> setVersion(int version){
+    _db.checkNotClosed();
+    return _db.txnSetVersion(_txn, version);
+  }
+  ///
+  /// Get the database inner version
+  ///
+  Future<int> getVersion() {
+    _db.checkNotClosed();
+    return _db.txnGetVersion(_txn);
+  }
 }
 
 /// Prototype of the function called when the version has changed.

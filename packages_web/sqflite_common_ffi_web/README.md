@@ -26,7 +26,7 @@ $ dart run sqflite_common_ffi_web:setup
 ```
 
 It should create the following files in your web folder:
-- `sqflite3.wasm`
+- `sqlite3.wasm`
 - `sqflite_sw.js`
 
 that you can put in source control or not (personally I don't)

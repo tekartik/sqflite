@@ -114,8 +114,12 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
   Future<void> txnQueryCursorClose(
       SqfliteTransaction? txn, SqfliteQueryCursor cursor);
 
-  /// Execute a raw UPDATE/DELETE command.
+  /// Execute a raw UPDATE command.
   Future<int> txnRawUpdate(
+      SqfliteTransaction? txn, String sql, List<Object?>? arguments);
+
+  /// Execute a raw DELETE command.
+  Future<int> txnRawDelete(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments);
 
   /// Check if a database is not closed.

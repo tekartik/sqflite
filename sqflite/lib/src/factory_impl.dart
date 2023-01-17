@@ -86,12 +86,12 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
       impl.wrapDatabaseException(action);
 
   @override
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
+  Future<T> invokeMethod<T>(String method, [Object? arguments]) =>
       !_debugInternals
           ? impl.invokeMethod(method, arguments)
           : _invokeMethodWithLog(method, arguments);
 
-  Future<T> _invokeMethodWithLog<T>(String method, [dynamic arguments]) async {
+  Future<T> _invokeMethodWithLog<T>(String method, [Object? arguments]) async {
     // ignore: avoid_print
     print('-> $method $arguments');
     final result = await impl.invokeMethod<T>(method, arguments);

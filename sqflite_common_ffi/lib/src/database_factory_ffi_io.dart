@@ -19,7 +19,7 @@ DatabaseFactory createDatabaseFactoryFfiImpl(
   var noIsolateInitialized = false;
   return buildDatabaseFactory(
       tag: tag,
-      invokeMethod: (String method, [dynamic arguments]) {
+      invokeMethod: (String method, [Object? arguments]) {
         final methodCall = FfiMethodCall(method, arguments);
         if (noIsolate) {
           if (!noIsolateInitialized) {
