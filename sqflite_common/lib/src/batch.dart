@@ -7,7 +7,6 @@ import 'package:sqflite_common/src/utils.dart';
 
 /// Batch mixin.
 mixin SqfliteBatchMixin implements Batch {
-
   @override
   void insert(String table, Map<String, Object?> values,
       {String? nullColumnHack, ConflictAlgorithm? conflictAlgorithm}) {
@@ -15,17 +14,18 @@ mixin SqfliteBatchMixin implements Batch {
         nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
   }
+
   @override
   void query(String table,
       {bool? distinct,
-        List<String>? columns,
-        String? where,
-        List<Object?>? whereArgs,
-        String? groupBy,
-        String? having,
-        String? orderBy,
-        int? limit,
-        int? offset}) {
+      List<String>? columns,
+      String? where,
+      List<Object?>? whereArgs,
+      String? groupBy,
+      String? having,
+      String? orderBy,
+      int? limit,
+      int? offset}) {
     final builder = SqlBuilder.query(table,
         distinct: distinct,
         columns: columns,
@@ -42,8 +42,8 @@ mixin SqfliteBatchMixin implements Batch {
   @override
   void update(String table, Map<String, Object?> values,
       {String? where,
-        List<Object?>? whereArgs,
-        ConflictAlgorithm? conflictAlgorithm}) {
+      List<Object?>? whereArgs,
+      ConflictAlgorithm? conflictAlgorithm}) {
     final builder = SqlBuilder.update(table, values,
         where: where,
         whereArgs: whereArgs,
@@ -54,11 +54,11 @@ mixin SqfliteBatchMixin implements Batch {
   @override
   void delete(String table, {String? where, List<Object?>? whereArgs}) {
     final builder =
-    SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
+        SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
     return rawDelete(builder.sql, builder.arguments);
   }
-
 }
+
 /// Batch implementation
 abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
   /// List of operations
@@ -91,8 +91,6 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
     _add(methodInsert, sql, arguments);
   }
 
-
-
   @override
   void rawQuery(String sql, [List<Object?>? arguments]) {
     _add(methodQuery, sql, arguments);
@@ -102,7 +100,6 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
   void rawUpdate(String sql, [List<Object?>? arguments]) {
     _add(methodUpdate, sql, arguments);
   }
-
 
   @override
   void rawDelete(String sql, [List<Object?>? arguments]) {

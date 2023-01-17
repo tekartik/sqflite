@@ -292,7 +292,6 @@ abstract class Database implements DatabaseExecutor {
   /// Tell if the database is open, returns false once close has been called
   bool get isOpen;
 
-
   /// testing only
   @Deprecated('Dev only')
   Future<T> devInvokeMethod<T>(String method, [Object? arguments]);
@@ -312,10 +311,11 @@ extension SqfliteDatabaseExecutorExt on DatabaseExecutor {
   /// Set the database inner version
   /// Used internally for open helpers and automatic versioning
   ///
-  Future<void> setVersion(int version){
+  Future<void> setVersion(int version) {
     _db.checkNotClosed();
     return _db.txnSetVersion(_txn, version);
   }
+
   ///
   /// Get the database inner version
   ///
