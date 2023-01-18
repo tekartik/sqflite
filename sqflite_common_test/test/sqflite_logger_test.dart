@@ -81,7 +81,11 @@ void main() {
       expect(
           events.toMapListNoSw(),
           [
-            {'path': ':memory:', 'id': 1},
+            {
+              'path': ':memory:',
+              'options': {'readOnly': false, 'singleInstance': true},
+              'id': 1
+            },
             {
               'db': 1,
               'sql': 'BEGIN IMMEDIATE',
@@ -115,6 +119,15 @@ void main() {
           events.toMapListNoSw(),
           [
             {
+              'path': ':memory:',
+              'options': {
+                'version': 1,
+                'readOnly': false,
+                'singleInstance': true
+              },
+              'id': 1
+            },
+            {
               'db': 1,
               'sql': 'PRAGMA user_version',
               'result': [
@@ -136,15 +149,6 @@ void main() {
             },
             {'db': 1, 'txn': 1, 'sql': 'PRAGMA user_version = 1'},
             {'db': 1, 'txn': 1, 'sql': 'COMMIT'},
-            {
-              'path': ':memory:',
-              'options': {
-                'version': 1,
-                'readOnly': false,
-                'singleInstance': true
-              },
-              'id': 1
-            },
             {'db': 1}
           ],
           reason: '$events');
