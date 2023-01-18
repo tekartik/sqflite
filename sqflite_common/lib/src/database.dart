@@ -126,4 +126,7 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
   ///
   /// Throw an exception if closed.
   void checkNotClosed();
+
+  /// Allow database overriding.
+  Future<T> invokeMethod<T>(String method, [Object? arguments]);
 }

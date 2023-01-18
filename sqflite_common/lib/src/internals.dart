@@ -19,4 +19,8 @@ extension DatabaseInternalsExt on Database {
   set internalsDoNotUseSynchronized(bool doNotUseSynchronized) =>
       (this as SqfliteDatabaseMixin).doNotUseSynchronized =
           doNotUseSynchronized;
+
+  /// Internal database id.
+  @visibleForTesting
+  int? get databaseId => (this as SqfliteDatabaseMixin).id;
 }

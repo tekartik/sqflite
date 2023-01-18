@@ -38,7 +38,7 @@ void main() {
       expect(events.toMapListNoSw(), [
         {
           'method': 'openDatabase',
-          'arguments': {'path': ':memory:', 'singleInstance': false},
+          'arguments': {'path': ':memory:', 'singleInstance': true},
           'result': {'id': 1}
         },
         {
@@ -64,7 +64,6 @@ void main() {
           'method': 'closeDatabase',
           'arguments': {'id': 1}
         },
-        {'db': 1}
       ]);
     });
     test('all', () async {
@@ -88,7 +87,7 @@ void main() {
               'sql': 'BEGIN IMMEDIATE',
               'result': {'transactionId': 1}
             },
-            {'db': 1, 'sql': 'COMMIT'},
+            {'db': 1, 'txn': 1, 'sql': 'COMMIT'},
             {'db': 1}
           ],
           reason: '$events');
@@ -129,13 +128,14 @@ void main() {
             },
             {
               'db': 1,
+              'txn': 1,
               'sql': 'PRAGMA user_version',
               'result': [
                 {'user_version': 0}
               ]
             },
-            {'db': 1, 'sql': 'PRAGMA user_version = 1'},
-            {'db': 1, 'sql': 'COMMIT'},
+            {'db': 1, 'txn': 1, 'sql': 'PRAGMA user_version = 1'},
+            {'db': 1, 'txn': 1, 'sql': 'COMMIT'},
             {
               'path': ':memory:',
               'options': {

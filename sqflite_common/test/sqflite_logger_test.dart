@@ -35,7 +35,7 @@ void main() {
 
       var event = events.first as SqfliteLoggerDatabaseOpenEvent;
       expect(event.path, inMemoryDatabasePath);
-      expect(event.options, isNull);
+      expect(event.options?.readOnly, false);
       expect(event.sw!.isRunning, isFalse);
     });
   });

@@ -43,6 +43,7 @@ class MockDatabase extends SqfliteDatabaseBase {
   List<String?> sqls = <String?>[];
   List<Map<String, Object?>?> argumentsLists = <Map<String, Object?>?>[];
 
+  @override
   Future<T> invokeMethod<T>(String method, [Object? arguments]) async {
     // return super.invokeMethod(method, arguments);
 

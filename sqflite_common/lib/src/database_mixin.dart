@@ -306,10 +306,6 @@ extension SqfliteDatabaseMixinExt on SqfliteDatabase {
   /// try if open in read-only mode.
   bool get readOnly => _mixin.openHelper?.options?.readOnly ?? false;
 
-  /// Invoke the native method of the factory.
-  Future<T> invokeMethod<T>(String method, [Object? arguments]) =>
-      _mixin.factory.invokeMethod(method, arguments);
-
   /// for Update sql query
   /// returns the update count
   Future<int> _txnRawUpdateOrDelete(
@@ -375,6 +371,11 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// Invoke native method and wrap exception.
   Future<T> safeInvokeMethod<T>(String method, [Object? arguments]) =>
       factory.wrapDatabaseException(() => invokeMethod(method, arguments));
+
+  /// Invoke the native method of the factory.
+  @override
+  Future<T> invokeMethod<T>(String method, [Object? arguments]) =>
+      _mixin.factory.invokeMethod(method, arguments);
 
   /// Keep our open helper for proper closing.
   SqfliteDatabaseOpenHelper? openHelper;
@@ -687,8 +688,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       SqfliteTransaction? txn, SqfliteBatch batch,
       {bool? noResult, bool? continueOnError}) {
     return txnWriteSynchronized(txn, (_) async {
-      final arguments = <String, Object?>{paramOperations: batch.operations}
-        ..addAll(getBaseDatabaseMethodArguments(txn));
+      final arguments = <String, Object?>{
+        paramOperations: batch.getOperationsParam()
+      }..addAll(getBaseDatabaseMethodArguments(txn));
       if (noResult == true) {
         arguments[paramNoResult] = noResult;
       }
@@ -755,6 +757,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   }
 
   /// Open a database and returns its id.
+  ///
+  /// id does not run any callback calls
   Future<int> openDatabase() async {
     final params = <String, Object?>{paramPath: path};
     if (readOnly == true) {

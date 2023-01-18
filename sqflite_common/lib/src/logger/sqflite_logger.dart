@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
+import 'package:sqflite_common/sqflite_logger.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/batch.dart';
-import 'package:sqflite_common/src/constant.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/database_mixin.dart';
 import 'package:sqflite_common/src/env_utils.dart';
 import 'package:sqflite_common/src/factory.dart';
 import 'package:sqflite_common/src/factory_mixin.dart';
+import 'package:sqflite_common/src/sql_command.dart';
 import 'package:sqflite_common/src/transaction.dart';
 
 /// Log helper to avoid overflow
@@ -38,11 +39,14 @@ enum SqfliteDatabaseFactoryLoggerType {
 /// Logger event function.
 typedef SqfliteLoggerEventFunction = void Function(SqfliteLoggerEvent event);
 
-/// Logger event.
-abstract class SqfliteLoggerEvent {
+/// Every operation/event is a command
+abstract class SqfliteLoggerCommand {
   /// Set on failure
   Object? get error;
+}
 
+/// Logger event.
+abstract class SqfliteLoggerEvent implements SqfliteLoggerCommand {
   /// Stopwatch. for performance testing.
   Stopwatch? get sw;
 }
@@ -57,12 +61,15 @@ abstract class SqfliteLoggerEventView implements SqfliteLoggerEvent {
 class _SqfliteLoggerEvent
     implements SqfliteLoggerEvent, SqfliteLoggerEventView {
   @override
-  final Object? error;
+  late final Object? error;
 
   @override
-  final Stopwatch? sw;
+  late final Stopwatch? sw;
 
   _SqfliteLoggerEvent(this.sw, this.error);
+
+  /// Allow late init.
+  _SqfliteLoggerEvent._();
 
   @override
   Map<String, Object?> toMap() => {
@@ -111,7 +118,14 @@ abstract class SqfliteLoggerDatabaseEvent implements SqfliteLoggerEvent {
 }
 
 /// Open db event
-abstract class SqfliteLoggerSqlEvent extends SqfliteLoggerDatabaseEvent {
+abstract class SqfliteLoggerSqlEvent<T> extends SqfliteLoggerDatabaseEvent
+    implements SqfliteLoggerSqlCommand<T> {}
+
+/// Typed sql command
+abstract class SqfliteLoggerSqlCommand<T> implements SqfliteLoggerCommand {
+  /// The command type.
+  SqliteSqlCommandType get type;
+
   /// Invoke arguments.
   String get sql;
 
@@ -119,7 +133,7 @@ abstract class SqfliteLoggerSqlEvent extends SqfliteLoggerDatabaseEvent {
   Object? get arguments;
 
   /// Optional result.
-  Object? get result;
+  T? get result;
 }
 
 /// batch event
@@ -128,25 +142,41 @@ abstract class SqfliteLoggerBatchEvent extends SqfliteLoggerDatabaseEvent {
   List<SqfliteLoggerBatchOperation> get operations;
 }
 
-/// Open db event
-abstract class SqfliteLoggerBatchOperation {
+/// Sql batch operation.
+abstract class SqfliteLoggerBatchOperation<T>
+    implements SqfliteLoggerSqlCommand<T> {}
+
+mixin _SqfliteLoggerSqlCommandMixin<T> implements SqfliteLoggerSqlCommand<T> {
+  @override
+  late final SqliteSqlCommandType type;
+
   /// Invoke arguments.
-  String get sql;
+  @override
+  late final String sql;
 
   /// Sql arguments.
-  Object? get arguments;
+  @override
+  late final Object? arguments;
 
   /// Optional result.
-  Object? get result;
+  @override
+  late final T? result;
 
-  /// Optional error.
-  Object? get error;
+  String get _typeAsText => type.toString().split('.').last;
 }
 
 class _SqfliteLoggerDatabaseEvent extends _SqfliteLoggerEvent
     implements SqfliteLoggerDatabaseEvent {
+  late final DatabaseExecutor _client;
+
   @override
-  final DatabaseExecutor client;
+  DatabaseExecutor get client => _client;
+
+  set client(DatabaseExecutor client) {
+    _client = client;
+    // save txn id right away to handle when not set yet.
+    txnId = (client as SqfliteDatabaseExecutorMixin).txn?.transactionId;
+  }
 
   Map<String, Object?> get _databasePrefixMap => {
         if (client.database is SqfliteDatabase)
@@ -159,45 +189,91 @@ class _SqfliteLoggerDatabaseEvent extends _SqfliteLoggerEvent
   @override
   Map<String, Object?> toMap() => {..._databasePrefixMap, ...super.toMap()};
 
-  _SqfliteLoggerDatabaseEvent(super.sw, this.client, super.error) {
-    // save txn id right away to handle when not set yet.
-    txnId = (client as SqfliteDatabaseExecutorMixin).txn?.transactionId;
+  _SqfliteLoggerDatabaseEvent(super.sw, DatabaseExecutor client, super.error) {
+    this.client = client;
   }
+
+  /// Allow late init.
+  _SqfliteLoggerDatabaseEvent._() : super._();
 }
 
-/// Sql command type.
-enum SqliteLoggerSqlCommandType {
-  /// such CREATE TABLE, DROP_INDEX, pragma
-  execute,
+/// Event or batch operation execute command return a count.
+abstract class SqfliteLoggerSqlCommandExecute
+    extends SqfliteLoggerSqlCommand<void> {}
 
-  /// Insert statement,
-  insert,
+/// Event or batch operation insert command return a record id.
+abstract class SqfliteLoggerSqlCommandInsert
+    extends SqfliteLoggerSqlCommand<int> {}
 
-  /// Update statement.
-  update,
+/// Event or batch operation update command return a count.
+abstract class SqfliteLoggerSqlCommandUpdate
+    extends SqfliteLoggerSqlCommand<int> {}
 
-  /// Delete statement.
-  delete,
+/// Event or batch operation delete command return a count.
+abstract class SqfliteLoggerSqlCommandDelete
+    extends SqfliteLoggerSqlCommand<int> {}
 
-  /// Query statement (SELECTà
-  query,
-}
+/// Event or batch operation query command.
+abstract class SqfliteLoggerSqlCommandQuery
+    extends SqfliteLoggerSqlCommand<List<Map<String, Object?>>> {}
 
-class _SqfliteLoggerSqlEvent extends _SqfliteLoggerDatabaseEvent
-    implements SqfliteLoggerSqlEvent {
-  final SqliteLoggerSqlCommandType type;
-  @override
-  final String sql;
+class _SqfliteLoggerSqlEventInsert extends _SqfliteLoggerSqlEvent<int>
+    implements SqfliteLoggerSqlCommandInsert {}
 
-  String get _typeAsText => type.toString().split('.').last;
-  @override
-  final Object? arguments;
+class _SqfliteLoggerSqlEventExecute extends _SqfliteLoggerSqlEvent<void>
+    implements SqfliteLoggerSqlCommandExecute {}
 
-  @override
-  final Object? result;
+class _SqfliteLoggerSqlEventUpdate extends _SqfliteLoggerSqlEvent<int>
+    implements SqfliteLoggerSqlCommandUpdate {}
 
-  _SqfliteLoggerSqlEvent(super.sw, super.client, this.type, this.sql,
-      this.arguments, this.result, super.error);
+class _SqfliteLoggerSqlEventDelete extends _SqfliteLoggerSqlEvent<int>
+    implements SqfliteLoggerSqlCommandDelete {}
+
+class _SqfliteLoggerSqlEventQuery
+    extends _SqfliteLoggerSqlEvent<List<Map<String, Object?>>>
+    implements SqfliteLoggerSqlCommandQuery {}
+
+class _SqfliteLoggerSqlEvent<T> extends _SqfliteLoggerDatabaseEvent
+    with _SqfliteLoggerSqlCommandMixin<T>
+    implements SqfliteLoggerSqlEvent<T> {
+  _SqfliteLoggerSqlEvent() : super._();
+
+  static _SqfliteLoggerSqlEvent fromDynamic(
+      Stopwatch sw,
+      DatabaseExecutor client,
+      SqliteSqlCommandType type,
+      String sql,
+      List<Object?>? arguments,
+      Object? result,
+      Object? error) {
+    _SqfliteLoggerSqlEvent event;
+    switch (type) {
+      case SqliteSqlCommandType.execute:
+        event = _SqfliteLoggerSqlEventExecute();
+        break;
+      case SqliteSqlCommandType.insert:
+        event = _SqfliteLoggerSqlEventInsert();
+        break;
+      case SqliteSqlCommandType.update:
+        event = _SqfliteLoggerSqlEventUpdate();
+        break;
+      case SqliteSqlCommandType.delete:
+        event = _SqfliteLoggerSqlEventDelete();
+        break;
+      case SqliteSqlCommandType.query:
+        event = _SqfliteLoggerSqlEventQuery();
+        break;
+    }
+
+    event.type = type;
+    event.sql = sql;
+    event.arguments = arguments;
+    event.result = result;
+    event.error = error;
+    event.sw = sw;
+    event.client = client;
+    return event;
+  }
 
   @override
   Map<String, Object?> toMap() => {
@@ -209,7 +285,7 @@ class _SqfliteLoggerSqlEvent extends _SqfliteLoggerDatabaseEvent
       };
 
   @override
-  String toString() => '$_typeAsText${super.toString()})';
+  String toString() => '$_typeAsText(${super.toString()})';
 }
 
 /// Open db event
@@ -231,22 +307,70 @@ class _SqfliteLoggerBatchEvent extends _SqfliteLoggerDatabaseEvent
       };
 }
 
-/// Open db event
-class _SqfliteLoggerBatchOperation implements SqfliteLoggerBatchOperation {
-  @override
-  final String sql;
+class _SqfliteLoggerBatchInsertOperation
+    extends _SqfliteLoggerBatchOperation<int>
+    implements SqfliteLoggerSqlCommandInsert {}
 
-  @override
-  final Object? arguments;
+class _SqfliteLoggerBatchUpdateOperation
+    extends _SqfliteLoggerBatchOperation<int>
+    implements SqfliteLoggerSqlCommandUpdate {}
 
-  @override
-  final Object? result;
+class _SqfliteLoggerBatchDeleteOperation
+    extends _SqfliteLoggerBatchOperation<int>
+    implements SqfliteLoggerSqlCommandDelete {}
 
-  @override
-  final Object? error;
+class _SqfliteLoggerBatchExecuteOperation
+    extends _SqfliteLoggerBatchOperation<void>
+    implements SqfliteLoggerSqlCommandExecute {}
 
+class _SqfliteLoggerBatchQueryOperation
+    extends _SqfliteLoggerBatchOperation<List<Map<String, Object?>>>
+    implements SqfliteLoggerSqlCommandQuery {}
+
+/// Batch sql operation
+abstract class _SqfliteLoggerBatchOperation<T>
+    with _SqfliteLoggerSqlCommandMixin<T>
+    implements SqfliteLoggerBatchOperation<T> {
+  @override
+  late final Object? error;
+
+  /*
   _SqfliteLoggerBatchOperation(
-      this.sql, this.arguments, this.result, this.error);
+      String sql, List<Object>? arguments, T? result, Object? error) {
+    this.sql = sql;
+    this.arguments = arguments;
+    this.result = result;
+    this.error = error;
+  }
+  */
+  static _SqfliteLoggerBatchOperation fromDynamic(SqliteSqlCommandType type,
+      String sql, List<Object?>? arguments, Object? result, Object? error) {
+    _SqfliteLoggerBatchOperation operation;
+    switch (type) {
+      case SqliteSqlCommandType.execute:
+        operation = _SqfliteLoggerBatchExecuteOperation();
+        break;
+      case SqliteSqlCommandType.insert:
+        operation = _SqfliteLoggerBatchInsertOperation();
+        break;
+
+      case SqliteSqlCommandType.update:
+        operation = _SqfliteLoggerBatchUpdateOperation();
+        break;
+      case SqliteSqlCommandType.delete:
+        operation = _SqfliteLoggerBatchDeleteOperation();
+        break;
+      case SqliteSqlCommandType.query:
+        operation = _SqfliteLoggerBatchQueryOperation();
+        break;
+    }
+    operation.type = type;
+    operation.sql = sql;
+    operation.arguments = arguments;
+    operation.result = result;
+    operation.error = error;
+    return operation;
+  }
 
   Map<String, Object?> toMap() {
     var map = <String, Object?>{
@@ -259,7 +383,7 @@ class _SqfliteLoggerBatchOperation implements SqfliteLoggerBatchOperation {
   }
 
   @override
-  String toString() => logTruncate(toMap().toString());
+  String toString() => '$_typeAsText(${logTruncate(toMap().toString())})';
 }
 
 class _SqfliteLoggerDatabaseOpenEvent extends _SqfliteLoggerEvent
@@ -384,137 +508,113 @@ abstract class SqfliteDatabaseFactoryLogger implements SqfliteDatabaseFactory {
   }
 }
 
-mixin _SqfliteDatabaseWithDelegateMixin implements SqfliteDatabaseMixin {
-  @override
-  String get path => delegate.path;
-
-  SqfliteDatabaseMixin get delegate;
-
-  @override
-  int? get id => delegate.id;
-
-  @override
-  set id(int? id) => delegate.id = id;
-
-  @override
-  bool get inTransaction => delegate.inTransaction;
-
-  @override
-  set inTransaction(bool inTransaction) =>
-      delegate.inTransaction = inTransaction;
-
-  @override
-  OpenDatabaseOptions? get options => delegate.options;
-
-  /*
-  @override
-  SqfliteDatabaseOpenHelper? get openHelper => delegate.openHelper;
-
-  set openHelper(SqfliteDatabaseOpenHelper? openHelper) =>
-      delegate.openHelper = openHelper;*/
-  @override
-  SqfliteTransaction? get txn => openTransaction;
-
-  @override
-  SqfliteTransaction? get openTransaction => delegate.openTransaction;
-
-  @override
-  set openTransaction(SqfliteTransaction? openTransaction) =>
-      delegate.openTransaction = openTransaction;
-}
-
 mixin _SqfliteDatabaseExecutorLoggerMixin implements SqfliteDatabaseExecutor {
-  SqfliteDatabaseExecutor get _delegate;
-
-  SqfliteDatabaseMixin get _delegateDatabaseMixin =>
-      _delegate.database as SqfliteDatabaseMixin;
-
   SqfliteDatabaseExecutor _executor(SqfliteTransaction? txn) =>
       txn ?? this.txn ?? this;
-
-  SqfliteTransaction? _delegateTransactionOrNull(SqfliteTransaction? txn) =>
-      (txn as _SqfliteTransactionLogger?)?._delegate;
 }
 
-class _SqfliteDatabaseLogger
-    with
-        SqfliteDatabaseMixin,
-        SqfliteDatabaseExecutorMixin,
-        _SqfliteDatabaseExecutorLoggerMixin,
-        _SqfliteDatabaseWithDelegateMixin
+class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
+    with _SqfliteDatabaseExecutorLoggerMixin
     implements SqfliteDatabase {
-  final _SqfliteDatabaseFactoryLogger _factory;
-  @override
-  final SqfliteDatabaseMixin _delegate;
-
-  @override
-  SqfliteDatabaseMixin get delegate => _delegate;
-
-  @override
-  _SqfliteDatabaseFactoryLogger get factory => _factory;
-
-  _SqfliteDatabaseLogger(this._factory, this._delegate);
-
-  @override
-  SqfliteTransaction? get openTransaction => _delegate.openTransaction == null
-      ? null
-      : _SqfliteTransactionLogger(this, _delegate.openTransaction!);
-
-  @override
-  set openTransaction(SqfliteTransaction? openTransaction) =>
-      _delegate.openTransaction = _delegateTransactionOrNull(openTransaction);
+  late final _SqfliteDatabaseFactoryLogger _factory;
 
   SqfliteLoggerOptions get _options => _factory._options;
 
   @override
-  Future<void> close() async {
-    var info = await _wrap<void>(() => _delegate.close());
-    _options.log(_SqfliteLoggerDatabaseCloseEvent(info.sw, this, info.error));
-    info.throwOrResult();
+  _SqfliteDatabaseFactoryLogger get factory => _factory;
+
+  _SqfliteDatabaseLogger(SqfliteDatabaseOpenHelper openHelper, String path,
+      {OpenDatabaseOptions? options})
+      : super(openHelper, path, options: options) {
+    _factory = openHelper.factory as _SqfliteDatabaseFactoryLogger;
   }
 
+  void _log(SqfliteLoggerEvent event) => _options.log(event);
+
+  bool get _needLogAll => _options.type == SqfliteDatabaseFactoryLoggerType.all;
+
+  @override
+  Future<int> openDatabase() async {
+    Future<int> doOpenDatabase() async {
+      return (await super.openDatabase());
+    }
+
+    if (!_needLogAll) {
+      return await doOpenDatabase();
+    } else {
+      var info = await _wrap<int>(doOpenDatabase);
+      _options.log(_SqfliteLoggerDatabaseOpenEvent(
+          info.sw, path, options, this, info.error));
+      return info.throwOrResult();
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    Future<void> doClose() {
+      return super.close();
+    }
+
+    if (_needLogAll) {
+      var info = await _wrap<void>(doClose);
+      _log(_SqfliteLoggerDatabaseCloseEvent(info.sw, this, info.error));
+      info.throwOrResult();
+    } else {
+      await doClose();
+    }
+  }
+
+  /*
   /// New transaction.
   @override
   SqfliteTransaction newTransaction() {
     final txn = _SqfliteTransactionLogger(this, super.newTransaction());
     return txn;
-  }
+  }*/
 
   /// Commit a batch.
   @override
   Future<List<Object?>> txnApplyBatch(
       SqfliteTransaction? txn, SqfliteBatch batch,
       {bool? noResult, bool? continueOnError}) async {
-    var info = await _wrap<List<Object?>>(() => _delegate.txnApplyBatch(
-        txn, batch,
-        noResult: noResult, continueOnError: continueOnError));
-
-    var logOperations = <_SqfliteLoggerBatchOperation>[];
-    if (info.error == null) {
-      var operations = batch.operations;
-
-      for (var i = 0; i < operations.length; i++) {
-        var operation = operations[i];
-        Object? result;
-        Object? error;
-        if (noResult != true) {
-          var resultOrError = info.result![i];
-          if (resultOrError is DatabaseException) {
-            error = resultOrError;
-          } else {
-            result = resultOrError;
-          }
-        }
-        logOperations.add(_SqfliteLoggerBatchOperation(
-            operation[paramSql] as String,
-            operation[paramSqlArguments],
-            result,
-            error));
-      }
+    Future<List<Object?>> doApplyBatch() {
+      return super.txnApplyBatch(txn, batch,
+          noResult: noResult, continueOnError: continueOnError);
     }
-    _options.log(_SqfliteLoggerBatchEvent(
-        info.sw, _executor(txn), logOperations, info.error));
-    return info.throwOrResult();
+
+    if (_needLogAll) {
+      var info = await _wrap(doApplyBatch);
+
+      var logOperations = <_SqfliteLoggerBatchOperation>[];
+      if (info.error == null) {
+        var operations = batch.operations;
+
+        for (var i = 0; i < operations.length; i++) {
+          var operation = operations[i];
+          Object? result;
+          Object? error;
+          if (noResult != true) {
+            var resultOrError = info.result![i];
+            if (resultOrError is DatabaseException) {
+              error = resultOrError;
+            } else {
+              result = resultOrError;
+            }
+          }
+          logOperations.add(_SqfliteLoggerBatchOperation.fromDynamic(
+              operation.type,
+              operation.sql,
+              operation.arguments,
+              result,
+              error));
+        }
+      }
+      _options.log(_SqfliteLoggerBatchEvent(
+          info.sw, _executor(txn), logOperations, info.error));
+      return info.throwOrResult();
+    } else {
+      return await doApplyBatch();
+    }
   }
 
   /// Execute a raw SQL SELECT query
@@ -523,30 +623,27 @@ class _SqfliteDatabaseLogger
   @override
   Future<List<Map<String, Object?>>> txnRawQuery(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
-    return _txnWrapSql(txn, SqliteLoggerSqlCommandType.query, sql, arguments,
+    return _txnWrapSql(txn, SqliteSqlCommandType.query, sql, arguments,
         () async {
-      return _delegateDatabaseMixin.txnRawQuery(
-          _delegateTransactionOrNull(txn), sql, arguments);
+      return super.txnRawQuery(txn, sql, arguments);
     });
   }
 
   @override
   Future<int> txnRawDelete(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
-    return _txnWrapSql(txn, SqliteLoggerSqlCommandType.delete, sql, arguments,
+    return _txnWrapSql(txn, SqliteSqlCommandType.delete, sql, arguments,
         () async {
-      return _delegateDatabaseMixin.txnRawDelete(
-          _delegateTransactionOrNull(txn), sql, arguments);
+      return super.txnRawDelete(txn, sql, arguments);
     });
   }
 
   @override
   Future<int> txnRawUpdate(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
-    return _txnWrapSql(txn, SqliteLoggerSqlCommandType.update, sql, arguments,
+    return _txnWrapSql(txn, SqliteSqlCommandType.update, sql, arguments,
         () async {
-      return _delegateDatabaseMixin.txnRawUpdate(
-          _delegateTransactionOrNull(txn), sql, arguments);
+      return super.txnRawUpdate(txn, sql, arguments);
     });
   }
 
@@ -557,10 +654,9 @@ class _SqfliteDatabaseLogger
   @override
   Future<int> txnRawInsert(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
-    return _txnWrapSql(txn, SqliteLoggerSqlCommandType.insert, sql, arguments,
+    return _txnWrapSql(txn, SqliteSqlCommandType.insert, sql, arguments,
         () async {
-      return _delegateDatabaseMixin.txnRawInsert(
-          _delegateTransactionOrNull(txn), sql, arguments);
+      return super.txnRawInsert(txn, sql, arguments);
     });
   }
 
@@ -571,69 +667,27 @@ class _SqfliteDatabaseLogger
       {bool? beginTransaction}) {
     return _txnWrapSql(
         txn,
-        SqliteLoggerSqlCommandType.execute,
+        SqliteSqlCommandType.execute,
         sql,
         arguments,
-        () => _delegateDatabaseMixin.txnExecute(
-            _delegateTransactionOrNull(txn), sql, arguments,
+        () => super.txnExecute(txn, sql, arguments,
             beginTransaction: beginTransaction));
   }
 
-  Future<T> _txnWrapSql<T>(
-      SqfliteTransaction? txn,
-      SqliteLoggerSqlCommandType type,
-      String sql,
-      List<Object?>? arguments,
-      Future<T> Function() action) async {
-    if (_options.type != SqfliteDatabaseFactoryLoggerType.all) {
+  Future<T> _txnWrapSql<T>(SqfliteTransaction? txn, SqliteSqlCommandType type,
+      String sql, List<Object?>? arguments, Future<T> Function() action) async {
+    if (!_needLogAll) {
       return await action();
     } else {
       var info = await _wrap<T>(action);
-      _options.log(_SqfliteLoggerSqlEvent(info.sw, _executor(txn), type, sql,
-          arguments, info.result, info.error));
+      _options.log(_SqfliteLoggerSqlEvent.fromDynamic(info.sw, _executor(txn),
+          type, sql, arguments, info.result, info.error));
       return info.throwOrResult();
     }
   }
 
   Future<_EventInfo<T>> _wrap<T>(FutureOr<T> Function() action) =>
       _factory._wrap(action);
-
-  @override
-  Future<SqfliteDatabase> doOpen(OpenDatabaseOptions options) =>
-      _delegate.doOpen(options);
-}
-
-class _SqfliteTransactionLogger
-    with SqfliteDatabaseExecutorMixin, _SqfliteDatabaseExecutorLoggerMixin
-    implements SqfliteTransaction {
-  @override
-  final _SqfliteDatabaseLogger db;
-  @override
-  final SqfliteTransaction _delegate;
-
-  _SqfliteTransactionLogger(this.db, this._delegate);
-
-  @override
-  bool? get successful => _delegate.successful;
-
-  @override
-  set successful(bool? successful) => _delegate.successful = successful;
-
-  @override
-  int? get transactionId => _delegate.transactionId;
-
-  @override
-  set transactionId(int? transactionId) =>
-      _delegate.transactionId = transactionId;
-
-  @override
-  SqfliteDatabaseMixin get database => db;
-
-  @override
-  SqfliteTransaction get txn => this;
-
-  @override
-  Batch batch() => SqfliteTransactionBatch(this);
 }
 
 class _SqfliteDatabaseFactoryLogger
@@ -644,32 +698,11 @@ class _SqfliteDatabaseFactoryLogger
 
   _SqfliteDatabaseFactoryLogger(this._delegate, this._options);
 
+  /// The only method to override to create a custom object.
   @override
   SqfliteDatabaseMixin newDatabase(
       SqfliteDatabaseOpenHelper openHelper, String path) {
-    var delegate = _delegate.newDatabase(openHelper, path);
-    return _SqfliteDatabaseLogger(this, delegate as SqfliteDatabaseMixin);
-  }
-
-  @override
-  Future<Database> openDatabase(String path,
-      {OpenDatabaseOptions? options}) async {
-    Future<SqfliteDatabase> doOpenDatabase() async {
-      return (await super.openDatabase(path, options: options))
-          as SqfliteDatabase;
-    }
-
-    if (_options.type != SqfliteDatabaseFactoryLoggerType.all) {
-      return await doOpenDatabase();
-    } else {
-      var info = await _wrap<SqfliteDatabase>(doOpenDatabase);
-      _options.log(_SqfliteLoggerDatabaseOpenEvent(
-          info.sw, path, options, info.result, info.error));
-      return _SqfliteDatabaseLogger(
-          this,
-          (info.throwOrResult() as _SqfliteDatabaseExecutorLoggerMixin)
-              ._delegateDatabaseMixin);
-    }
+    return _SqfliteDatabaseLogger(openHelper, path);
   }
 
   Future<_EventInfo<T>> _wrap<T>(FutureOr<T> Function() action) async {
@@ -688,6 +721,7 @@ class _SqfliteDatabaseFactoryLogger
     return info;
   }
 
+  /// The only method to override to use the delegate
   @override
   Future<T> invokeMethod<T>(String method, [Object? arguments]) async {
     Future<T> doInvokeMethod() {
@@ -703,7 +737,7 @@ class _SqfliteDatabaseFactoryLogger
       return await doInvokeMethod();
     }
   }
-
+/*
   @override
   Future<void> closeDatabase(SqfliteDatabase database) =>
       _delegate.closeDatabase(database);
@@ -727,7 +761,7 @@ class _SqfliteDatabaseFactoryLogger
 
   @override
   Future<T> wrapDatabaseException<T>(Future<T> Function() action) =>
-      _delegate.wrapDatabaseException(action);
+      _delegate.wrapDatabaseException(action);*/
 }
 
 /// internal extension.
