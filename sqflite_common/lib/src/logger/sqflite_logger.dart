@@ -497,6 +497,7 @@ class SqfliteLoggerOptions {
 /// Special wrapper that allows easily wrapping each API calls.
 abstract class SqfliteDatabaseFactoryLogger implements SqfliteDatabaseFactory {
   /// Wrap each call in a logger.
+  @experimental
   factory SqfliteDatabaseFactoryLogger(DatabaseFactory factory,
       {SqfliteLoggerOptions? options}) {
     var delegate = factory;

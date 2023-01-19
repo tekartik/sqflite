@@ -565,4 +565,26 @@ INSERT INTO test (value) VALUES (10);
     }
     await db.close();
   });
+  test('wal', () async {
+    var path = await context.initDeleteDb('exp_wal.db');
+    var db = await factory.openDatabase(path,
+        options: OpenDatabaseOptions(
+            version: 1,
+            onConfigure: (Database db) async {
+              await db.execute('PRAGMA journal_mode=WAL');
+              await db.rawQuery('PRAGMA journal_mode=WAL');
+            },
+            onCreate: (Database db, int version) async {
+              await db.execute('CREATE TABLE test (id INTEGER)');
+              await db.insert('test', <String, Object?>{'id': 1});
+            }));
+    try {
+      var resultSet = await db.rawQuery('SELECT id FROM test');
+      expect(resultSet, [
+        {'id': 1},
+      ]);
+    } finally {
+      await db.close();
+    }
+  });
 }

@@ -722,6 +722,27 @@ CREATE TABLE test (
       }
       await db.close();
     });
+    // Issue https://github.com/tekartik/sqflite/issues/929
+    // Pragma has to use rawQuery...why, on sqflite Android
+    test('wal', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var db = await openDatabase(inMemoryDatabasePath);
+      try {
+        await db.execute('PRAGMA journal_mode=WAL');
+      } catch (e) {
+        print(e);
+        await db.rawQuery('PRAGMA journal_mode=WAL');
+      }
+
+      try {
+        var resultSet = await db.rawQuery('SELECT id FROM test');
+        expect(resultSet, [
+          {'id': 1},
+        ]);
+      } finally {
+        await db.close();
+      }
+    });
   }
 }
 
