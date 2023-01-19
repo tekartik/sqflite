@@ -497,12 +497,12 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       txnSynchronized(txn, action);
 
   /// for sql without return values
+  ///
+  /// [beginTransaction] is true when beginning a transaction.
   @override
   Future<T> txnExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
-      {
-      /// set
-      bool? beginTransaction}) {
+      {bool? beginTransaction}) {
     return txnWriteSynchronized<T>(txn, (_) {
       var inTransactionChange = getSqlInTransactionArgument(sql);
 
@@ -520,14 +520,13 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   }
 
   /// [inTransactionChange] is true when entering a transaction, false when leaving
+  /// should be set by parsing the sql command for all commands
+  ///
+  /// [beginTransaction] is true when entering a transaction and should clear
+  /// the transaction param.
   Future<T> invokeExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
-      {
-      /// This is set by parsing the sql command for all commands
-      bool? inTransactionChange,
-
-      /// set by beginTransaction
-      bool? beginTransaction}) {
+      {bool? inTransactionChange, bool? beginTransaction}) {
     var methodArguments = _txnGetSqlMethodArguments(txn, sql, arguments);
     // Transaction v2, tell our support for transaction id
     if (beginTransaction == true) {
