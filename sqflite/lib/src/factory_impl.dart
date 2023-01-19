@@ -50,9 +50,8 @@ will have this factory as the default for all operations.
 /// Definition with a typo error.
 /// - Will be soon deprecated
 /// - Will be removed in 2.0.0
-/// @deprecated
-SqfliteDatabaseFactory get sqlfliteDatabaseFactory =>
-    _databaseFactory ??= SqfliteDatabaseFactoryImpl();
+@Deprecated('Use databaseFactory instead (typo error)')
+SqfliteDatabaseFactory get sqlfliteDatabaseFactory => sqfliteDatabaseFactory;
 
 /// Change the default factory. test only.
 ///

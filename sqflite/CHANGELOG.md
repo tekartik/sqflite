@@ -162,7 +162,7 @@ native world and executing `ROLLBACK` to prevent `SQLITE_BUSY` error
 
 ## 0.11.1
 
-* add `Sqlflite.hex` to allow querying on blob fields
+* add `Sqflite.hex` to allow querying on blob fields
 
 ## 0.11.0
 
