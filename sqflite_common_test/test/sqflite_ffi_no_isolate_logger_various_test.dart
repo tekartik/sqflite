@@ -15,7 +15,14 @@ var _factory =
               print(e);
               _events.add(e);
             }));
-
+var _invokeFactory =
+    SqfliteDatabaseFactoryLogger(createDatabaseFactoryFfi(noIsolate: false),
+        options: SqfliteLoggerOptions(
+            type: SqfliteDatabaseFactoryLoggerType.invoke,
+            log: (e) {
+              print(e);
+              _events.add(e);
+            }));
 Future<void> main() async {
   /// Initialize ffi loader
   sqfliteFfiInit();
@@ -23,6 +30,44 @@ Future<void> main() async {
   var dbsPath = await _factory.getDatabasesPath();
   await _factory.setDatabasesPath('${dbsPath}_all_logger_various_no_isolate');
 
+  group('delete/exists', () {
+    test('delete', () async {
+      _events.clear();
+      await _invokeFactory.deleteDatabase(inMemoryDatabasePath);
+      expect(_events.toMapListNoSw(), [
+        {
+          'method': 'deleteDatabase',
+          'arguments': {'path': ':memory:'}
+        }
+      ]);
+      var event = _events.first as SqfliteLoggerInvokeEvent;
+      expect(event.sw!.isRunning, isFalse);
+      expect(event.method, 'deleteDatabase');
+
+      _events.clear();
+      await _factory.deleteDatabase(inMemoryDatabasePath);
+      var deleteEvent = _events.first as SqfliteLoggerDatabaseDeleteEvent;
+      expect(deleteEvent.sw!.isRunning, isFalse);
+      expect(deleteEvent.path, inMemoryDatabasePath);
+      expect(_events.toMapListNoSw(), [
+        {'path': ':memory:'}
+      ]);
+    });
+    test('exists', () async {
+      _events.clear();
+      await _invokeFactory.databaseExists(inMemoryDatabasePath);
+      expect(_events.toMapListNoSw(), [
+        {
+          'method': 'databaseExists',
+          'arguments': {'path': ':memory:'},
+          'result': false
+        }
+      ]);
+      _events.clear();
+      await _factory.databaseExists(inMemoryDatabasePath);
+      expect(_events.toMapListNoSw(), isEmpty);
+    });
+  });
   group('various_test_value', () {
     late Database db;
     late int? dbId;

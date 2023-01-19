@@ -6,6 +6,7 @@ export 'src/logger/sqflite_logger.dart'
         SqfliteLoggerSqlEvent,
         SqfliteLoggerDatabaseOpenEvent,
         SqfliteLoggerDatabaseCloseEvent,
+        SqfliteLoggerDatabaseDeleteEvent,
         SqfliteLoggerInvokeEvent,
         SqfliteLoggerBatchEvent,
         SqfliteLoggerBatchOperation,

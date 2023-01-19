@@ -94,6 +94,12 @@ abstract class SqfliteLoggerInvokeEvent extends SqfliteLoggerEvent {
 }
 
 /// Open db event
+abstract class SqfliteLoggerDatabaseDeleteEvent extends SqfliteLoggerEvent {
+  /// Database path.
+  String? get path;
+}
+
+/// Open db event
 abstract class SqfliteLoggerDatabaseOpenEvent extends SqfliteLoggerEvent {
   /// The options used.
   OpenDatabaseOptions? get options;
@@ -334,15 +340,6 @@ abstract class _SqfliteLoggerBatchOperation<T>
   @override
   late final Object? error;
 
-  /*
-  _SqfliteLoggerBatchOperation(
-      String sql, List<Object>? arguments, T? result, Object? error) {
-    this.sql = sql;
-    this.arguments = arguments;
-    this.result = result;
-    this.error = error;
-  }
-  */
   static _SqfliteLoggerBatchOperation fromDynamic(SqliteSqlCommandType type,
       String sql, List<Object?>? arguments, Object? result, Object? error) {
     _SqfliteLoggerBatchOperation operation;
@@ -384,6 +381,22 @@ abstract class _SqfliteLoggerBatchOperation<T>
 
   @override
   String toString() => '$_typeAsText(${logTruncate(toMap().toString())})';
+}
+
+class _SqfliteLoggerDatabaseDeleteEvent extends _SqfliteLoggerEvent
+    implements SqfliteLoggerDatabaseDeleteEvent {
+  @override
+  final String path;
+
+  @override
+  Map<String, Object?> toMap() => {
+        'path': path,
+      };
+
+  _SqfliteLoggerDatabaseDeleteEvent(super.sw, this.path, super.error);
+
+  @override
+  String toString() => 'openDatabase(${super.toString()})';
 }
 
 class _SqfliteLoggerDatabaseOpenEvent extends _SqfliteLoggerEvent
@@ -565,14 +578,6 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
     }
   }
 
-  /*
-  /// New transaction.
-  @override
-  SqfliteTransaction newTransaction() {
-    final txn = _SqfliteTransactionLogger(this, super.newTransaction());
-    return txn;
-  }*/
-
   /// Commit a batch.
   @override
   Future<List<Object?>> txnApplyBatch(
@@ -699,6 +704,11 @@ class _SqfliteDatabaseFactoryLogger
 
   _SqfliteDatabaseFactoryLogger(this._delegate, this._options);
 
+  // Needed for proper exception conversion.
+  @override
+  Future<T> wrapDatabaseException<T>(Future<T> Function() action) =>
+      _delegate.wrapDatabaseException(action);
+
   /// The only method to override to create a custom object.
   @override
   SqfliteDatabaseMixin newDatabase(
@@ -738,31 +748,22 @@ class _SqfliteDatabaseFactoryLogger
       return await doInvokeMethod();
     }
   }
-/*
-  @override
-  Future<void> closeDatabase(SqfliteDatabase database) =>
-      _delegate.closeDatabase(database);
 
   @override
-  Future<bool> databaseExists(String path) => _delegate.databaseExists(path);
+  Future<void> deleteDatabase(String path) async {
+    Future<void> doDeleteDatabase() {
+      return super.deleteDatabase(path);
+    }
 
-  @override
-  Future<void> deleteDatabase(String path) => _delegate.deleteDatabase(path);
-
-  @override
-  Future<String> getDatabasesPath() => _delegate.getDatabasesPath();
-
-  @override
-  void removeDatabaseOpenHelper(String path) =>
-      _delegate.removeDatabaseOpenHelper(path);
-
-  @override
-  Future<void> setDatabasesPath(String? path) =>
-      _delegate.setDatabasesPath(path!);
-
-  @override
-  Future<T> wrapDatabaseException<T>(Future<T> Function() action) =>
-      _delegate.wrapDatabaseException(action);*/
+    if (_options.type == SqfliteDatabaseFactoryLoggerType.all) {
+      var info = await _wrap(doDeleteDatabase);
+      _options
+          .log(_SqfliteLoggerDatabaseDeleteEvent(info.sw, path, info.error));
+      return info.throwOrResult();
+    } else {
+      return await doDeleteDatabase();
+    }
+  }
 }
 
 /// internal extension.

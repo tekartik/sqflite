@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/exception_impl.dart' as impl;
 import 'package:sqflite/src/sqflite_impl.dart' as impl;
 import 'package:sqflite/src/sqflite_import.dart';
+
+import 'dev_utils.dart'; // ignore: unused_import
 
 SqfliteDatabaseFactory? _databaseFactory;
 
@@ -78,7 +80,7 @@ set sqfliteDatabaseFactory(SqfliteDatabaseFactory? databaseFactory) =>
 /// Factory implementation
 class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   /// Only to set for extra debugging
-  // static var _debugInternals = devWarning(true);
+  //static var _debugInternals = devWarning(true);
   static const _debugInternals = false;
 
   @override
@@ -100,22 +102,9 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
     return result;
   }
 
-  /*
-  /// Old implementation which does not handle hot-restart and Android restart
-  @override
-  Future<void> deleteDatabase(String path) async {
-    path = await fixPath(path);
-
-      try {
-        await File(path).delete(recursive: true);
-      } catch (_) {
-        // 0.8.4
-        // print(_);
-      }
-  }
-  */
-
-  /// Optimized but could be removed
+  /// Optimized but could be removed for Android as of 2023-01-19
+  /// TODO check for iOS and MacOS
+  /// Check for 3rd party too.
   @override
   Future<bool> databaseExists(String path) async {
     path = await fixPath(path);

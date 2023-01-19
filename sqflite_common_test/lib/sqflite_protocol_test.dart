@@ -44,6 +44,28 @@ void run(SqfliteTestContext? context) {
       await db.close();
       scenario.end();
     });
+    test('exists', () async {
+      final scenario = wrapStartScenario(factory, [
+        [
+          'databaseExists',
+          {'path': ':memory:'},
+          false
+        ]
+      ]);
+      await scenario.factory.databaseExists(inMemoryDatabasePath);
+      scenario.end();
+    });
+    test('delete', () async {
+      final scenario = wrapStartScenario(factory, [
+        [
+          'deleteDatabase',
+          {'path': ':memory:'},
+          null
+        ]
+      ]);
+      await scenario.factory.deleteDatabase(inMemoryDatabasePath);
+      scenario.end();
+    });
     test('execute', () async {
       final scenario = wrapStartScenario(factory, [
         openStep,
