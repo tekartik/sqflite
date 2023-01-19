@@ -72,6 +72,22 @@ public class TestSqflitePluginTest {
     }
 
     @Test
+    public void databaseExists() throws IOException {
+        File file = new File(appContext.getFilesDir(), "exists_file.db");
+        try {
+            file.delete();
+        } catch (Exception e) {}
+        assertEquals(false, Database.existsDatabase(file.getPath()));
+        Database database = new Database(appContext, file.getPath(), 0, true, 0);
+        try {
+            database.open();
+            database.sqliteDatabase.execSQL("PRAGMA version = 1");
+        } finally {
+            database.close();
+        }
+    }
+
+    @Test
     public void walEnabled() {
         // False, uncomment in manifest to check for true
         assertFalse(Database.checkWalEnabled(appContext));
