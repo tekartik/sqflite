@@ -733,7 +733,8 @@ CREATE TABLE test (
         print(e);
         await db.rawQuery('PRAGMA journal_mode=WAL');
       }
-
+      await db.execute('CREATE TABLE test (id INTEGER)');
+      await db.insert('test', <String, Object?>{'id': 1});
       try {
         var resultSet = await db.rawQuery('SELECT id FROM test');
         expect(resultSet, [
