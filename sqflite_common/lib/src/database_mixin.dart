@@ -106,7 +106,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
         limit: limit,
         offset: offset,
         whereArgs: whereArgs);
-    return _rawQuery(builder.sql, builder.arguments);
+    return rawQuery(builder.sql, builder.arguments);
   }
 
   /// Execute a raw SQL SELECT query
@@ -215,8 +215,13 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
     return _rawDelete(sql, arguments);
   }
 
-  Future<int> _rawDelete(String sql, [List<Object?>? arguments]) =>
-      rawUpdate(sql, arguments);
+  /// Execute a raw SQL UPDATE query
+  ///
+  /// Returns the number of changes made
+  Future<int> _rawDelete(String sql, [List<Object?>? arguments]) {
+    db.checkNotClosed();
+    return db.txnRawDelete(txn, sql, arguments);
+  }
 
   /// Convenience method for deleting rows in the database.
   ///
@@ -242,56 +247,22 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   }
 }
 
-/// Sqflite database mixin.
-mixin SqfliteDatabaseMixin implements SqfliteDatabase {
-  /// Invoke native method and wrap exception.
-  Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]) =>
-      factory.wrapDatabaseException(() => invokeMethod(method, arguments));
-
-  /// Keep our open helper for proper closing.
-  SqfliteDatabaseOpenHelper? openHelper;
-  @override
-  OpenDatabaseOptions? options;
-
-  /// The factory.
-  SqfliteDatabaseFactory get factory => openHelper!.factory;
-
-  /// try if open in read-only mode.
-  bool get readOnly => openHelper?.options?.readOnly ?? false;
-
-  @override
-  SqfliteDatabase get db => this;
-
-  /// True once the client called close. It should no longer invoke native
-  /// code
-  bool isClosed = false;
-
-  @override
-  bool get isOpen => openHelper!.isOpen;
-
-  @override
-  late String path;
-
-  /// Special transaction created during open.
+/// Common extension
+extension SqfliteDatabaseMixinExt on SqfliteDatabase {
   ///
-  /// Only not null during opening.
-  SqfliteTransaction? openTransaction;
+  /// Get the database inner version
+  ///
+  Future<int> txnGetVersion(SqfliteTransaction? txn) async {
+    final rows = await txnRawQuery(txn, 'PRAGMA user_version', null);
+    return firstIntValue(rows) ?? 0;
+  }
 
-  @override
-  SqfliteTransaction? get txn => openTransaction;
-
-  /// Non-reentrant lock.
-  final Lock rawLock = Lock();
-
-  // Its internal id
-  @override
-  int? id;
-
-  /// Set when parsing BEGIN and COMMIT/ROLLBACK
-  bool inTransaction = false;
-
-  /// Set internally for testing
-  bool doNotUseSynchronized = false;
+  /// Set the database inner version
+  /// Used internally for open helpers and automatic versioning
+  ///
+  Future<void> txnSetVersion(SqfliteTransaction? txn, int version) async {
+    await txnExecute<void>(txn, 'PRAGMA user_version = $version', null);
+  }
 
   /// Base database map parameter.
   Map<String, Object?> getBaseDatabaseMethodArguments(SqfliteTransaction? txn) {
@@ -321,6 +292,136 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     }
   }
 
+  Map<String, Object?> _txnGetSqlMethodArguments(
+      SqfliteTransaction? txn, String sql, List<Object?>? sqlArguments) {
+    var methodArguments = <String, Object?>{
+      paramSql: sql,
+      if (sqlArguments != null) paramSqlArguments: sqlArguments,
+    }..addAll(getBaseDatabaseMethodArguments(txn));
+    return methodArguments;
+  }
+
+  SqfliteDatabaseMixin get _mixin => this as SqfliteDatabaseMixin;
+
+  /// try if open in read-only mode.
+  bool get readOnly => _mixin.openHelper?.options?.readOnly ?? false;
+
+  /// for Update sql query
+  /// returns the update count
+  Future<int> _txnRawUpdateOrDelete(
+      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
+    return _mixin.txnWriteSynchronized(txn, (_) async {
+      final result = await _mixin.safeInvokeMethod<int?>(
+          methodUpdate,
+          <String, Object?>{paramSql: sql, paramSqlArguments: arguments}
+            ..addAll(getBaseDatabaseMethodArguments(txn)));
+      return result ?? 0;
+    });
+  }
+
+  /// Run transaction.
+  Future<T> _txnTransaction<T>(
+      Transaction? txn, Future<T> Function(Transaction txn) action,
+      {bool? exclusive}) async {
+    bool? successfull;
+    var transactionStarted = txn == null;
+    if (transactionStarted) {
+      txn = await beginTransaction(exclusive: exclusive);
+    }
+    T result;
+    try {
+      result = await action(txn);
+      successfull = true;
+    } finally {
+      if (transactionStarted) {
+        final sqfliteTransaction = txn as SqfliteTransaction;
+        sqfliteTransaction.successful = successfull;
+        await endTransaction(sqfliteTransaction);
+      }
+    }
+    return result;
+  }
+
+  /// Begin a transaction.
+  Future<void> txnBeginTransaction(SqfliteTransaction txn,
+      {bool? exclusive}) async {
+    Object? response;
+    // never create transaction in read-only mode
+    if (readOnly != true) {
+      if (exclusive == true) {
+        response = await txnExecute<dynamic>(txn, 'BEGIN EXCLUSIVE', null,
+            beginTransaction: true);
+      } else {
+        response = await txnExecute<dynamic>(txn, 'BEGIN IMMEDIATE', null,
+            beginTransaction: true);
+      }
+    }
+    // Transaction v2 support, save the transaction id
+    if (response is Map) {
+      var transactionId = response[paramTransactionId];
+      if (transactionId is int) {
+        txn.transactionId = transactionId;
+      }
+    }
+  }
+}
+
+/// Sqflite database mixin.
+mixin SqfliteDatabaseMixin implements SqfliteDatabase {
+  /// Invoke native method and wrap exception.
+  Future<T> safeInvokeMethod<T>(String method, [Object? arguments]) =>
+      factory.wrapDatabaseException(() => invokeMethod(method, arguments));
+
+  /// Invoke the native method of the factory.
+  @override
+  Future<T> invokeMethod<T>(String method, [Object? arguments]) =>
+      _mixin.factory.invokeMethod(method, arguments);
+
+  /// Keep our open helper for proper closing.
+  SqfliteDatabaseOpenHelper? openHelper;
+  @override
+  OpenDatabaseOptions? options;
+
+  /// The factory.
+  SqfliteDatabaseFactory get factory => openHelper!.factory;
+
+  @override
+  SqfliteDatabase get database => db;
+
+  @override
+  SqfliteDatabase get db => this;
+
+  /// True once the client called close. It should no longer invoke native
+  /// code
+  bool isClosed = false;
+
+  @override
+  bool get isOpen => openHelper!.isOpen;
+
+  @override
+  late String path;
+
+  /// Special transaction created during open.
+  ///
+  /// Only not null during opening.
+  SqfliteTransaction? openTransaction;
+
+  @override
+  SqfliteTransaction? get txn => openTransaction;
+
+  /// Non-reentrant lock.
+  final Lock _rawLock = Lock();
+
+  // Its internal id
+  @override
+  int? id;
+
+  /// Set when parsing BEGIN and COMMIT/ROLLBACK
+  bool inTransaction = false;
+
+  /// Set internally for testing
+  bool doNotUseSynchronized = false;
+
   /// Base database map parameter.
   /*
   Map<String, Object?> get getBaseDatabaseMethodArguments(txn) =>
@@ -338,12 +439,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     }
   }
 
-  /// Invoke the native method of the factory.
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
-      factory.invokeMethod(method, arguments);
-
   @override
-  Future<T> devInvokeMethod<T>(String method, [dynamic arguments]) {
+  Future<T> devInvokeMethod<T>(String method, [Object? arguments]) {
     return invokeMethod<T>(method, arguments);
   }
 
@@ -375,7 +472,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       }
 
       // Grab the lock
-      final operation = rawLock.synchronized(() {
+      final operation = _rawLock.synchronized(() {
         if (handleTimeoutWarning) {
           timeoutCompleter.complete();
         }
@@ -400,13 +497,12 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       txnSynchronized(txn, action);
 
   /// for sql without return values
+  ///
+  /// [beginTransaction] is true when beginning a transaction.
   @override
   Future<T> txnExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
-      {
-
-      /// set
-      bool? beginTransaction}) {
+      {bool? beginTransaction}) {
     return txnWriteSynchronized<T>(txn, (_) {
       var inTransactionChange = getSqlInTransactionArgument(sql);
 
@@ -423,25 +519,14 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     });
   }
 
-  Map<String, Object?> _txnGetSqlMethodArguments(
-      SqfliteTransaction? txn, String sql, List<Object?>? sqlArguments) {
-    var methodArguments = <String, Object?>{
-      paramSql: sql,
-      if (sqlArguments != null) paramSqlArguments: sqlArguments,
-    }..addAll(getBaseDatabaseMethodArguments(txn));
-    return methodArguments;
-  }
-
   /// [inTransactionChange] is true when entering a transaction, false when leaving
+  /// should be set by parsing the sql command for all commands
+  ///
+  /// [beginTransaction] is true when entering a transaction and should clear
+  /// the transaction param.
   Future<T> invokeExecute<T>(
       SqfliteTransaction? txn, String sql, List<Object?>? arguments,
-      {
-
-      /// This is set by parsing the sql command for all commands
-      bool? inTransactionChange,
-
-      /// set by beginTransaction
-      bool? beginTransaction}) {
+      {bool? inTransactionChange, bool? beginTransaction}) {
     var methodArguments = _txnGetSqlMethodArguments(txn, sql, arguments);
     // Transaction v2, tell our support for transaction id
     if (beginTransaction == true) {
@@ -585,23 +670,24 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// returns the update count
   @override
   Future<int> txnRawUpdate(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
-    return txnWriteSynchronized(txn, (_) async {
-      final result = await safeInvokeMethod<int?>(
-          methodUpdate,
-          <String, Object?>{paramSql: sql, paramSqlArguments: arguments}
-            ..addAll(getBaseDatabaseMethodArguments(txn)));
-      return result ?? 0;
-    });
-  }
+          SqfliteTransaction? txn, String sql, List<Object?>? arguments) =>
+      _txnRawUpdateOrDelete(txn, sql, arguments);
+
+  /// for Delete sql query
+  /// returns the delete count
+  @override
+  Future<int> txnRawDelete(
+          SqfliteTransaction? txn, String sql, List<Object?>? arguments) =>
+      _txnRawUpdateOrDelete(txn, sql, arguments);
 
   @override
   Future<List<Object?>> txnApplyBatch(
       SqfliteTransaction? txn, SqfliteBatch batch,
       {bool? noResult, bool? continueOnError}) {
     return txnWriteSynchronized(txn, (_) async {
-      final arguments = <String, Object?>{paramOperations: batch.operations}
-        ..addAll(getBaseDatabaseMethodArguments(txn));
+      final arguments = <String, Object?>{
+        paramOperations: batch.getOperationsParam()
+      }..addAll(getBaseDatabaseMethodArguments(txn));
       if (noResult == true) {
         arguments[paramNoResult] = noResult;
       }
@@ -620,27 +706,16 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     });
   }
 
+  /// New transaction.
+  SqfliteTransaction newTransaction() {
+    final txn = SqfliteTransaction(this);
+    return txn;
+  }
+
   @override
   Future<SqfliteTransaction> beginTransaction({bool? exclusive}) async {
-    final txn = SqfliteTransaction(this);
-    Object? response;
-    // never create transaction in read-only mode
-    if (readOnly != true) {
-      if (exclusive == true) {
-        response = await txnExecute<dynamic>(txn, 'BEGIN EXCLUSIVE', null,
-            beginTransaction: true);
-      } else {
-        response = await txnExecute<dynamic>(txn, 'BEGIN IMMEDIATE', null,
-            beginTransaction: true);
-      }
-    }
-    // Transaction v2 support, save the transaction id
-    if (response is Map) {
-      var transactionId = response[paramTransactionId];
-      if (transactionId is int) {
-        txn.transactionId = transactionId;
-      }
-    }
+    final txn = newTransaction();
+    await txnBeginTransaction(txn, exclusive: exclusive);
     return txn;
   }
 
@@ -656,53 +731,13 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     }
   }
 
-  Future<T> _runTransaction<T>(
-      Transaction? txn, Future<T> Function(Transaction txn) action,
-      {bool? exclusive}) async {
-    bool? successfull;
-    var transactionStarted = txn == null;
-    if (transactionStarted) {
-      txn = await beginTransaction(exclusive: exclusive);
-    }
-    T result;
-    try {
-      result = await action(txn);
-      successfull = true;
-    } finally {
-      if (transactionStarted) {
-        final sqfliteTransaction = txn as SqfliteTransaction;
-        sqfliteTransaction.successful = successfull;
-        await endTransaction(sqfliteTransaction);
-      }
-    }
-    return result;
-  }
-
   @override
   Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
       {bool? exclusive}) {
     checkNotClosed();
     return txnWriteSynchronized<T>(txn, (Transaction? txn) async {
-      return _runTransaction(txn, action, exclusive: exclusive);
+      return _txnTransaction(txn, action, exclusive: exclusive);
     });
-  }
-
-  ///
-  /// Get the database inner version
-  ///
-  @override
-  Future<int> getVersion() async {
-    final rows = await rawQuery('PRAGMA user_version');
-    return firstIntValue(rows) ?? 0;
-  }
-
-  ///
-  /// Set the database inner version
-  /// Used internally for open helpers and automatic versioning
-  ///
-  @override
-  Future<void> setVersion(int version) async {
-    await execute('PRAGMA user_version = $version');
   }
 
   /// Close the database. Cannot be access anymore
@@ -719,6 +754,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   }
 
   /// Open a database and returns its id.
+  ///
+  /// id does not run any callback calls
   Future<int> openDatabase() async {
     final params = <String, Object?>{paramPath: path};
     if (readOnly == true) {
@@ -904,7 +941,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
               openTransaction = sqfliteTransaction;
 
               // We read again the version to be safe regarding edge cases
-              final oldVersion = await getVersion();
+              final oldVersion = await txnGetVersion(txn);
               if (oldVersion == 0) {
                 if (options.onCreate != null) {
                   await options.onCreate!(this, options.version!);

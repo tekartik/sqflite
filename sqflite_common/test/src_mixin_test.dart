@@ -44,7 +44,7 @@ class MockDatabase extends SqfliteDatabaseBase {
   List<Map<String, Object?>?> argumentsLists = <Map<String, Object?>?>[];
 
   @override
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
+  Future<T> invokeMethod<T>(String method, [Object? arguments]) async {
     // return super.invokeMethod(method, arguments);
 
     methods.add(method);
@@ -84,7 +84,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   final Map<String, MockDatabase> databases = <String, MockDatabase>{};
 
   @override
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
+  Future<T> invokeMethod<T>(String method, [Object? arguments]) async {
     methods.add(method);
     argumentsList.add(arguments);
     return mockResult(method) as T;
@@ -98,7 +98,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   }
 
   @override
-  SqfliteDatabase newDatabase(
+  SqfliteDatabaseMixin newDatabase(
       SqfliteDatabaseOpenHelper openHelper, String path) {
     final existing = databases[path];
     final db = MockDatabase(openHelper, path);
@@ -120,7 +120,7 @@ class MockDatabaseFactoryEmpty extends SqfliteDatabaseFactoryBase {
   final List<String> methods = <String>[];
 
   @override
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]) async {
+  Future<T> invokeMethod<T>(String method, [Object? arguments]) async {
     methods.add(method);
     return mockResult(method) as T;
   }

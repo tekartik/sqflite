@@ -51,7 +51,7 @@ class Sqflite {
   /// Testing only
   @Deprecated('Dev only')
   static Future<void> devInvokeMethod(String method,
-      [dynamic arguments]) async {
+      [Object? arguments]) async {
     await invokeMethod<dynamic>(method, arguments);
   }
 

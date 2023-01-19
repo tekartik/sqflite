@@ -37,7 +37,7 @@ mixin SqfliteDatabaseFactoryMixin
   Future<T> wrapDatabaseException<T>(Future<T> Function() action) => action();
 
   /// Invoke native method and wrap exception.
-  Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]) =>
+  Future<T> safeInvokeMethod<T>(String method, [Object? arguments]) =>
       wrapDatabaseException<T>(() => invokeMethod(method, arguments));
 
   /// Open helpers for single instances only.
@@ -51,8 +51,7 @@ mixin SqfliteDatabaseFactoryMixin
   String? tag;
 
   @override
-  @override
-  SqfliteDatabase newDatabase(
+  SqfliteDatabaseMixin newDatabase(
       SqfliteDatabaseOpenHelper openHelper, String path) {
     return SqfliteDatabaseBase(openHelper, path);
   }

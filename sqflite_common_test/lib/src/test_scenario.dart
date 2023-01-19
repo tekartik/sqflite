@@ -42,6 +42,10 @@ class MockScenario {
   }
 }
 
+DatabaseFactory createMockFactoryFromData(List<List> data) {
+  return _startScenario(data).factory;
+}
+
 /// For each row:
 /// - First item is the method,
 /// - 2nd is the argument
@@ -50,7 +54,7 @@ MockScenario _startScenario(List<List> data) {
   late MockScenario scenario;
   final databaseFactoryMock = buildDatabaseFactory(
       tag: 'mock',
-      invokeMethod: (String method, [dynamic arguments]) async {
+      invokeMethod: (String method, [Object? arguments]) async {
         final index = scenario.index++;
         // devPrint('$index ${scenario.methodsCalls[index]}');
         final item = scenario.methodsCalls[index];
@@ -79,7 +83,7 @@ MockScenario wrapStartScenario(DatabaseFactory? factory, List<List> data) {
   late MockScenario scenario;
   final databaseFactoryMock = buildDatabaseFactory(
       tag: 'mock',
-      invokeMethod: (String method, [dynamic arguments]) async {
+      invokeMethod: (String method, [Object? arguments]) async {
         final index = scenario.index++;
         // devPrint('$index ${scenario.methodsCalls[index]}');
         final item = scenario.methodsCalls[index];

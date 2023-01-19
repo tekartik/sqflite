@@ -12,5 +12,5 @@ const MethodChannel channel = MethodChannel(channelName);
 const supportsConcurrency = false;
 
 /// Invoke a native method
-Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
-    channel.invokeMethod<T>(method, arguments) as Future<T>;
+Future<T> invokeMethod<T>(String method, [Object? arguments]) async =>
+    await channel.invokeMethod<T>(method, arguments) as T;

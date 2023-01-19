@@ -112,5 +112,11 @@ following in you app manifest (in the application object):
 Alternatively a more conservative (multiplatform) way is to call during onConfigure:
 
 ```db
+await db.rawQuery('PRAGMA journal_mode=WAL')
+```
+
+As reported [here](https://github.com/tekartik/sqflite/issues/929) on sqlflite Android the following (which should be the correct statement fails requiring to use rawQuery instead)
+
+```db
 await db.execute('PRAGMA journal_mode=WAL')
 ```

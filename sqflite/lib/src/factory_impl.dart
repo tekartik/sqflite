@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/exception_impl.dart' as impl;
 import 'package:sqflite/src/sqflite_impl.dart' as impl;
 import 'package:sqflite/src/sqflite_import.dart';
+
+import 'dev_utils.dart'; // ignore: unused_import
 
 SqfliteDatabaseFactory? _databaseFactory;
 
@@ -78,7 +80,7 @@ set sqfliteDatabaseFactory(SqfliteDatabaseFactory? databaseFactory) =>
 /// Factory implementation
 class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   /// Only to set for extra debugging
-  // static var _debugInternals = devWarning(true);
+  //static var _debugInternals = devWarning(true);
   static const _debugInternals = false;
 
   @override
@@ -86,43 +88,17 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
       impl.wrapDatabaseException(action);
 
   @override
-  Future<T> invokeMethod<T>(String method, [dynamic arguments]) =>
+  Future<T> invokeMethod<T>(String method, [Object? arguments]) =>
       !_debugInternals
           ? impl.invokeMethod(method, arguments)
           : _invokeMethodWithLog(method, arguments);
 
-  Future<T> _invokeMethodWithLog<T>(String method, [dynamic arguments]) async {
+  Future<T> _invokeMethodWithLog<T>(String method, [Object? arguments]) async {
     // ignore: avoid_print
     print('-> $method $arguments');
     final result = await impl.invokeMethod<T>(method, arguments);
     // ignore: avoid_print
     print('<- $result');
     return result;
-  }
-
-  /*
-  /// Old implementation which does not handle hot-restart and Android restart
-  @override
-  Future<void> deleteDatabase(String path) async {
-    path = await fixPath(path);
-
-      try {
-        await File(path).delete(recursive: true);
-      } catch (_) {
-        // 0.8.4
-        // print(_);
-      }
-  }
-  */
-
-  /// Optimized but could be removed
-  @override
-  Future<bool> databaseExists(String path) async {
-    path = await fixPath(path);
-    try {
-      // avoid slow async method
-      return File(path).existsSync();
-    } catch (_) {}
-    return false;
   }
 }

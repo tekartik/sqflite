@@ -2,52 +2,18 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/constant.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/sql_builder.dart';
+import 'package:sqflite_common/src/sql_command.dart';
 import 'package:sqflite_common/src/transaction.dart';
 import 'package:sqflite_common/src/utils.dart';
 
-/// Batch implementation
-abstract class SqfliteBatch implements Batch {
-  /// List of operations
-  final List<Map<String, Object?>> operations = <Map<String, Object?>>[];
-
-  Map<String, Object?> _getOperationMap(
-      String method, String sql, List<Object?>? arguments) {
-    return <String, Object?>{
-      paramMethod: method,
-      paramSql: sql,
-      if (arguments != null) paramSqlArguments: arguments
-    };
-  }
-
-  void _add(String method, String sql, List<Object?>? arguments) {
-    operations.add(_getOperationMap(method, sql, arguments));
-  }
-
-  void _addExecute(String method, String sql, List<Object?>? arguments,
-      bool? inTransaction) {
-    final map = _getOperationMap(method, sql, arguments);
-    if (inTransaction != null) {
-      map[paramInTransaction] = inTransaction;
-    }
-    operations.add(map);
-  }
-
-  @override
-  void rawInsert(String sql, [List<Object?>? arguments]) {
-    _add(methodInsert, sql, arguments);
-  }
-
+/// Batch mixin.
+mixin SqfliteBatchMixin implements Batch {
   @override
   void insert(String table, Map<String, Object?> values,
       {String? nullColumnHack, ConflictAlgorithm? conflictAlgorithm}) {
     final builder = SqlBuilder.insert(table, values,
         nullColumnHack: nullColumnHack, conflictAlgorithm: conflictAlgorithm);
     return rawInsert(builder.sql, builder.arguments);
-  }
-
-  @override
-  void rawQuery(String sql, [List<Object?>? arguments]) {
-    _add(methodQuery, sql, arguments);
   }
 
   @override
@@ -75,11 +41,6 @@ abstract class SqfliteBatch implements Batch {
   }
 
   @override
-  void rawUpdate(String sql, [List<Object?>? arguments]) {
-    _add(methodUpdate, sql, arguments);
-  }
-
-  @override
   void update(String table, Map<String, Object?> values,
       {String? where,
       List<Object?>? whereArgs,
@@ -97,17 +58,71 @@ abstract class SqfliteBatch implements Batch {
         SqlBuilder.delete(table, where: where, whereArgs: whereArgs);
     return rawDelete(builder.sql, builder.arguments);
   }
+}
+
+/// Internal batch operation.
+class SqfliteBatchOperation extends SqfliteSqlCommand {
+  /// Protocol method for each operation.
+  final String method;
+
+  Map<String, Object?> _getOperationParam() {
+    var map = <String, Object?>{
+      paramMethod: method,
+      paramSql: sql,
+      if (arguments != null) paramSqlArguments: arguments
+    };
+    // Handle in transaction change if needed
+    if (type == SqliteSqlCommandType.execute) {
+      // Check for begin/end transaction
+      final inTransaction = getSqlInTransactionArgument(sql);
+      if (inTransaction != null) {
+        map[paramInTransaction] = inTransaction;
+      }
+    }
+    return map;
+  }
+
+  /// Internal batch operation.
+  SqfliteBatchOperation(super.type, this.method, super.sql, super.arguments);
+}
+
+/// Batch implementation
+abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
+  /// Get the list of operation as parameter for batch.
+  List<Map<String, Object?>> getOperationsParam() =>
+      operations.map((e) => e._getOperationParam()).toList();
+
+  /// List of operations
+  final operations = <SqfliteBatchOperation>[];
+
+  @override
+  void rawInsert(String sql, [List<Object?>? arguments]) {
+    operations.add(SqfliteBatchOperation(
+        SqliteSqlCommandType.insert, methodInsert, sql, arguments));
+  }
+
+  @override
+  void rawQuery(String sql, [List<Object?>? arguments]) {
+    operations.add(SqfliteBatchOperation(
+        SqliteSqlCommandType.query, methodQuery, sql, arguments));
+  }
+
+  @override
+  void rawUpdate(String sql, [List<Object?>? arguments]) {
+    operations.add(SqfliteBatchOperation(
+        SqliteSqlCommandType.update, methodUpdate, sql, arguments));
+  }
 
   @override
   void rawDelete(String sql, [List<Object?>? arguments]) {
-    rawUpdate(sql, arguments);
+    operations.add(SqfliteBatchOperation(
+        SqliteSqlCommandType.delete, methodUpdate, sql, arguments));
   }
 
   @override
   void execute(String sql, [List<Object?>? arguments]) {
-    // Check for begin/end transaction
-    final inTransaction = getSqlInTransactionArgument(sql);
-    _addExecute(methodExecute, sql, arguments, inTransaction);
+    operations.add(SqfliteBatchOperation(
+        SqliteSqlCommandType.execute, methodExecute, sql, arguments));
   }
 
   /// Batch size

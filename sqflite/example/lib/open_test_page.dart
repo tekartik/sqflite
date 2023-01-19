@@ -151,7 +151,7 @@ class OpenTestPage extends TestPage {
       await db.close();
     });
     test('Delete database', () async {
-      //await Sqflite.devSetDebugModeOn(false);
+      // await Sqflite.devSetDebugModeOn(false);
       final path = await initDeleteDb('delete_database.db');
       expect(await databaseExists(path), false);
       final db = await openDatabase(path);

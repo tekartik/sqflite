@@ -1,4 +1,4 @@
-## 0.3.2-1
+## 0.3.2
 
 * strict-casts and sdk 2.18 support
 

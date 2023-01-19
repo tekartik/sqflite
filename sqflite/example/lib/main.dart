@@ -17,7 +17,6 @@ import 'todo_test_page.dart';
 import 'type_test_page.dart';
 
 void main() {
-  // debugAutoStartRouteName = testRawRoute;
   mainExampleApp();
 }
 
@@ -26,6 +25,7 @@ void main() {
 /// might move to a different shared package.
 void mainExampleApp() {
   WidgetsFlutterBinding.ensureInitialized();
+  // debugAutoStartRouteName = testOpenRoute;
   runApp(const SqfliteExampleApp());
 }
 

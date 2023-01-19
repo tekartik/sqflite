@@ -9,6 +9,7 @@ import java.util.List;
 public class SqlCommand {
     final private String sql;
     final private List<Object> rawArguments;
+
     public SqlCommand(String sql, List<Object> rawArguments) {
         this.sql = sql;
         if (rawArguments == null) {
