@@ -76,7 +76,8 @@ public class TestSqflitePluginTest {
         File file = new File(appContext.getFilesDir(), "exists_file.db");
         try {
             file.delete();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         assertEquals(false, Database.existsDatabase(file.getPath()));
         Database database = new Database(appContext, file.getPath(), 0, true, 0);
         try {

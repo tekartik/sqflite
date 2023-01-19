@@ -11,6 +11,7 @@ import java.util.ListIterator;
  */
 public interface DatabaseWorkerPool {
     void start();
+
     void quit();
 
     // Posts a new task.
