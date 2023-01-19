@@ -16,6 +16,7 @@ static NSString *const _methodOptions = @"options";
 static NSString *const _methodOpenDatabase = @"openDatabase";
 static NSString *const _methodCloseDatabase = @"closeDatabase";
 static NSString *const _methodDeleteDatabase = @"deleteDatabase";
+static NSString *const _methodDatabaseExists = @"databaseExists";
 
 static NSString *const _methodQueryCursorNext = @"queryCursorNext";
 static NSString *const _methodBatch = @"batch";
@@ -693,6 +694,7 @@ static NSInteger _databaseOpenCount = 0;
         [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
     }
 }
+
 //
 // delete
 //
@@ -725,6 +727,23 @@ static NSInteger _databaseOpenCount = 0;
         [self deleteDatabaseFile:path];
         result(nil);
     }
+}
+
+- (bool)databaseExists:(NSString*)path {
+    bool _log = sqfliteHasSqlLogLevel(logLevel);
+    if (_log) {
+        NSLog(@"databaseExists %@", path);
+    }
+    return ([[NSFileManager defaultManager] fileExistsAtPath:path]);
+}
+
+//
+// exists
+//
+- (void)handleDatabaseExistsCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSString* path = call.arguments[_paramPath];
+    NSNumber* existsResult =[NSNumber numberWithBool:[self databaseExists: path]];
+    result(existsResult);
 }
 
 //
@@ -840,6 +859,8 @@ static NSInteger _databaseOpenCount = 0;
         [self handleCloseDatabaseCall:call result:result];
     } else if ([_methodDeleteDatabase isEqualToString:call.method]) {
         [self handleDeleteDatabaseCall:call result:result];
+    } else if ([_methodDatabaseExists isEqualToString:call.method]) {
+        [self handleDatabaseExistsCall:call result:result];
     } else if ([_methodOptions isEqualToString:call.method]) {
         [self handleOptionsCall:call result:result];
     } else if ([_methodDebug isEqualToString:call.method]) {
