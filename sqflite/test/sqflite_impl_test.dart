@@ -35,7 +35,7 @@ void main() {
       sqlfliteDatabaseFactory = null;
       sqfliteDatabaseFactory = null;
       for (var element in [
-        // ignore: unnecessary_statements
+        // ignore: unnecessary_statements, deprecated_member_use_from_same_package
         sqlfliteDatabaseFactory,
         // ignore: unnecessary_statements
         sqfliteDatabaseFactory
