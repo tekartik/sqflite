@@ -101,17 +101,4 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
     print('<- $result');
     return result;
   }
-
-  /// Optimized but could be removed for Android as of 2023-01-19
-  /// TODO check for iOS and MacOS
-  /// Check for 3rd party too.
-  @override
-  Future<bool> databaseExists(String path) async {
-    path = await fixPath(path);
-    try {
-      // avoid slow async method
-      return File(path).existsSync();
-    } catch (_) {}
-    return false;
-  }
 }
