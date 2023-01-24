@@ -587,9 +587,7 @@ static NSInteger _databaseOpenCount = 0;
             if (_log) {
                 NSLog(@"Creating parent dir %@", parentDir);
             }
-            [[NSFileManager defaultManager] createDirectoryAtPath:parentDir withIntermediateDirectories:YES attributes:[
-                FileAttributeKey.protectionKey: URLFileProtection.none
-            ] error:&error];
+            [[NSFileManager defaultManager] createDirectoryAtPath:parentDir withIntermediateDirectories:YES attributes:@{NSFilePosixPermissions: NSFileProtectionNone} error:&error];
             // Ingore the error, it will break later during open
         }
     }
