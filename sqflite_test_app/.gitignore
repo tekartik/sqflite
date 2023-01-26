@@ -44,5 +44,7 @@
 /windows/
 /ios/
 
+# flutter
+.metadata
 # Coverage
 /coverage

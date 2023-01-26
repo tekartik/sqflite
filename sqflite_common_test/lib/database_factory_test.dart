@@ -1,3 +1,4 @@
+import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 

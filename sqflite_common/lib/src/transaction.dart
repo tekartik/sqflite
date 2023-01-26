@@ -14,18 +14,22 @@ class SqfliteTransactionParam {
   SqfliteTransactionParam(this.transactionId);
 }
 
+/// Transaction mixin.
+mixin SqfliteTransactionMixin implements Transaction {
+  /// Optional transaction id, depending on the implementation
+  int? transactionId;
+}
+
 /// Transaction implementation
 class SqfliteTransaction
-    with SqfliteDatabaseExecutorMixin
+    with SqfliteDatabaseExecutorMixin, SqfliteTransactionMixin
     implements Transaction {
   /// Create a transaction on a given [database]
   SqfliteTransaction(this.database);
 
   /// The transaction database
-  final SqfliteDatabase database;
-
-  /// Optional transaction id, depending on the implementation
-  int? transactionId;
+  @override
+  final SqfliteDatabaseMixin database;
 
   @override
   SqfliteDatabase get db => database;
@@ -41,5 +45,5 @@ class SqfliteTransaction
 }
 
 /// Special transaction that is run even if a pending transaction is in progress.
-SqfliteTransaction getForcedSqfliteTransaction(SqfliteDatabase database) =>
+SqfliteTransaction getForcedSqfliteTransaction(SqfliteDatabaseMixin database) =>
     SqfliteTransaction(database)..transactionId = paramTransactionIdValueForce;

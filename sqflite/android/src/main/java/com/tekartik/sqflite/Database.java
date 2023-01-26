@@ -107,6 +107,18 @@ class Database {
         SQLiteDatabase.deleteDatabase(new File(path));
     }
 
+    /**
+     * Never fails
+     */
+    public static boolean existsDatabase(String path) {
+        boolean exists = false;
+        try {
+            exists = new File(path).exists();
+        } catch (Exception ignore) {
+        }
+        return exists;
+    }
+
     public void open() {
         int flags = SQLiteDatabase.CREATE_IF_NECESSARY;
 

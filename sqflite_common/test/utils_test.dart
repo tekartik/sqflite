@@ -67,7 +67,7 @@ void main() {
     });
 
     test('chunk', () {
-      expect(listChunk([], null), []);
+      expect(listChunk([], null), isEmpty);
       expect(listChunk([1], null), [
         [1]
       ]);

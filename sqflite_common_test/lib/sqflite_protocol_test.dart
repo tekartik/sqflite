@@ -44,6 +44,28 @@ void run(SqfliteTestContext? context) {
       await db.close();
       scenario.end();
     });
+    test('exists', () async {
+      final scenario = wrapStartScenario(factory, [
+        [
+          'databaseExists',
+          {'path': ':memory:'},
+          false
+        ]
+      ]);
+      await scenario.factory.databaseExists(inMemoryDatabasePath);
+      scenario.end();
+    });
+    test('delete', () async {
+      final scenario = wrapStartScenario(factory, [
+        [
+          'deleteDatabase',
+          {'path': ':memory:'},
+          null
+        ]
+      ]);
+      await scenario.factory.deleteDatabase(inMemoryDatabasePath);
+      scenario.end();
+    });
     test('execute', () async {
       final scenario = wrapStartScenario(factory, [
         openStep,
@@ -62,91 +84,15 @@ void run(SqfliteTestContext? context) {
     });
 
     test('transaction', () async {
-      final scenario = wrapStartScenario(factory, [
-        openStep,
-        [
-          'execute',
-          {
-            'sql': 'BEGIN IMMEDIATE',
-            'id': 1,
-            'inTransaction': true,
-            'transactionId': null
-          },
-          {'transactionId': 1},
-        ],
-        [
-          'execute',
-          {
-            'sql': 'COMMIT',
-            'id': 1,
-            'inTransaction': false,
-            'transactionId': 1
-          },
-          null,
-        ],
-        closeStep
-      ]);
-      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
-      await db.transaction((txn) async {});
-
-      await db.close();
+      final scenario = wrapStartScenario(factory, transactionScenarioData);
+      await runProtocolTransactionSteps(scenario.factory);
       scenario.end();
     });
 
     test('open onCreate', () async {
-      final scenario = wrapStartScenario(factory, [
-        openStep,
-        [
-          'query',
-          {'sql': 'PRAGMA user_version', 'id': 1},
-          {
-            'columns': ['user_version'],
-            'rows': [
-              [0]
-            ]
-          }
-        ],
-        [
-          'execute',
-          {
-            'sql': 'BEGIN EXCLUSIVE',
-            'id': 1,
-            'inTransaction': true,
-            'transactionId': null
-          },
-          {'transactionId': 1},
-        ],
-        [
-          'query',
-          {'sql': 'PRAGMA user_version', 'id': 1, 'transactionId': 1},
-          {
-            'columns': ['user_version'],
-            'rows': [
-              [0]
-            ]
-          }
-        ],
-        [
-          'execute',
-          {'sql': 'PRAGMA user_version = 1', 'id': 1, 'transactionId': 1},
-          null,
-        ],
-        [
-          'execute',
-          {
-            'sql': 'COMMIT',
-            'id': 1,
-            'inTransaction': false,
-            'transactionId': 1
-          },
-          null,
-        ],
-        closeStep
-      ]);
-      final db = await scenario.factory.openDatabase(inMemoryDatabasePath,
-          options: OpenDatabaseOptions(onCreate: (_, __) {}, version: 1));
-
-      await db.close();
+      final scenario =
+          wrapStartScenario(factory, transactionOnCreateScenarioData);
+      await runProtocolTransactionOnCreateSteps(scenario.factory);
       scenario.end();
     });
 
@@ -319,7 +265,7 @@ void run(SqfliteTestContext? context) {
       ]);
 
       final db = await scenario.factory.openDatabase(dbName);
-      await scenario.factory.internalsInvokeMethod(
+      await scenario.factory.internalsInvokeMethod<Object?>(
           'openDatabase', {'path': dbName, 'singleInstance': true});
 
       await db.close();
@@ -362,7 +308,7 @@ void run(SqfliteTestContext? context) {
 
       final db = await scenario.factory.openDatabase(dbName);
       await db.execute('BEGIN TRANSACTION');
-      await scenario.factory.internalsInvokeMethod(
+      await scenario.factory.internalsInvokeMethod<Object?>(
           'openDatabase', {'path': dbName, 'singleInstance': true});
 
       await db.close();
@@ -403,9 +349,9 @@ void run(SqfliteTestContext? context) {
           ],
         closeStep
       ]);
-      await scenario.factory.internalsInvokeMethod(
+      await scenario.factory.internalsInvokeMethod<Object?>(
           'openDatabase', {'path': dbName, 'singleInstance': true});
-      await scenario.factory.internalsInvokeMethod(
+      await scenario.factory.internalsInvokeMethod<Object?>(
         'execute',
         {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
       );
@@ -415,4 +361,91 @@ void run(SqfliteTestContext? context) {
       scenario.end();
     });
   });
+}
+
+/// Scenario test data.
+typedef ScenarioData = List<List>;
+
+/// Simple transaction.
+final ScenarioData transactionScenarioData = [
+  openStep,
+  [
+    'execute',
+    {
+      'sql': 'BEGIN IMMEDIATE',
+      'id': 1,
+      'inTransaction': true,
+      'transactionId': null
+    },
+    {'transactionId': 1},
+  ],
+  [
+    'execute',
+    {'sql': 'COMMIT', 'id': 1, 'inTransaction': false, 'transactionId': 1},
+    null,
+  ],
+  closeStep
+];
+
+/// Simple onCreate transaction.
+final ScenarioData transactionOnCreateScenarioData = [
+  openStep,
+  [
+    'query',
+    {'sql': 'PRAGMA user_version', 'id': 1},
+    {
+      'columns': ['user_version'],
+      'rows': [
+        [0]
+      ]
+    }
+  ],
+  [
+    'execute',
+    {
+      'sql': 'BEGIN EXCLUSIVE',
+      'id': 1,
+      'inTransaction': true,
+      'transactionId': null
+    },
+    {'transactionId': 1},
+  ],
+  [
+    'query',
+    {'sql': 'PRAGMA user_version', 'id': 1, 'transactionId': 1},
+    {
+      'columns': ['user_version'],
+      'rows': [
+        [0]
+      ]
+    }
+  ],
+  [
+    'execute',
+    {'sql': 'PRAGMA user_version = 1', 'id': 1, 'transactionId': 1},
+    null,
+  ],
+  [
+    'execute',
+    {'sql': 'COMMIT', 'id': 1, 'inTransaction': false, 'transactionId': 1},
+    null,
+  ],
+  closeStep
+];
+
+/// transaction steps.
+Future<void> runProtocolTransactionSteps(DatabaseFactory factory) async {
+  final db = await factory.openDatabase(inMemoryDatabasePath);
+  await db.transaction((txn) async {});
+
+  await db.close();
+}
+
+/// onCreate transaction steps.
+Future<void> runProtocolTransactionOnCreateSteps(
+    DatabaseFactory factory) async {
+  final db = await factory.openDatabase(inMemoryDatabasePath,
+      options: OpenDatabaseOptions(onCreate: (_, __) {}, version: 1));
+
+  await db.close();
 }

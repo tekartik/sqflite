@@ -19,8 +19,9 @@ Sample `analysis_options.yaml` file:
 
 ```
 analyzer:
-  strong-mode:
-    implicit-casts: false
+    language:
+    strict-casts: true
+    strict-inference: true
 ```
 
 # Common issues
@@ -36,7 +37,7 @@ Unhandled exception: type '_InternalLinkedHashMap' is not a subtype of type 'Map
 ```
 
 Make sure you create object of type `Map<String, Object?>` and not simply `Map` for records you
-insert and update. The option `implicit-casts: false` explained above helps to find such issues
+insert and update. The option `language: strict-casts: false` explained above helps to find such issues
 
 ## MissingPluginException
 

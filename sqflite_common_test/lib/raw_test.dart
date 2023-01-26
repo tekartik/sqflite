@@ -200,7 +200,7 @@ void run(SqfliteTestContext context) {
       var batch = db.batch();
       var results = await batch.commit();
       expect(results.length, 0);
-      expect(results, []);
+      expect(results, isEmpty);
 
       // one create table
       batch = db.batch();
@@ -262,7 +262,7 @@ void run(SqfliteTestContext context) {
           where: 'name = ?', whereArgs: <String>['item']);
       batch.delete('Test', where: 'name = ?', whereArgs: <Object>['item']);
       results = await batch.commit(noResult: true);
-      expect(results, []);
+      expect(results, isEmpty);
 
       await db.close();
     });

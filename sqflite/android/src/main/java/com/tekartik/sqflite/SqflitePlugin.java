@@ -4,6 +4,7 @@ import static com.tekartik.sqflite.Constant.CMD_GET;
 import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
 import static com.tekartik.sqflite.Constant.METHOD_BATCH;
 import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
+import static com.tekartik.sqflite.Constant.METHOD_DATABASE_EXISTS;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG;
 import static com.tekartik.sqflite.Constant.METHOD_DEBUG_MODE;
 import static com.tekartik.sqflite.Constant.METHOD_DELETE_DATABASE;
@@ -534,6 +535,12 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
     }
 
+    private void onDatabaseExistsCall(final MethodCall call, final Result result) {
+        final String path = call.argument(PARAM_PATH);
+        boolean exists = Database.existsDatabase(path);
+        result.success(exists);
+    }
+
     private void closeDatabase(Database database) {
         try {
             if (LogLevel.hasSqlLevel(database.logLevel)) {
@@ -611,7 +618,10 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
                 onQueryCursorNextCall(call, result);
                 break;
             }
-
+            case METHOD_DATABASE_EXISTS: {
+                onDatabaseExistsCall(call, result);
+                break;
+            }
             // Obsolete
             case METHOD_DEBUG_MODE: {
                 onDebugModeCall(call, result);

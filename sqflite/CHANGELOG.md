@@ -1,3 +1,11 @@
+## 2.2.4-dev.1
+
+* Experimental logger support.
+
+## 2.2.3-1
+
+* strict-casts and sdk 2.18 support
+ 
 ## 2.2.2
 
 * Fix iOS/MacOS FMDB include for non-swift project
@@ -154,7 +162,7 @@ native world and executing `ROLLBACK` to prevent `SQLITE_BUSY` error
 
 ## 0.11.1
 
-* add `Sqlflite.hex` to allow querying on blob fields
+* add `Sqflite.hex` to allow querying on blob fields
 
 ## 0.11.0
 

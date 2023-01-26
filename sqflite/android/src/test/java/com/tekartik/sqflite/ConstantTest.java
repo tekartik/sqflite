@@ -1,8 +1,8 @@
 package com.tekartik.sqflite;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * Constants between dart & Java world

@@ -1,3 +1,7 @@
+## 0.3.2
+
+* strict-casts and sdk 2.18 support
+
 ## 0.3.1
 
 - Support for transaction v2 and cross tab safety

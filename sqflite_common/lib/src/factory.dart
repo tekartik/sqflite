@@ -10,7 +10,7 @@ abstract class SqfliteDatabaseFactory
 
   // To override
   // This also should wrap exception
-  //Future<T> safeInvokeMethod<T>(String method, [dynamic arguments]);
+  //Future<T> safeInvokeMethod<T>(String method, [Object? arguments]);
 
   /// Create a new database object.
   SqfliteDatabase newDatabase(

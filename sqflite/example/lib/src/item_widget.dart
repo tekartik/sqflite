@@ -14,7 +14,7 @@ class ItemWidget extends StatefulWidget {
   final Item item;
 
   /// Action when pressed (typically run).
-  final Function(Item item) onTap; // = Function(MainItem item);
+  final void Function(Item item) onTap; // = Function(MainItem item);
 
   @override
   // ignore: library_private_types_in_public_api

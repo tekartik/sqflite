@@ -38,7 +38,7 @@ MockScenario startScenario(List<List> data) {
   late MockScenario scenario;
   final databaseFactoryMock = buildDatabaseFactory(
       tag: 'mock',
-      invokeMethod: (String method, [dynamic arguments]) async {
+      invokeMethod: (String method, [Object? arguments]) async {
         final index = scenario.index++;
         // devPrint('$index ${scenario.methodsCalls[index]}');
         final item = scenario.methodsCalls[index];

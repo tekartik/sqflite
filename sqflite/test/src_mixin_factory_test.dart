@@ -16,7 +16,7 @@ void main() {
     test('buildDatabaseFactory', () async {
       final methods = <String>[];
       final factory = buildDatabaseFactory(
-          invokeMethod: (String method, [dynamic arguments]) async {
+          invokeMethod: (String method, [Object? arguments]) async {
         methods.add(method);
         return mockResult(method);
       });

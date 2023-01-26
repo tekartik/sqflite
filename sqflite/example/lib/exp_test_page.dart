@@ -414,7 +414,7 @@ INSERT INTO test (value) VALUES (10);
           ];
           expect(result, expectedResult);
         } else {
-          expect(result, []);
+          expect(result, isEmpty);
         }
       } finally {
         await db.close();
@@ -680,7 +680,7 @@ CREATE TABLE test (
           int index = 0;
           SendPort sendPort;
           List<Map<String, Object?>> results;
-          var completer = Completer();
+          var completer = Completer<void>();
           var subscription = receivePort.listen((data) {
             switch (index++) {
               case 0:
@@ -721,6 +721,28 @@ CREATE TABLE test (
         expect(missingParameterShouldFail, isTrue);
       }
       await db.close();
+    });
+    // Issue https://github.com/tekartik/sqflite/issues/929
+    // Pragma has to use rawQuery...why, on sqflite Android
+    test('wal', () async {
+      // await Sqflite.devSetDebugModeOn(true);
+      var db = await openDatabase(inMemoryDatabasePath);
+      try {
+        await db.execute('PRAGMA journal_mode=WAL');
+      } catch (e) {
+        print(e);
+        await db.rawQuery('PRAGMA journal_mode=WAL');
+      }
+      await db.execute('CREATE TABLE test (id INTEGER)');
+      await db.insert('test', <String, Object?>{'id': 1});
+      try {
+        var resultSet = await db.rawQuery('SELECT id FROM test');
+        expect(resultSet, [
+          {'id': 1},
+        ]);
+      } finally {
+        await db.close();
+      }
     });
   }
 }

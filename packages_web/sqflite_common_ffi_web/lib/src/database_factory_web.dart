@@ -29,7 +29,7 @@ DatabaseFactory createDatabaseFactoryFfiWeb(
   SqfliteFfiWebContext? context;
   return buildDatabaseFactory(
       tag: tag ?? 'ffi_web',
-      invokeMethod: (String method, [dynamic arguments]) async {
+      invokeMethod: (String method, [Object? arguments]) async {
         final methodCall = FfiMethodCall(method, arguments);
         if (noWebWorker) {
           if (context == null) {

@@ -39,10 +39,9 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(
   if (fromWebWorker ?? false) {
     var self = WorkerGlobalScope.instance;
     final response = (await self.fetch(uri.toString())) as Object;
-    bodyBytes =
-        ((await promiseToFuture(callMethod(response, 'arrayBuffer', [])))
-                as ByteBuffer)
-            .asUint8List();
+    bodyBytes = ((await promiseToFuture<Object?>(
+            callMethod(response, 'arrayBuffer', []))) as ByteBuffer)
+        .asUint8List();
   } else {
     // regular http
     final response = await http.get(uri);
