@@ -8,6 +8,10 @@ import 'package:process_run/shell_run.dart';
 import 'package:test/test.dart';
 
 void main() {
+  workflow();
+}
+
+void workflow({bool noBuild = false}) {
   test('flutter config', () async {
     if (isFlutterSupportedSync) {
       await run('flutter config');
@@ -99,7 +103,7 @@ void main() {
     test('add sqflite relative', () async {
       await ensureCreate();
       var dependencyLines = [
-        'path: ${join('..', '..', '..', '..', '..', '..', 'sqflite')}'
+        'path: ${posix.join('..', '..', '..', '..', '..', '..', 'sqflite')}'
       ];
 
       var readDependencyLines =
