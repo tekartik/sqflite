@@ -9,6 +9,7 @@ Future main() async {
     'sqflite/example',
     'sqflite',
     'sqflite_test_app',
+    join('packages', 'console_test_app'),
     'sqflite_support',
   ]) {
     await packageRunCi(join('..', dir));

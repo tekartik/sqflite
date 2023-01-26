@@ -29,6 +29,7 @@
 .pub-cache/
 .pub/
 /build/
+.metadata
 
 # Web related
 
