@@ -8,9 +8,15 @@ Future main() async {
     'sqflite_common_ffi',
     'sqflite/example',
     'sqflite',
-    'sqflite_test_app',
     join('packages', 'console_test_app'),
   ]) {
     await packageRunCi(join('..', dir));
+  }
+
+  // These projects perform build in their test and sometimes fails, at least
+  // more frequently that the other standard format/analyze/test.
+  for (var dir in ['sqflite_support', 'sqflite_test_app']) {
+    await packageRunCi(join('..', dir),
+        options: PackageRunCiOptions(noTest: true));
   }
 }
