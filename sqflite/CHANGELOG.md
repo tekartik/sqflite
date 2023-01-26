@@ -1,4 +1,4 @@
-## 2.2.4-dev.1
+## 2.2.4
 
 * Experimental logger support.
 
