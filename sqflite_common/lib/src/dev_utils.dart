@@ -1,6 +1,6 @@
 /// Deprecated to prevent keeping the code used.
 @Deprecated('Dev only')
-void devPrint(Object object) {
+void devPrint(Object? object) {
   print(object);
 }
 

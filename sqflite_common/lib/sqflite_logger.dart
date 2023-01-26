@@ -15,6 +15,7 @@ export 'src/logger/sqflite_logger.dart'
         SqfliteLoggerSqlCommandInsert,
         SqfliteLoggerSqlCommandUpdate,
         SqfliteLoggerSqlCommandDelete,
-        SqfliteLoggerSqlCommandQuery;
+        SqfliteLoggerSqlCommandQuery,
+        SqfliteLoggerEventExt;
 
 export 'src/sql_command.dart' show SqliteSqlCommandType;

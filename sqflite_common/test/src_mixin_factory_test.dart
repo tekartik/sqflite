@@ -19,7 +19,7 @@ void main() {
       final factory = buildDatabaseFactory(
           tag: 'mock',
           invokeMethod: (String method, [Object? arguments]) async {
-            final dynamic result = mockResult(method);
+            final dynamic result = mockResult(method, arguments);
             methods.add(method);
             return result;
           });

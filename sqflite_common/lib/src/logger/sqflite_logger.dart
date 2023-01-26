@@ -1,5 +1,6 @@
 import 'dart:async';
-
+import 'dart:core';
+import 'dart:core' as core;
 import 'package:meta/meta.dart';
 import 'package:sqflite_common/sqflite_logger.dart';
 import 'package:sqflite_common/sqlite_api.dart';
@@ -41,6 +42,9 @@ typedef SqfliteLoggerEventFunction = void Function(SqfliteLoggerEvent event);
 
 /// Every operation/event is a command
 abstract class SqfliteLoggerCommand {
+  /// Name of the command (insert/delete/update...) for display only.
+  String get name;
+
   /// Set on failure
   Object? get error;
 }
@@ -58,7 +62,7 @@ abstract class SqfliteLoggerEventView implements SqfliteLoggerEvent {
   Map<String, Object?> toMap();
 }
 
-class _SqfliteLoggerEvent
+abstract class _SqfliteLoggerEvent
     implements SqfliteLoggerEvent, SqfliteLoggerEventView {
   @override
   late final Object? error;
@@ -78,7 +82,7 @@ class _SqfliteLoggerEvent
       };
 
   @override
-  String toString() => logTruncate(toMap().toString());
+  String toString() => toLogString(toMap());
 }
 
 /// Generic method event.
@@ -171,7 +175,7 @@ mixin _SqfliteLoggerSqlCommandMixin<T> implements SqfliteLoggerSqlCommand<T> {
   String get _typeAsText => type.toString().split('.').last;
 }
 
-class _SqfliteLoggerDatabaseEvent extends _SqfliteLoggerEvent
+abstract class _SqfliteLoggerDatabaseEvent extends _SqfliteLoggerEvent
     implements SqfliteLoggerDatabaseEvent {
   late final DatabaseExecutor _client;
 
@@ -223,23 +227,46 @@ abstract class SqfliteLoggerSqlCommandDelete
 abstract class SqfliteLoggerSqlCommandQuery
     extends SqfliteLoggerSqlCommand<List<Map<String, Object?>>> {}
 
+mixin _SqfliteLoggerSqlCommandInsertMixin {
+  String get name => 'insert';
+}
+mixin _SqfliteLoggerSqlCommandExecuteMixin {
+  String get name => 'execute';
+}
+mixin _SqfliteLoggerSqlCommandUpdateMixin {
+  String get name => 'update';
+}
+
+mixin _SqfliteLoggerSqlCommandDeleteMixin {
+  String get name => 'delete';
+}
+
+mixin _SqfliteLoggerSqlCommandQueryMixin {
+  String get name => 'query';
+}
+
 class _SqfliteLoggerSqlEventInsert extends _SqfliteLoggerSqlEvent<int>
+    with _SqfliteLoggerSqlCommandInsertMixin
     implements SqfliteLoggerSqlCommandInsert {}
 
 class _SqfliteLoggerSqlEventExecute extends _SqfliteLoggerSqlEvent<void>
+    with _SqfliteLoggerSqlCommandExecuteMixin
     implements SqfliteLoggerSqlCommandExecute {}
 
 class _SqfliteLoggerSqlEventUpdate extends _SqfliteLoggerSqlEvent<int>
+    with _SqfliteLoggerSqlCommandUpdateMixin
     implements SqfliteLoggerSqlCommandUpdate {}
 
 class _SqfliteLoggerSqlEventDelete extends _SqfliteLoggerSqlEvent<int>
+    with _SqfliteLoggerSqlCommandDeleteMixin
     implements SqfliteLoggerSqlCommandDelete {}
 
 class _SqfliteLoggerSqlEventQuery
     extends _SqfliteLoggerSqlEvent<List<Map<String, Object?>>>
+    with _SqfliteLoggerSqlCommandQueryMixin
     implements SqfliteLoggerSqlCommandQuery {}
 
-class _SqfliteLoggerSqlEvent<T> extends _SqfliteLoggerDatabaseEvent
+abstract class _SqfliteLoggerSqlEvent<T> extends _SqfliteLoggerDatabaseEvent
     with _SqfliteLoggerSqlCommandMixin<T>
     implements SqfliteLoggerSqlEvent<T> {
   _SqfliteLoggerSqlEvent() : super._();
@@ -298,6 +325,8 @@ class _SqfliteLoggerSqlEvent<T> extends _SqfliteLoggerDatabaseEvent
 class _SqfliteLoggerBatchEvent extends _SqfliteLoggerDatabaseEvent
     implements SqfliteLoggerBatchEvent {
   @override
+  String get name => 'batch';
+  @override
   final List<SqfliteLoggerBatchOperation> operations;
 
   _SqfliteLoggerBatchEvent(
@@ -315,22 +344,27 @@ class _SqfliteLoggerBatchEvent extends _SqfliteLoggerDatabaseEvent
 
 class _SqfliteLoggerBatchInsertOperation
     extends _SqfliteLoggerBatchOperation<int>
+    with _SqfliteLoggerSqlCommandInsertMixin
     implements SqfliteLoggerSqlCommandInsert {}
 
 class _SqfliteLoggerBatchUpdateOperation
     extends _SqfliteLoggerBatchOperation<int>
+    with _SqfliteLoggerSqlCommandUpdateMixin
     implements SqfliteLoggerSqlCommandUpdate {}
 
 class _SqfliteLoggerBatchDeleteOperation
     extends _SqfliteLoggerBatchOperation<int>
+    with _SqfliteLoggerSqlCommandDeleteMixin
     implements SqfliteLoggerSqlCommandDelete {}
 
 class _SqfliteLoggerBatchExecuteOperation
     extends _SqfliteLoggerBatchOperation<void>
+    with _SqfliteLoggerSqlCommandExecuteMixin
     implements SqfliteLoggerSqlCommandExecute {}
 
 class _SqfliteLoggerBatchQueryOperation
     extends _SqfliteLoggerBatchOperation<List<Map<String, Object?>>>
+    with _SqfliteLoggerSqlCommandQueryMixin
     implements SqfliteLoggerSqlCommandQuery {}
 
 /// Batch sql operation
@@ -396,7 +430,7 @@ class _SqfliteLoggerDatabaseDeleteEvent extends _SqfliteLoggerEvent
   _SqfliteLoggerDatabaseDeleteEvent(super.sw, this.path, super.error);
 
   @override
-  String toString() => 'openDatabase(${super.toString()})';
+  String get name => 'deleteDatabase';
 }
 
 class _SqfliteLoggerDatabaseOpenEvent extends _SqfliteLoggerEvent
@@ -422,7 +456,7 @@ class _SqfliteLoggerDatabaseOpenEvent extends _SqfliteLoggerEvent
       super.sw, this.path, this.options, this.db, super.error);
 
   @override
-  String toString() => 'openDatabase(${super.toString()})';
+  String get name => 'openDatabase';
 }
 
 class _SqfliteLoggerDatabaseCloseEvent extends _SqfliteLoggerDatabaseEvent
@@ -431,9 +465,8 @@ class _SqfliteLoggerDatabaseCloseEvent extends _SqfliteLoggerDatabaseEvent
   Map<String, Object?> toMap() => {..._databasePrefixMap, ...super.toMap()};
 
   _SqfliteLoggerDatabaseCloseEvent(super.sw, super.db, super.error);
-
   @override
-  String toString() => 'closeDatabase(${super.toString()})';
+  String get name => 'closeDatabase';
 
   @override
   Database get db => client.database;
@@ -460,6 +493,9 @@ class _SqfliteLoggerInvokeEvent extends _SqfliteLoggerEvent
 
   _SqfliteLoggerInvokeEvent(
       super.sw, this.method, this.arguments, this.result, super.error);
+
+  @override
+  String get name => 'invoke';
 }
 
 class _EventInfo<T> {
@@ -481,7 +517,7 @@ class _EventInfo<T> {
 
 /// Default logger. print!
 void _logDefault(SqfliteLoggerEvent event) {
-  print(event);
+  event.dump();
 }
 
 /// Default type, all!
@@ -775,4 +811,56 @@ extension OpenDatabaseOptionsLogger on OpenDatabaseOptions {
         'singleInstance': singleInstance,
         if (version != null) 'version': version
       };
+}
+
+/// Basic dump
+extension SqfliteLoggerEventExt on SqfliteLoggerEvent {
+  /// dump event by lines
+  void dump({void Function(Object? object)? print, bool? noStopwatch}) {
+    print ??= core.print;
+
+    if (this is SqfliteLoggerBatchEvent) {
+      if (noStopwatch ?? false) {
+        print(toLogString(toMapNoOperationsNoStopwatch()));
+      } else {
+        print(toLogString(toMapNoOperations()));
+      }
+      for (var operation in (this as SqfliteLoggerBatchEvent).operations) {
+        print('  $operation');
+      }
+    } else {
+      // default to improve
+      if (noStopwatch ?? false) {
+        print(toStringNoStopwatch());
+      } else {
+        print(toString());
+      }
+    }
+  }
+}
+
+/// Not exported.
+extension SqfliteLoggerEventInternalExt on SqfliteLoggerEvent {
+  /// Internal only.
+  Map<String, Object?> toMapNoStopwatch() {
+    return (Map<String, Object?>.from((this as SqfliteLoggerEventView).toMap()))
+      ..remove('sw');
+  }
+
+  /// Internal only.
+  Map<String, Object?> toMapNoOperations() {
+    return (Map<String, Object?>.from((this as SqfliteLoggerEventView).toMap()))
+      ..remove('operations');
+  }
+
+  /// Internal only.
+  Map<String, Object?> toMapNoOperationsNoStopwatch() {
+    return (toMapNoStopwatch())..remove('operations');
+  }
+
+  /// Internal only, prefix with the event name.
+  String toLogString(Object? data) => logTruncate('$name:($data)');
+
+  /// Internal only.
+  String toStringNoStopwatch() => toLogString(toMapNoStopwatch());
 }
