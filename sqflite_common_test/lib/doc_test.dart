@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:sqflite_common/sqflite_dev.dart';
+import 'package:sqflite_common/sqflite_logger.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
@@ -433,6 +434,25 @@ CREATE TABLE Product (
       } finally {
         // ignore: deprecated_member_use
         await databaseFactory.setLogLevel(sqfliteLogLevelNone);
+      }
+    });
+
+    test('Logger', () async {
+      if (databaseFactory is! SqfliteDatabaseFactoryLogger) {
+        var factoryWithLogs = SqfliteDatabaseFactoryLogger(databaseFactory,
+            options: SqfliteLoggerOptions(
+                type: SqfliteDatabaseFactoryLoggerType.all));
+        var db = await factoryWithLogs.openDatabase(inMemoryDatabasePath,
+            options: OpenDatabaseOptions(
+                version: 1,
+                onCreate: (db, _) {
+                  db.execute('''
+  CREATE TABLE Product (
+    id TEXT PRIMARY KEY,
+    title TEXT
+   )''');
+                }));
+        await db.close();
       }
     });
 

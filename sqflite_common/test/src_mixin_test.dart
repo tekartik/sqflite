@@ -16,22 +16,53 @@ void main() {
   });
 }
 
+var _mockDatabasesPath = '.';
+
 /// Mock the result based on the method used
-dynamic mockResult(String method) {
+Object? mockResult(String method, Object? arguments) {
+  Object? handleSqlMethod(String sqlMethod) {
+    switch (sqlMethod) {
+      case methodOpenDatabase:
+        return 1;
+      case methodInsert:
+        return 0;
+      case methodUpdate:
+        return 0;
+      case methodExecute:
+        return null;
+      case methodQuery:
+        return <String, Object?>{};
+    }
+    throw UnimplementedError('$method $sqlMethod $arguments');
+  }
+
   // devPrint('$method');
   switch (method) {
+    case methodGetDatabasesPath:
+      return _mockDatabasesPath;
     case methodOpenDatabase:
       return 1;
-    case methodInsert:
-      return 0;
-    case methodUpdate:
-      return 0;
-    case methodQuery:
-      return <String, Object?>{};
+    case methodCloseDatabase:
+      return null;
+    case methodDeleteDatabase:
+      return null;
     case methodDatabaseExists:
-      return false;
+      return true;
+    case methodInsert:
+    case methodUpdate:
+    case methodExecute:
+    case methodQuery:
+      return handleSqlMethod(method);
+    case methodBatch:
+      var operations = (arguments as Map)[paramOperations] as List;
+      var results = <Object?>[];
+      for (var operation in operations) {
+        var sqlMethod = (operation as Map)[paramMethod] as String;
+        results.add(handleSqlMethod(sqlMethod));
+      }
+      return results;
   }
-  return null;
+  throw UnimplementedError('$method $arguments');
 }
 
 class MockDatabase extends SqfliteDatabaseBase {
@@ -74,7 +105,7 @@ class MockDatabase extends SqfliteDatabaseBase {
       argumentsLists.add(null);
       sqls.add(null);
     }
-    return mockResult(method) as T;
+    return mockResult(method, arguments) as T;
   }
 }
 
@@ -87,7 +118,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   Future<T> invokeMethod<T>(String method, [Object? arguments]) async {
     methods.add(method);
     argumentsList.add(arguments);
-    return mockResult(method) as T;
+    return mockResult(method, arguments) as T;
   }
 
   SqfliteDatabase newEmptyDatabase() {
@@ -122,7 +153,7 @@ class MockDatabaseFactoryEmpty extends SqfliteDatabaseFactoryBase {
   @override
   Future<T> invokeMethod<T>(String method, [Object? arguments]) async {
     methods.add(method);
-    return mockResult(method) as T;
+    return mockResult(method, arguments) as T;
   }
 }
 
@@ -132,12 +163,8 @@ void run() {
   group('database_factory', () {
     test('getDatabasesPath', () async {
       final factory = MockDatabaseFactoryEmpty();
-      try {
-        await factory.getDatabasesPath();
-        fail('should fail');
-      } on DatabaseException catch (_) {}
+      await factory.getDatabasesPath();
       expect(factory.methods, <String>['getDatabasesPath']);
-      //expect(directory, )
     });
     test('setDatabasesPath', () async {
       final factory = MockDatabaseFactoryEmpty();
@@ -149,10 +176,7 @@ void run() {
       factory.setDatabasesPathOrNull(null);
       expect(factory.methods, <String>[]);
 
-      try {
-        await factory.getDatabasesPath();
-        fail('should fail');
-      } on DatabaseException catch (_) {}
+      await factory.getDatabasesPath();
       expect(factory.methods, <String>['getDatabasesPath']);
       //expect(directory, )
     });
@@ -767,7 +791,7 @@ void run() {
       final path = 'test_exists.db';
       await mockDatabaseFactory.deleteDatabase(path);
       final exists = await mockDatabaseFactory.databaseExists(path);
-      expect(exists, isFalse);
+      expect(exists, isTrue);
       final expectedPath =
           absolute(join(await mockDatabaseFactory.getDatabasesPath(), path));
       expect(mockDatabaseFactory.methods,

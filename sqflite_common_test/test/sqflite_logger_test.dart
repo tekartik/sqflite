@@ -70,10 +70,17 @@ void main() {
       final delegate = createMockFactoryFromData(transactionScenarioData);
 
       var events = <SqfliteLoggerEvent>[];
+      var lines = <String>[];
       final factory = SqfliteDatabaseFactoryLogger(delegate,
           options: SqfliteLoggerOptions(
               type: SqfliteDatabaseFactoryLoggerType.all,
               log: (event) {
+                event.dump(
+                    print: (line) {
+                      lines.add(line?.toString() ?? '<null>');
+                      print(line);
+                    },
+                    noStopwatch: true);
                 print(event);
                 events.add(event);
               }));
@@ -95,6 +102,12 @@ void main() {
             {'db': 1}
           ],
           reason: '$events');
+      expect(lines, [
+        'openDatabase:({path: :memory:, options: {readOnly: false, singleInstance: true}})',
+        'execute:({db: 1, sql: BEGIN IMMEDIATE, result: {transactionId: 1}})',
+        'execute:({db: 1, txn: 1, sql: COMMIT})',
+        'closeDatabase:({db: 1})'
+      ]);
     });
     var events = <SqfliteLoggerEvent>[];
     late SqfliteDatabaseFactoryLogger factory;

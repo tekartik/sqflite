@@ -5,7 +5,52 @@
 Unfortunately at this point, we cannot use sqflite in unit test.
 Here are some debugging tips when you encounter issues:
 
-### Turn on SQL console logging
+### Try the experimental Logger
+
+**Experimental feature**
+
+The easiest is to wrap the factory you are using with `SqfliteDatabaseFactoryLogger`
+
+```dart
+import 'package:sqflite_common/sqflite_logger.dart';
+
+Future<void> main() async {
+  var factoryWithLogs = SqfliteDatabaseFactoryLogger(databaseFactory,
+          options: SqfliteLoggerOptions(
+                  type: SqfliteDatabaseFactoryLoggerType.all));
+  var db = await factoryWithLogs.openDatabase(inMemoryDatabasePath,
+          options: OpenDatabaseOptions(
+              version: 1,
+              onCreate: (db, _) {
+                db.execute('''
+  CREATE TABLE Product (
+    id TEXT PRIMARY KEY,
+    title TEXT
+   )''');
+          }));
+  await db.close();
+}
+```
+
+The code above should print something like:
+
+```
+openDatabase:({path: :memory:, options: {readOnly: false, singleInstance: true, version: 1}, sw: 0:00:00.009744})
+query(query:({db: 1, sql: PRAGMA user_version, result: [{user_version: 0}], sw: 0:00:00.006656}))
+execute(execute:({db: 1, sql: BEGIN EXCLUSIVE, result: {transactionId: 1}, sw: 0:00:00.001008}))
+query(query:({db: 1, txn: 1, sql: PRAGMA user_version, result: [{user_version: 0}], sw: 0:00:00.000166}))
+execute(execute:({db: 1, txn: 1, sql:   CREATE TABLE Product (
+    id TEXT PRIMARY KEY,
+    title TEXT
+   ), sw: 0:00:00.000228}))
+execute(execute:({db: 1, txn: 1, sql: PRAGMA user_version = 1, sw: 0:00:00.000057}))
+execute(execute:({db: 1, txn: 1, sql: COMMIT, sw: 0:00:00.000138}))
+closeDatabase:({db: 1, sw: 0:00:00.001952})
+```
+
+The logger allows for a callback to choose how to keep/display the logs.
+
+### Turn on SQL console logging (old)
 
 Temporarily turn on SQL logging on the console by adding the following call in your code before opening the first database
 

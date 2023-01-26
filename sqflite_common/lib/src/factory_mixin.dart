@@ -51,7 +51,7 @@ mixin SqfliteDatabaseFactoryMixin
   String? tag;
 
   @override
-  SqfliteDatabaseMixin newDatabase(
+  SqfliteDatabase newDatabase(
       SqfliteDatabaseOpenHelper openHelper, String path) {
     return SqfliteDatabaseBase(openHelper, path);
   }

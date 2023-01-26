@@ -98,7 +98,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   }
 
   @override
-  SqfliteDatabase newDatabase(
+  SqfliteDatabaseMixin newDatabase(
       SqfliteDatabaseOpenHelper openHelper, String path) {
     final existing = databases[path];
     final db = MockDatabase(openHelper, path);
