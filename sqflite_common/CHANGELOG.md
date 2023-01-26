@@ -1,4 +1,4 @@
-## 2.4.2+1
+## 2.4.2+2
 
 * add experimental logger support.
 

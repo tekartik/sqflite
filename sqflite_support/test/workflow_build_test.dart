@@ -121,7 +121,7 @@ void workflow({bool noBuild = false}) {
         await runCi();
       }
     }, timeout: const Timeout(Duration(minutes: 10)));
-  }, skip: !isFlutterSupportedSync && !isRunningOnTravis);
+  }, skip: !isFlutterSupportedSync);
   // TODO @alex find a better to know the flutter build status
 
   group(
