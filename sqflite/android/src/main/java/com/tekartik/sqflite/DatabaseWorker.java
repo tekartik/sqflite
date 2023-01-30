@@ -3,8 +3,6 @@ package com.tekartik.sqflite;
 import android.os.Handler;
 import android.os.HandlerThread;
 
-import androidx.annotation.Nullable;
-
 import java.util.HashSet;
 
 /**
@@ -12,24 +10,16 @@ import java.util.HashSet;
  *
  * <p>Each worker instance run on one thread.
  */
-final class DatabaseWorker {
+class DatabaseWorker {
 
     private final String name;
     private final int priority;
 
     private HandlerThread handlerThread;
     private Handler handler;
-    private Runnable onIdle;
+    protected Runnable onIdle;
 
-    // Database that this worker is working on.
-    @Nullable
-    private Database database;
-    // This is a list of database id.
-    //
-    // All tasks in a transaction should go to the same worker (a.k.a. thread). This list tracks
-    // what transactional tasks could be run by this worker.
-    private HashSet<Integer> transactionAllowList = new HashSet<>();
-    private int numberOfRunningTask = 0;
+    private DatabaseTask lastTask;
 
     DatabaseWorker(String name, int priority) {
         this.name = name;
@@ -51,50 +41,21 @@ final class DatabaseWorker {
         }
     }
 
-    synchronized boolean isIdle() {
-        return numberOfRunningTask == 0;
+    boolean isLastTaskInTransaction() {
+        return lastTask != null && lastTask.isInTransaction();
     }
 
-    synchronized boolean isBusy() {
-        return numberOfRunningTask != 0;
+    Integer lastTaskDatabaseId() {
+        return lastTask != null ? lastTask.getDatabaseId() : null;
     }
 
-    // Accepts or rejects a task.
-    synchronized boolean accept(DatabaseTask task) {
-        if (task.isExcludedFrom(transactionAllowList)) {
-            return false;
-        }
-        if (isIdle() || task.isMatchedWith(database)) {
-            postTask(task);
-            return true;
-        }
-        return false;
+    void postTask(final DatabaseTask task) {
+        handler.post(() -> this.work(task));
     }
 
-    private void postTask(DatabaseTask task) {
-        synchronized (this) {
-            database = task.database;
-            numberOfRunningTask++;
-        }
-        handler.post(
-                () -> {
-                    task.runnable.run();
-                    synchronized (this) {
-                        numberOfRunningTask--;
-                        if (database != null) {
-                            if (database.isInTransaction()) {
-                                transactionAllowList.add(database.id);
-                            } else {
-                                transactionAllowList.remove(database.id);
-                            }
-                        }
-                        if (isIdle()) {
-                            database = null;
-                        }
-                    }
-                    if (isIdle()) {
-                        onIdle.run();
-                    }
-                });
+    void work(DatabaseTask task) {
+        task.runnable.run();
+        lastTask = task;
+        onIdle.run();
     }
 }
