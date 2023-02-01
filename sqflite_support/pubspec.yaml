@@ -16,4 +16,3 @@ dev_dependencies:
   pub_semver:
 
 dependency_overrides:
-  # pedantic: '>=1.9.0 <3.0.0'
