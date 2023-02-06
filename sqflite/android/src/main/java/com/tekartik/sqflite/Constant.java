@@ -57,6 +57,9 @@ public class Constant {
     static final public String TAG = "Sqflite";
     // Obsolete since 1.17
     static final public String METHOD_DEBUG_MODE = "debugMode";
+    static final public String METHOD_ANDROID_SET_LOCALE = "androidSetLocale";
+    // Locale tag
+    static final String PARAM_LOCALE = "locale";
     public static final String[] EMPTY_STRING_ARRAY = new String[0];
     static final String PARAM_ID = "id";
     static final String PARAM_PATH = "path";

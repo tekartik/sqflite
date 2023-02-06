@@ -3,12 +3,15 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
+import 'dart:io' as io;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart' hide test;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_example/src/common_import.dart';
+import 'package:test/test.dart' show test;
 
 // ignore_for_file: avoid_print
 void main() {
@@ -277,6 +280,78 @@ void main() {
         expect(await db.getVersion(), 0);
       } finally {
         await db.close();
+      }
+    });
+    test('androidSetLocale', () async {
+      if (!kIsWeb && io.Platform.isAndroid) {
+        const path = 'test_android_set_locale.db';
+        await deleteDatabase(path);
+        late Database db;
+
+        db = await openDatabase(path,
+            onConfigure: (db) async {
+              await db.androidSetLocale('zh-CN');
+            },
+            version: 1,
+            onCreate: (db, v) async {
+              await db.execute('CREATE TABLE Test(name TEXT)');
+              for (var row in <Map<String, Object?>>[
+                {'name': '桌'},
+                {'name': '椅'},
+                {'name': '盘'},
+              ]) {
+                await db.insert('Test', row);
+              }
+            });
+        Future<List<String>> getNames() async {
+          return (await db.query('Test', orderBy: 'name COLLATE LOCALIZED ASC'))
+              .map((e) => e.values.first!.toString())
+              .toList();
+        }
+
+        try {
+          // Order ok
+          expect(await getNames(), ['盘', '椅', '桌']);
+
+          // Reopen same locale
+          await db.close();
+          db = await openDatabase(
+            path,
+            onConfigure: (db) async {
+              await db.androidSetLocale('zh-CN');
+            },
+          );
+          // order ok too
+          expect(await getNames(), ['盘', '椅', '桌']);
+
+          await db.close();
+          // No locale
+          db = await openDatabase(path);
+          // order not ok
+          expect(await getNames(), ['桌', '椅', '盘']);
+
+          await db.close();
+          db = await openDatabase(
+            path,
+            onConfigure: (db) async {
+              await db.androidSetLocale('en-US');
+            },
+          );
+          // order not ok
+          expect(await getNames(), ['桌', '椅', '盘']);
+
+          await db.close();
+          db = await openDatabase(
+            path,
+            onConfigure: (db) async {
+              await db.androidSetLocale('zh-CN');
+            },
+          );
+          // order ok again
+          expect(await getNames(), ['盘', '椅', '桌']);
+        } finally {
+          await db.close();
+        }
       }
     });
   });

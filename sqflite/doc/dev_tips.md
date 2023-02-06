@@ -165,3 +165,33 @@ As reported [here](https://github.com/tekartik/sqflite/issues/929) on sqflite An
 ```db
 await db.execute('PRAGMA journal_mode=WAL')
 ```
+
+## setLocale on Android
+
+Android has a specific setLocale API that allows sorting localized field according to a locale using query like:
+
+```sql
+SELECT * FROM Test ORDER BY name COLLATE LOCALIZED ASC
+```
+
+There is an extra Android only API to specify the locale to use:
+```dart
+await database.setLocale('fr-FR');
+```
+
+This API must be called during onConfigure (each time you open the database). The specified IETF BCP 47 language tag
+string (en-US, zh-CN, fr-FR, zh-Hant-TW, ...) must be as defined in
+`Locale.forLanguageTag` in Android/Java documentation.
+
+```dart
+var db = await openDatabase(path,
+            onConfigure: (db) async {
+              await db.androidSetLocale('zh-CN');
+            },
+            version: 1,
+            onCreate: (db, v) async {
+              await db.execute('CREATE TABLE Test(name TEXT)');
+            });
+// Localized sorting.
+var result = await db.query('Test', orderBy: 'name COLLATE LOCALIZED ASC'));
+```

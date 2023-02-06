@@ -2,6 +2,7 @@ package com.tekartik.sqflite;
 
 import android.os.Handler;
 import android.os.HandlerThread;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,7 +29,7 @@ public interface DatabaseWorkerPool {
     void post(DatabaseTask task);
 
     default void post(Database database, Runnable runnable) {
-        DatabaseDelegate delegate = database == null ? null: new DatabaseDelegate() {
+        DatabaseDelegate delegate = database == null ? null : new DatabaseDelegate() {
             @Override
             public int getDatabaseId() {
                 return database.id;

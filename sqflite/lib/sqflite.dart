@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:sqflite/src/compat.dart';
 import 'package:sqflite/src/constant.dart';
 import 'package:sqflite/src/factory_impl.dart' show databaseFactory;
+import 'package:sqflite/src/sqflite_android.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
 import 'package:sqflite/src/utils.dart' as impl;
 import 'package:sqflite/utils/utils.dart' as utils;
@@ -177,3 +178,14 @@ Future<void> deleteDatabase(String path) =>
 ///
 Future<bool> databaseExists(String path) =>
     databaseFactory.databaseExists(path);
+
+/// Android only API
+extension SqfliteDatabaseAndroidExt on Database {
+  /// Sets the locale for this database. The specified IETF BCP 47 language tag
+  /// string (en-US, zh-CN, fr-FR, zh-Hant-TW, ...) must be as defined in
+  /// `Locale.forLanguageTag` in Android/Java documentation.
+  ///
+  /// Only on Android.
+  Future<void> androidSetLocale(String languageTag) =>
+      SqfliteDatabaseAndroidExtImpl(this).androidSetLocale(languageTag);
+}
