@@ -2,7 +2,10 @@ package com.tekartik.sqflite;
 
 import androidx.annotation.Nullable;
 
-import java.util.HashSet;
+interface DatabaseDelegate {
+    int getDatabaseId();
+    boolean isInTransaction();
+}
 
 final class DatabaseTask {
 
@@ -10,27 +13,19 @@ final class DatabaseTask {
     //
     // It can be null if the task is not running on any database. e.g. closing a NULL database.
     @Nullable
-    final Database database;
+    private final DatabaseDelegate database;
     final Runnable runnable;
 
-    DatabaseTask(Database database, Runnable runnable) {
+    DatabaseTask(DatabaseDelegate database, Runnable runnable) {
         this.database = database;
         this.runnable = runnable;
     }
 
-    boolean isExcludedFrom(HashSet<Integer> allowList) {
-        // Do not exclude anyone if the task is not in a transaction.
-        if (database == null || !database.isInTransaction()) {
-            return false;
-        }
-        return !allowList.contains(database.id);
+    public boolean isInTransaction() {
+        return database != null && database.isInTransaction();
     }
 
-    boolean isMatchedWith(@Nullable Database database) {
-        if (this.database == null) {
-            return database == null;
-        } else {
-            return this.database.id == database.id;
-        }
+    public Integer getDatabaseId() {
+        return database != null ? database.getDatabaseId() : null;
     }
 }

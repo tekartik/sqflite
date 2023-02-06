@@ -2,9 +2,12 @@ package com.tekartik.sqflite;
 
 import android.os.Handler;
 import android.os.HandlerThread;
-
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Pool that assigns {@link DatabaseTask} to {@link DatabaseWorker}.
@@ -22,7 +25,22 @@ public interface DatabaseWorkerPool {
     //   two tasks.
     // - Tasks belonging to different databases could be run simultaneously but not necessarily
     //   in FIFO manner.
-    void post(Database database, Runnable runnable);
+    void post(DatabaseTask task);
+
+    default void post(Database database, Runnable runnable) {
+        DatabaseDelegate delegate = database == null ? null: new DatabaseDelegate() {
+            @Override
+            public int getDatabaseId() {
+                return database.id;
+            }
+
+            @Override
+            public boolean isInTransaction() {
+                return database.isInTransaction();
+            }
+        };
+        this.post(new DatabaseTask(delegate, runnable));
+    }
 
     static DatabaseWorkerPool create(String name, int numberOfWorkers, int priority) {
         if (numberOfWorkers == 1) {
@@ -62,8 +80,8 @@ class SingleDatabaseWorkerPoolImpl implements DatabaseWorkerPool {
     }
 
     @Override
-    public void post(Database database, Runnable runnable) {
-        handler.post(runnable);
+    public void post(DatabaseTask task) {
+        handler.post(task.runnable);
     }
 }
 
@@ -74,8 +92,14 @@ class DatabaseWorkerPoolImpl implements DatabaseWorkerPool {
     final int priority;
 
     private final LinkedList<DatabaseTask> waitingList = new LinkedList<>();
-    private final LinkedList<DatabaseWorker> idleWorkers = new LinkedList<>();
-    private final LinkedList<DatabaseWorker> busyWorkers = new LinkedList<>();
+    private final Set<DatabaseWorker> idleWorkers = new HashSet<>();
+    private final Set<DatabaseWorker> busyWorkers = new HashSet<>();
+
+    // A map from database id to the only eligible worker.
+    //
+    // When a database id is found in the map, tasks of the database should only be run by the
+    // corresponding worker. Otherwise, any worker is eligible.
+    private final Map<Integer, DatabaseWorker> onlyEligibleWorkers = new HashMap<>();
 
     DatabaseWorkerPoolImpl(String name, int numberOfWorkers, int priority) {
         this.name = name;
@@ -86,13 +110,17 @@ class DatabaseWorkerPoolImpl implements DatabaseWorkerPool {
     @Override
     public synchronized void start() {
         for (int i = 0; i < numberOfWorkers; i++) {
-            DatabaseWorker worker = new DatabaseWorker(name + i, priority);
+            DatabaseWorker worker = createWorker(name + i, priority);
             worker.start(
                     () -> {
                         onWorkerIdle(worker);
                     });
             idleWorkers.add(worker);
         }
+    }
+
+    protected DatabaseWorker createWorker(String name, int priority) {
+        return new DatabaseWorker(name, priority);
     }
 
     @Override
@@ -106,61 +134,69 @@ class DatabaseWorkerPoolImpl implements DatabaseWorkerPool {
     }
 
     @Override
-    public synchronized void post(Database database, Runnable runnable) {
-        DatabaseTask task = new DatabaseTask(database, runnable);
-
-        // Try finding a worker that is already working for the database of the task.
-        //
-        // Only run this branch when no tasks are waiting. Otherwise waiting tasks could get
-        // starved if following tasks keep cutting in the queue.
-        if (waitingList.isEmpty()) {
-            for (DatabaseWorker worker : busyWorkers) {
-                if (worker.accept(task)) {
-                    return;
-                }
-            }
-        }
-
-        // Wait in the list.
+    public synchronized void post(DatabaseTask task) {
         waitingList.add(task);
 
-        // Try finding a idle worker.
-        for (DatabaseWorker worker : idleWorkers) {
-            findTasksForIdleWorker(worker);
-            if (worker.isBusy()) {
-                busyWorkers.add(worker);
-                idleWorkers.remove(worker);
-                return;
+        Set<DatabaseWorker> workers = new HashSet<>(idleWorkers);
+        for (DatabaseWorker worker : workers) {
+            tryPostingTaskToWorker(worker);
+        }
+    }
+
+    private synchronized void tryPostingTaskToWorker(DatabaseWorker worker) {
+        DatabaseTask task = findTaskForWorker(worker);
+        if (task != null) {
+            // Mark the worker busy.
+            busyWorkers.add(worker);
+            idleWorkers.remove(worker);
+
+            // Since now, the worker is the only eligible one to work on the corresponding database.
+            // Allowing others to work on the same database could break the "FIFO manner".
+            if (task.getDatabaseId() != null) {
+                onlyEligibleWorkers.put(task.getDatabaseId(), worker);
+            }
+            worker.postTask(task);
+        }
+    }
+
+    private synchronized DatabaseTask findTaskForWorker(DatabaseWorker worker) {
+        ListIterator<DatabaseTask> iter = waitingList.listIterator();
+        while (iter.hasNext()) {
+            DatabaseTask task = iter.next();
+            DatabaseWorker onlyEligibleWorker = null;
+            if (task.getDatabaseId() != null) {
+                onlyEligibleWorker = onlyEligibleWorkers.get(task.getDatabaseId());
+            }
+            // Skip current task when the worker is not eligible for it.
+            if (onlyEligibleWorker != null && onlyEligibleWorker != worker) {
+                continue;
+            } else {
+                iter.remove();
+                return task;
             }
         }
+        return null;
     }
 
     private synchronized void onWorkerIdle(DatabaseWorker worker) {
-        findTasksForIdleWorker(worker);
-        if (worker.isIdle()) {
-            busyWorkers.remove(worker);
-            idleWorkers.add(worker);
+        // Clone idleWorkers before it get modified.
+        Set<DatabaseWorker> others = new HashSet<>(idleWorkers);
+
+        // Mark the worker idle.
+        busyWorkers.remove(worker);
+        idleWorkers.add(worker);
+
+        // The last task was done and any other worker is eligible to work on the corresponding
+        // database since then. However, there is one exception that the last task is in
+        // transaction and current worker is still the only eligible one.
+        if (!worker.isLastTaskInTransaction() && worker.lastTaskDatabaseId() != null) {
+            onlyEligibleWorkers.remove(worker.lastTaskDatabaseId());
         }
-    }
+        tryPostingTaskToWorker(worker);
 
-    private synchronized void findTasksForIdleWorker(DatabaseWorker worker) {
-        ListIterator<DatabaseTask> iter = waitingList.listIterator();
-
-        // Find the first task that can be accepted by the worker.
-        while (iter.hasNext()) {
-            if (worker.accept(iter.next())) {
-                iter.remove();
-                break;
-            }
-        }
-
-        // If a following task is accepted by the worker, keep moving it to the worker.
-        while (iter.hasNext()) {
-            if (worker.accept(iter.next())) {
-                iter.remove();
-            } else {
-                break;
-            }
+        // The eligible relationship was changed above. Try posting tasks again.
+        for (DatabaseWorker other : others) {
+            tryPostingTaskToWorker(other);
         }
     }
 }
