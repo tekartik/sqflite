@@ -3,8 +3,6 @@ package com.tekartik.sqflite;
 import android.os.Handler;
 import android.os.HandlerThread;
 
-import java.util.HashSet;
-
 /**
  * Worker that accepts {@link DatabaseTask}.
  *

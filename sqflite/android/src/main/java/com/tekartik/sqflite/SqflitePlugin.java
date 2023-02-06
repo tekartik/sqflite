@@ -2,6 +2,7 @@ package com.tekartik.sqflite;
 
 import static com.tekartik.sqflite.Constant.CMD_GET;
 import static com.tekartik.sqflite.Constant.MEMORY_DATABASE_PATH;
+import static com.tekartik.sqflite.Constant.METHOD_ANDROID_SET_LOCALE;
 import static com.tekartik.sqflite.Constant.METHOD_BATCH;
 import static com.tekartik.sqflite.Constant.METHOD_CLOSE_DATABASE;
 import static com.tekartik.sqflite.Constant.METHOD_DATABASE_EXISTS;
@@ -19,6 +20,7 @@ import static com.tekartik.sqflite.Constant.METHOD_QUERY_CURSOR_NEXT;
 import static com.tekartik.sqflite.Constant.METHOD_UPDATE;
 import static com.tekartik.sqflite.Constant.PARAM_CMD;
 import static com.tekartik.sqflite.Constant.PARAM_ID;
+import static com.tekartik.sqflite.Constant.PARAM_LOCALE;
 import static com.tekartik.sqflite.Constant.PARAM_LOG_LEVEL;
 import static com.tekartik.sqflite.Constant.PARAM_PATH;
 import static com.tekartik.sqflite.Constant.PARAM_READ_ONLY;
@@ -252,6 +254,24 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         databaseWorkerPool.post(database, () -> {
             MethodCallOperation operation = new MethodCallOperation(call, result);
             database.execute(operation);
+        });
+    }
+
+    private void onSetLocaleCall(final MethodCall call, final Result result) {
+
+        final Database database = getDatabaseOrError(call, result);
+        if (database == null) {
+            return;
+        }
+        databaseWorkerPool.post(database, () -> {
+            String localeString = call.argument(PARAM_LOCALE);
+            try {
+                database.sqliteDatabase.setLocale(Utils.localeForLanguateTag(localeString));
+                result.success(null);
+            } catch (Exception exception) {
+                result.error(Constant.SQLITE_ERROR, "Error calling setLocale: " + exception.getMessage(), null);
+            }
+
         });
     }
 
@@ -625,6 +645,10 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             // Obsolete
             case METHOD_DEBUG_MODE: {
                 onDebugModeCall(call, result);
+                break;
+            }
+            case METHOD_ANDROID_SET_LOCALE: {
+                onSetLocaleCall(call, result);
                 break;
             }
             default:
