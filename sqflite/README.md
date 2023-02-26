@@ -1,8 +1,6 @@
 # sqflite
 
 [![pub package](https://img.shields.io/pub/v/sqflite.svg)](https://pub.dev/packages/sqflite)
-[![Build Status](https://travis-ci.org/tekartik/sqflite.svg?branch=master)](https://travis-ci.org/tekartik/sqflite)
-[![codecov](https://codecov.io/gh/tekartik/sqflite/branch/master/graph/badge.svg)](https://codecov.io/gh/tekartik/sqflite)
 
 SQLite plugin for [Flutter](https://flutter.io).
 Supports iOS, Android and MacOS.
@@ -14,7 +12,7 @@ Supports iOS, Android and MacOS.
 
 Other platforms support:
 * Linux/Windows/DartVM support using [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi)
-* Web [is not supported](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/troubleshooting.md#error-in-flutter-web).
+* Experimental Web support using [sqflite_common_ffi_web](https://pub.dev/packages/sqflite_common_ffi_web).
 
 Usage example: 
 * [notepad_sqflite](https://github.com/alextekartik/flutter_app_example/tree/master/notepad_sqflite): Simple flutter notepad working on iOS/Android/Windows/linux/Mac

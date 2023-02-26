@@ -1,8 +1,6 @@
 # sqflite
 
 [![pub package](https://img.shields.io/pub/v/sqflite.svg)](https://pub.dev/packages/sqflite)
-[![Build Status](https://travis-ci.org/tekartik/sqflite.svg?branch=master)](https://travis-ci.org/tekartik/sqflite)
-[![codecov](https://codecov.io/gh/tekartik/sqflite/branch/master/graph/badge.svg)](https://codecov.io/gh/tekartik/sqflite)
 
 SQLite plugin for [Flutter](https://flutter.io).
 Supports iOS, Android and MacOS.
