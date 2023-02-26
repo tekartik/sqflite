@@ -222,10 +222,7 @@ end
 
 ## Error in Flutter web
 
-As far as i know, the web does not support sqlite in any acceptable ways (yes there are in memory solution but no 
-persistency, see https://github.com/tekartik/sqflite/issues/212).
-
-Since there is no decent solution on the web, as of today, support is not planned.
+Look at package [sqflite_common_ffi_web](https://pub.dev/packages/sqflite_common_ffi_web) for experimental Web support.
 
 IndexedDB or any solution on top of it should be considered for storage on the Web.
 

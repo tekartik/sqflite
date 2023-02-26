@@ -1,4 +1,4 @@
-## 2.2.5-0
+## 2.2.5
 
 * Fix concurrency issue in database worker pool (chriscui@google.com)
 * add android `setLocale` API call support.

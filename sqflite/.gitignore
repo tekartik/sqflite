@@ -11,9 +11,6 @@ doc/api/
 # Local folder
 .local/
 
-# local flutter install (travis)
-flutter
-
 # Conventional directory for build outputs
 build/
 coverage/
