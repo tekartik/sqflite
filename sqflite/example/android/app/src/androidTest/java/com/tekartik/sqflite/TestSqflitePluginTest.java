@@ -93,4 +93,5 @@ public class TestSqflitePluginTest {
         // False, uncomment in manifest to check for true
         assertFalse(Database.checkWalEnabled(appContext));
     }
+
 }

@@ -18,8 +18,6 @@ import static com.tekartik.sqflite.Constant.TRANSACTION_ID_FORCE;
 import static com.tekartik.sqflite.Utils.cursorRowToList;
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
 import android.database.SQLException;
@@ -89,18 +87,7 @@ class Database {
     @VisibleForTesting
     @NotNull
     static protected boolean checkWalEnabled(Context context) {
-        try {
-            final String packageName = context.getPackageName();
-            final ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
-            final boolean walEnabled = applicationInfo.metaData.getBoolean(WAL_ENABLED_META_NAME, WAL_ENABLED_BY_DEFAULT);
-            if (walEnabled) {
-                return true;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+        return PackageUtils.getAppInfoMetaDataBoolean(context, WAL_ENABLED_META_NAME, WAL_ENABLED_BY_DEFAULT);
     }
 
     static void deleteDatabase(String path) {

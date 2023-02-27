@@ -36,5 +36,11 @@
             android:name="com.tekartik.sqflite.wal_enabled"
             android:value="true" />
         -->
+
+        <!-- Unit testing meta data access -->
+        <meta-data
+            android:name="com.tekartik.sqflite.test.meta.example"
+            android:value="true" />
+
     </application>
 </manifest>
