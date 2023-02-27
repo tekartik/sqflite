@@ -4,6 +4,7 @@ import androidx.annotation.Nullable;
 
 interface DatabaseDelegate {
     int getDatabaseId();
+
     boolean isInTransaction();
 }
 
