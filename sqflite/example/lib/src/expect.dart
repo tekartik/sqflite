@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:matcher/matcher.dart';
-import 'package:meta/meta.dart';
 
 /// An exception thrown when a test assertion fails.
 class TestFailure {
@@ -118,8 +117,7 @@ FutureOr _expect(Object? actual, Object? matcher,
 
 /// Convenience method for throwing a new [TestFailure] with the provided
 /// [message].
-@alwaysThrows
-void fail([String? message]) => throw TestFailure(message ?? 'should fail');
+Never fail([String? message]) => throw TestFailure(message ?? 'should fail');
 
 /// index text helper.
 String indent(String text, {String? first}) {
