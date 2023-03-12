@@ -6,6 +6,7 @@ import 'package:sqflite_common/src/cursor.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/exception.dart';
 import 'package:sqflite_common/src/factory.dart';
+import 'package:sqflite_common/src/path_utils.dart';
 import 'package:sqflite_common/src/sql_builder.dart';
 import 'package:sqflite_common/src/transaction.dart';
 import 'package:sqflite_common/src/utils.dart';
@@ -761,8 +762,10 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     if (readOnly == true) {
       params[paramReadOnly] = true;
     }
-    final singleInstance = options?.singleInstance ?? false;
-    // Single instance?
+    // Single instance? never for standard inMemoryDatabase
+    final singleInstance =
+        (options?.singleInstance ?? false) && !isInMemoryDatabasePath(path);
+
     params[paramSingleInstance] = singleInstance;
 
     // Version up to 1.1.5 returns an int

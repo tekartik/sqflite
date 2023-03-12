@@ -63,6 +63,10 @@ abstract class SqfliteTestContext {
 
   /// Native (android, ios, macos) only for now
   bool get supportsRecoveredInTransaction;
+
+  /// True if supported.
+  /// Not working an Android native, working with ffi impl.
+  bool get supportsUri;
 }
 
 /// sqflite test context mixin.
@@ -105,6 +109,9 @@ mixin SqfliteTestContextMixin implements SqfliteTestContext {
 
   @override
   bool get supportsRecoveredInTransaction => false;
+
+  @override
+  bool get supportsUri => false;
 }
 
 /// sqflite local test context mixin.

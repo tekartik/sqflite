@@ -23,14 +23,17 @@ class _SqfliteFfiHandlerIo extends SqfliteFfiHandler {
     if (path == inMemoryDatabasePath) {
       ffiDb = ffi.sqlite3.openInMemory();
     } else {
+      var isUri = path.startsWith('file:');
+
+      var file = isUri ? File(Uri.parse(path).path) : File(path);
       if (readOnly) {
         // ignore: avoid_slow_async_io
-        if (!(await File(path).exists())) {
+        if (!isUri && !(await file.exists())) {
           throw StateError('file $path not found');
         }
       } else {
         // ignore: avoid_slow_async_io
-        if (!(await File(path).exists())) {
+        if (!(await file.exists())) {
           // Make sure its parent exists
           try {
             await Directory(dirname(path)).create(recursive: true);
@@ -39,7 +42,7 @@ class _SqfliteFfiHandlerIo extends SqfliteFfiHandler {
       }
       final mode =
           readOnly ? ffi.OpenMode.readOnly : ffi.OpenMode.readWriteCreate;
-      ffiDb = ffi.sqlite3.open(path, mode: mode);
+      ffiDb = ffi.sqlite3.open(path, mode: mode, uri: isUri);
 
       // Handle hot-restart for single instance
       // The dart code is killed but the native code remains

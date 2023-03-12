@@ -8,6 +8,7 @@ import 'package:sqflite_common/src/factory.dart';
 import 'package:sqflite_common/src/mixin/factory.dart';
 import 'package:sqflite_common/src/open_options.dart';
 import 'package:synchronized/synchronized.dart';
+import 'path_utils.dart' as pu;
 
 /// Base factory implementation
 abstract class SqfliteDatabaseFactoryBase with SqfliteDatabaseFactoryMixin {}
@@ -170,15 +171,19 @@ mixin SqfliteDatabaseFactoryMixin
   }
 
   /// True if a database path is in memory
-  static bool isInMemoryDatabasePath(String path) {
-    return path == inMemoryDatabasePath;
-  }
+  // @Deprecated('use path_utils.isInMemoryDatabasePath')
+  static bool isInMemoryDatabasePath(String path) =>
+      pu.isInMemoryDatabasePath(path);
 
   final bool _kIsWeb = identical(0, 0.0);
 
   /// path must be non null
   Future<String> fixPath(String path) async {
-    if (isInMemoryDatabasePath(path) || _kIsWeb) {
+    /// Transform file::memory: to :memory as current implementation
+    /// relies on this feature.
+    if (pu.isInMemoryDatabasePath(path)) {
+      return inMemoryDatabasePath;
+    } else if (_kIsWeb || pu.isFileUriDatabasePath(path)) {
       // nothing
     } else {
       if (isRelative(path)) {
