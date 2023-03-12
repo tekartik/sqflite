@@ -1,6 +1,7 @@
 import 'package:sqflite_common/sqlite_api.dart';
 
 import 'mixin/import_mixin.dart';
+export 'logger/sqflite_logger.dart' show DatabaseFactoryLoggerDebugExt;
 
 /// Debug extension
 ///

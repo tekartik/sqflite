@@ -1,3 +1,7 @@
+## 2.2.2-1
+
+* add minimum support for SQLite uri (https://www.sqlite.org/uri.html)
+
 ## 2.2.1+1
 
 * strict-casts and sdk 2.18 support

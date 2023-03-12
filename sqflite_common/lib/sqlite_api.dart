@@ -15,7 +15,7 @@ export 'package:sqflite_common/src/constant.dart'
         sqfliteLogLevelVerbose;
 export 'package:sqflite_common/src/exception.dart' show DatabaseException;
 export 'package:sqflite_common/src/sqflite_debug.dart'
-    show SqfliteDatabaseFactoryDebug;
+    show SqfliteDatabaseFactoryDebug, DatabaseFactoryLoggerDebugExt;
 
 /// Basic databases operations
 abstract class DatabaseFactory {
@@ -422,7 +422,9 @@ abstract class OpenDatabaseOptions {
   /// When [singleInstance] is true (the default), a single database instance is
   /// returned for a given path. Subsequent calls to [openDatabase] with the
   /// same path will return the same instance, and will discard all other
-  /// parameters such as callbacks for that invocation.
+  /// parameters such as callbacks for that invocation. You could set it to
+  /// false for in memory database (it is forced to false for `:memory:` path)
+  /// but not for uri.
   ///
   factory OpenDatabaseOptions(
       {int? version,

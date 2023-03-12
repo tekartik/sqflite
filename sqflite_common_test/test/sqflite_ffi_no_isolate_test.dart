@@ -6,6 +6,8 @@ var _factory = createDatabaseFactoryFfi(noIsolate: true);
 
 class SqfliteFfiNoIsolateTestContext extends SqfliteLocalTestContext {
   SqfliteFfiNoIsolateTestContext() : super(databaseFactory: _factory);
+  @override
+  bool get supportsUri => true;
 }
 
 var ffiTestContext = SqfliteFfiNoIsolateTestContext();

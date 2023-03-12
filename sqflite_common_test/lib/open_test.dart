@@ -694,13 +694,12 @@ void run(SqfliteTestContext context) {
       await db3.close(); // safe to close the same instance
     });
 
-    test('In memory database', () async {
-      // await context.devSetDebugModeOn(true);
-      var inMemoryPath =
-          inMemoryDatabasePath; // tried null without success, as it crashes on Android
-      var path = inMemoryPath;
-
-      var db = await factory.openDatabase(path);
+    /// Use single instance to force its value (which default to true).
+    Future<void> testInMemoryDatabase(String path,
+        {bool? singleInstance}) async {
+      await factory.deleteDatabase(path);
+      var db = await factory.openDatabase(path,
+          options: OpenDatabaseOptions(singleInstance: singleInstance ?? true));
       try {
         await db
             .execute('CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
@@ -722,8 +721,66 @@ void run(SqfliteTestContext context) {
       } finally {
         await db.close();
       }
+    }
+
+    test('In memory database', () async {
+      await testInMemoryDatabase(inMemoryDatabasePath);
+      // This is also supported as it is converted to :memory:
+      await testInMemoryDatabase('file::memory:');
     });
 
+    if (context.supportsUri) {
+      group('uri', () {
+        test('uri in memory', () async {
+          await testInMemoryDatabase('file:memdb1?mode=memory');
+          await testInMemoryDatabase('file:memdb1?mode=memory',
+              singleInstance: false);
+        });
+
+        test('uri int shared cache', () async {
+          var dbFactory = factory; // .debugQuickLoggerWrapper();
+          var path = 'file:memdb2?mode=memory&cache=shared';
+          await dbFactory.deleteDatabase(path);
+          var db1 = await dbFactory.openDatabase(path,
+              options: OpenDatabaseOptions(singleInstance: false));
+          var db2 = await dbFactory.openDatabase(path,
+              options: OpenDatabaseOptions(singleInstance: false));
+
+          verify(db1 != db2);
+          await db1.execute(
+              'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
+          await db1.insert('Test', <String, Object?>{'id': 1});
+          expect(await db2.query('Test'), [
+            {'id': 1}
+          ]);
+          await db1.close();
+          await db2.close();
+        }, skip: 'uri mode not consistently working with shared cache');
+
+        test('uri absolute', () async {
+          var path = await context.initDeleteDb('uri_absolute.db');
+          var uri = Uri.file(path);
+          var uriPath = uri.toString();
+          var db = await factory.openDatabase(uriPath);
+          try {
+            await db.execute(
+                'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
+            await db.insert('Test', <String, Object?>{'id': 1});
+            expect(await db.query('Test'), [
+              {'id': 1}
+            ]);
+
+            await db.close();
+
+            // reopen, content should be there
+            db = await factory.openDatabase(uriPath);
+            await db.query('Test');
+          } finally {
+            await db.close();
+          }
+        });
+      });
+    }
     test('Not in memory database', () async {
       // await utils.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('not_in_memory.db');

@@ -1,3 +1,7 @@
+## 2.4.3-1
+
+* add minimum support for SQLite uri (https://www.sqlite.org/uri.html)
+
 ## 2.4.2+2
 
 * add experimental logger support.

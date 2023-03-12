@@ -864,3 +864,17 @@ extension SqfliteLoggerEventInternalExt on SqfliteLoggerEvent {
   /// Internal only.
   String toStringNoStopwatch() => toLogString(toMapNoStopwatch());
 }
+
+/// Debug extension for Logger.
+extension DatabaseFactoryLoggerDebugExt on DatabaseFactory {
+  /// Quick logger wrapper, useful in unit test.
+  ///
+  /// databaseFactory = databaseFactory.debugQuickLoggerWrapper()
+  @Deprecated('Debug/dev mode')
+  DatabaseFactory debugQuickLoggerWrapper() {
+    var factoryWithLogs = SqfliteDatabaseFactoryLogger(this,
+        options:
+            SqfliteLoggerOptions(type: SqfliteDatabaseFactoryLoggerType.all));
+    return factoryWithLogs;
+  }
+}

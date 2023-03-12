@@ -6,6 +6,8 @@ import 'package:test/test.dart';
 
 class SqfliteFfiTestContext extends SqfliteLocalTestContext {
   SqfliteFfiTestContext() : super(databaseFactory: databaseFactoryFfi);
+  @override
+  bool get supportsUri => true;
 }
 
 var ffiTestContext = SqfliteFfiTestContext();
