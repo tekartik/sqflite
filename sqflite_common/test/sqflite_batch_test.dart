@@ -5,20 +5,8 @@ import 'test_scenario.dart';
 
 void main() {
   group('sqflite', () {
-    var startCommands = [
-      [
-        'openDatabase',
-        {'path': ':memory:', 'singleInstance': true},
-        1
-      ],
-    ];
-    var endCommands = [
-      [
-        'closeDatabase',
-        {'id': 1},
-        null
-      ],
-    ];
+    var startCommands = [protocolOpenStep];
+    var endCommands = [protocolCloseStep];
     test('batch commit', () async {
       final scenario = startScenario([
         ...startCommands,

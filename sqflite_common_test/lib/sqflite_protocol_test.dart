@@ -7,14 +7,14 @@ import 'package:sqflite_common_test/src/test_scenario.dart';
 import 'package:test/test.dart';
 
 /// Common open step
-var openStep = [
+var protocolOpenStep = [
   'openDatabase',
   {'path': ':memory:', 'singleInstance': false},
   {'id': 1}
 ];
 
 /// Common close step
-var closeStep = [
+var protocolCloseStep = [
   'closeDatabase',
   {'id': 1},
   null
@@ -39,7 +39,8 @@ void run(SqfliteTestContext? context) {
 
   group('protocol', () {
     test('open close', () async {
-      final scenario = wrapStartScenario(factory, [openStep, closeStep]);
+      final scenario =
+          wrapStartScenario(factory, [protocolOpenStep, protocolCloseStep]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.close();
       scenario.end();
@@ -68,13 +69,13 @@ void run(SqfliteTestContext? context) {
     });
     test('execute', () async {
       final scenario = wrapStartScenario(factory, [
-        openStep,
+        protocolOpenStep,
         [
           'execute',
           {'sql': 'PRAGMA user_version = 1', 'id': 1},
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.setVersion(1);
@@ -149,7 +150,7 @@ void run(SqfliteTestContext? context) {
           },
           null,
         ],
-        closeStep,
+        protocolCloseStep,
         [
           'deleteDatabase',
           {'path': dbName},
@@ -185,7 +186,7 @@ void run(SqfliteTestContext? context) {
           },
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
       db = await scenario.factory.openDatabase(dbName,
           options: OpenDatabaseOptions(
@@ -197,7 +198,7 @@ void run(SqfliteTestContext? context) {
 
     test('manual begin transaction', () async {
       final scenario = wrapStartScenario(factory, [
-        openStep,
+        protocolOpenStep,
         [
           'execute',
           {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
@@ -213,7 +214,7 @@ void run(SqfliteTestContext? context) {
           },
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.execute('BEGIN TRANSACTION');
@@ -224,7 +225,7 @@ void run(SqfliteTestContext? context) {
 
     test('manual begin end transaction', () async {
       final scenario = wrapStartScenario(factory, [
-        openStep,
+        protocolOpenStep,
         [
           'execute',
           {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
@@ -235,7 +236,7 @@ void run(SqfliteTestContext? context) {
           {'sql': 'ROLLBACK', 'id': 1, 'inTransaction': false},
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.execute('BEGIN TRANSACTION');
@@ -261,7 +262,7 @@ void run(SqfliteTestContext? context) {
           else
             {'id': 1},
         ],
-        closeStep
+        protocolCloseStep
       ]);
 
       final db = await scenario.factory.openDatabase(dbName);
@@ -303,7 +304,7 @@ void run(SqfliteTestContext? context) {
           },
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
 
       final db = await scenario.factory.openDatabase(dbName);
@@ -347,7 +348,7 @@ void run(SqfliteTestContext? context) {
             },
             null,
           ],
-        closeStep
+        protocolCloseStep
       ]);
       await scenario.factory.internalsInvokeMethod<Object?>(
           'openDatabase', {'path': dbName, 'singleInstance': true});
@@ -368,7 +369,7 @@ typedef ScenarioData = List<List>;
 
 /// Simple transaction.
 final ScenarioData transactionScenarioData = [
-  openStep,
+  protocolOpenStep,
   [
     'execute',
     {
@@ -384,12 +385,12 @@ final ScenarioData transactionScenarioData = [
     {'sql': 'COMMIT', 'id': 1, 'inTransaction': false, 'transactionId': 1},
     null,
   ],
-  closeStep
+  protocolCloseStep
 ];
 
 /// Simple onCreate transaction.
 final ScenarioData transactionOnCreateScenarioData = [
-  openStep,
+  protocolOpenStep,
   [
     'query',
     {'sql': 'PRAGMA user_version', 'id': 1},
@@ -430,7 +431,7 @@ final ScenarioData transactionOnCreateScenarioData = [
     {'sql': 'COMMIT', 'id': 1, 'inTransaction': false, 'transactionId': 1},
     null,
   ],
-  closeStep
+  protocolCloseStep
 ];
 
 /// transaction steps.

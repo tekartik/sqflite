@@ -38,7 +38,7 @@ void main() {
       expect(events.toMapListNoSw(), [
         {
           'method': 'openDatabase',
-          'arguments': {'path': ':memory:', 'singleInstance': true},
+          'arguments': {'path': ':memory:', 'singleInstance': false},
           'result': {'id': 1}
         },
         {
