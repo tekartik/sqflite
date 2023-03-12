@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 /// Common open step
 var openStep = [
   'openDatabase',
-  {'path': ':memory:', 'singleInstance': true},
+  {'path': ':memory:', 'singleInstance': false},
   {'id': 1}
 ];
 

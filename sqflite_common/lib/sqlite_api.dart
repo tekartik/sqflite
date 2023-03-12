@@ -423,8 +423,8 @@ abstract class OpenDatabaseOptions {
   /// returned for a given path. Subsequent calls to [openDatabase] with the
   /// same path will return the same instance, and will discard all other
   /// parameters such as callbacks for that invocation. You could set it to
-  /// false for in memory database (it is forced to false for `:memory:` path
-  /// but not for ':memory
+  /// false for in memory database (it is forced to false for `:memory:` path)
+  /// but not for uri.
   ///
   factory OpenDatabaseOptions(
       {int? version,
