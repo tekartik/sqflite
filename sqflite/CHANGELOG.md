@@ -1,3 +1,7 @@
+## 2.2.6-1
+
+* uri support for supported implementations.
+
 ## 2.2.5
 
 * Fix concurrency issue in database worker pool (chriscui@google.com)

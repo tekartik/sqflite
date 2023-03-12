@@ -55,11 +55,11 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('sqflite', () {
-    test('open', () async {
+    test('open single instance false', () async {
       final scenario = startScenario([
         [
           'openDatabase',
-          {'path': ':memory:', 'singleInstance': true},
+          {'path': ':memory:', 'singleInstance': false},
           1
         ],
         [
@@ -76,7 +76,7 @@ void main() {
       final scenario = startScenario([
         [
           'openDatabase',
-          {'path': ':memory:', 'singleInstance': true},
+          {'path': ':memory:', 'singleInstance': false},
           1
         ],
         [
