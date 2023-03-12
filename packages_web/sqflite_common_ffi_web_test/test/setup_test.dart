@@ -13,15 +13,18 @@ void deleteFileSync(String path) {
   } catch (_) {}
 }
 
+var expectedSharedWorkerJsFiled =
+    'sqflite_sw_v1.js'; // not sqfliteSharedWorkerJsFile since overriden
+
 void main() {
   late String dir;
   void checkBuiltFilesSync({bool exists = true}) {
-    expect(File(join(dir, sqfliteSharedWorkerJsFile)).existsSync(), exists);
+    expect(File(join(dir, expectedSharedWorkerJsFiled)).existsSync(), exists);
     expect(File(join(dir, sqlite3WasmFile)).existsSync(), exists);
   }
 
   void deleteBuiltFilesSync() {
-    deleteFileSync(join(dir, sqfliteSharedWorkerJsFile));
+    deleteFileSync(join(dir, expectedSharedWorkerJsFiled));
     deleteFileSync(join(dir, sqlite3WasmFile));
     checkBuiltFilesSync(exists: false);
   }

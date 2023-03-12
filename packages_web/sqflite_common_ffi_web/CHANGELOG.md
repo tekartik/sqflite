@@ -1,3 +1,7 @@
+## 0.3.3-1
+
+* Bump sqlite3 wasm version
+
 ## 0.3.2
 
 * strict-casts and sdk 2.18 support
