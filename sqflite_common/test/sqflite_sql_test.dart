@@ -5,28 +5,17 @@ import 'package:test/test.dart';
 
 import 'test_scenario.dart';
 
-var openStep = [
-  'openDatabase',
-  {'path': ':memory:', 'singleInstance': true},
-  1
-];
-var closeStep = [
-  'closeDatabase',
-  {'id': 1},
-  null
-];
-
 void main() {
   group('sqflite', () {
     test('open execute', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'execute',
           {'sql': 'PRAGMA user_version = 1', 'id': 1},
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.setVersion(1);
@@ -36,7 +25,7 @@ void main() {
     });
     test('transaction v2', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'execute',
           {
@@ -57,7 +46,7 @@ void main() {
           },
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.transaction((txn) async {});
@@ -68,7 +57,7 @@ void main() {
 
     test('transaction v1', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'execute',
           {
@@ -88,7 +77,7 @@ void main() {
           },
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.transaction((txn) async {});
@@ -99,7 +88,7 @@ void main() {
 
     test('manual begin transaction', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'execute',
           {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
@@ -115,7 +104,7 @@ void main() {
           },
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.execute('BEGIN TRANSACTION');
@@ -126,7 +115,7 @@ void main() {
 
     test('manual begin end transaction', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'execute',
           {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
@@ -137,7 +126,7 @@ void main() {
           {'sql': 'ROLLBACK TRANSACTION', 'id': 1, 'inTransaction': false},
           null,
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.execute('BEGIN TRANSACTION');
@@ -148,7 +137,7 @@ void main() {
     });
     test('open insert', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'insert',
           {
@@ -160,7 +149,7 @@ void main() {
           },
           1
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       expect(
@@ -174,7 +163,7 @@ void main() {
 
     test('open insert conflict', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'insert',
           {
@@ -184,7 +173,7 @@ void main() {
           },
           1
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       expect(
@@ -197,7 +186,7 @@ void main() {
 
     test('open batch insert', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'execute',
           {
@@ -235,7 +224,7 @@ void main() {
           },
           null
         ],
-        closeStep
+        protocolCloseStep
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       final batch = db.batch();
@@ -249,7 +238,7 @@ void main() {
 
     test('queryCursor', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'query',
           {
@@ -285,7 +274,7 @@ void main() {
           {'cursorId': 1, 'cancel': true, 'id': 1},
           null
         ],
-        closeStep
+        protocolCloseStep
       ]);
       var resultList = <Map<String, Object?>>[];
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);

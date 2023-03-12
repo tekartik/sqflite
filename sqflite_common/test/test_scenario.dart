@@ -2,6 +2,20 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
 import 'package:test/test.dart';
 
+/// Common open step
+var protocolOpenStep = [
+  'openDatabase',
+  {'path': ':memory:', 'singleInstance': false},
+  {'id': 1}
+];
+
+/// Common close step
+var protocolCloseStep = [
+  'closeDatabase',
+  {'id': 1},
+  null
+];
+
 class MockMethodCall {
   String? expectedMethod;
   dynamic expectedArguments;

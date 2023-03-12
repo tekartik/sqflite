@@ -6,16 +6,6 @@ import 'test_scenario.dart';
 
 void main() {
   group('transaction', () {
-    final openStep = [
-      'openDatabase',
-      {'path': ':memory:', 'singleInstance': true},
-      1
-    ];
-    final closeStep = [
-      'closeDatabase',
-      {'id': 1},
-      null
-    ];
     final transactionBeginStep = [
       'execute',
       {
@@ -43,12 +33,12 @@ void main() {
     ];
     test('basic', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         transactionBeginStep,
         transactionEndStep,
         transactionBeginStep,
         transactionEndStep,
-        closeStep,
+        protocolCloseStep,
       ]);
       final factory = scenario.factory;
       final db = await factory.openDatabase(inMemoryDatabasePath);
@@ -60,11 +50,11 @@ void main() {
     });
     test('error in begin after open', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         transactionBeginFailureStep,
         transactionBeginStep,
         transactionEndStep,
-        closeStep,
+        protocolCloseStep,
       ]);
       final factory = scenario.factory;
       final db = await factory.openDatabase(inMemoryDatabasePath);
@@ -79,7 +69,7 @@ void main() {
     });
     test('error in begin during open', () async {
       final scenario = startScenario([
-        openStep,
+        protocolOpenStep,
         [
           'query',
           {'sql': 'PRAGMA user_version', 'id': 1},
@@ -106,7 +96,7 @@ void main() {
           },
           null,
         ],
-        closeStep,
+        protocolCloseStep,
       ]);
       final factory = scenario.factory;
       try {
