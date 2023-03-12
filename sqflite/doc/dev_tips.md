@@ -50,6 +50,17 @@ closeDatabase:({db: 1, sw: 0:00:00.001952})
 
 The logger allows for a callback to choose how to keep/display the logs.
 
+A quick way to enable logging with a warning can be done using:
+
+```dart
+var factoryWithLogs = factory.debugQuickLoggerWrapper();
+```
+
+Or if using sqflite default factory, you can enable global logging using:
+```dart
+databaseFactory = databaseFactory.debugQuickLoggerWrapper();
+```
+
 ### Turn on SQL console logging (old)
 
 Temporarily turn on SQL logging on the console by adding the following call in your code before opening the first database
