@@ -1,4 +1,4 @@
-## 2.2.2-1
+## 2.2.2
 
 * add minimum support for SQLite uri (https://www.sqlite.org/uri.html)
 
