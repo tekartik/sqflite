@@ -1,4 +1,4 @@
-## 2.2.6-1
+## 2.2.6
 
 * uri support for supported implementations.
 

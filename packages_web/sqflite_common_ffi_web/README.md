@@ -41,6 +41,25 @@ var sqliteVersion = (await db.rawQuery('select sqlite_version()')).first.values.
 print(sqliteVersion); // should print 3.39.3
 ```
 
+### Add web support to existing sqflite application
+
+If you have any existing iOS/Android application, one solution is to change the default database
+factory:
+
+```dart
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite/sqflite.dart';
+
+var path = '/my/db/path';
+if (kIsWeb) {
+  // Change default factory on the web
+  databaseFactory = databaseFactoryFfiWeb;
+  path = 'my_web_web.db';
+}
+
+// open the database
+var db = openDatabase(path);
+```
 ## Limitations
 
 ### No shared worker available
