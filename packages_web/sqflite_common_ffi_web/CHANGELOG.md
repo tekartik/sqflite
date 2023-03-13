@@ -1,4 +1,4 @@
-## 0.3.3-1
+## 0.3.3
 
 * Bump sqlite3 wasm version
 
