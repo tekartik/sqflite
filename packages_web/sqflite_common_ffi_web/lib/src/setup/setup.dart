@@ -28,15 +28,10 @@ var dhttpdReady = () async {
 
 /// webdev must be activated.
 var webdevReady = () async {
+  await checkAndActivateWebdev();
   // setup common alias
   shellEnvironment = ShellEnvironment()
     ..aliases['webdev'] = 'dart pub global run webdev';
-  try {
-    await run('webdev --version', verbose: false);
-  } catch (e) {
-    await run('dart pub global activate webdev');
-    await run('webdev --version');
-  }
 }();
 
 /// Setup options.
