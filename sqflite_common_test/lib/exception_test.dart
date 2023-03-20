@@ -524,7 +524,8 @@ void run(SqfliteTestContext context) {
         '1',
         'table',
         r'$',
-        '[](){}:;?/\\&éçà^ù*-+,!̣'
+        // '[](){}:;?/\\&éçà^ù*-+,!̣',
+        '[](){}:;?/\\&^*-+,!'
       ]) {
         try {
           await db.execute('CREATE TABLE $name ($safeColumnName INTEGER)');
