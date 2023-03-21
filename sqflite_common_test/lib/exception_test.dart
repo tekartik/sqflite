@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
+
 // ignore: unused_import
 import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_common/sql.dart';
@@ -548,6 +549,11 @@ void run(SqfliteTestContext context) {
         expect(await db.query('"$name"'), [
           {name: 2}
         ]);
+        expect(
+            (await db.query('sqlite_master',
+                    where: 'name = ?', whereArgs: [name]))
+                .first['tbl_name'],
+            name);
       }
 
       await db.close();
