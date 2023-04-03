@@ -1,6 +1,7 @@
-## 0.3.3+2
+## 0.3.3+3
 
 * Bump sqlite3 wasm version
+* Report initialization error (missing worker file).
 
 ## 0.3.2
 
