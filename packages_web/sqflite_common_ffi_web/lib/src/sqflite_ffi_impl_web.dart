@@ -3,6 +3,7 @@ import 'dart:html' as html;
 
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
+import 'package:sqflite_common_ffi_web/src/web/js_converter.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart';
 import 'package:sqlite3/wasm.dart';
 
@@ -85,6 +86,8 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler {
 
 /// Genereric Post message handler
 abstract class RawMessageSender {
+  var _firstMessage = true;
+
   /// Post message to implement
   void postMessage(Object message, List<Object> transfer);
 
@@ -107,6 +110,19 @@ abstract class RawMessageSender {
       }
       completer.complete(event.data);
     });
+    // Let's handle initialization error on the first message.
+    if (_firstMessage) {
+      _firstMessage = false;
+      onError.listen((event) {
+        if (_debug) {
+          print('$_swc error ${jsObjectAsMap(event)}');
+        }
+
+        if (!completer.isCompleted) {
+          completer.completeError(SqfliteFfiWebWorkerException());
+        }
+      });
+    }
 
     // This sends the message data as well as transferring messageChannel.port2 to the shared worker.
     // The shared worker can then use the transferred port to reply via postMessage(), which
@@ -115,24 +131,35 @@ abstract class RawMessageSender {
     postMessage(message, [messageChannel.port2]);
     return completer.future;
   }
+
+  /// Basic error handling, likely at initialization.
+  Stream<Object> get onError;
 }
 
 /// Post message sender to shared worker.
 class RawMessageSenderSharedWorker extends RawMessageSender {
   final html.SharedWorker _sharedWorker;
 
+  html.MessagePort get _port => _sharedWorker.port as html.MessagePort;
+
   /// Post message sender to shared worker.
   RawMessageSenderSharedWorker(this._sharedWorker);
 
   @override
   void postMessage(Object message, List<Object> transfer) {
-    (_sharedWorker.port as html.MessagePort).postMessage(message, transfer);
+    _port.postMessage(message, transfer);
   }
+
+  @override
+  Stream<Object> get onError => _sharedWorker.onError;
 }
 
 /// Post message sender to worker.
 class RawMessageSenderToWorker extends RawMessageSender {
   final html.Worker _worker;
+
+  @override
+  Stream<Object> get onError => _worker.onError;
 
   /// Post message sender to worker.
   RawMessageSenderToWorker(this._worker);

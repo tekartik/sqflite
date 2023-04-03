@@ -16,8 +16,8 @@ Add the dependency:
 
 ### Setup binaries
 
-Implementation requires sqlite3.wasm binaries into your web folder
-as well as a sqflite specific shared worker.
+Implementation requires [sqlite3.wasm binaries](https://github.com/simolus3/sqlite3.dart/releases)
+into your web folder as well as a sqflite specific shared worker.
 
 You can install binaries using the command:
 
