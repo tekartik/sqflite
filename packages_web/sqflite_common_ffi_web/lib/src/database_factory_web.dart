@@ -1,3 +1,5 @@
+import 'dart:html' as html;
+
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
@@ -5,7 +7,10 @@ import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'
     show SqfliteFfiHandlerWeb;
 import 'package:sqflite_common_ffi_web/src/utils.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
-    show SqfliteFfiWebContextExt;
+    show
+        SqfliteFfiWebContextExt,
+        SqfliteFfiWebWorkerException,
+        defaultSharedWorkerUri;
 import 'package:synchronized/synchronized.dart';
 
 import 'import.dart';
@@ -40,10 +45,12 @@ DatabaseFactory createDatabaseFactoryFfiWeb(
           }
           return ffiMethodCallHandleNoWebWorker(methodCall, context!);
         } else {
-          await _initLock.synchronized(() async {
-            context ??= await sqfliteFfiWebStartSharedWorker(webOptions);
-            sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
-          });
+          if (context == null) {
+            await _initLock.synchronized(() async {
+              context ??= await sqfliteFfiWebStartSharedWorker(webOptions);
+              sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
+            });
+          }
 
           return ffiMethodCallSendToWebWorker(methodCall, context!);
         }
@@ -70,6 +77,14 @@ Future<dynamic> ffiMethodCallSendToWebWorker(
     if (_debug) {
       print(e);
       print(st);
+    }
+    if (e is SqfliteFfiWebWorkerException) {
+      html.window.console.error('''
+An error occurred while initializing the web worker.
+This is likely due to a failure to find the worker javascript file at ${context.options.sharedWorkerUri ?? defaultSharedWorkerUri}
+
+Please check the documentation at https://github.com/tekartik/sqflite/tree/master/packages_web/sqflite_common_ffi_web#setup-binaries to setup the needed binaries.
+''');
     }
     rethrow;
   }

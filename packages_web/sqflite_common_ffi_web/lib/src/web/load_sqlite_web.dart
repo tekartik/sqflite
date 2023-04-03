@@ -23,8 +23,10 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3FileSystem(
 }
 
 var _defaultSqlite3WasmUri = Uri.parse('sqlite3.wasm');
-var _defaultSharedWorkerUri = Uri.parse(sqfliteSharedWorkerJsFile);
-//var uri = options.sqlite3WasmUri ?? _defaultSqlite3WasmUri;
+
+/// Default shared worker Uri.
+var defaultSharedWorkerUri = Uri.parse(sqfliteSharedWorkerJsFile);
+
 /// Default indexedDB name is /sqflite
 Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(
     SqfliteFfiWebOptions options,
@@ -60,7 +62,7 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
     SqfliteFfiWebOptions options) async {
   try {
     var name = 'sqflite_common_ffi_web';
-    var sharedWorkerUri = options.sharedWorkerUri ?? _defaultSharedWorkerUri;
+    var sharedWorkerUri = options.sharedWorkerUri ?? defaultSharedWorkerUri;
     SharedWorker? sharedWorker;
     Worker? worker;
     try {
@@ -86,7 +88,7 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
         options: options, sharedWorker: sharedWorker, worker: worker);
   } catch (e, st) {
     if (_debug) {
-      print(e);
+      print('sqfliteFfiWebLoadSqlite3Wasm failed: $e');
       print(st);
     }
     rethrow;
@@ -146,4 +148,10 @@ extension SqfliteFfiWebContextExt on SqfliteFfiWebContext {
   /// Send raw message to worker
   Future<Object?> sendRawMessage(Object message) =>
       _context.rawMessageSender.sendRawMessage(message);
+}
+
+/// Web specific exception. For now only sent when catching a web worker error.
+class SqfliteFfiWebWorkerException implements Exception {
+  @override
+  String toString() => 'SqfliteFfiWebException()';
 }
