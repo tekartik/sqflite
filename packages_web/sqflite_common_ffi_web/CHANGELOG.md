@@ -1,3 +1,8 @@
+## 0.3.4
+
+* Depends on sqlite3 >= 1.11.0
+* Bump sqlite3 wasm version
+
 ## 0.3.3+3
 
 * Bump sqlite3 wasm version

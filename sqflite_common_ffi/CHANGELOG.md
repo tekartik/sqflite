@@ -1,3 +1,7 @@
+## 2.2.3
+
+* Depends on sqlite3 >= 1.11.0
+
 ## 2.2.2
 
 * add minimum support for SQLite uri (https://www.sqlite.org/uri.html)
