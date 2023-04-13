@@ -31,6 +31,16 @@ It should create the following files in your web folder:
 
 that you can put in source control or not (personally I don't)
 
+Note: when sqlite3 and its wasm binary are updated, you may need to run the command again using the force option:
+```bash
+$ dart run sqflite_common_ffi_web:setup --force
+```
+
+However since it depends on `sqflite3` version and its associated binary, if it gets updated 
+and the tool still download the old version (sorry it is hardcoded) you might have to manually
+download a compatible binary from [sqlite3.wasm binaries](https://github.com/simolus3/sqlite3.dart/releases)
+I don't have a better option yet, sorry.
+
 ### Use the proper factory.
 
 ```dart
