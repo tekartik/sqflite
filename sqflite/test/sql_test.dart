@@ -2,6 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sql.dart';
 
+T? _ambiguate<T>(T? value) => value;
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -11,7 +13,9 @@ void main() {
     final log = <MethodCall>[];
     String? response;
 
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
+    _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
+        .defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       log.add(methodCall);
       return response;
     });

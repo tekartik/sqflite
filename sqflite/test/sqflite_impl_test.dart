@@ -4,6 +4,8 @@ import 'package:sqflite/src/factory_impl.dart';
 import 'package:sqflite/src/mixin/factory.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
 
+T? _ambiguate<T>(T? value) => value;
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -13,7 +15,9 @@ void main() {
     final log = <MethodCall>[];
     String? response;
 
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
+    _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
+        .defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       log.add(methodCall);
       return response;
     });

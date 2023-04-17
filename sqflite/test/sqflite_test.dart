@@ -4,6 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'src_mixin_test.dart' show MockDatabaseFactoryEmpty, MockInvalidFactory;
 
+T? _ambiguate<T>(T? value) => value;
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -13,7 +14,9 @@ void main() {
     final log = <MethodCall>[];
     String? response;
 
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
+    _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
+        .defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       log.add(methodCall);
       return response;
     });
