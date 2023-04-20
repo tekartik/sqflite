@@ -90,7 +90,6 @@ linter:
     - prefer_adjacent_string_concatenation
     - prefer_collection_literals
     - prefer_contains
-    - prefer_equal_for_default_values
     - slash_for_doc_comments
     - type_init_formals
     - unnecessary_const

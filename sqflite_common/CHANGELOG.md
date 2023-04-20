@@ -1,3 +1,7 @@
+## 2.4.4
+
+* Dart 3 support
+
 ## 2.4.3
 
 * add minimum support for SQLite uri (https://www.sqlite.org/uri.html)
