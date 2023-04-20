@@ -1,3 +1,7 @@
+## 2.2.7
+
+* Dart 3 support
+
 ## 2.2.6
 
 * uri support for supported implementations.
