@@ -93,4 +93,13 @@ public class TestSqflitePluginTest {
         // False, uncomment in manifest to check for true
         assertFalse(Database.checkWalEnabled(appContext));
     }
+
+    @Test
+    public void checkMetaBoolean() {
+        // False, uncomment in manifest to check for true
+        assertTrue(Database.checkMetaBoolean(appContext, "com.tekartik.sqfliteexample.flagtrue", false));
+        assertFalse(Database.checkMetaBoolean(appContext, "com.tekartik.sqfliteexample.flagfalse", false));
+        assertTrue(Database.checkMetaBoolean(appContext, "com.tekartik.sqfliteexample.flagmissing", true));
+        assertFalse(Database.checkMetaBoolean(appContext, "com.tekartik.sqfliteexample.flagmissing", false));
+    }
 }

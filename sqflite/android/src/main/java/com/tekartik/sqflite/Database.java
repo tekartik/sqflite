@@ -26,6 +26,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -89,10 +90,26 @@ class Database {
     @VisibleForTesting
     @NotNull
     static protected boolean checkWalEnabled(Context context) {
+        return checkMetaBoolean(context, WAL_ENABLED_META_NAME, WAL_ENABLED_BY_DEFAULT);
+    }
+
+    @SuppressWarnings("deprecation")
+    static ApplicationInfo getApplicationInfoWithMeta32(Context context, String packageName, int flags) throws PackageManager.NameNotFoundException {
+        return context.getPackageManager().getApplicationInfo(packageName, flags);
+    }
+
+    @VisibleForTesting
+    @NotNull
+    static protected boolean checkMetaBoolean(Context context, String metaKey, boolean defaultValue) {
         try {
             final String packageName = context.getPackageName();
-            final ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
-            final boolean walEnabled = applicationInfo.metaData.getBoolean(WAL_ENABLED_META_NAME, WAL_ENABLED_BY_DEFAULT);
+            ApplicationInfo applicationInfo;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                applicationInfo = context.getPackageManager().getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(PackageManager.GET_META_DATA));
+            } else {
+                applicationInfo = getApplicationInfoWithMeta32(context, packageName, PackageManager.GET_META_DATA);
+            }
+            final boolean walEnabled = applicationInfo.metaData.getBoolean(metaKey, defaultValue);
             if (walEnabled) {
                 return true;
             }
@@ -102,6 +119,7 @@ class Database {
         }
         return false;
     }
+
 
     static void deleteDatabase(String path) {
         SQLiteDatabase.deleteDatabase(new File(path));
