@@ -1,5 +1,4 @@
 import 'package:sqflite_common/sqflite_logger.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_test/src/sqflite_import.dart';
 import 'package:test/test.dart';

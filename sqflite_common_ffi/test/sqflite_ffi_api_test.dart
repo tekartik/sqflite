@@ -1,7 +1,6 @@
 @TestOn('vm')
 library sqflite_common_ffi.test.sqflite_ffi_doc_test;
 
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:test/test.dart';
 

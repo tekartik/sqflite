@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/factory_impl.dart';
 import 'package:sqflite/src/mixin/factory.dart';
 import 'package:sqflite/src/sqflite_impl.dart';
@@ -35,12 +36,8 @@ void main() {
     });
 
     test('deprecated', () {
-      // ignore: deprecated_member_use_from_same_package
-      sqlfliteDatabaseFactory = null;
       sqfliteDatabaseFactory = null;
       for (var element in [
-        // ignore: unnecessary_statements, deprecated_member_use_from_same_package
-        sqlfliteDatabaseFactory,
         // ignore: unnecessary_statements
         sqfliteDatabaseFactory
       ]) {

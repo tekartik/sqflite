@@ -1,3 +1,7 @@
+## 2.2.5-1
+
+* Export global sqflite API
+
 ## 2.2.4
 
 * Dart 3 support

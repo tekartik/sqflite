@@ -1,7 +1,8 @@
-## 2.2.8-1
+## 2.2.8-2
 
 * Android: Adds a namespace for compatibility with AGP 8.0.
 * Android: Use compile SDK 33
+* Export global sqflite API
 
 ## 2.2.7
 

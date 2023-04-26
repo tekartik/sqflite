@@ -1,3 +1,7 @@
+## 2.4.5-1
+
+* Add global API from sqflite (openDatabase, deleteDatabase, databaseFactory...) from sqflite
+
 ## 2.4.4
 
 * Dart 3 support
