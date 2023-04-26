@@ -36,5 +36,11 @@
             android:name="com.tekartik.sqflite.wal_enabled"
             android:value="true" />
         -->
+        <meta-data
+            android:name="com.tekartik.sqfliteexample.flagtrue"
+            android:value="true" />
+        <meta-data
+            android:name="com.tekartik.sqfliteexample.flagfalse"
+            android:value="false" />
     </application>
 </manifest>
