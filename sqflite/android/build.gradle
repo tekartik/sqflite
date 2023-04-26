@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'com.android.tools.build:gradle:7.4.2'
     }
 }
 
@@ -30,6 +30,7 @@ allprojects {
 apply plugin: 'com.android.library'
 
 android {
+    namespace 'com.tekartik.sqfite'
     compileSdkVersion 31
 
     compileOptions {

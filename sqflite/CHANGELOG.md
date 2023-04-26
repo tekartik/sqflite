@@ -1,3 +1,7 @@
+## 2.2.7+1
+
+* Adds a namespace for compatibility with AGP 8.0.
+
 ## 2.2.7
 
 * Dart 3 support
