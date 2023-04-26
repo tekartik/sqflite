@@ -433,8 +433,8 @@ abstract class OpenDatabaseOptions {
       OnDatabaseVersionChangeFn? onUpgrade,
       OnDatabaseVersionChangeFn? onDowngrade,
       OnDatabaseOpenFn? onOpen,
-      bool readOnly = false,
-      bool singleInstance = true}) {
+      bool? readOnly = false,
+      bool? singleInstance = true}) {
     return impl.SqfliteOpenDatabaseOptions(
         version: version,
         onConfigure: onConfigure,

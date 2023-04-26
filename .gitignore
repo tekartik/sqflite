@@ -63,3 +63,4 @@ GeneratedPluginRegistrant.java
 
 # Local files
 .local/
+pubspec_overrides.yaml
