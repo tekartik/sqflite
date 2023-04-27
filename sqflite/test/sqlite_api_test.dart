@@ -20,7 +20,7 @@ void main() {
         onDatabaseDowngradeDelete,
         sqfliteLogLevelNone,
         sqfliteLogLevelSql,
-        sqfliteLogLevelVerbose
+        sqfliteLogLevelVerbose,
       ]) {
         expect(value, isNotNull);
       }

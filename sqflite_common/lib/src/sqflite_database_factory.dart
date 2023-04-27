@@ -8,6 +8,20 @@ SqfliteDatabaseFactory? _databaseFactory;
 @visibleForTesting
 DatabaseFactory? get databaseFactoryOrNull => _databaseFactory;
 
+/// Change the default factory.
+set databaseFactoryOrNull(DatabaseFactory? databaseFactory) {
+  if (databaseFactory != null) {
+    if (databaseFactory is! SqfliteDatabaseFactory) {
+      throw ArgumentError.value(
+          databaseFactory, 'databaseFactory', 'Unsupported sqflite factory');
+    }
+    _databaseFactory = databaseFactory;
+  } else {
+    /// Unset
+    _databaseFactory = null;
+  }
+}
+
 /// sqflite Default factory.
 DatabaseFactory get databaseFactory =>
     _databaseFactory ??
@@ -27,10 +41,6 @@ You must call `databaseFactory = databaseFactoryFfi;` before using global openDa
 set databaseFactory(DatabaseFactory? databaseFactory) {
   // Warn when changing. might throw in the future
   if (databaseFactory != null) {
-    if (databaseFactory is! SqfliteDatabaseFactory) {
-      throw ArgumentError.value(
-          databaseFactory, 'databaseFactory', 'Unsupported sqflite factory');
-    }
     if (_databaseFactory != null) {
       print('''
 *** sqflite warning ***
@@ -42,9 +52,6 @@ will have this factory as the default for all operations.
 *** sqflite warning ***
 ''');
     }
-    _databaseFactory = databaseFactory;
-  } else {
-    /// Unset
-    _databaseFactory = null;
   }
+  databaseFactoryOrNull = databaseFactory;
 }

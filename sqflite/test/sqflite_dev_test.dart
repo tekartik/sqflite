@@ -8,7 +8,7 @@ void main() {
   group('sqflite_dev', () {
     test('setMockDatabaseFactory', () async {
       final factory = MockDatabaseFactoryEmpty();
-      expect(factory, isNot(databaseFactory));
+      expect(factory, isNot(databaseFactoryOrNull));
       // ignore: deprecated_member_use_from_same_package
       setMockDatabaseFactory(factory);
       expect(factory, databaseFactory);

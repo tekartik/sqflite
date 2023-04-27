@@ -1,4 +1,4 @@
-## 2.2.8-3
+## 2.2.8-4
 
 * Android: Adds a namespace for compatibility with AGP 8.0.
 * Android: Use compile SDK 33
@@ -51,7 +51,7 @@
 
 ## 2.0.4-dev.1
 
-* Android: Allow turing on WAL in the manifest.
+* Android: Allow turning on WAL in the manifest.
 
 ## 2.0.3+1
 

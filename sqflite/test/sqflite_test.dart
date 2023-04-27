@@ -7,6 +7,7 @@ import 'src_mixin_test.dart' show MockDatabaseFactoryEmpty, MockInvalidFactory;
 T? _ambiguate<T>(T? value) => value;
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  databaseFactory = databaseFactorySqflitePlugin;
 
   group('sqflite', () {
     const channel = MethodChannel('com.tekartik.sqflite');

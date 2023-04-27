@@ -56,6 +56,7 @@ MockScenario startScenario(List<List> data) {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  databaseFactory = databaseFactorySqflitePlugin;
 
   group('sqflite', () {
     test('open single instance false', () async {
