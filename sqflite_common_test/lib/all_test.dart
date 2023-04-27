@@ -17,6 +17,7 @@ import 'sqflite_protocol_test.dart' as protocol_test;
 import 'statement_test.dart' as statement_test;
 import 'transaction_test.dart' as transaction_test;
 import 'type_test.dart' as type_test;
+import 'wal_test.dart';
 
 /// Run all common tests.
 void run(SqfliteTestContext context) {
@@ -37,5 +38,6 @@ void run(SqfliteTestContext context) {
     database_factory_test.run(context);
     transaction_test.run(context);
     issue_test.run(context);
+    walTests(context);
   });
 }
