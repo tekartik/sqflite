@@ -14,6 +14,7 @@ export 'package:sqflite/src/compat.dart';
 export 'package:sqflite_common/sqflite.dart';
 
 export 'sqlite_api.dart';
+export 'src/factory_impl.dart' show databaseFactorySqflitePlugin;
 export 'src/sqflite_plugin.dart' show SqflitePlugin;
 
 ///
@@ -22,11 +23,13 @@ export 'src/sqflite_plugin.dart' show SqflitePlugin;
 class Sqflite {
   /// Turns on debug mode if you want to see the SQL query
   /// executed natively.
+  @Deprecated('Removed in next major release')
   static Future<void> setDebugModeOn([bool on = true]) async {
     await invokeMethod<dynamic>(methodSetDebugModeOn, on);
   }
 
   /// Planned Deprecated for 1.1.7
+  @Deprecated('Removed in next major release')
   static Future<bool> getDebugModeOn() async {
     return impl.debugModeOn;
   }

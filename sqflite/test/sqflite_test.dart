@@ -26,6 +26,7 @@ void main() {
     });
 
     test('setDebugModeOn', () async {
+      // ignore: deprecated_member_use_from_same_package
       await Sqflite.setDebugModeOn();
       expect(log.first.method, 'debugMode');
       expect(log.first.arguments, true);
