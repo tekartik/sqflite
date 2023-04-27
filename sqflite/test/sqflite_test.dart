@@ -7,6 +7,7 @@ import 'src_mixin_test.dart' show MockDatabaseFactoryEmpty, MockInvalidFactory;
 T? _ambiguate<T>(T? value) => value;
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  databaseFactory = databaseFactorySqflitePlugin;
 
   group('sqflite', () {
     const channel = MethodChannel('com.tekartik.sqflite');
@@ -26,6 +27,7 @@ void main() {
     });
 
     test('setDebugModeOn', () async {
+      // ignore: deprecated_member_use_from_same_package
       await Sqflite.setDebugModeOn();
       expect(log.first.method, 'debugMode');
       expect(log.first.arguments, true);

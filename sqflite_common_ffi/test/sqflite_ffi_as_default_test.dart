@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 void main() {
   // Init ffi loader if needed.
   sqfliteFfiInit();
-  //databaseFactory = databaseFactoryFfi;
+  databaseFactory = databaseFactoryFfi;
   test('basic', () async {
     var db = await openDatabase(inMemoryDatabasePath, onCreate: (db, version) {
       return db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');

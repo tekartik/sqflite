@@ -54,10 +54,20 @@ class _SqfliteFfiHandlerIo extends SqfliteFfiHandler {
     return ffiDb;
   }
 
-  /// Delete the database file.
+  /// Safe delete a files
+  Future<void> _safeDeleteFile(String path) async {
+    try {
+      await File(path).delete(recursive: true);
+    } catch (_) {}
+  }
+
+  /// Delete the database file including its journal file and other auxiliary files
   @override
   Future<void> deleteDatabasePlatform(String path) async {
-    await File(path).delete();
+    await _safeDeleteFile(path);
+    await _safeDeleteFile('$path-wal');
+    await _safeDeleteFile('$path-shm');
+    await _safeDeleteFile('$path-journal');
   }
 
   /// Check if database file exists
