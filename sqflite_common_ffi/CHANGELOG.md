@@ -1,4 +1,4 @@
-## 2.2.5-2
+## 2.2.5
 
 * Export global sqflite API
 
