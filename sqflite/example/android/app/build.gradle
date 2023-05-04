@@ -26,7 +26,9 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    namespace 'com.tekartik.sqfliteexample'
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.tekartik.sqfliteexample'
+    }
     compileSdkVersion flutter.compileSdkVersion
 
     compileOptions {
