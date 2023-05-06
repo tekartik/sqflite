@@ -114,6 +114,45 @@ Future main() async {
 }
 ```
 
+Example with path_provider
+
+```dart
+import 'dart:io' as io;
+import 'package:path/path.dart' as p;
+import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:path_provider/path_provider.dart';
+
+Future main() async {
+  // Init ffi loader if needed.
+  sqfliteFfiInit();
+
+  var databaseFactory = databaseFactoryFfi;
+  final io.Directory appDocumentsDir = await getApplicationDocumentsDirectory();
+  
+  //Create path for database
+  String dbPath = p.join(appDocumentsDir.path, "databases", "myDb.db");
+  var db = await databaseFactory.openDatabase(
+    dbPath,
+  );
+
+  await db.execute('''
+  CREATE TABLE Product (
+      id INTEGER PRIMARY KEY,
+      title TEXT
+  )
+  ''');
+  await db.insert('Product', <String, Object?>{'title': 'Product 1'});
+  await db.insert('Product', <String, Object?>{'title': 'Product 1'});
+
+  var result = await db.query('Product');
+  print(result);
+  // prints [{id: 1, title: Product 1}, {id: 2, title: Product 1}]
+  await db.close();
+}
+
+```
+
 If your existing application uses sqflite on iOS/Android/MacOS, you can also set the proper initialization to have
 your
 application [work on Linux and windows](https://github.com/tekartik/sqflite/blob/master/sqflite_common_ffi/doc/using_ffi_instead_of_sqflite.md).
