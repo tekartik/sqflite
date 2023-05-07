@@ -357,7 +357,7 @@ class SqfliteFfiDatabase {
       while (true) {
         if (cursor.moveNext()) {
           var row = cursor.current;
-          rows.add(row.values);
+          rows.add(row.values as List<Object?>);
         } else {
           cursorInfo.atEnd = true;
           break;
