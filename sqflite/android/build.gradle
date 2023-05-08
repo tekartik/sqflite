@@ -32,7 +32,7 @@ apply plugin: 'com.android.library'
 android {
     // Conditional for compatibility with AGP <4.2.
     if (project.android.hasProperty("namespace")) {
-        namespace 'com.tekartik.sqfite'
+        namespace 'com.tekartik.sqflite'
     }
     compileSdkVersion 33
 
