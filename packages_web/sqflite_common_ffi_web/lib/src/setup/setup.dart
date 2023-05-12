@@ -9,10 +9,12 @@ import 'package:process_run/shell.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sqflite_common_ffi_web/src/constant.dart';
 
+import 'sqlite3_wasm_version.dart';
+
 // https://github.com/simolus3/sqlite3.dart/releases
-var _sqlite3WasmVersion = Version(1, 11, 0);
+
 var _sqlite3WasmReleaseUri = Uri.parse(
-    'https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-$_sqlite3WasmVersion/sqlite3.wasm');
+    'https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-$sqlite3WasmVersion/sqlite3.wasm');
 
 /// dhttpd simple server (testing only
 var dhttpdReady = () async {
