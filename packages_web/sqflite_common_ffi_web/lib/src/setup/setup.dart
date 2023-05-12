@@ -12,7 +12,6 @@ import 'package:sqflite_common_ffi_web/src/constant.dart';
 import 'sqlite3_wasm_version.dart';
 
 // https://github.com/simolus3/sqlite3.dart/releases
-
 var _sqlite3WasmReleaseUri = Uri.parse(
     'https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-$sqlite3WasmVersion/sqlite3.wasm');
 

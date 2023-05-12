@@ -1,7 +1,8 @@
-## 0.3.5
+## 0.3.5+1
 
 * Dart 3 support
-* 
+* sqlite3 1.11.1
+
 ## 0.3.4
 
 * Depends on sqlite3 >= 1.11.0
