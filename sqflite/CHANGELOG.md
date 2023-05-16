@@ -1,4 +1,4 @@
-## 2.2.8+1
+## 2.2.8+3
 
 * Android: Adds a namespace for compatibility with AGP 8.0.
 * Android: Use compile SDK 33

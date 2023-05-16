@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_example/database/database.dart';
@@ -27,33 +28,30 @@ Future<void> initFfi({bool? noWorker}) async {
   // but we could also use path_provider
   var isSqfliteCompatible =
       !kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isMacOS);
-  DatabaseFactory? original;
+  //DatabaseFactory? original;
   // Save original for iOS & Android
-  if (isSqfliteCompatible) {
-    original = databaseFactory;
-  }
-
-  WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
     if (noWorker) {
-      databaseFactory = databaseFactoryFfiWebNoWebWorker;
+      databaseFactoryOrNull = databaseFactoryFfiWebNoWebWorker;
     } else {
-      databaseFactory = databaseFactoryFfiWeb;
+      databaseFactoryOrNull = databaseFactoryFfiWeb;
     }
     // Platform handler for the example app
     platformHandler = platformHandlerWeb;
   } else {
     sqfliteFfiInit();
     if (noWorker) {
-      databaseFactory = databaseFactoryFfiNoIsolate;
+      databaseFactoryOrNull = databaseFactoryFfiNoIsolate;
     } else {
-      databaseFactory = databaseFactoryFfi;
+      databaseFactoryOrNull = databaseFactoryFfi;
     }
   }
+  WidgetsFlutterBinding.ensureInitialized();
   // Use sqflite databases path provider (ffi implementation is lame))
   if (isSqfliteCompatible) {
-    await databaseFactory.setDatabasesPath(await original!.getDatabasesPath());
+    await databaseFactory.setDatabasesPath(
+        await databaseFactorySqflitePlugin.getDatabasesPath());
   }
 }
 

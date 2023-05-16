@@ -2,7 +2,58 @@
 # See https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
 version: 2
 
+enable-beta-ecosystems: true
 updates:
+  - package-ecosystem: "pub"
+    directory: "packages/console_test_app"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "pub"
+    directory: "packages_web/sqflite_common_ffi_web"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "pub"
+    directory: "packages_web/sqflite_common_ffi_web_test"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "pub"
+    directory: "sqflite"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "pub"
+    directory: "sqflite/example"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "pub"
+    directory: "sqflite_common"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "pub"
+    directory: "sqflite_common_ffi"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "pub"
+    directory: "sqflite_common_test"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "pub"
+    directory: "sqflite_support"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "pub"
+    directory: "sqflite_test_app"
+    schedule:
+      interval: "monthly"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
