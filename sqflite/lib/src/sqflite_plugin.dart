@@ -4,8 +4,8 @@ import 'factory_impl.dart';
 
 /// sqflite Plugin registration.
 class SqflitePlugin {
-  /// Registers this plugin as the default database factory.
+  /// Registers this plugin as the default database factory (if not already set).
   static void registerWith() {
-    databaseFactory = sqfliteDatabaseFactoryDefault;
+    databaseFactoryOrNull ??= sqfliteDatabaseFactoryDefault;
   }
 }
