@@ -219,15 +219,23 @@ Xcode 14 only supports building for a deployment target of iOS 11.
 Here as well you need to enforce the deployment target until I find a better way
 as the FMDB dependency is no longer actively maintained.
 
-In your application Podfile inside the post_install section, you need to add 
-(11 is used here, but you might want to specify a higher platform):
+In your application Podfile inside the post_install section where have this in the
+app template:
 
+```
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+end
+```
+
+you need to have 
+(11 is used here, but you might want to specify a higher platform):
 
 ```
 post_install do |installer|
 
-  ...
-  
   installer.generated_projects.each do |project|
     project.targets.each do |target|
       target.build_configurations.each do |config|
@@ -235,9 +243,10 @@ post_install do |installer|
       end
     end
   end
-  
-  ...
-  
+
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
 end
 ```
 
