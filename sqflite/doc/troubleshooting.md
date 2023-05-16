@@ -219,7 +219,7 @@ Xcode 14 only supports building for a deployment target of iOS 11.
 Here as well you need to enforce the deployment target until I find a better way
 as the FMDB dependency is no longer actively maintained.
 
-In your application Podfile inside the post_install section where have this in the
+In your application Podfile inside the post_install section where you have this in the
 app template:
 
 ```
