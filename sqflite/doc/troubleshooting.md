@@ -204,6 +204,52 @@ end
 Since Flutter templates change over time for new sdk, you might sometimes try to delete the ios folder and re-create
 your project.
 
+### XCode 14 support
+
+You might likely get the following error:
+
+```
+Error (Xcode): File not found: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/arc/libarclite_iphonesimulator.a
+```
+
+See: https://developer.apple.com/forums/thread/728021
+
+Xcode 14 only supports building for a deployment target of iOS 11.
+
+Here as well you need to enforce the deployment target until I find a better way
+as the FMDB dependency is no longer actively maintained.
+
+In your application Podfile inside the post_install section where have this in the
+app template:
+
+```
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+end
+```
+
+you need to have 
+(11 is used here, but you might want to specify a higher platform):
+
+```
+post_install do |installer|
+
+  installer.generated_projects.each do |project|
+    project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '11.0'
+      end
+    end
+  end
+
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+end
+```
+
 ### Module 'FMDB' not found
 
 Since v2.2.1-1, you might encounter `Module 'FMDB' not found` on old projects.
