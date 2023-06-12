@@ -1,6 +1,7 @@
-## 2.4.5
+## 2.4.5+1
 
 * Add global API from sqflite (openDatabase, deleteDatabase, databaseFactory...) from sqflite
+* Fixes SqlBuilder for query with offset without limit.
 
 ## 2.4.4
 
