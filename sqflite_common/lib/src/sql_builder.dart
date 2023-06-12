@@ -127,6 +127,9 @@ class SqlBuilder {
     _writeClause(query, ' GROUP BY ', groupBy);
     _writeClause(query, ' HAVING ', having);
     _writeClause(query, ' ORDER BY ', orderBy);
+    // See https://sqlite.org/lang_select.html
+    // offset cannot be specified without limit so ensure to set limit to -1
+    // if not set
     if (limit != null || offset != null) {
       _writeClause(query, ' LIMIT ', (limit ?? -1).toString());
     }

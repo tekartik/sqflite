@@ -43,6 +43,12 @@ void main() {
           'SELECT DISTINCT value FROM test WHERE value = ? GROUP BY group_value HAVING value > 0 ORDER BY other_value LIMIT 2 OFFSET 3');
       expect(builder.arguments, <int>[1]);
 
+      // no offset
+      builder = SqlBuilder.query('test', limit: 99);
+      expect(builder.sql, 'SELECT * FROM test LIMIT 99');
+      expect(builder.arguments, isNull);
+
+      // no limit
       builder = SqlBuilder.query('test', offset: 99);
       expect(builder.sql, 'SELECT * FROM test LIMIT -1 OFFSET 99');
       expect(builder.arguments, isNull);
