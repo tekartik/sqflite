@@ -127,8 +127,8 @@ class SqlBuilder {
     _writeClause(query, ' GROUP BY ', groupBy);
     _writeClause(query, ' HAVING ', having);
     _writeClause(query, ' ORDER BY ', orderBy);
-    if (limit != null) {
-      _writeClause(query, ' LIMIT ', limit.toString());
+    if (limit != null || offset != null) {
+      _writeClause(query, ' LIMIT ', (limit ?? -1).toString());
     }
     if (offset != null) {
       _writeClause(query, ' OFFSET ', offset.toString());
