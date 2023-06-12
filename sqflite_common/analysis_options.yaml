@@ -47,7 +47,6 @@ linter:
     - hash_and_equals
     - collection_methods_unrelated_type
     - library_private_types_in_public_api
-    - list_remove_unrelated_type
     - no_adjacent_strings_in_list
     - no_duplicate_case_values
     - no_leading_underscores_for_library_prefixes
