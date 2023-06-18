@@ -21,13 +21,13 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler {
   final SqfliteFfiWebContext context;
 
   WasmSqlite3? _sqlite3;
-  FileSystem? _fs;
+  VirtualFileSystem? _fs;
 
   /// Web handler for common sqlite3 web env
   SqfliteFfiHandlerWeb(this.context);
 
   /// Init file system.
-  Future<FileSystem> initFs() async {
+  Future<VirtualFileSystem> initFs() async {
     _fs ??= context.fs;
     return _fs!;
   }
@@ -52,7 +52,7 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler {
   Future<void> deleteDatabasePlatform(String path) async {
     final fs = await initFs();
     try {
-      fs.deleteFile(path);
+      fs.xDelete(path, 0);
       if (fs is IndexedDbFileSystem) {
         await fs.flush();
       }
@@ -65,8 +65,8 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler {
     // Ignore failure
     try {
       final fs = await initFs();
-      final exists = fs.exists(path);
-      return exists;
+      final canAccess = fs.xAccess(path, 0);
+      return canAccess != 0;
     } catch (_) {
       return false;
     }
