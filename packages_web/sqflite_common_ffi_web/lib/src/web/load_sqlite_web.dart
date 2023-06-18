@@ -1,8 +1,5 @@
 import 'dart:html';
-import 'dart:js_util';
-import 'dart:typed_data';
 
-import 'package:http/http.dart' as http;
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/constant.dart';
 import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
@@ -34,25 +31,15 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(
     bool? fromWebWorker}) async {
   context ??= await sqfliteFfiWebLoadSqlite3FileSystem(options);
   var uri = options.sqlite3WasmUri ?? _defaultSqlite3WasmUri;
-  Uint8List bodyBytes;
   if (_debug) {
     print('Loading sqlite3.wasm from $uri');
   }
-  if (fromWebWorker ?? false) {
-    var self = WorkerGlobalScope.instance;
-    final response = (await self.fetch(uri.toString())) as Object;
-    bodyBytes = ((await promiseToFuture<Object?>(
-            callMethod(response, 'arrayBuffer', []))) as ByteBuffer)
-        .asUint8List();
-  } else {
-    // regular http
-    final response = await http.get(uri);
-    bodyBytes = response.bodyBytes;
-  }
+
   var webContext = (context as SqfliteFfiWebContextImpl);
-  final fs = webContext.fs;
-  var wasmSqlite3 =
-      await WasmSqlite3.load(bodyBytes, SqliteEnvironment(fileSystem: fs));
+  final fs = webContext.fs ?? InMemoryFileSystem();
+  var wasmSqlite3 = await WasmSqlite3.loadFromUrl(uri);
+  wasmSqlite3.registerVirtualFileSystem(fs, makeDefault: true);
+
   return SqfliteFfiWebContextImpl(
       options: options, fs: fs, wasmSqlite3: wasmSqlite3);
 }
@@ -98,7 +85,7 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
 /// Web implementation with shared worker
 class SqfliteFfiWebContextImpl extends SqfliteFfiWebContext {
   /// Null when using shared worker
-  final FileSystem? fs;
+  final VirtualFileSystem? fs;
 
   /// Null when using shared worker
   final WasmSqlite3? wasmSqlite3;
@@ -134,7 +121,7 @@ extension SqfliteFfiWebContextExt on SqfliteFfiWebContext {
   SqfliteFfiWebContextImpl get _context => this as SqfliteFfiWebContextImpl;
 
   /// File system if any
-  FileSystem? get fs => _context.fs;
+  VirtualFileSystem? get fs => _context.fs;
 
   /// Shared worker if any
   SharedWorker? get sharedWorker => _context.sharedWorker;

@@ -27,9 +27,14 @@ class _PlatformHandlerWeb extends PlatformHandler {
   Future<void> writeFileAsBytes(String path, List<int> bytes,
       {bool flush = false}) async {
     final fs = await IndexedDbFileSystem.open(dbName: _dbName);
-    if (fs.exists(path)) fs.deleteFile(path);
-    fs.createFile(path);
-    fs.write(path, Uint8List.fromList(bytes), 0);
+    if (fs.xAccess(path, 0) != 0) fs.xDelete(path, 0);
+
+    final openResult =
+        fs.xOpen(Sqlite3Filename(path), SqlFlag.SQLITE_OPEN_CREATE);
+    openResult.file
+      ..xWrite(Uint8List.fromList(bytes), 0)
+      ..xClose();
+
     if (flush) await fs.flush();
   }
 
@@ -37,9 +42,13 @@ class _PlatformHandlerWeb extends PlatformHandler {
   @override
   Future<Uint8List> readFileAsBytes(String path) async {
     final fs = await IndexedDbFileSystem.open(dbName: _dbName);
-    var size = fs.sizeOfFile(path);
-    var target = Uint8List(size);
-    fs.read(path, target, 0);
+    final openResult =
+        fs.xOpen(Sqlite3Filename(path), SqlFlag.SQLITE_OPEN_CREATE);
+
+    var target = Uint8List(openResult.file.xFileSize());
+    openResult.file.xRead(target, 0);
+    openResult.file.xClose();
+
     return target;
   }
 
@@ -63,7 +72,7 @@ class _PlatformHandlerWeb extends PlatformHandler {
   @override
   Future<bool> pathExists(String path) async {
     final fs = await IndexedDbFileSystem.open(dbName: _dbName);
-    return fs.exists(path);
+    return fs.xAccess(path, 0) != 0;
   }
 
   /// Create a directory, on the web this is a noop since files are referred to directly by path
