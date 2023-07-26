@@ -348,7 +348,7 @@ class ExpTestPage extends TestPage {
       final data = await rootBundle.load(join('assets', 'issue_64.db'));
       final bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      await writeFileAsBytes(path, bytes);
+      await databaseFactory.writeDatabaseBytes(path, bytes);
 
       // open the database
       final db = await openDatabase(path);

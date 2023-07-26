@@ -345,12 +345,11 @@ class OpenTestPage extends TestPage {
         await createDirectory(path);
       } catch (_) {}
 
-      // Copy from asset
+// Copy from asset to a database file.
       final data = await rootBundle.load(join('assets', 'example.db'));
-      final List<int> bytes =
+      final bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      // Write and flush the bytes written
-      await writeFileAsBytes(path, bytes, flush: true);
+      await databaseFactory.writeDatabaseBytes(path, bytes);
 
       // open the database
       final db = await openDatabase(path);
