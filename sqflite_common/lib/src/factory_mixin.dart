@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/constant.dart';
@@ -141,6 +143,30 @@ mixin SqfliteDatabaseFactoryMixin
     path = await fixPath(path);
     return safeInvokeMethod<bool>(
         methodDatabaseExists, <String, Object?>{paramPath: path});
+  }
+
+  @override
+  Future<void> writeDatabaseBytes(String path, Uint8List bytes) async {
+    path = await fixPath(path);
+    final lock = _getDatabaseOpenLock(path);
+    return lock.synchronized(() async {
+      return safeInvokeMethod<void>(methodWriteDatabaseBytes,
+          <String, Object?>{paramPath: path, paramBytes: bytes});
+    });
+  }
+
+  @override
+  Future<Uint8List> readDatabaseBytes(String path) async {
+    path = await fixPath(path);
+    final lock = _getDatabaseOpenLock(path);
+    return lock.synchronized(() async {
+      var result = await safeInvokeMethod<dynamic>(
+          methodReadDatabaseBytes, <String, Object?>{paramPath: path});
+      if (result is Map) {
+        return result[paramBytes] as Uint8List;
+      }
+      throw ArgumentError('Invalid result $result');
+    });
   }
 
   String? _databasesPath;
