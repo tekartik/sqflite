@@ -6,6 +6,9 @@ import 'package:sqflite/src/exception_impl.dart' as impl;
 import 'package:sqflite/src/sqflite_impl.dart' as impl;
 import 'package:sqflite/src/sqflite_import.dart';
 import 'package:sqflite_common/sqflite.dart' as sqflite_common;
+// ignore: implementation_imports
+import 'package:sqflite_common/src/mixin/platform.dart';
+
 import 'dev_utils.dart'; // ignore: unused_import
 
 /// sqflite Default factory
@@ -53,5 +56,15 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
     // ignore: avoid_print
     print('<- $result');
     return result;
+  }
+
+  @override
+  Future<Uint8List> readDatabaseBytes(String path) async {
+    return await platform.databaseFileSystem.readDatabaseBytes(path);
+  }
+
+  @override
+  Future<void> writeDatabaseBytes(String path, Uint8List bytes) async {
+    await platform.databaseFileSystem.writeDatabaseBytes(path, bytes);
   }
 }

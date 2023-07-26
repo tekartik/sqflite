@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
@@ -202,6 +203,18 @@ Future<void> incrementSqfliteValueInDatabaseFactory(DatabaseFactory factory,
   }
 }
 
+Future<void> readWiteDatabase(DatabaseFactory factory, int size) async {
+  try {
+    var path = 'read_write.db';
+    var bytes = Uint8List.fromList(List.generate(size, (index) => index % 256));
+    await factory.writeDatabaseBytes(path, bytes);
+    var readBytes = await factory.readDatabaseBytes(path);
+    write('wrote ${bytes.length}, read ${readBytes.length}');
+  } catch (e) {
+    write('Exception $e');
+  }
+}
+
 void initUi() {
   addButton('load sqlite', () async {});
   addButton('increment var in shared worker', () async {
@@ -218,5 +231,16 @@ void initUi() {
   });
   addButton('increment sqflite value in pre-built web worker', () async {
     await incrementPrebuilt();
+  });
+  addButton('read write file', () async {
+    for (var factory in [
+      databaseFactoryWebNoWebWorkerLocal,
+      databaseFactoryWebPrebuilt,
+      databaseFactoryWebLocal
+    ]) {
+      write('factory: $factory');
+      await readWiteDatabase(factory, 3);
+      await readWiteDatabase(factory, 1024 * 1024);
+    }
   });
 }

@@ -24,6 +24,10 @@ void main() {
       ]) {
         expect(value, isNotNull);
       }
+      try {
+        // ignore: unnecessary_cast
+        SqfliteDatabaseExecutorExt((null as Database?)!).getVersion();
+      } catch (_) {}
     });
   });
 }

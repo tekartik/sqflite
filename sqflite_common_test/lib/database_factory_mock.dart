@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:sqflite_common/sqlite_api.dart';
 
@@ -26,6 +27,16 @@ class DatabaseFactoryMock implements DatabaseFactory {
 
   @override
   Future<void> setDatabasesPath(String path) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Uint8List> readDatabaseBytes(String path) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> writeDatabaseBytes(String path, Uint8List bytes) {
     throw UnimplementedError();
   }
 }

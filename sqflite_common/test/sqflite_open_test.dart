@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:test/test.dart';
 
@@ -81,6 +83,31 @@ void main() {
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath,
           options: OpenDatabaseOptions(version: 1, onCreate: (db, version) {}));
       await db.close();
+      scenario.end();
+    });
+    test('read/write', () async {
+      final scenario = startScenario([
+        [
+          'writeDatabaseBytes',
+          {
+            'path': ':memory:',
+            'bytes': [1, 2, 3],
+          },
+          null,
+        ],
+        [
+          'readDatabaseBytes',
+          {'path': ':memory:'},
+          {
+            'bytes': Uint8List.fromList([1, 2, 3])
+          }
+        ],
+      ]);
+      final factory = scenario.factory;
+      await factory.writeDatabaseBytes(
+          inMemoryDatabasePath, Uint8List.fromList([1, 2, 3]));
+      expect(await factory.readDatabaseBytes(inMemoryDatabasePath), [1, 2, 3]);
+
       scenario.end();
     });
   });

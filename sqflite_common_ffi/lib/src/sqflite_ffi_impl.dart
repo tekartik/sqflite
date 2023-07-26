@@ -5,6 +5,7 @@ import 'package:path/path.dart';
 import 'package:sqflite_common/src/mixin/constant.dart'; // ignore: implementation_imports
 import 'package:sqflite_common_ffi/src/constant.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
+import 'package:sqflite_common_ffi/src/sqflite_ffi_handler.dart';
 import 'package:sqlite3/common.dart' as common;
 import 'package:synchronized/synchronized.dart';
 
@@ -13,27 +14,12 @@ import 'import.dart';
 import 'sqflite_ffi_impl_io.dart'
     if (dart.library.js) 'sqflite_ffi_impl_web.dart';
 
+export 'sqflite_ffi_handler.dart'
+    show SqfliteFfiHandler; // compatibility, was defined here before
+
 final _debug = false; // devWarning(true); // false
 
 final _globalHandlerLock = Lock();
-
-/// Ffi handler.
-abstract class SqfliteFfiHandler {
-  /// Opens the database using an ffi implementation
-  Future<common.CommonDatabase> openPlatform(Map argumentsMap);
-
-  /// Delete the database file.
-  Future<void> deleteDatabasePlatform(String path);
-
-  /// Check if database file exists
-  Future<bool> handleDatabaseExistsPlatform(String path);
-
-  /// Default database path.
-  String getDatabasesPathPlatform();
-
-  /// Ffi specific options (for the web contains the sqlite3 wasm url)
-  Future<void> handleOptionsPlatform(Map argumentMap);
-}
 
 /// By id
 var ffiDbs = <int, SqfliteFfiDatabase>{};
@@ -694,6 +680,10 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
         return await _wrapGlobalHandler(handleDatabaseExists);
       case methodOptions:
         return await _wrapGlobalHandler(handleOptions);
+      case methodWriteDatabaseBytes:
+        return await _wrapGlobalHandler(handleWriteDatabaseBytes);
+      case methodReadDatabaseBytes:
+        return await _wrapGlobalHandler(handleReadDatabaseBytes);
       // compat
       case 'debugMode':
         return await handleDebugMode();
@@ -832,6 +822,12 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       path = join(getDatabasesPath(), path);
     }
     return path;
+  }
+
+  /// Get the `bytes` argument as Uint8List.
+  Uint8List? getBytes() {
+    var bytes = _getParam<Uint8List>(paramBytes);
+    return bytes;
   }
 
   /// Check the arguments
@@ -1023,6 +1019,20 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   Future<bool> handleDatabaseExists() async {
     var path = getPath();
     return sqfliteFfiHandler.handleDatabaseExistsPlatform(path!);
+  }
+
+  /// Handle `readDatabaseBytes`.
+  Future<Map> handleReadDatabaseBytes() async {
+    var path = getPath();
+    var bytes = await sqfliteFfiHandler.readDatabaseBytesPlatform(path!);
+    return <String, Object?>{paramBytes: bytes};
+  }
+
+  /// Handle `writeDatabaseBytes`.
+  Future<void> handleWriteDatabaseBytes() async {
+    var path = getPath();
+    var bytes = getBytes();
+    return sqfliteFfiHandler.writeDatabaseBytesPlatform(path!, bytes!);
   }
 }
 

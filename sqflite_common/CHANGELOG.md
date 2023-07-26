@@ -1,3 +1,8 @@
+## 2.5.0
+
+* Dart 3 only
+* Add `readDatabaseBytes` and `writeDatabaseBytes` factory methods.
+
 ## 2.4.5+1
 
 * Add global API from sqflite (openDatabase, deleteDatabase, databaseFactory...) from sqflite

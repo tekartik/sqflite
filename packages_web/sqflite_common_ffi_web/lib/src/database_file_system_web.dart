@@ -2,14 +2,90 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:typed_data';
 
+// ignore: implementation_imports
+import 'package:sqflite_common/src/mixin/platform.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
 import 'package:sqflite_common_ffi_web/src/web/js_converter.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart';
 import 'package:sqlite3/wasm.dart';
 
-import 'database_file_system_web.dart';
 import 'import.dart';
+
+/// Database file system on sqlite virtual file system.
+class SqfliteDatabaseFileSystemFfiWeb implements DatabaseFileSystem {
+  ///  sqlite virtual file system.
+  final VirtualFileSystem fs;
+
+  /// Database file system on sqlite virtual file system.
+  SqfliteDatabaseFileSystemFfiWeb(this.fs);
+  @override
+  Future<bool> databaseExists(String path) async {
+    var fs = this.fs;
+    // Ignore failure
+    try {
+      final canAccess = fs.xAccess(path, 0);
+      return canAccess != 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<void> deleteDatabase(String path) async {
+    var fs = this.fs;
+    // Ignore failure
+    try {
+      fs.xDelete(path, 0);
+      if (fs is IndexedDbFileSystem) {
+        await fs.flush();
+      }
+    } finally {}
+  }
+
+  @override
+  Future<Uint8List> readDatabaseBytes(String path) async {
+    await _flush();
+    var fs = this.fs;
+    final file =
+        fs.xOpen(Sqlite3Filename(path), SqlFlag.SQLITE_OPEN_READONLY).file;
+    try {
+      var size = file.xFileSize();
+      var target = Uint8List(size);
+      file.xRead(target, 0);
+      return target;
+    } finally {
+      file.xClose();
+    }
+  }
+
+  Future<void> _flush() async {
+    var fs = this.fs;
+
+    if (fs is IndexedDbFileSystem) {
+      try {
+        await fs.flush();
+      } catch (_) {}
+    }
+  }
+
+  @override
+  Future<void> writeDatabaseBytes(String path, Uint8List bytes) async {
+    await _flush();
+    final file = fs
+        .xOpen(Sqlite3Filename(path),
+            SqlFlag.SQLITE_OPEN_READWRITE | SqlFlag.SQLITE_OPEN_CREATE)
+        .file;
+    try {
+      file.xTruncate(0);
+      file.xWrite(bytes, 0);
+
+      await _flush();
+    } finally {
+      file.xClose();
+    }
+  }
+}
 
 bool get _debug => sqliteFfiWebDebugWebWorker;
 
@@ -23,8 +99,6 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
   /// Global context
   final SqfliteFfiWebContext context;
 
-  late final SqfliteDatabaseFileSystemFfiWeb _dbFs =
-      SqfliteDatabaseFileSystemFfiWeb(initFs());
   WasmSqlite3? _sqlite3;
   VirtualFileSystem? _fs;
 
@@ -32,7 +106,7 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
   SqfliteFfiHandlerWeb(this.context);
 
   /// Init file system.
-  VirtualFileSystem initFs() {
+  Future<VirtualFileSystem> initFs() async {
     _fs ??= context.fs;
     return _fs!;
   }
@@ -55,23 +129,26 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
   /// Delete the database file.
   @override
   Future<void> deleteDatabasePlatform(String path) async {
-    await _dbFs.deleteDatabase(path);
+    final fs = await initFs();
+    try {
+      fs.xDelete(path, 0);
+      if (fs is IndexedDbFileSystem) {
+        await fs.flush();
+      }
+    } finally {}
   }
 
   /// Check if database file exists
   @override
   Future<bool> handleDatabaseExistsPlatform(String path) async {
-    return await _dbFs.databaseExists(path);
-  }
-
-  @override
-  Future<Uint8List> readDatabaseBytesPlatform(String path) async {
-    return await _dbFs.readDatabaseBytes(path);
-  }
-
-  @override
-  Future<void> writeDatabaseBytesPlatform(String path, Uint8List bytes) async {
-    return await _dbFs.writeDatabaseBytes(path, bytes);
+    // Ignore failure
+    try {
+      final fs = await initFs();
+      final canAccess = fs.xAccess(path, 0);
+      return canAccess != 0;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Default database path.

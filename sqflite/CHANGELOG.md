@@ -1,3 +1,7 @@
+## 2.3.0
+
+* Dart 3 only
+
 ## 2.2.8+4
 
 * Android: Adds a namespace for compatibility with AGP 8.0.

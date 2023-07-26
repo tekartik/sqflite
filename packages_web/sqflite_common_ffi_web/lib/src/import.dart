@@ -7,5 +7,6 @@ export 'package:sqflite_common/src/mixin/factory.dart'
 export 'package:sqflite_common_ffi/src/database_factory_ffi.dart';
 export 'package:sqflite_common_ffi/src/method_call.dart'
     show FfiMethodCall, FfiMethodResponse, responseToResultOrThrow;
+export 'package:sqflite_common_ffi/src/sqflite_ffi_handler.dart';
 //export 'package:sqflite_common_ffi/src/sqflite_ffi_impl_io.dart';
 export 'package:sqflite_common_ffi/src/sqflite_ffi_impl.dart';
