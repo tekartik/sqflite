@@ -1,4 +1,4 @@
-## 2.5.0-1
+## 2.5.0
 
 * Dart 3 only
 * Add `readDatabaseBytes` and `writeDatabaseBytes` factory methods.
