@@ -1,17 +1,19 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 // import 'dart:typed_data';
 
 import 'package:path/path.dart';
 import 'package:sqflite_common/src/mixin/constant.dart'; // ignore: implementation_imports
-import 'package:sqflite_common_ffi/src/sqflite_ffi_impl.dart';
+import 'package:sqflite_common/src/mixin/platform.dart'; // ignore: implementation_imports
 import 'package:sqlite3/common.dart' as common;
 import 'package:sqlite3/sqlite3.dart' as ffi;
 
 import 'database_tracker.dart';
+import 'sqflite_ffi_handler.dart';
 
 /// Ffi handler.
-class _SqfliteFfiHandlerIo extends SqfliteFfiHandler {
+class _SqfliteFfiHandlerIo with SqfliteFfiHandlerNonImplementedMixin {
   /// Opens the database using an ffi implementation
   @override
   Future<common.CommonDatabase> openPlatform(Map argumentsMap) async {
@@ -54,20 +56,20 @@ class _SqfliteFfiHandlerIo extends SqfliteFfiHandler {
     return ffiDb;
   }
 
-  /// Safe delete a files
-  Future<void> _safeDeleteFile(String path) async {
-    try {
-      await File(path).delete(recursive: true);
-    } catch (_) {}
-  }
-
   /// Delete the database file including its journal file and other auxiliary files
   @override
   Future<void> deleteDatabasePlatform(String path) async {
-    await _safeDeleteFile(path);
-    await _safeDeleteFile('$path-wal');
-    await _safeDeleteFile('$path-shm');
-    await _safeDeleteFile('$path-journal');
+    await platform.databaseFileSystem.deleteDatabase(path);
+  }
+
+  @override
+  Future<Uint8List> readDatabaseBytesPlatform(String path) async {
+    return platform.databaseFileSystem.readDatabaseBytes(path);
+  }
+
+  @override
+  Future<void> writeDatabaseBytesPlatform(String path, Uint8List bytes) async {
+    await platform.databaseFileSystem.writeDatabaseBytes(path, bytes);
   }
 
   /// Check if database file exists
