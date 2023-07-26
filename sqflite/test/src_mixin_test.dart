@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
@@ -149,6 +150,16 @@ class MockInvalidFactory extends DatabaseFactory {
 
   @override
   Future<void> setDatabasesPath(String path) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Uint8List> readDatabaseBytes(String path) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> writeDatabaseBytes(String path, Uint8List bytes) {
     throw UnimplementedError();
   }
 }
