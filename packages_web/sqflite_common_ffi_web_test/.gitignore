@@ -9,3 +9,4 @@ build/
 /web/sqlite3.wasm
 /test/sqflite_sw.js
 /test/sqlite3.wasm
+/test/sqflite_sw_v1.js
