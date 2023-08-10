@@ -78,7 +78,7 @@ void workflow({bool noBuild = false}) {
     test('build android', () async {
       await ensureCreate();
       await androidBuild();
-    }, timeout: const Timeout(Duration(minutes: 5)));
+    }, timeout: Timeout(Duration(minutes: Platform.isWindows ? 10 : 5)));
     test('add sqflite', () async {
       await ensureCreate();
       if (await pathPubspecAddDependency(dir, 'sqflite')) {
