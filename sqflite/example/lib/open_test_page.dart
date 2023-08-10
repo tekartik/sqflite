@@ -346,7 +346,7 @@ class OpenTestPage extends TestPage {
       } catch (_) {}
 
 // Copy from asset to a database file.
-      final data = await rootBundle.load(join('assets', 'example.db'));
+      final data = await rootBundle.load(url.join('assets', 'example.db'));
       final bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       await databaseFactory.writeDatabaseBytes(path, bytes);
@@ -642,7 +642,7 @@ class OpenTestPage extends TestPage {
           print('Creating new copy from asset');
 
           // Copy from asset
-          final data = await rootBundle.load(join('assets', 'example.db'));
+          final data = await rootBundle.load(url.join('assets', 'example.db'));
           final bytes =
               data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
           await writeFileAsBytes(path, bytes);
