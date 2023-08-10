@@ -40,7 +40,6 @@ Future<String?> windowsFindOpenssl() async {
   }();
 }
 
-// This tests does actually the actual install of the dll
 void main() {
   var helper = Sqlite3DllSetupHelper(sqlite3Info);
   var srcZip = sqlite3Info.srcZip;
