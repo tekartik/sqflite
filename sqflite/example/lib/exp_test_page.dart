@@ -345,7 +345,7 @@ class ExpTestPage extends TestPage {
       await deleteDatabase(path);
 
       // Copy from asset
-      final data = await rootBundle.load(join('assets', 'issue_64.db'));
+      final data = await rootBundle.load(url.join('assets', 'issue_64.db'));
       final bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       await databaseFactory.writeDatabaseBytes(path, bytes);

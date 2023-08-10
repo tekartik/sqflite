@@ -51,7 +51,7 @@ if (!exists) {
   } catch (_) {}
     
   // Copy from asset
-  ByteData data = await rootBundle.load(join("assets", "example.db"));
+  ByteData data = await rootBundle.load(url.join("assets", "example.db"));
   List<int> bytes =
   data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   
@@ -87,7 +87,7 @@ try {
 } catch (_) {}
 
 // Copy from asset
-ByteData data = await rootBundle.load(join("assets", "example.db"));
+ByteData data = await rootBundle.load(url.join("assets", "example.db"));
 List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 await new File(path).writeAsBytes(bytes, flush: true);
 
