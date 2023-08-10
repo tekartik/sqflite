@@ -331,52 +331,6 @@ void run(SqfliteTestContext context) {
     await db.close();
   });
 
-  /*
-    no bundle support
-
-    test('Issue#64', () async {
-      // await Sqflite.devSetDebugModeOn(true);
-      var path =await context.initDeleteDb('issue_64.db');
-
-      // delete existing if any
-      await deleteDatabase(path);
-
-      // Copy from asset
-      var data = await rootBundle.load(join('assets', 'issue_64.db'));
-      var bytes =
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-      await new File(path).writeAsBytes(bytes);
-
-      // open the database
-      var db =await factory.openDatabase(path);
-
-      var result = await db.query('recordings',
-          columns: ['id', 'content', 'file', 'speaker', 'reference']);
-      print('result1: $result');
-      expect(result.length, 2);
-
-      // This one does not work
-      // to investigate
-      result = await db.query('recordings',
-          columns: ['id', 'content', 'file', 'speaker', 'reference'],
-          where: 'speaker = ?',
-          whereArgs: [1]);
-
-      print('result2: $result');
-      expect(result.length, 2);
-
-      result = await db.query(
-        'recordings',
-        columns: ['id', 'content', 'file', 'speaker', 'reference'],
-        where: 'speaker = 1',
-      );
-      print('result3: $result');
-      expect(result.length, 2);
-
-      await db.close();
-    });
-    */
-
   test('sql dump file', () async {
     // await Sqflite.devSetDebugModeOn(true);
 
