@@ -99,5 +99,13 @@ linter:
     - unnecessary_null_in_if_null_operators
     - use_rethrow_when_possible
 
+    - dangling_library_doc_comments
+    - deprecated_member_use_from_same_package
+    - implicit_reopen
+    - invalid_case_patterns
+    - no_literal_bool_comparisons
+    - no_self_assignments
+    - no_wildcard_variable_uses
+    - type_literal_in_constant_pattern
     # === doc rules ===
     - public_member_api_docs

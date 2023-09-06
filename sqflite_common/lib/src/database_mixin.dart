@@ -348,7 +348,7 @@ extension SqfliteDatabaseMixinExt on SqfliteDatabase {
       {bool? exclusive}) async {
     Object? response;
     // never create transaction in read-only mode
-    if (readOnly != true) {
+    if (!readOnly) {
       if (exclusive == true) {
         response = await txnExecute<dynamic>(txn, 'BEGIN EXCLUSIVE', null,
             beginTransaction: true);
@@ -723,7 +723,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   @override
   Future<void> endTransaction(SqfliteTransaction txn) async {
     // never commit transaction in read-only mode
-    if (readOnly != true) {
+    if (!readOnly) {
       if (txn.successful == true) {
         await txnExecute<dynamic>(txn, 'COMMIT', null);
       } else {
@@ -759,7 +759,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// id does not run any callback calls
   Future<int> openDatabase() async {
     final params = <String, Object?>{paramPath: path};
-    if (readOnly == true) {
+    if (readOnly) {
       params[paramReadOnly] = true;
     }
     // Single instance? never for standard inMemoryDatabase
@@ -786,7 +786,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       // was in progress. This catches hot-restart scenario
       if (recoveredInTransaction) {
         // Don't do it for read-only
-        if (readOnly != true) {
+        if (!readOnly) {
           // We are not yet open so invoke the plugin directly
           try {
             await safeInvokeMethod<Object?>(methodExecute, <String, Object?>{
@@ -818,7 +818,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
         // Mark as closed now
         isClosed = true;
 
-        if (readOnly != true && inTransaction) {
+        if (!readOnly && inTransaction) {
           // Grab lock to prevent future access
           // At least we know no other request will be ran
           try {

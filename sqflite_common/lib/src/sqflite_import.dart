@@ -1,6 +1,8 @@
 ///
 /// Export for implementation: sqflite, sqflite_common_ffi
 ///
+library;
+
 export 'package:sqflite_common/src/compat.dart'
     show SqfliteOptions; // ignore: deprecated_member_use_from_same_package
 /// Explicit list of needed private import
