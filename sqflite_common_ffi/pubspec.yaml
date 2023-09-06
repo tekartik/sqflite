@@ -5,6 +5,16 @@ version: 2.3.0+2
 funding:
   - https://github.com/sponsors/alextekartik
 
+# This package supports all platforms listed below.
+platforms:
+  linux:
+  macos:
+  windows:
+
+topics:
+  - sql
+  - database
+
 environment:
   sdk: '>=3.0.0 <4.0.0'
 
