@@ -39,7 +39,7 @@ dependencies:
   sqflite_common_ffi_web:
 
 dev_dependencies:
-  flutter_lints:
+  flutter_lints: '>=2.0.3'
   flutter_test:
     sdk: flutter
   flutter_driver:
