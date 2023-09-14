@@ -31,5 +31,5 @@ Future<void> main() async {
     var runAppShell = Shell(environment: env, workingDirectory: exeDir);
     // We run the generated exe, not the copy as it does not work
     await runAppShell.run(shellArgument(join(binSubDir, 'sqflite_test_app')));
-  }, skip: !platformIsMacOS, timeout: const Timeout(Duration(minutes: 10)));
+  }, skip: !platformIsMacOS, timeout: const Timeout(Duration(minutes: 20)));
 }

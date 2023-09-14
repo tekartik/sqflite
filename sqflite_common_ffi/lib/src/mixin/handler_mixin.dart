@@ -1,4 +1,6 @@
 /// Exported for implementation
+library;
+
 export 'package:sqflite_common_ffi/src/database_factory_ffi.dart'
     show ffiMethodCallhandleInIsolate;
 export 'package:sqflite_common_ffi/src/method_call.dart' show FfiMethodCall;
