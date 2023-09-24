@@ -56,10 +56,6 @@ class _ManualTestPageState extends State<ManualTestPage> {
   late List<SqfMenuItem> items;
   late List<ItemWidget> itemWidgets;
 
-  Future<bool> pop() async {
-    return true;
-  }
-
   Future<void> _addAndQuery({int? msDelay, bool? noSynchronized}) async {
     // await databaseFactory.debugSetLogLevel(sqfliteLogLevelVerbose);
     var db = await _openDatabase();
@@ -219,11 +215,8 @@ class _ManualTestPageState extends State<ManualTestPage> {
       appBar: AppBar(
         title: const Text('Manual tests'),
       ),
-      body: WillPopScope(
-        onWillPop: pop,
-        child: ListView(
-          children: itemWidgets,
-        ),
+      body: ListView(
+        children: itemWidgets,
       ),
     );
   }
