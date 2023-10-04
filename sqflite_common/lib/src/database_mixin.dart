@@ -17,7 +17,10 @@ import 'package:synchronized/synchronized.dart';
 
 /// Base database implementation
 class SqfliteDatabaseBase
-    with SqfliteDatabaseMixin, SqfliteDatabaseExecutorMixin {
+    with
+        SqfliteDatabaseMixin,
+        SqfliteDatabaseWithOpenHelperMixin,
+        SqfliteDatabaseExecutorMixin {
   /// ctor
   SqfliteDatabaseBase(SqfliteDatabaseOpenHelper openHelper, String path,
       {OpenDatabaseOptions? options}) {
@@ -305,7 +308,7 @@ extension SqfliteDatabaseMixinExt on SqfliteDatabase {
   SqfliteDatabaseMixin get _mixin => this as SqfliteDatabaseMixin;
 
   /// try if open in read-only mode.
-  bool get readOnly => _mixin.openHelper?.options?.readOnly ?? false;
+  bool get readOnly => _mixin.options?.readOnly ?? false;
 
   /// for Update sql query
   /// returns the update count
@@ -368,23 +371,36 @@ extension SqfliteDatabaseMixinExt on SqfliteDatabase {
 }
 
 /// Sqflite database mixin.
+mixin SqfliteDatabaseWithOpenHelperMixin implements SqfliteDatabase {
+  /// Keep our open helper for proper closing.
+  SqfliteDatabaseOpenHelper? openHelper;
+  @override
+  OpenDatabaseOptions? options;
+
+  @override
+  bool get isOpen => openHelper!.isOpen;
+
+  /// The factory.
+  SqfliteDatabaseFactory get factory => openHelper!.factory;
+}
+
+/// Sqflite database mixin.
 mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   /// Invoke native method and wrap exception.
   Future<T> safeInvokeMethod<T>(String method, [Object? arguments]) =>
-      factory.wrapDatabaseException(() => invokeMethod(method, arguments));
+      safeAction<T>(() => invokeMethod<T>(method, arguments));
+
+  /// Invoke native action and wrap exception.
+  Future<T> safeAction<T>(Future<T> Function() action) =>
+      factory.wrapDatabaseException<T>(action);
 
   /// Invoke the native method of the factory.
   @override
   Future<T> invokeMethod<T>(String method, [Object? arguments]) =>
       _mixin.factory.invokeMethod(method, arguments);
 
-  /// Keep our open helper for proper closing.
-  SqfliteDatabaseOpenHelper? openHelper;
-  @override
-  OpenDatabaseOptions? options;
-
   /// The factory.
-  SqfliteDatabaseFactory get factory => openHelper!.factory;
+  SqfliteDatabaseFactory get factory;
 
   @override
   SqfliteDatabase get database => db;
@@ -397,7 +413,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   bool isClosed = false;
 
   @override
-  bool get isOpen => openHelper!.isOpen;
+  bool get isOpen;
 
   @override
   late String path;
@@ -747,7 +763,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
   /// Close the database. Cannot be access anymore
   @override
-  Future<void> doClose() => _closeDatabase(id);
+  Future<void> doClose() => closeDatabase();
 
   @override
   String toString() {
@@ -844,14 +860,26 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
         // close for good
         // Catch exception, close should never fail
-        try {
-          await safeInvokeMethod<dynamic>(
-              methodCloseDatabase, <String, Object?>{paramId: databaseId});
-        } catch (e) {
-          print('error $e closing database $databaseId');
+        if (databaseId != null) {
+          try {
+            await safeAction<dynamic>(() => invokeCloseDatabase(databaseId));
+          } catch (e) {
+            print('error $e closing database $databaseId');
+          }
         }
       }
     });
+  }
+
+  /// Close the database with the given id.
+  Future<void> closeDatabase() async {
+    await _closeDatabase(db.id!);
+  }
+
+  /// Invoke close database.
+  Future<void> invokeCloseDatabase(int databaseId) async {
+    await safeInvokeMethod<dynamic>(
+        methodCloseDatabase, <String, Object?>{paramId: databaseId});
   }
 
   // To call during open
@@ -984,7 +1012,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       return this;
     } catch (e) {
       print('error $e during open, closing...');
-      await _closeDatabase(databaseId);
+      await doClose();
       rethrow;
     } finally {
       // clean up open transaction

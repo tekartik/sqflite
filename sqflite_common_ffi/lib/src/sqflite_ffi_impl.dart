@@ -562,6 +562,22 @@ set sqfliteFfiHandler(SqfliteFfiHandler handler) =>
     _sqfliteFfiHandler = handler;
 
 /// Wrap SQL exception.
+SqfliteFfiException ffiWrapSqliteException(common.SqliteException e,
+    {String? code, Map<String, Object?>? details}) {
+  return _ffiWrapSqliteException(e, code: code, details: details);
+}
+
+/// Wrap any exception.
+SqfliteFfiException ffiWrapAnyException(Object e) {
+  if (e is SqfliteFfiException) {
+    return e;
+  } else if (e is common.SqliteException) {
+    return _ffiWrapSqliteException(e);
+  }
+  return SqfliteFfiException(code: sqliteErrorCode, message: e.toString());
+}
+
+/// Wrap SQL exception.
 SqfliteFfiException _ffiWrapSqliteException(common.SqliteException e,
     {String? code, Map<String, Object?>? details}) {
   return SqfliteFfiException(

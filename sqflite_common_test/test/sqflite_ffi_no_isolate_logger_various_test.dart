@@ -32,7 +32,12 @@ Future<void> main() async {
   group('delete/exists', () {
     test('delete', () async {
       _events.clear();
-      await _invokeFactory.deleteDatabase(inMemoryDatabasePath);
+      // await _invokeFactory.deleteDatabase(inMemoryDatabasePath);
+      await _invokeFactory.invokeMethod<void>(
+          'deleteDatabase', <String, Object?>{
+        'path': ':memory:'
+      }); // deleteDatabase(inMemoryDatabasePath);
+
       expect(_events.toMapListNoSw(), [
         {
           'method': 'deleteDatabase',

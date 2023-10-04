@@ -788,7 +788,7 @@ class _SqfliteDatabaseFactoryLogger
   @override
   Future<void> deleteDatabase(String path) async {
     Future<void> doDeleteDatabase() {
-      return super.deleteDatabase(path);
+      return _delegate.deleteDatabase(path);
     }
 
     if (_options.type == SqfliteDatabaseFactoryLoggerType.all) {
@@ -799,6 +799,12 @@ class _SqfliteDatabaseFactoryLogger
     } else {
       return await doDeleteDatabase();
     }
+  }
+
+  @override
+  Future<String> getDatabasesPath() {
+    // We don't log this
+    return _delegate.getDatabasesPath();
   }
 }
 

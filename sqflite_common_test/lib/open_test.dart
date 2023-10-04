@@ -283,6 +283,9 @@ void run(SqfliteTestContext context) {
         fail('should fail');
       } on DatabaseException catch (e) {
         print(e);
+      } catch (e) {
+        print('Exception: $e');
+        rethrow;
       }
       await database.close();
 

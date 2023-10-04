@@ -70,7 +70,7 @@ mixin SqfliteDatabaseFactoryMixin
     // Lock per database name
     final lock = _getDatabaseOpenLock(database.path);
     return lock.synchronized(() async {
-      await (database as SqfliteDatabaseMixin)
+      await (database as SqfliteDatabaseWithOpenHelperMixin)
           .openHelper!
           .closeDatabase(database);
       if (database.options?.singleInstance != false) {
@@ -133,9 +133,14 @@ mixin SqfliteDatabaseFactoryMixin
     return lock.synchronized(() async {
       // Handle already single instance open database
       removeDatabaseOpenHelper(path);
-      return safeInvokeMethod<void>(
-          methodDeleteDatabase, <String, Object?>{paramPath: path});
+      await invokeDeleteDatabase(path);
     });
+  }
+
+  /// Invoke delete database.
+  Future<void> invokeDeleteDatabase(String path) async {
+    return safeInvokeMethod<void>(
+        methodDeleteDatabase, <String, Object?>{paramPath: path});
   }
 
   @override

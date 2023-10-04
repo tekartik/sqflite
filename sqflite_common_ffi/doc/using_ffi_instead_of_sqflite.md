@@ -60,6 +60,6 @@ As another note, `getDatabasesPath()` has a lame implementation when using ffi. 
 ## Long term planning
 
 I can see multiple solutions that could co-exist:
-* sqflite would provide a solution that works out of the box on all platforms using whatever the platform provides using regular plugin mechanism.
+* sqflite would provide a solution that works out of the box on all platforms using whatever the platform provides using regular plugin mechanism. (current state, not planned, see [cross-platform-support](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/qa.md#cross-platform-support))
 * sqflite would provide a solution using ffi and whatever the platform provides
 * sqflite would allow having a compiled sqlite.c and access it using either ffi or the regular plugin mechanism
