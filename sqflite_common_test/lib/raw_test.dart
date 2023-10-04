@@ -532,5 +532,5 @@ void run(SqfliteTestContext context) {
         expect(await cursor.moveNext(), isFalse);
       });
     });
-  }, solo: true);
+  });
 }
