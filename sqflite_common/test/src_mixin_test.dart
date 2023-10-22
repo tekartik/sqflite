@@ -66,8 +66,7 @@ Object? mockResult(String method, Object? arguments) {
 }
 
 class MockDatabase extends SqfliteDatabaseBase {
-  MockDatabase(SqfliteDatabaseOpenHelper openHelper, [String name = 'mock'])
-      : super(openHelper, name);
+  MockDatabase(super.openHelper, [super.name = 'mock']);
 
   int? version;
   List<String> methods = <String>[];

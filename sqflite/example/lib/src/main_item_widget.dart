@@ -4,7 +4,7 @@ import 'package:sqflite_example/model/main_item.dart';
 /// Main item widget.
 class MainItemWidget extends StatefulWidget {
   /// Main item widget.
-  const MainItemWidget(this.item, this.onTap, {Key? key}) : super(key: key);
+  const MainItemWidget(this.item, this.onTap, {super.key});
 
   /// item data.
   final MainItem item;

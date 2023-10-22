@@ -4,8 +4,7 @@ import 'package:sqflite_example/model/item.dart';
 /// Item widget.
 class ItemWidget extends StatefulWidget {
   /// Item widget.
-  const ItemWidget(this.item, this.onTap, {this.summary, Key? key})
-      : super(key: key);
+  const ItemWidget(this.item, this.onTap, {this.summary, super.key});
 
   /// item summary.
   final String? summary;

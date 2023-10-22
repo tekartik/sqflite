@@ -453,7 +453,8 @@ void run(SqfliteTestContext context) {
           list.add(<String, Object?>{'name': 'some data'});
           fail('should fail');
         } on UnsupportedError catch (e) {
-          expect(e.message, contains('read-only'));
+          /// sqflite_async: Unsupported operation: Read-only
+          expect(e.message?.toLowerCase(), contains('read-only'), reason: '$e');
           // read only
         }
         late Map<String, dynamic> map;
@@ -462,7 +463,13 @@ void run(SqfliteTestContext context) {
           // This crashes
           map['name'] = 'other';
         } on UnsupportedError catch (e) {
-          expect(e.message, contains('read-only'));
+          try {
+            expect(e.message?.toLowerCase(), contains('read-only'));
+          } catch (e2) {
+            // sqflite_async
+            // Actual: 'Cannot modify an unmodifiable Map'
+            expect(e.message, contains('Cannot modify an unmodifiable Map'));
+          }
           // read only
         }
         // Ok!

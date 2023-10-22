@@ -224,7 +224,7 @@ void run(SqfliteTestContext context) {
     });
 
     test('data_types', () async {
-      var path = inMemoryDatabasePath;
+      var path = await context.initDeleteDb('data_types.db');
 
       {
         /// Create tables

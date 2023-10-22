@@ -17,7 +17,7 @@ export 'src/expect.dart' show expect, fail;
 /// Base test page.
 class TestPage extends StatefulWidget {
   /// Base test page.
-  TestPage(this.title, {Key? key}) : super(key: key);
+  TestPage(this.title, {super.key});
 
   /// The title.
   final String title;

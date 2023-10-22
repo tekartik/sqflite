@@ -1,4 +1,4 @@
-name: Run CI
+name: Run CI Downgrade analyze
 on:
   push:
   workflow_dispatch:

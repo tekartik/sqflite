@@ -16,7 +16,7 @@ import 'src/common_import.dart';
 /// Manual test page.
 class ManualTestPage extends StatefulWidget {
   /// Test page.
-  const ManualTestPage({Key? key}) : super(key: key);
+  const ManualTestPage({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -225,7 +225,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
 /// Multiple db test page.
 class MultipleDbTestPage extends StatelessWidget {
   /// Test page.
-  const MultipleDbTestPage({Key? key}) : super(key: key);
+  const MultipleDbTestPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -260,7 +260,7 @@ class MultipleDbTestPage extends StatelessWidget {
 /// Simple db test page.
 class SimpleDbTestPage extends StatefulWidget {
   /// Simple db test page.
-  const SimpleDbTestPage({Key? key, required this.dbName}) : super(key: key);
+  const SimpleDbTestPage({super.key, required this.dbName});
 
   /// db name.
   final String dbName;

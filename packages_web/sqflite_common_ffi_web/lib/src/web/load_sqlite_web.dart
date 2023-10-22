@@ -101,12 +101,11 @@ class SqfliteFfiWebContextImpl extends SqfliteFfiWebContext {
 
   /// Web implementation with shared worker
   SqfliteFfiWebContextImpl(
-      {required SqfliteFfiWebOptions options,
+      {required super.options,
       this.fs,
       this.wasmSqlite3,
       this.sharedWorker,
-      this.worker})
-      : super(options: options) {
+      this.worker}) {
     if (sharedWorker != null) {
       rawMessageSender = RawMessageSenderSharedWorker(sharedWorker!);
     }

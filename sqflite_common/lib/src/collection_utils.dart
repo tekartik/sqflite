@@ -9,7 +9,7 @@ export 'dart:async';
 /// Native result wrapper
 class Rows extends PluginList<Map<String, Object?>> {
   /// Wrap the native list as a raw
-  Rows.from(List<dynamic> list) : super.from(list);
+  Rows.from(super.list) : super.from();
 
   @override
   Map<String, Object?> operator [](int index) {
@@ -178,7 +178,7 @@ class BatchResult {
 /// Batch results.
 class BatchResults extends PluginList<dynamic> {
   /// Creates a batch result from a native list.
-  BatchResults.from(List<dynamic> list) : super.from(list);
+  BatchResults.from(super.list) : super.from();
 
   @override
   dynamic operator [](int index) {

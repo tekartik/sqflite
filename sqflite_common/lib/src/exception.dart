@@ -108,8 +108,7 @@ abstract class DatabaseException implements Exception {
 /// Exception implementation
 class SqfliteDatabaseException extends DatabaseException {
   /// ctor with a message and some data
-  SqfliteDatabaseException(String? message, this.result, {int? resultCode})
-      : super(message) {
+  SqfliteDatabaseException(super.message, this.result, {int? resultCode}) {
     _resultCode = resultCode;
   }
 
