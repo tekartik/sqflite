@@ -118,7 +118,7 @@ await db.transaction((txn) async {
 });
 ```
 
-* Make sure to sure the inner transaction object - `txn` in the code above - is used in a transaction (using the `db` object itself will cause a deadlock),
+* Make sure to use the inner transaction object - `txn` in the code above - is used in a transaction (using the `db` object itself will cause a deadlock),
 * You can throw an error during a transaction to cancel a transaction,
 * When an error is thrown during a transaction, the action is cancelled right away and previous commands in the transaction are reverted,
 * No other concurrent modification on the database (even from an outside process) can happen during a transaction,
