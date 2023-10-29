@@ -1,4 +1,4 @@
-name: Run CI Downgrade analyze
+name: Run CI Flutter downgrade analyze
 on:
   push:
   workflow_dispatch:
