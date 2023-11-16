@@ -1,5 +1,6 @@
-## 2.3.0+3
+## 2.3.0+4
 
+* Support `PRAGMA sqflite -- db_config_defensive_off`
 * Dart 3 only.
 * Bundle Windows sqlite3.dll 3.42.0
 

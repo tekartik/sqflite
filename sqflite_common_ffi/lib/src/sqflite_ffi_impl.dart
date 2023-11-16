@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart';
 import 'package:sqflite_common/src/mixin/constant.dart'; // ignore: implementation_imports
+import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_common_ffi/src/constant.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_exception.dart';
 import 'package:sqflite_common_ffi/src/sqflite_ffi_handler.dart';
@@ -178,23 +179,32 @@ class SqfliteFfiDatabase {
   Future<void> _handleExecute({required String sql, List? sqlArguments}) async {
     logSql(sql: sql, sqlArguments: sqlArguments);
 
-    if (sql == "PRAGMA sqflite -- db_config_defensive_off") {
-      final int SQLITE_DBCONFIG_DEFENSIVE = 1010;
-      _ffiDb.config.setIntConfig(SQLITE_DBCONFIG_DEFENSIVE, 0);
-    }
+    /// Handle custom pragma.
+    if (sql.startsWith(sqflitePragmaPrefix)) {
+      if (sql == sqflitePragmaDbDefensiveOff) {
+        /// There is no good way to debug that but to use a print statements sometimes...
+        if (_debug) {
+          print('Turning off defensive mode');
+        }
 
-    if (sqlArguments?.isNotEmpty ?? false) {
-      // devPrint('execute $sql $sqlArguments');
-      var preparedStatement = _ffiDb.prepare(sql);
-      try {
-        preparedStatement.execute(_ffiArguments(sqlArguments));
-        return;
-      } finally {
-        preparedStatement.dispose();
+        /// final int SQLITE_DBCONFIG_DEFENSIVE = 1010;
+        const sqliteDbConfigDefensive = 1010;
+        _ffiDb.config.setIntConfig(sqliteDbConfigDefensive, 0);
       }
     } else {
-      // devPrint('execute no args $sql');
-      _ffiDb.execute(sql);
+      if (sqlArguments?.isNotEmpty ?? false) {
+        // devPrint('execute $sql $sqlArguments');
+        var preparedStatement = _ffiDb.prepare(sql);
+        try {
+          preparedStatement.execute(_ffiArguments(sqlArguments));
+          return;
+        } finally {
+          preparedStatement.dispose();
+        }
+      } else {
+        // devPrint('execute no args $sql');
+        _ffiDb.execute(sql);
+      }
     }
   }
 
