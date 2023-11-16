@@ -177,6 +177,12 @@ class SqfliteFfiDatabase {
 
   Future<void> _handleExecute({required String sql, List? sqlArguments}) async {
     logSql(sql: sql, sqlArguments: sqlArguments);
+
+    if (sql == "PRAGMA sqflite -- db_config_defensive_off") {
+      final int SQLITE_DBCONFIG_DEFENSIVE = 1010;
+      _ffiDb.config.setIntConfig(SQLITE_DBCONFIG_DEFENSIVE, 0);
+    }
+
     if (sqlArguments?.isNotEmpty ?? false) {
       // devPrint('execute $sql $sqlArguments');
       var preparedStatement = _ffiDb.prepare(sql);
