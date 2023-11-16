@@ -58,3 +58,13 @@ void setLockWarningInfo({Duration? duration, void Function()? callback}) {
 
 /// count column.
 const sqlCountColumn = 'COUNT(*)';
+
+/// Custom pragma prefix.
+const sqflitePragmaPrefix = 'PRAGMA sqflite -- ';
+
+/// See:
+/// * https://github.com/tekartik/sqflite/pull/1058 (iOS implementation)
+/// * https://github.com/tekartik/sqflite/issues/525 (FFI)
+
+const sqflitePragmaDbDefensiveOff =
+    '${sqflitePragmaPrefix}db_config_defensive_off';
