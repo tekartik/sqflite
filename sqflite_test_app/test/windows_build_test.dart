@@ -1,14 +1,15 @@
 @TestOn('vm')
 import 'dart:io';
 
-import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
 import 'package:sqflite_common_ffi/src/windows/setup.dart';
+import 'package:test/test.dart';
 
 Future<void> main() async {
   test('buildWindows', () async {
-    var exeDir = join('build', 'windows', 'runner', 'Release');
+    await run('flutter --version');
+    var exeDir = join('build', 'windows', 'x64', 'runner', 'Release');
     var exePath = join(exeDir, 'sqflite_test_app.exe');
     var cachedExePath = join(exeDir, 'ffi_create_and_exit.exe');
     var absoluteExePath = absolute(cachedExePath);
@@ -33,9 +34,7 @@ Future<void> main() async {
     }
     // Create an empty shell environment
     var env = ShellEnvironment.empty();
-    var runAppShell = Shell(
-        environment: env,
-        workingDirectory: join('build', 'windows', 'runner', 'Release'));
+    var runAppShell = Shell(environment: env, workingDirectory: exeDir);
     // Should fail (missing sqlite3)
     try {
       await File(join(exeDir, 'sqlite3.dll')).delete();
@@ -61,5 +60,5 @@ Future<void> main() async {
     expect(File(dbFile).existsSync(), isFalse);
     await runAppShell.run(shellArgument(absoluteExePath));
     expect(File(dbFile).existsSync(), isTrue);
-  }, skip: !isWindows, timeout: const Timeout(Duration(minutes: 10)));
+  }, skip: !Platform.isWindows, timeout: const Timeout(Duration(minutes: 10)));
 }

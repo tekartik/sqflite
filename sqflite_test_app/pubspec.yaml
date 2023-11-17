@@ -34,7 +34,7 @@ dependencies:
   path_provider:
   sqflite_common:
   dev_test:
-  process_run: '>=0.11.0+2'
+  process_run: '>=0.13.3-1'
   path:
   sqflite_common_ffi_web:
 
