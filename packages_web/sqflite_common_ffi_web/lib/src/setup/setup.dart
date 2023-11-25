@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dev_test/build_support.dart';
+import 'package:dev_build/build_support.dart';
 import 'package:http/http.dart';
 import 'package:path/path.dart' as p;
 import 'package:path/path.dart';
