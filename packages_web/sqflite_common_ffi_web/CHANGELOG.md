@@ -1,3 +1,7 @@
+## 0.4.1
+
+* Use `dev_build` dependency instead of `dev_test`
+
 ## 0.4.0
 
 * dart 3 only
