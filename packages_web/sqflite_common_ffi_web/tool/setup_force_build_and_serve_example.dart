@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:process_run/shell.dart';
 import 'package:sqflite_common_ffi_web/src/setup/setup.dart';
 

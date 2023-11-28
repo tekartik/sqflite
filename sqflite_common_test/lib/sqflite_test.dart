@@ -58,7 +58,7 @@ abstract class SqfliteTestContext {
   bool get isWeb => kSqfliteIsWeb;
 
   /// Set debug mode on
-  @Deprecated('Deb only')
+  @Deprecated('Dev only')
   Future devSetDebugModeOn(bool on);
 
   /// Native (android, ios, macos) only for now
