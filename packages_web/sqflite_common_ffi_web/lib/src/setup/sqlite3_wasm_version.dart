@@ -1,4 +1,2 @@
-import 'package:pub_semver/pub_semver.dart';
-
 /// Downloaded wasm version.
-var sqlite3WasmVersion = Version(2, 0, 0);
+var sqlite3WasmRelease = 'sqlite3_flutter_libs-0.5.18/sqlite3.wasm';

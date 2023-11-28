@@ -11,9 +11,10 @@ import 'package:sqflite_common_ffi_web/src/constant.dart';
 
 import 'sqlite3_wasm_version.dart';
 
+var _log = print;
 // https://github.com/simolus3/sqlite3.dart/releases
 var _sqlite3WasmReleaseUri = Uri.parse(
-    'https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-$sqlite3WasmVersion/sqlite3.wasm');
+    'https://github.com/simolus3/sqlite3.dart/releases/download/$sqlite3WasmRelease');
 
 /// dhttpd simple server (testing only
 var dhttpdReady = () async {
@@ -122,24 +123,31 @@ extension SetupContextExt on SetupContext {
       }
     }
     if (needBuild) {
-      print('Building $packageName shared worker');
+      _log('Building $packageName shared worker');
 
       if (force) {
         if (!runningFromPackage) {
           await deleteDirectory(workPath);
         }
       }
-      var shell = Shell(workingDirectory: workPath);
-      print(shell.path);
+
       if (!runningFromPackage) {
         await Directory(workPath).create(recursive: true);
         await copySourcesPath(ffiWebPath, workPath);
+        shellEnvironment = ShellEnvironment()
+          ..aliases['webdev'] = 'dart run webdev:webdev';
       }
+      var shell = Shell(workingDirectory: workPath);
+      _log(shell.path);
 
+      if (!runningFromPackage) {
+        // Add local webdev package
+        await shell.run('dart pub add webdev');
+      }
       await shell.run('dart pub get');
       await shell.run('webdev build -o $_sourceBuild:build');
     } else {
-      print('$packageName binaries up to date');
+      _log('$packageName binaries up to date');
     }
   }
 
@@ -151,7 +159,7 @@ extension SetupContextExt on SetupContext {
     // Prevent conflicting output for ourself
     // Prevent conflicting output for ourself
     if (File(join(out, 'sqflite_sw.dart')).existsSync()) {
-      print('no files created here, we are the generator');
+      _log('no files created here, we are the generator');
     } else {
       var swJsFile = overridenSwJsFile ?? sqfliteSharedWorkerJsFile;
       var sqfliteSwJsOutFile = join(out, swJsFile);
@@ -160,15 +168,15 @@ extension SetupContextExt on SetupContext {
       var wasmFile = join(out, sqlite3WasmFile);
       if (!options.noSqlite3Wasm) {
         var uri = _sqlite3WasmReleaseUri;
-        print('Fetching: $uri');
+        _log('Fetching: $uri');
         var wasmBytes = await readBytes(uri);
         await File(wasmFile).writeAsBytes(wasmBytes);
       }
 
-      print(
+      _log(
           'created: $sqfliteSwJsOutFile (${File(sqfliteSwJsOutFile).statSync().size} bytes)');
       if (!options.noSqlite3Wasm) {
-        print('created: $wasmFile (${File(wasmFile).statSync().size} bytes)');
+        _log('created: $wasmFile (${File(wasmFile).statSync().size} bytes)');
       }
     }
   }
@@ -222,9 +230,12 @@ Future<void> deleteDirectory(String path) async {
 
 /// Build and copy the binaries
 Future<void> setupBinaries({SetupOptions? options}) async {
-  await webdevReady;
   var context = await getSetupContext(options: options);
-
+  if (context.runningFromPackage) {
+    _log(
+        'Running from package, use global webdev, this should only be printed when running from sqflite_common_ffi_web, i.e. during development');
+    await webdevReady;
+  }
   await context.build();
   await context.copyBinaries();
 }
