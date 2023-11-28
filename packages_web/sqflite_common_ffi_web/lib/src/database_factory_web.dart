@@ -59,24 +59,26 @@ DatabaseFactory createDatabaseFactoryFfiWeb(
 
 // Debug database factory web
 bool get _debug => sqliteFfiWebDebugWebWorker;
+var _log = print;
 
 /// Handle method call not to call the web worker.
 Future<dynamic> ffiMethodCallSendToWebWorker(
     FfiMethodCall methodCall, SqfliteFfiWebContext context) async {
   try {
     if (_debug) {
-      print('main_send: $methodCall');
+      // ignore: avoid_print
+      _log('main_send: $methodCall');
     }
     var map = dataToEncodable(methodCall.toDataMap())!;
     var response = await context.sendRawMessage(map);
     if (_debug) {
-      print('main_recv: $response');
+      _log('main_recv: $response');
     }
     return dataFromEncodable(responseToResultOrThrow(response));
   } catch (e, st) {
     if (_debug) {
-      print(e);
-      print(st);
+      _log(e);
+      _log(st);
     }
     if (e is SqfliteFfiWebWorkerException) {
       html.window.console.error('''
@@ -95,20 +97,20 @@ Future<dynamic> ffiMethodCallHandleNoWebWorker(
     FfiMethodCall methodCall, SqfliteFfiWebContext context) async {
   try {
     if (_debug) {
-      print('handle $methodCall');
+      _log('handle $methodCall');
     }
     dynamic result = await methodCall.rawHandle();
 
     if (_debug) {
-      print('result: $result');
+      _log('result: $result');
     }
 
     // devPrint('result: $result');
     return result;
   } catch (e, st) {
     if (_debug) {
-      print(e);
-      print(st);
+      _log(e);
+      _log(st);
     }
     throw methodCall.wrapAnyExceptionNoIsolate(e);
   }

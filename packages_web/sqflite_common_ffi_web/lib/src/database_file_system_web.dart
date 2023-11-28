@@ -12,6 +12,8 @@ import 'package:sqlite3/wasm.dart';
 
 import 'import.dart';
 
+var _log = print;
+
 /// Database file system on sqlite virtual file system.
 class SqfliteDatabaseFileSystemFfiWeb implements DatabaseFileSystem {
   ///  sqlite virtual file system.
@@ -36,7 +38,11 @@ class SqfliteDatabaseFileSystemFfiWeb implements DatabaseFileSystem {
     var fs = this.fs;
     // Ignore failure
     try {
-      fs.xDelete(path, 0);
+      var exists = fs.xAccess(path, 0) != 0;
+      if (exists) {
+        fs.xDelete(path, 0);
+      }
+
       if (fs is IndexedDbFileSystem) {
         await fs.flush();
       }
@@ -131,11 +137,16 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
   Future<void> deleteDatabasePlatform(String path) async {
     final fs = await initFs();
     try {
-      fs.xDelete(path, 0);
+      var exists = fs.xAccess(path, 0) != 0;
+      if (exists) {
+        fs.xDelete(path, 0);
+      }
       if (fs is IndexedDbFileSystem) {
         await fs.flush();
       }
-    } finally {}
+    } catch (_) {
+      // Ignore errors
+    }
   }
 
   /// Check if database file exists
@@ -181,11 +192,11 @@ abstract class RawMessageSender {
     //var receivePort =ReceivePort();
 
     if (_debug) {
-      print('$_swc sending $message');
+      _log('$_swc sending $message');
     }
     messageChannel.port1.onMessage.listen((event) {
       if (_debug) {
-        print('$_swc recv ${event.data}');
+        _log('$_swc recv ${event.data}');
       }
       completer.complete(event.data);
     });
@@ -194,7 +205,7 @@ abstract class RawMessageSender {
       _firstMessage = false;
       onError.listen((event) {
         if (_debug) {
-          print('$_swc error ${jsObjectAsMap(event)}');
+          _log('$_swc error ${jsObjectAsMap(event)}');
         }
 
         if (!completer.isCompleted) {

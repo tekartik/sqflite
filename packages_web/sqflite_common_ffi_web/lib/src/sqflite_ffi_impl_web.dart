@@ -11,6 +11,7 @@ import 'package:sqlite3/wasm.dart';
 import 'database_file_system_web.dart';
 import 'import.dart';
 
+var _log = print;
 bool get _debug => sqliteFfiWebDebugWebWorker;
 
 /// Worker client log prefix for debug mode.
@@ -104,11 +105,11 @@ abstract class RawMessageSender {
     //var receivePort =ReceivePort();
 
     if (_debug) {
-      print('$_swc sending $message');
+      _log('$_swc sending $message');
     }
     messageChannel.port1.onMessage.listen((event) {
       if (_debug) {
-        print('$_swc recv ${event.data}');
+        _log('$_swc recv ${event.data}');
       }
       completer.complete(event.data);
     });
@@ -117,7 +118,7 @@ abstract class RawMessageSender {
       _firstMessage = false;
       onError.listen((event) {
         if (_debug) {
-          print('$_swc error ${jsObjectAsMap(event)}');
+          _log('$_swc error ${jsObjectAsMap(event)}');
         }
 
         if (!completer.isCompleted) {

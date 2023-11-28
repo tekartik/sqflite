@@ -9,6 +9,7 @@ import 'package:sqlite3/wasm.dart';
 bool get _debug => sqliteFfiWebDebugWebWorker;
 
 var _swc = workerClientLogPrefix; // Log prefix
+var _log = print;
 
 /// Load base file system
 Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3FileSystem(
@@ -32,7 +33,7 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(
   context ??= await sqfliteFfiWebLoadSqlite3FileSystem(options);
   var uri = options.sqlite3WasmUri ?? _defaultSqlite3WasmUri;
   if (_debug) {
-    print('Loading sqlite3.wasm from $uri');
+    _log('Loading sqlite3.wasm from $uri');
   }
 
   var webContext = (context as SqfliteFfiWebContextImpl);
@@ -55,19 +56,19 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
     try {
       if (!(options.forceAsBasicWorker ?? false)) {
         if (_debug) {
-          print(
+          _log(
               '$_swc registering shared worker $sharedWorkerUri (name: $name)');
         }
         sharedWorker = SharedWorker(sharedWorkerUri.toString(), name);
       }
     } catch (e) {
       if (_debug) {
-        print('SharedWorker creation failed $e');
+        _log('SharedWorker creation failed $e');
       }
     }
     if (sharedWorker == null) {
       if (_debug) {
-        print('$_swc registering worker $sharedWorkerUri');
+        _log('$_swc registering worker $sharedWorkerUri');
       }
       worker = Worker(sharedWorkerUri.toString());
     }
@@ -75,8 +76,8 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
         options: options, sharedWorker: sharedWorker, worker: worker);
   } catch (e, st) {
     if (_debug) {
-      print('sqfliteFfiWebLoadSqlite3Wasm failed: $e');
-      print(st);
+      _log('sqfliteFfiWebLoadSqlite3Wasm failed: $e');
+      _log(st);
     }
     rethrow;
   }

@@ -11,7 +11,7 @@ import 'constants.dart';
 bool get _debug => sqliteFfiWebDebugWebWorker; // devWarning(true); // false
 /// Shared worker globals
 var swGlobals = <String, Object?>{};
-
+var _log = print;
 SqfliteFfiWebContext? _swContext;
 SqfliteFfiWebOptions? _swOptions;
 
@@ -27,12 +27,12 @@ Future<void> _handleMessageEvent(Event event) async {
   try {
     if (rawData is String) {
       if (_debug) {
-        print('$_shw receive text message $rawData');
+        _log('$_shw receive text message $rawData');
       }
       port.postMessage(rawData);
     } else {
       if (_debug) {
-        print('$_shw recv $rawData');
+        _log('$_shw recv $rawData');
       }
       if (rawData is List) {
         var command = rawData[0];
@@ -41,26 +41,26 @@ Future<void> _handleMessageEvent(Event event) async {
           var data = rawData[1] as Map;
           var key = data['key'] as String;
           var value = data['value'] as Object?;
-          print('$_shw $command $key: $value');
+          _log('$_shw $command $key: $value');
           swGlobals[key] = value;
           port.postMessage(null);
         } else if (command == commandVarGet) {
           var data = rawData[1] as Map;
           var key = data['key'] as String;
           var value = swGlobals[key];
-          print('$_shw $command $key: $value');
+          _log('$_shw $command $key: $value');
           port.postMessage({
             'result': {'key': key, 'value': value}
           });
         } else {
-          print('$_shw $command unknown');
+          _log('$_shw $command unknown');
           port.postMessage(null);
         }
       } else if (rawData is Map) {
         var ffiMethodCall = FfiMethodCall.fromDataMap(rawData);
 
         if (_debug) {
-          print('$_shw method call $ffiMethodCall');
+          _log('$_shw method call $ffiMethodCall');
         }
         if (ffiMethodCall != null) {
           // Fix data
@@ -69,7 +69,7 @@ Future<void> _handleMessageEvent(Event event) async {
           // Init context on first call
           if (_swContext == null) {
             if (_debug) {
-              print('$_shw loading wasm');
+              _log('$_shw loading wasm');
             }
             _swContext = await sqfliteFfiWebLoadSqlite3Wasm(
                 _swOptions ?? SqfliteFfiWebOptions(),
@@ -88,16 +88,16 @@ Future<void> _handleMessageEvent(Event event) async {
             postResponse(FfiMethodResponse.fromException(e, st));
           }
         } else {
-          print('$_shw $rawData unknown');
+          _log('$_shw $rawData unknown');
           port.postMessage(null);
         }
       } else {
-        print('$_shw $rawData map unknown');
+        _log('$_shw $rawData map unknown');
         port.postMessage(null);
       }
     }
   } catch (e, st) {
-    print('$_shw error caught $e $st');
+    _log('$_shw error caught $e $st');
     port.postMessage(null);
   }
 }
@@ -106,20 +106,20 @@ Future<void> _handleMessageEvent(Event event) async {
 void mainSharedWorker(List<String> args) {
   // sqliteFfiWebDebugWebWorker = devWarning(true);
   if (_debug) {
-    print('$_shw main($_debugVersion)');
+    _log('$_shw main($_debugVersion)');
   }
 
   try {
     SharedWorkerGlobalScope.instance.onConnect.listen((event) async {
       if (_debug) {
-        print('$_shw onConnect()');
+        _log('$_shw onConnect()');
       }
       var port = (event as MessageEvent).ports.first;
       port.addEventListener('message', _handleMessageEvent);
     });
   } catch (e) {
     if (_debug) {
-      print('$_shw not in shared worker, trying basic worker');
+      _log('$_shw not in shared worker, trying basic worker');
     }
 
     try {
@@ -127,11 +127,11 @@ void mainSharedWorker(List<String> args) {
           .addEventListener('message', _handleMessageEvent);
     } catch (e) {
       if (_debug) {
-        print('$_shw not in shared worker');
+        _log('$_shw not in shared worker');
       }
     }
   }
   if (_debug) {
-    print('$_shw main done ($_debugVersion)');
+    _log('$_shw main done ($_debugVersion)');
   }
 }

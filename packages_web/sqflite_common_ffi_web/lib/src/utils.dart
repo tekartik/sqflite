@@ -130,6 +130,7 @@ Object? _dataFromEncodable(Object? valueOrNull) {
         try {
           return adapter.decode(encodedValue) as Object;
         } catch (e) {
+          // ignore: avoid_print
           print('$e - ignoring $encodedValue ${encodedValue.runtimeType}');
         }
       }

@@ -34,6 +34,7 @@ linter:
     - always_declare_return_types
     - avoid_dynamic_calls
     - avoid_empty_else
+    - avoid_print
     - avoid_relative_lib_imports
     - avoid_shadowing_type_parameters
     - avoid_slow_async_io
