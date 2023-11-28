@@ -1,3 +1,7 @@
+## 0.4.2
+
+* Use local webdev dependency during setup.
+
 ## 0.4.1
 
 * Use `dev_build` dependency instead of `dev_test`
