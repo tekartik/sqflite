@@ -15,8 +15,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        flutter: [stable]
+        include:
+          - os: ubuntu-latest
+            flutter: stable
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3

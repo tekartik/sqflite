@@ -16,8 +16,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest]
-        flutter: [stable]
+        include:
+          - os: macos-latest
+            flutter: stable
+
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
