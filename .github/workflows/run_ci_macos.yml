@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }} / ${{ matrix.flutter }}
+    name: Test on ${{ matrix.os }} / flutter ${{ matrix.flutter }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:

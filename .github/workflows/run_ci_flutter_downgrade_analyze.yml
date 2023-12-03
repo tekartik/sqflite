@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }} / ${{ matrix.flutter }}
+    name: Test on ${{ matrix.os }} / flutter ${{ matrix.flutter }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -30,5 +30,5 @@ jobs:
           channel: ${{ matrix.flutter }}
       - run: dart --version
       - run: flutter --version
-      - run: dart pub global activate dev_test
-      - run: dart pub global run dev_test:run_ci --pub-downgrade --analyze --no-override --recursive
+      - run: dart pub global activate dev_build
+      - run: dart pub global run dev_build:run_ci --pub-downgrade --analyze --no-override --recursive
