@@ -37,20 +37,29 @@ class TypeTestPage extends TestPage {
       //devPrint('2^33: ${await getValue(id)}');
       expect(await getValue(id), pow(2, 33));
 
-      id = await insertValue(pow(2, 62));
-      //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
-      expect(await getValue(id), pow(2, 62),
-          reason: '2^62: ${pow(2, 62)} ${await getValue(id)}');
+      // about web limits
+      id = await insertValue(pow(2, 53));
+      expect(await getValue(id), pow(2, 53));
 
-      var value = pow(2, 63).round() - 1;
-      id = await insertValue(value);
-      //devPrint('${value} ${await getValue(id)}');
-      expect(await getValue(id), value, reason: '$value ${await getValue(id)}');
+      if (!kIsWeb) {
+        // Not for web
+        id = await insertValue(pow(2, 62));
+        //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
+        expect(await getValue(id), pow(2, 62),
+            reason: '2^62: ${pow(2, 62)} ${await getValue(id)}');
 
-      value = -(pow(2, 63)).round();
-      id = await insertValue(value);
-      //devPrint('${value} ${await getValue(id)}');
-      expect(await getValue(id), value, reason: '$value ${await getValue(id)}');
+        var value = pow(2, 63).round() - 1;
+        id = await insertValue(value);
+        //devPrint('${value} ${await getValue(id)}');
+        expect(await getValue(id), value,
+            reason: '$value ${await getValue(id)}');
+
+        value = -(pow(2, 63)).round();
+        id = await insertValue(value);
+        //devPrint('${value} ${await getValue(id)}');
+        expect(await getValue(id), value,
+            reason: '$value ${await getValue(id)}');
+      }
       /*
       id = await insertValue(pow(2, 63));
       devPrint('2^63: ${pow(2, 63)} ${await getValue(id)}');
