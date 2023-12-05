@@ -1,3 +1,8 @@
+## 2.3.1
+
+* `sqflite3: >= 2.2.0`
+* `sdk: >= 3.2.0`
+
 ## 2.3.0+4
 
 * Support `PRAGMA sqflite -- db_config_defensive_off`

@@ -441,7 +441,7 @@ class SqfliteFfiDatabase {
 
   /// Return the count of updated row.
   int _getUpdatedRows() {
-    var rowCount = _ffiDb.getUpdatedRows();
+    var rowCount = _ffiDb.updatedRows;
     if (logLevel >= sqfliteLogLevelSql) {
       print('$_prefix Modified $rowCount rows');
     }
