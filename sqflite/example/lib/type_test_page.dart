@@ -37,20 +37,32 @@ class TypeTestPage extends TestPage {
       //devPrint('2^33: ${await getValue(id)}');
       expect(await getValue(id), pow(2, 33));
 
-      id = await insertValue(pow(2, 62));
-      //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
-      expect(await getValue(id), pow(2, 62),
-          reason: '2^62: ${pow(2, 62)} ${await getValue(id)}');
+      // about web limits
+      id = await insertValue(pow(2, 53));
+      expect(await getValue(id), pow(2, 53));
 
-      var value = pow(2, 63).round() - 1;
-      id = await insertValue(value);
-      //devPrint('${value} ${await getValue(id)}');
-      expect(await getValue(id), value, reason: '$value ${await getValue(id)}');
+      if (!kIsWeb) {
+        // Not for web
+        id = await insertValue(pow(2, 62));
+        //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
+        expect(await getValue(id), pow(2, 62),
+            reason: '2^62: ${pow(2, 62)} ${await getValue(id)}');
 
-      value = -(pow(2, 63)).round();
-      id = await insertValue(value);
-      //devPrint('${value} ${await getValue(id)}');
-      expect(await getValue(id), value, reason: '$value ${await getValue(id)}');
+        var value = pow(2, 63).round() - 1;
+        id = await insertValue(value);
+        //devPrint('${value} ${await getValue(id)}');
+        expect(await getValue(id), value,
+            reason: '$value ${await getValue(id)}');
+
+        value = -(pow(2, 63)).round();
+        id = await insertValue(value);
+        //devPrint('${value} ${await getValue(id)}');
+        expect(await getValue(id), value,
+            reason: '$value ${await getValue(id)}');
+      }
+      var bigValue = 1234567890123456;
+      id = await insertValue(bigValue);
+      expect(await getValue(id), bigValue);
       /*
       id = await insertValue(pow(2, 63));
       devPrint('2^63: ${pow(2, 63)} ${await getValue(id)}');
@@ -80,12 +92,18 @@ class TypeTestPage extends TestPage {
       // big float
       id = await insertValue(1 / 3);
       expect(await getValue(id), 1 / 3);
-      id = await insertValue(pow(2, 63) + .1);
-      expect(await getValue(id), pow(2, 63) + 0.1);
+      if (!kIsWeb) {
+        id = await insertValue(pow(2, 63) + .1);
+        expect(await getValue(id), pow(2, 63) + 0.1);
 
-      // integer?
-      id = await insertValue(pow(2, 62));
-      expect(await getValue(id), pow(2, 62));
+        // integer?
+        id = await insertValue(pow(2, 62));
+        expect(await getValue(id), pow(2, 62));
+      }
+      var bigValue = 1234567890123456789.0;
+      id = await insertValue(bigValue);
+      expect(await getValue(id), bigValue);
+
       await data.db.close();
     });
 
@@ -217,6 +235,9 @@ class TypeTestPage extends TestPage {
           await insertValue(DateTime.fromMillisecondsSinceEpoch(1234567890));
         } on ArgumentError catch (_) {
           failed = true;
+        } on UnsupportedError catch (_) {
+          // this happens on the web
+          failed = true;
         }
         expect(failed, true);
       } finally {
@@ -236,6 +257,9 @@ class TypeTestPage extends TestPage {
         try {
           await insertValue(true);
         } on ArgumentError catch (_) {
+          failed = true;
+        } on DatabaseException catch (_) {
+          // this happens on the web
           failed = true;
         }
         if (supportsCompatMode) {

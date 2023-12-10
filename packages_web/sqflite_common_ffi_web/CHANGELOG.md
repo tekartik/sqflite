@@ -1,6 +1,9 @@
-## 0.4.2
+## 0.4.2+2
 
 * Use local webdev dependency during setup.
+* Setup for sqlite3 2.2.0
+* Remove `io` dependency
+* requires sdk 3.2.0
 
 ## 0.4.1
 
