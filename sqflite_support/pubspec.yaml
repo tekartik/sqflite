@@ -10,7 +10,7 @@ environment:
 dev_dependencies:
   lints: '>=1.0.0'
   process_run: '>=0.11.0+2'
-  dev_test: '>=0.16.2'
+  dev_build: '>=0.16.2'
   test:
   path:
   pub_semver:
