@@ -33,7 +33,7 @@ dependencies:
     sdk: flutter
   path_provider:
   sqflite_common:
-  dev_test:
+  dev_build:
   process_run: '>=0.13.3-1'
   path:
   sqflite_common_ffi_web:
