@@ -1,6 +1,4 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
+/// sqflite on top of sqlite_async
 library;
 
 export 'src/platform.dart'

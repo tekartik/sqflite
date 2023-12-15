@@ -89,6 +89,10 @@ class SqfliteDatabaseFactoryFfiAsync with SqfliteDatabaseFactoryMixin {
     if (options?.readOnly ?? false) {
       return factoryFfi.openDatabase(path, options: options);
     }
+    // Use ffi for in memory (since it is mainly for tests...)
+    if (path == inMemoryDatabasePath) {
+      return factoryFfi.openDatabase(path, options: options);
+    }
     return super.openDatabase(path, options: options);
   }
 }

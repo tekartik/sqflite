@@ -1,8 +1,7 @@
 name: sqflite_common_ffi_async
+homepage: https://github.com/tekartik/sqflite/tree/master/packages/sqflite_common_ffi_async
 description: Sqlite API on top on sqlite_async
-version: 1.0.0
-publish_to: none
-# repository: https://github.com/my_org/my_repo
+version: 0.1.0
 
 environment:
   sdk: ^3.2.0
