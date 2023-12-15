@@ -82,4 +82,13 @@ class SqfliteDatabaseFactoryFfiAsync with SqfliteDatabaseFactoryMixin {
     }
     throw UnimplementedError('Unimplemented method $method');
   }
+
+  @override
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options}) {
+    // Read-only not supported in ffi_async
+    if (options?.readOnly ?? false) {
+      return factoryFfi.openDatabase(path, options: options);
+    }
+    return super.openDatabase(path, options: options);
+  }
 }
