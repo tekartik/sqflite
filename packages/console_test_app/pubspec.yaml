@@ -11,8 +11,8 @@ dependencies:
   sqflite_common:
 
 dev_dependencies:
-  lints: ^2.0.0
-  test: ^1.21.0
+  lints: '>=2.0.0'
+  test: '>=1.21.0'
   process_run:
 
 dependency_overrides:

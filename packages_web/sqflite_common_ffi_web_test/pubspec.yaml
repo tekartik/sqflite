@@ -7,7 +7,7 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  path: ^1.7.0
+  path: '>=1.7.0'
   sqflite_common_ffi_web:
   sqflite_common_ffi:
   sqflite_common:
