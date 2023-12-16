@@ -5,3 +5,9 @@ class SqfliteFfiAsyncTransaction extends SqfliteTransaction {
   final sqlite_async.SqliteWriteContext writeContext;
   SqfliteFfiAsyncTransaction(super.database, this.writeContext);
 }
+
+class SqfliteFfiAsyncReadTransaction extends SqfliteTransaction {
+  final sqlite_async.SqliteReadContext readContext;
+
+  SqfliteFfiAsyncReadTransaction(super.database, this.readContext);
+}

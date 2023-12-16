@@ -296,6 +296,9 @@ abstract class Database implements DatabaseExecutor {
   Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
       {bool? exclusive});
 
+  /// Read-only transaction (experimental, for now only supported in async_sqlite, use a normal transaction otherwise)
+  Future<T> readTransaction<T>(Future<T> Function(Transaction txn) action);
+
   /// Tell if the database is open, returns false once close has been called
   bool get isOpen;
 

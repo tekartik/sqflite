@@ -160,6 +160,9 @@ const String paramCursorCancel = 'cancel';
 /// SQLite error code
 const String sqliteErrorCode = 'sqlite_error';
 
+/// Internal error code
+const String internalErrorCode = 'internal';
+
 /// Special database name opened in memory
 const String inMemoryDatabasePath = ':memory:';
 

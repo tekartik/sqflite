@@ -16,6 +16,12 @@ void main() {
       },
       null,
     ];
+    // ignore: unused_local_variable
+    final readTransactionBeginStep = [
+      'execute',
+      {'sql': 'BEGIN', 'id': 1, 'inTransaction': true, 'transactionId': null},
+      null,
+    ];
     final transactionBeginFailureStep = [
       'execute',
       {
@@ -29,6 +35,11 @@ void main() {
     final transactionEndStep = [
       'execute',
       {'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
+      1
+    ];
+    final readTransactionEndStep = [
+      'execute',
+      {'sql': 'ROLLBACK', 'id': 1, 'inTransaction': false},
       1
     ];
     test('basic', () async {
@@ -45,6 +56,21 @@ void main() {
 
       await db.transaction((txn) async {});
       await db.transaction((txn) async {});
+      await db.close();
+      scenario.end();
+    });
+    test('read only', () async {
+      final scenario = startScenario([
+        protocolOpenStep,
+        // readTransactionBeginStep, // one day this will work
+        transactionBeginStep,
+        readTransactionEndStep,
+        protocolCloseStep,
+      ]);
+      final factory = scenario.factory;
+      final db = await factory.openDatabase(inMemoryDatabasePath);
+
+      await db.readTransaction((txn) async {});
       await db.close();
       scenario.end();
     });

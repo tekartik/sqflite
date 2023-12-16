@@ -36,6 +36,23 @@ class SqfliteDatabaseAsync extends SqfliteDatabaseBase {
   }
 
   @override
+  Future<T> readTransaction<T>(
+      Future<T> Function(Transaction txn) action) async {
+    return _wrapFfiAsyncCall(() async {
+      if (openTransaction is SqfliteFfiAsyncTransaction) {
+        var sqfliteTxn = openTransaction as SqfliteFfiAsyncTransaction;
+        var result = await action(sqfliteTxn);
+        return result;
+      }
+      return await _database.readTransaction((wc) async {
+        var txn = SqfliteFfiAsyncReadTransaction(this, wc);
+        var result = await action(txn);
+        return result;
+      });
+    });
+  }
+
+  @override
   Future<int> openDatabase() async {
     sqlite_async.SqliteOptions sqliteOptions;
     int maxReaders = sqlite_async.SqliteDatabase.defaultMaxReaders;
@@ -108,11 +125,20 @@ class SqfliteDatabaseAsync extends SqfliteDatabaseBase {
   }
 
   sqlite_async.SqliteWriteContext _writeContext(SqfliteTransaction? txn) {
+    if (txn is SqfliteFfiAsyncReadTransaction) {
+      throw SqfliteFfiException(
+          code: internalErrorCode,
+          message: 'read transaction cannot be used for write');
+    }
     return (txn as SqfliteFfiAsyncTransaction?)?.writeContext ?? _database;
   }
 
-  sqlite_async.SqliteReadContext _readContext(SqfliteTransaction? txn) =>
-      _writeContext(txn);
+  sqlite_async.SqliteReadContext _readContext(SqfliteTransaction? txn) {
+    if (txn is SqfliteFfiAsyncReadTransaction) {
+      return txn.readContext;
+    }
+    return _writeContext(txn);
+  }
 
   Future<T> _writeTransaction<T>(SqfliteTransaction? txn,
       Future<T> Function(sqlite_async.SqliteWriteContext writeContext) action) {

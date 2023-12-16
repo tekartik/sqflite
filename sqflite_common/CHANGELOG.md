@@ -1,3 +1,7 @@
+## 2.5.1-2
+
+* Add `readTransaction` support to `Database` to allow concurrent read-only transactions (sqlite_async only)
+ 
 ## 2.5.0+2
 
 * Dart 3 only

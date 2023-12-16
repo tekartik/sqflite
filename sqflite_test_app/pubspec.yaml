@@ -28,7 +28,6 @@ dependencies:
   sqflite: '>=2.0.0-nullsafety.2'
   sqflite_common_ffi:
   sqflite_common_ffi_async:
-    path: ../packages/sqflite_common_ffi_async
   sqflite_example:
     path: ../sqflite/example
   flutter_web_plugins:
@@ -63,6 +62,8 @@ dependency_overrides:
     path: ../sqflite_common_ffi
   sqflite_common_ffi_web:
     path: ../packages_web/sqflite_common_ffi_web
+  sqflite_common_ffi_async:
+    path: ../packages/sqflite_common_ffi_async
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

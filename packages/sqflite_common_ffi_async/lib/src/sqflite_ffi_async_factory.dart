@@ -84,15 +84,21 @@ class SqfliteDatabaseFactoryFfiAsync with SqfliteDatabaseFactoryMixin {
   }
 
   @override
-  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options}) {
+  Future<Database> openDatabase(String path,
+      {OpenDatabaseOptions? options}) async {
     // Read-only not supported in ffi_async
     if (options?.readOnly ?? false) {
-      return factoryFfi.openDatabase(path, options: options);
+      return await factoryFfi.openDatabase(path, options: options);
     }
     // Use ffi for in memory (since it is mainly for tests...)
     if (path == inMemoryDatabasePath) {
-      return factoryFfi.openDatabase(path, options: options);
+      return await factoryFfi.openDatabase(path, options: options);
     }
-    return super.openDatabase(path, options: options);
+    var database = await super.openDatabase(path, options: options);
+
+    /// We allow concurrent transaction starting from now.
+    // ignore: invalid_use_of_visible_for_testing_member
+    database.internalsDoNotUseSynchronized = true;
+    return database;
   }
 }

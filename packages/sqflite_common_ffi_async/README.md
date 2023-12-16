@@ -12,3 +12,4 @@ on [`sqlite_async`](https://pub.dev/packages/sqlite_async). Thanks to [PowerSync
 This is a work in progress.
 - Readonly support is provided by `sqflite_common_ffi`
 - In memory support is provided by `sqflite_common_ffi`
+- Logger is not supported yet.

@@ -9,8 +9,8 @@ import 'package:sqflite_common/src/factory.dart';
 import 'package:sqflite_common/src/path_utils.dart';
 import 'package:sqflite_common/src/sql_builder.dart';
 import 'package:sqflite_common/src/transaction.dart';
-import 'package:sqflite_common/src/utils.dart';
 import 'package:sqflite_common/src/utils.dart' as utils;
+import 'package:sqflite_common/src/utils.dart';
 import 'package:sqflite_common/src/value_utils.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:synchronized/synchronized.dart';
@@ -336,6 +336,8 @@ extension SqfliteDatabaseMixinExt on SqfliteDatabase {
     try {
       result = await action(txn);
       successfull = true;
+    } on SqfliteTransactionRollbackSuccess<T> catch (e) {
+      result = e.result;
     } finally {
       if (transactionStarted) {
         final sqfliteTransaction = txn as SqfliteTransaction;
@@ -756,6 +758,14 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       return _txnTransaction(txn, action, exclusive: exclusive);
     });
   }
+
+  /// Default implementation uses existing.
+  @override
+  Future<T> readTransaction<T>(Future<T> Function(Transaction txn) action) =>
+      transaction<T>((txn) async {
+        var result = await action(txn);
+        throw SqfliteTransactionRollbackSuccess(result);
+      });
 
   /// Close the database. Cannot be access anymore
   @override

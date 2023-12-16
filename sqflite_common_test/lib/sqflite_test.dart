@@ -67,6 +67,9 @@ abstract class SqfliteTestContext {
   /// True if supported.
   /// Not working an Android native, working with ffi impl.
   bool get supportsUri;
+
+  /// Only sqlite_async supports it for now
+  bool get supportsConcurrentRead;
 }
 
 /// sqflite test context mixin.
@@ -77,6 +80,9 @@ mixin SqfliteTestContextMixin implements SqfliteTestContext {
 
   @override
   bool get supportsDeadLock => false;
+
+  @override
+  bool get supportsConcurrentRead => false;
 
   /// FFI implementation is strict
   @override

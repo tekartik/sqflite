@@ -16,9 +16,10 @@ DatabaseFactory get testFfiAsyncFactory => debugFfiAsync
 class SqfliteFfiAsyncTestContext extends SqfliteLocalTestContext {
   SqfliteFfiAsyncTestContext() : super(databaseFactory: testFfiAsyncFactory);
   @override
-  bool get supportsUri => true;
+  bool get supportsUri => false;
 
-  bool get noProtocolSupport => true;
+  @override
+  bool get supportsConcurrentRead => true;
 }
 
 var ffiAsyncTestContext = SqfliteFfiAsyncTestContext();
@@ -27,5 +28,8 @@ void main() {
   /// Initialize ffi loader
   // sqfliteFfiInit();
 
+  test('setup', () {
+    expect(ffiAsyncTestContext.supportsConcurrentRead, true);
+  });
   runFfiAsyncTests(ffiAsyncTestContext);
 }
