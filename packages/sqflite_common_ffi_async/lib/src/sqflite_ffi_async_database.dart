@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:path/path.dart';
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_async/src/sqflite_ffi_async_factory.dart';
 import 'package:sqflite_common_ffi_async/src/sqflite_ffi_async_transaction.dart';
@@ -11,12 +10,14 @@ import 'package:sqlite_async/sqlite_async.dart' as sqlite_async;
 
 import 'import.dart';
 
-class SqfliteDatabaseAsync extends SqfliteDatabaseBase {
+/// Ffi async database implementation.
+class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
   static int _id = 0;
-  late final asyncId = ++_id;
+  late final _asyncId = ++_id;
   late sqlite_async.SqliteDatabase _database;
 
-  SqfliteDatabaseAsync(super.openHelper, super.path);
+  /// Ffi async database implementation.
+  SqfliteDatabaseFfiAsync(super.openHelper, super.path);
 
   @override
   Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
@@ -55,18 +56,18 @@ class SqfliteDatabaseAsync extends SqfliteDatabaseBase {
   @override
   Future<int> openDatabase() async {
     sqlite_async.SqliteOptions sqliteOptions;
-    int maxReaders = sqlite_async.SqliteDatabase.defaultMaxReaders;
+    var maxReaders = sqlite_async.SqliteDatabase.defaultMaxReaders;
     var path = this.path;
     if (path == inMemoryDatabasePath) {
       var dir = await Directory.systemTemp.createTemp();
-      path = this.path = join(dir.path, 'in_memory_$asyncId.db');
+      path = this.path = join(dir.path, 'in_memory_$_asyncId.db');
     }
     if (options?.readOnly ?? false) {
       if (!await factoryFfi.databaseExists(path)) {
         throw SqfliteDatabaseException(
             'read-only Database not found: $path', null);
       }
-      sqliteOptions = sqlite_async.SqliteOptions(
+      sqliteOptions = const sqlite_async.SqliteOptions(
           journalMode: null, journalSizeLimit: null, synchronous: null);
     } else {
       var dir = Directory(dirname(path));
@@ -78,7 +79,7 @@ class SqfliteDatabaseAsync extends SqfliteDatabaseBase {
       } catch (e) {
         print('error checking directory $dir: $e');
       }
-      sqliteOptions = sqlite_async.SqliteOptions.defaults();
+      sqliteOptions = const sqlite_async.SqliteOptions.defaults();
     }
     final factory = sqlite_async.DefaultSqliteOpenFactory(
         path: path, sqliteOptions: sqliteOptions);
@@ -86,7 +87,7 @@ class SqfliteDatabaseAsync extends SqfliteDatabaseBase {
     _database = sqlite_async.SqliteDatabase.withFactory(factory,
         maxReaders: maxReaders);
     //_database = sqlite_async.SqliteDatabase(path: path);
-    return asyncId;
+    return _asyncId;
   }
 
   Future<List<Map<String, Object?>>> _select(sqlite_async.SqliteReadContext wc,
@@ -286,12 +287,15 @@ class SqfliteDatabaseAsync extends SqfliteDatabaseBase {
   }
 }
 
+/// Result set implementation.
 class SqfliteResultSet extends ListBase<Map<String, Object?>> {
+  /// Result set data.
   final sqlite3.ResultSet resultSet;
 
   @override
   int get length => resultSet.length;
 
+  /// Result set implementation.
   SqfliteResultSet(this.resultSet);
 
   @override

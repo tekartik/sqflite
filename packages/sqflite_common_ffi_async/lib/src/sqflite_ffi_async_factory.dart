@@ -1,19 +1,25 @@
-import 'dart:typed_data';
 import 'dart:io' as io;
+import 'dart:typed_data';
+
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'import.dart';
 import 'sqflite_ffi_async_database.dart';
 
+/// The Ffi database factory, to use when needed.
 var factoryFfi = databaseFactoryFfi; //.debugQuickLoggerWrapper();
 
 /// The Ffi database factory.
 var databaseFactoryFfiAsyncImpl =
     SqfliteDatabaseFactoryFfiAsync(tag: 'ffi_async');
+
+/// The Ffi database factory for tests.
 var databaseFactoryFfiAsyncTestImpl =
     SqfliteDatabaseFactoryFfiAsync(tag: 'ffi_async_test');
 
+/// The Ffi async database factory.
 class SqfliteDatabaseFactoryFfiAsync with SqfliteDatabaseFactoryMixin {
+  /// The Ffi async database factory.
   SqfliteDatabaseFactoryFfiAsync({String? tag}) {
     this.tag = tag;
   }
@@ -41,7 +47,7 @@ class SqfliteDatabaseFactoryFfiAsync with SqfliteDatabaseFactoryMixin {
   @override
   SqfliteDatabase newDatabase(
       SqfliteDatabaseOpenHelper openHelper, String path) {
-    return SqfliteDatabaseAsync(openHelper, path);
+    return SqfliteDatabaseFfiAsync(openHelper, path);
   }
 
   /// Invoke delete database.
