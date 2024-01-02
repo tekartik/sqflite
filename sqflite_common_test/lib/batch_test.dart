@@ -168,7 +168,7 @@ void run(SqfliteTestContext context) {
     });
 
     test('Batch continue on error', () async {
-      // await Sqflite.devSetDebugModeOn();
+      //await Sqflite.devSetDebugModeOn();
       var path = await context.initDeleteDb('batch_continue_on_error.db');
       var db = await factory.openDatabase(path);
       try {

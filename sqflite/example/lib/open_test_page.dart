@@ -345,7 +345,7 @@ class OpenTestPage extends TestPage {
         await createDirectory(path);
       } catch (_) {}
 
-// Copy from asset to a database file.
+      // Copy from asset to a database file.
       final data = await rootBundle.load(url.join('assets', 'example.db'));
       final bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);

@@ -101,6 +101,10 @@ You might want to have a versioning strategy (not yet part of this project) to o
 it changes in the build system or might also allow the user to modify the database (in this case you must copy it
 first).
 
+### Web support
+
+Check [opening_asset_db_web.md](../../packages_web/sqflite_common_ffi_web/doc/opening_asset_db_web.md) for web support.
+
 ## Open it!
 ````
 // open the database
