@@ -230,6 +230,7 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
           }
         } catch (e) {
           if (continueOnError ?? false) {
+            addResult(ffiWrapAnyException(e));
             continue;
           } else {
             rethrow;

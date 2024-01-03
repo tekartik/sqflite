@@ -13,4 +13,4 @@ This is a work in progress.
 - Readonly support is provided by `sqflite_common_ffi`
 - In memory support is provided by `sqflite_common_ffi`
 - Logger is not supported yet.
-- You cannot catch exceptions during a transaction as it is automatically rolled back.
+- Single/multiple instance is ignored as sqflite_async handles opening/closing.
