@@ -1,3 +1,7 @@
+## 0.4.2+3
+
+* Setup for sqlite3 2.3.0
+
 ## 0.4.2+2
 
 * Use local webdev dependency during setup.
