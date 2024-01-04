@@ -1,3 +1,8 @@
+## 2.3.2
+
+* `sqflite3: >= 2.3.0`
+* Supports transaction rolled back by an inner statement.
+
 ## 2.3.1
 
 * `sqflite3: >= 2.2.0`
