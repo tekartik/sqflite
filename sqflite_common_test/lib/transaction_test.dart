@@ -433,7 +433,7 @@ void run(SqfliteTestContext context) {
         }
 
         expect(await db.query('Test'), isEmpty);
-      } catch (_) {
+      } finally {
         await db.close();
       }
     });
@@ -455,9 +455,46 @@ void run(SqfliteTestContext context) {
         await db.readTransaction((txn) async {
           txn2Started.complete();
         });
-      } catch (_) {
+      } finally {
         await db.close();
       }
     }, skip: !context.supportsConcurrentRead);
+
+    test('rolled back transactions', () async {
+      var path = await context.initDeleteDb('rolled_back_transaction.db');
+
+      var db = await factory.openDatabase(path);
+      try {
+        await db
+            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+        try {
+          await db.transaction((txn) async {
+            await txn.insert('Test', {'id': 1},
+                conflictAlgorithm: ConflictAlgorithm.rollback);
+            try {
+              await txn.insert('Test', {'id': 1},
+                  conflictAlgorithm: ConflictAlgorithm.rollback);
+              fail('should fail 1');
+            } on DatabaseException catch (e) {
+              expect(e.isUniqueConstraintError(), true);
+            }
+            try {
+              await txn.insert('Test', {'id': 2},
+                  conflictAlgorithm: ConflictAlgorithm.rollback);
+              fail('should fail 2');
+            } on DatabaseException catch (e) {
+              /// Transaction already closed
+              expect(e.isUniqueConstraintError(), isFalse);
+            }
+          });
+        } on DatabaseException catch (e) {
+          /// Transaction already closed !
+          expect(e.isUniqueConstraintError(), isFalse);
+        }
+        expect(await db.query('Test'), isEmpty);
+      } finally {
+        await db.close();
+      }
+    });
   });
 }

@@ -314,7 +314,7 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
               final db = await _openDatabase();
               final result =
                   firstIntValue(await db.query('test', columns: ['COUNT(*)']));
-              // Temp for nnbd successfull lint
+              // Temp for nnbd successful lint
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text('$result records'),

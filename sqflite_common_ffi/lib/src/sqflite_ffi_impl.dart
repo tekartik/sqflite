@@ -267,6 +267,22 @@ class SqfliteFfiDatabase {
         transactionId == paramTransactionIdValueForce) {
       try {
         return await handler();
+      } on common.SqliteException catch (e) {
+        // Check if the transaction has been rolledback already
+        var transactionClosed = false;
+        try {
+          transactionClosed =
+              (_currentTransactionId != null && _ffiDb.autocommit);
+        } catch (_) {
+          // Ignore errors to keep existing behavior if somehow autocommit is not yet available
+        }
+        if (transactionClosed) {
+          /// Leaving the transaction.
+          _currentTransactionId = null;
+          throw _ffiWrapSqliteException(e)..transactionClosed = true;
+        } else {
+          rethrow;
+        }
       } finally {
         // If we are no longer in a transaction, run queued action asynchronously
         if (_currentTransactionId == null) {
@@ -467,6 +483,7 @@ class SqfliteFfiDatabase {
     if (!noResult) {
       results = <Map<String, Object?>>[];
     }
+
     for (var operation in operations) {
       // devPrint('operation $operation');
       Map<String, Object?> getErrorMap(SqfliteFfiException e) {
@@ -502,6 +519,19 @@ class SqfliteFfiDatabase {
         if (continueOnError) {
           if (!noResult) {
             results!.add(getErrorMap(wrap(e)));
+          }
+          // Check if the transaction has been rolledback already
+          var transactionClosed = false;
+          try {
+            transactionClosed =
+                (_currentTransactionId != null && _ffiDb.autocommit);
+          } catch (_) {
+            // Ignore errors to keep existing behavior if somehow autocommit is not yet available
+          }
+          if (transactionClosed) {
+            /// Leaving the transaction.
+            _currentTransactionId = null;
+            throw wrap(e)..transactionClosed = true;
           }
         } else {
           throw wrap(e);

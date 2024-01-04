@@ -69,6 +69,7 @@ class FfiMethodResponse {
       error['details'] = e.details;
       error['message'] = e.message;
       error['resultCode'] = e.getResultCode();
+      error['transactionClosed'] = e.transactionClosed;
     } else {
       // should not happen
       error['message'] = e.toString();
@@ -106,7 +107,8 @@ class FfiMethodResponse {
           code: (errorMap['code'] as String?) ?? anyErrorCode,
           message: errorMap['message'] as String,
           details: (errorMap['details'] as Map?)?.cast<String, Object?>(),
-          resultCode: errorMap['resultCode'] as int?);
+          resultCode: errorMap['resultCode'] as int?,
+          transactionClosed: errorMap['transactionClosed'] as bool?);
     } else {
       return SqfliteFfiException(
           code: anyErrorCode, message: error?.toString() ?? 'no info');

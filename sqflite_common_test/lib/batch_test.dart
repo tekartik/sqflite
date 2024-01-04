@@ -198,5 +198,34 @@ void run(SqfliteTestContext context) {
         await db.close();
       }
     });
+
+    test('Batch rolled back continue on error', () async {
+      // Here we expect the batch to be rolled back even if continueOnError is true
+      // since the transaction has been rolled back
+      // This used to fail (before 2024-01-01)
+      var path =
+          await context.initDeleteDb('batch_rolled_back_continue_on_error.db');
+      var db = await factory.openDatabase(path);
+      await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+      try {
+        var batch = db.batch();
+        batch.insert('Test', {'id': 1},
+            conflictAlgorithm: ConflictAlgorithm.rollback);
+        batch.insert('Test', {'id': 1},
+            conflictAlgorithm: ConflictAlgorithm.rollback);
+        batch.insert('Test', {'id': 2},
+            conflictAlgorithm: ConflictAlgorithm.rollback);
+        try {
+          await batch.commit(continueOnError: true);
+          fail('should fail');
+        } on DatabaseException catch (e) {
+          expect(e.isUniqueConstraintError(), isTrue);
+        }
+
+        expect(await db.query('Test'), isEmpty);
+      } finally {
+        await db.close();
+      }
+    });
   });
 }

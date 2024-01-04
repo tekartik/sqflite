@@ -9,8 +9,10 @@ class SqfliteFfiException extends SqfliteDatabaseException {
       {required this.code,
       required String message,
       this.details,
-      int? resultCode})
-      : super(message, details, resultCode: resultCode);
+      int? resultCode,
+      bool? transactionClosed})
+      : super(message, details,
+            resultCode: resultCode, transactionClosed: transactionClosed);
 
   /// The database.
   SqfliteFfiDatabase? database;
