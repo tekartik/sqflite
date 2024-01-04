@@ -1,3 +1,7 @@
+## 2.5.2-1
+
+* Start support for rolled back transaction by an inner statement.
+
 ## 2.5.1-2
 
 * Add `readTransaction` support to `Database` to allow concurrent read-only transactions (sqlite_async only)
