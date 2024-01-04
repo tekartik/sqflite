@@ -16,6 +16,7 @@ void main() {
       },
       null,
     ];
+
     // ignore: unused_local_variable
     final readTransactionBeginStep = [
       'execute',
@@ -130,6 +131,35 @@ void main() {
             options:
                 OpenDatabaseOptions(version: 1, onCreate: (db, version) {}));
       } on DatabaseException catch (_) {}
+      scenario.end();
+    });
+    test('simple rolled back', () async {
+      final causingRollbackStep = [
+        'execute',
+        {
+          'sql': 'SOME ERROR CAUSING ROLLBACK',
+          'id': 1,
+        },
+        SqfliteDatabaseException('failure', null, transactionClosed: true),
+      ];
+      final scenario = startScenario([
+        protocolOpenStep,
+        transactionBeginStep,
+        causingRollbackStep,
+        protocolCloseStep,
+      ]);
+      final factory = scenario.factory;
+      final db = await factory.openDatabase(inMemoryDatabasePath);
+
+      await db.transaction((txn) async {
+        try {
+          await txn.execute('SOME ERROR CAUSING ROLLBACK');
+        } catch (_) {
+          // Catch
+        }
+      });
+
+      await db.close();
       scenario.end();
     });
   });

@@ -108,8 +108,10 @@ abstract class DatabaseException implements Exception {
 /// Exception implementation
 class SqfliteDatabaseException extends DatabaseException {
   /// ctor with a message and some data
-  SqfliteDatabaseException(super.message, this.result, {int? resultCode}) {
+  SqfliteDatabaseException(super.message, this.result,
+      {int? resultCode, bool? transactionClosed}) {
     _resultCode = resultCode;
+    _transactionClosed = transactionClosed;
   }
 
   /// Our exception message
@@ -124,6 +126,9 @@ class SqfliteDatabaseException extends DatabaseException {
 
   /// The result as a map
   Map get resultMap => result as Map;
+
+  /// True if the current transaction has been rolled back
+  bool? _transactionClosed;
 
   @override
   String toString() {
@@ -189,6 +194,13 @@ class SqfliteDatabaseException extends DatabaseException {
         }
         return null;
       }();
+
+  /// True if the current transaction has been rolled back in the execution
+  bool get transactionClosed => _transactionClosed ?? false;
+
+  /// True if the current transaction has been rolled back in the execution
+  set transactionClosed(bool transactionClosed) =>
+      _transactionClosed = transactionClosed;
 }
 
 /// Special exception to throw during a transaction to force a rollback.

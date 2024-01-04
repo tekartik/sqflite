@@ -327,7 +327,7 @@ extension SqfliteDatabaseMixinExt on SqfliteDatabase {
   Future<T> _txnTransaction<T>(
       Transaction? txn, Future<T> Function(Transaction txn) action,
       {bool? exclusive}) async {
-    bool? successfull;
+    bool? successful;
     var transactionStarted = txn == null;
     if (transactionStarted) {
       txn = await beginTransaction(exclusive: exclusive);
@@ -335,13 +335,13 @@ extension SqfliteDatabaseMixinExt on SqfliteDatabase {
     T result;
     try {
       result = await action(txn);
-      successfull = true;
+      successful = true;
     } on SqfliteTransactionRollbackSuccess<T> catch (e) {
       result = e.result;
     } finally {
       if (transactionStarted) {
         final sqfliteTransaction = txn as SqfliteTransaction;
-        sqfliteTransaction.successful = successfull;
+        sqfliteTransaction.successful = successful;
         await endTransaction(sqfliteTransaction);
       }
     }
@@ -480,7 +480,16 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       Transaction? txn, Future<T> Function(Transaction? txn) action) async {
     // If in a transaction, execute right away
     if (txn != null || doNotUseSynchronized) {
-      return await action(txn);
+      txn?.checkNotClosed();
+      try {
+        return await action(txn);
+      } on SqfliteDatabaseException catch (e) {
+        if (e.transactionClosed) {
+          // We are in a transaction, let's mark it as closed
+          txn?.markClosed();
+        }
+        rethrow;
+      }
     } else {
       // Simple timeout warning if we cannot get the lock after XX seconds
       final handleTimeoutWarning = (utils.lockWarningDuration != null &&
@@ -742,10 +751,19 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
   Future<void> endTransaction(SqfliteTransaction txn) async {
     // never commit transaction in read-only mode
     if (!readOnly) {
-      if (txn.successful == true) {
-        await txnExecute<dynamic>(txn, 'COMMIT', null);
+      if (txn.closed == true) {
+        // Ok done
+        inTransaction = false;
       } else {
-        await txnExecute<dynamic>(txn, 'ROLLBACK', null);
+        try {
+          if (txn.successful == true) {
+            await txnExecute<dynamic>(txn, 'COMMIT', null);
+          } else {
+            await txnExecute<dynamic>(txn, 'ROLLBACK', null);
+          }
+        } finally {
+          txn.closed = true;
+        }
       }
     }
   }
