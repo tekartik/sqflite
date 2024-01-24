@@ -20,5 +20,6 @@ Accss SQLite database.
   s.platform = :ios, '11.0'
   s.ios.deployment_target = '11.0'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.resource_bundles = {'sqflite_ios_privacy' => ['Resources/PrivacyInfo.xcprivacy']}
 end
 
