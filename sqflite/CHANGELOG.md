@@ -1,3 +1,7 @@
+## 2.3.1
+
+* Add iOS/MacOS privacy manifest
+
 ## 2.3.0
 
 * Dart 3 only
