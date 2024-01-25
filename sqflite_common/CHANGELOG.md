@@ -1,3 +1,7 @@
+## 2.5.3
+
+* Export `databaseId` and `transactionId` in logger events.
+
 ## 2.5.2-1
 
 * Start support for rolled back transaction by an inner statement.
