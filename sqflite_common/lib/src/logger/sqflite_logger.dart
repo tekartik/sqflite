@@ -105,6 +105,9 @@ abstract class SqfliteLoggerDatabaseDeleteEvent extends SqfliteLoggerEvent {
 
 /// Open db event
 abstract class SqfliteLoggerDatabaseOpenEvent extends SqfliteLoggerEvent {
+  /// Database internal id, if successfully opened.
+  int? get databaseId;
+
   /// The options used.
   OpenDatabaseOptions? get options;
 
@@ -117,12 +120,21 @@ abstract class SqfliteLoggerDatabaseOpenEvent extends SqfliteLoggerEvent {
 
 /// Open db event
 abstract class SqfliteLoggerDatabaseCloseEvent extends SqfliteLoggerEvent {
+  /// Database internal id.
+  int get databaseId;
+
   /// The closed database.
   Database? get db;
 }
 
 /// In database event.
 abstract class SqfliteLoggerDatabaseEvent implements SqfliteLoggerEvent {
+  /// Database internal id.
+  int get databaseId;
+
+  /// Optional internal transaction id
+  int? get transactionId;
+
   /// The database client (transaction or database)
   DatabaseExecutor get client;
 }
@@ -180,6 +192,11 @@ abstract class _SqfliteLoggerDatabaseEvent extends _SqfliteLoggerEvent
   late final DatabaseExecutor _client;
 
   @override
+  int? get transactionId => txnId;
+  @override
+  int get databaseId => (client.database as SqfliteDatabase).id!;
+
+  @override
   DatabaseExecutor get client => _client;
 
   set client(DatabaseExecutor client) {
@@ -189,9 +206,8 @@ abstract class _SqfliteLoggerDatabaseEvent extends _SqfliteLoggerEvent
   }
 
   Map<String, Object?> get _databasePrefixMap => {
-        if (client.database is SqfliteDatabase)
-          'db': (client.database as SqfliteDatabase).id,
-        if (txnId != null) 'txn': txnId
+        if (client.database is SqfliteDatabase) 'db': databaseId,
+        if (transactionId != null) 'txn': transactionId
       };
 
   late int? txnId;
@@ -436,6 +452,9 @@ class _SqfliteLoggerDatabaseDeleteEvent extends _SqfliteLoggerEvent
 class _SqfliteLoggerDatabaseOpenEvent extends _SqfliteLoggerEvent
     implements SqfliteLoggerDatabaseOpenEvent {
   @override
+  int? get databaseId => db?.id;
+
+  @override
   final SqfliteDatabase? db;
 
   @override
@@ -448,7 +467,7 @@ class _SqfliteLoggerDatabaseOpenEvent extends _SqfliteLoggerEvent
   Map<String, Object?> toMap() => {
         'path': path,
         if (options != null) 'options': options!.toMap(),
-        if (db?.id != null) 'id': db!.id,
+        if (databaseId != null) 'id': databaseId,
         ...super.toMap()
       };
 

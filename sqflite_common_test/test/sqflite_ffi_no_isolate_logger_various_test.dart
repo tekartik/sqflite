@@ -132,6 +132,7 @@ Future<void> main() async {
       expect(openEvent.options?.version, 1);
       expect(openEvent.path, inMemoryDatabasePath);
       expect(openEvent.db, db);
+      expect(openEvent.databaseId, isNotNull);
       _events.clear();
 
       await db.close();
@@ -141,6 +142,7 @@ Future<void> main() async {
       event = _events[0];
       expect(event, isA<SqfliteLoggerDatabaseCloseEvent>());
       var closeEvent = event as SqfliteLoggerDatabaseCloseEvent;
+      expect(openEvent.databaseId, isNotNull);
       expect(closeEvent.db, db);
     });
 
@@ -180,6 +182,7 @@ Future<void> main() async {
       expect(event, isA<SqfliteLoggerSqlEvent>());
       sqlEvent = event as SqfliteLoggerSqlEvent;
       expect(sqlEvent.type, SqliteSqlCommandType.update);
+      expect(sqlEvent.databaseId, dbId);
 
       // Query
       _events.clear();
@@ -283,6 +286,8 @@ Future<void> main() async {
       operation = operations[4];
       expect(operation, isA<SqfliteLoggerSqlCommandExecute>());
       expect(operation.type, SqliteSqlCommandType.execute);
+      expect(operationEvent.databaseId, dbId);
+      expect(operationEvent.transactionId, isNull);
     });
 
     test('crud', () async {
@@ -384,6 +389,10 @@ Future<void> main() async {
         },
         {'db': dbId, 'txn': 3, 'sql': 'COMMIT'}
       ]);
+      var event = _events[4] as SqfliteLoggerSqlEvent;
+      expect(event.databaseId, dbId);
+      expect(event.transactionId, 2);
+
       _events.clear();
 
       await db.transaction((txn) async {
