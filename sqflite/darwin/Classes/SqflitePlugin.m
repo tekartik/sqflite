@@ -1,7 +1,7 @@
 #import "SqflitePlugin.h"
 #import "SqfliteDatabase.h"
 #import "SqfliteOperation.h"
-#import "SqfliteFmdbImport.m"
+#import "SqfliteDarwinImport.h"
 
 #import <sqlite3.h>
 
@@ -79,8 +79,8 @@ NSString *const SqfliteParamErrorData = @"data";
 NSString *const SqfliteSqlPragmaSqliteDefensiveOff = @"PRAGMA sqflite -- db_config_defensive_off";
 
 // Import hidden method
-@interface FMDatabase ()
-- (void)resultSetDidClose:(FMResultSet *)resultSet;
+@interface SqfliteDarwinDatabase ()
+- (void)resultSetDidClose:(SqfliteDarwinResultSet *)resultSet;
 @end
 
 @interface SqflitePlugin ()
@@ -163,14 +163,14 @@ static NSInteger _databaseOpenCount = 0;
     return database;
 }
 
-- (void)handleError:(FMDatabase*)db result:(FlutterResult)result {
+- (void)handleError:(SqfliteDarwinDatabase*)db result:(FlutterResult)result {
     // handle error
     result([FlutterError errorWithCode:SqliteErrorCode
                                message:[NSString stringWithFormat:@"%@", [db lastError]]
                                details:nil]);
 }
 
-- (void)handleError:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (void)handleError:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     NSMutableDictionary* details = nil;
     NSString* sql = [operation getSql];
     if (sql != nil) {
@@ -248,7 +248,7 @@ static NSInteger _databaseOpenCount = 0;
 }
 
 // TODO remove
-- (bool)executeOrError:(SqfliteDatabase*)database fmdb:(FMDatabase*)db call:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (bool)executeOrError:(SqfliteDatabase*)database fmdb:(SqfliteDarwinDatabase*)db call:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSString* sql = call.arguments[SqfliteParamSql];
     NSArray* arguments = call.arguments[SqfliteParamSqlArguments];
     NSArray* sqlArguments = [SqflitePlugin toSqlArguments:arguments];
@@ -273,7 +273,7 @@ static NSInteger _databaseOpenCount = 0;
     return true;
 }
 
-- (bool)executeOrError:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (bool)executeOrError:(SqfliteDatabase*)database fmdb:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     NSNumber* inTransaction = [operation getInTransactionChange];
@@ -320,11 +320,11 @@ static NSInteger _databaseOpenCount = 0;
 }
 
 // Rewrite to handle empty bloc reported as null
-// refer to original FMResultSet.objectForColumnIndex, removed
-// when fixed in FMDB
+// refer to original SqfliteDarwinResultSet.objectForColumnIndex, removed
+// when fixed in SqfliteDarwinDB
 // See https://github.com/ccgus/fmdb/issues/350 for information
-+ (id)rsObjectForColumn:(FMResultSet*)rs index:(int)columnIdx {
-    FMStatement* _statement = [rs statement];
++ (id)rsObjectForColumn:(SqfliteDarwinResultSet*)rs index:(int)columnIdx {
+    SqfliteDarwinStatement* _statement = [rs statement];
     if (columnIdx < 0 || columnIdx >= sqlite3_column_count([_statement statement])) {
         return nil;
     }
@@ -359,7 +359,7 @@ static NSInteger _databaseOpenCount = 0;
 }
 
 // if cursorPageSize is not null, we limit the result count
-+ (NSMutableDictionary*)resultSetToResults:(FMResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize {
++ (NSMutableDictionary*)resultSetToResults:(SqfliteDarwinResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize {
     NSMutableDictionary* results = [NSMutableDictionary new];
     NSMutableArray* columns = nil;
     NSMutableArray* rows;
@@ -394,7 +394,7 @@ static NSInteger _databaseOpenCount = 0;
 //
 // query
 //
-- (bool)query:(SqfliteDatabase*)database fmdb:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (bool)query:(SqfliteDatabase*)database fmdb:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     bool argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
@@ -405,7 +405,7 @@ static NSInteger _databaseOpenCount = 0;
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     
-    FMResultSet *resultSet;
+    SqfliteDarwinResultSet *resultSet;
     if (!argumentsEmpty) {
         resultSet = [db executeQuery:sql withArgumentsInArray:sqlArguments];
     } else {
@@ -434,7 +434,7 @@ static NSInteger _databaseOpenCount = 0;
             database.cursorMap[cursorId] = cursor;
             // Notify cursor support in the result
             results[_paramCursorId] = cursorId;
-            // Prevent FMDB warning, we keep a result set open on purpose
+            // Prevent SqfliteDarwinDB warning, we keep a result set open on purpose
             [db resultSetDidClose:resultSet];
         }
     }
@@ -448,7 +448,7 @@ static NSInteger _databaseOpenCount = 0;
     if (database == nil) {
         return;
     }
-    [database inDatabase:^(FMDatabase *db) {
+    [database inDatabase:^(SqfliteDarwinDatabase *db) {
         SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
         [database dbQuery:db operation:operation];
     }];
@@ -461,7 +461,7 @@ static NSInteger _databaseOpenCount = 0;
     if (database == nil) {
         return;
     }
-    [database inDatabase:^(FMDatabase *db) {
+    [database inDatabase:^(SqfliteDarwinDatabase *db) {
         SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
         [database dbQueryCursorNext:db operation:operation];
     }];
@@ -474,7 +474,7 @@ static NSInteger _databaseOpenCount = 0;
     if (database == nil) {
         return;
     }
-    [database inDatabase:^(FMDatabase *db) {
+    [database inDatabase:^(SqfliteDarwinDatabase *db) {
         SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
         [database dbInsert:db operation:operation];
     }];
@@ -488,7 +488,7 @@ static NSInteger _databaseOpenCount = 0;
         return;
     }
     
-    [database inDatabase:^(FMDatabase *db) {
+    [database inDatabase:^(SqfliteDarwinDatabase *db) {
         SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
         [database dbUpdate:db operation:operation];
     }];
@@ -502,7 +502,7 @@ static NSInteger _databaseOpenCount = 0;
         return;
     }
     
-    [database inDatabase:^(FMDatabase *db) {
+    [database inDatabase:^(SqfliteDarwinDatabase *db) {
         SqfliteMethodCallOperation* operation = [SqfliteMethodCallOperation newWithCall:call result:result];
         [database dbExecute:db operation:operation];
     }];
@@ -517,7 +517,7 @@ static NSInteger _databaseOpenCount = 0;
         return;
     }
     
-    [database inDatabase:^(FMDatabase *db) {
+    [database inDatabase:^(SqfliteDarwinDatabase *db) {
         
         SqfliteMethodCallOperation* mainOperation = [SqfliteMethodCallOperation newWithCall:call result:result];
         [database dbBatch:db operation:mainOperation];
@@ -591,7 +591,7 @@ static NSInteger _databaseOpenCount = 0;
             // Ingore the error, it will break later during open
         }
     }
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:path flags:(readOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE))];
+    SqfliteDarwinDatabaseQueue *queue = [SqfliteDarwinDatabaseQueue databaseQueueWithPath:path flags:(readOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE))];
     bool success = queue != nil;
     
     if (!success) {
@@ -605,7 +605,7 @@ static NSInteger _databaseOpenCount = 0;
     // First call will be to prepare the database.
     // We turn on extended result code, allowing failure
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [queue inDatabase:^(FMDatabase *db) {
+        [queue inDatabase:^(SqfliteDarwinDatabase *db) {
             sqlite3_extended_result_codes(db.sqliteHandle, 1);
         }];
     });
@@ -674,7 +674,7 @@ static NSInteger _databaseOpenCount = 0;
             }
         }
     }
-    FMDatabaseQueue* queue = database.fmDatabaseQueue;
+    SqfliteDarwinDatabaseQueue* queue = database.fmDatabaseQueue;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         // It is safe to call this from a background queue because the function
         // dispatches immediately to its queue synchronously.

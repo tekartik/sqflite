@@ -10,10 +10,10 @@
 #import "SqfliteCursor.h"
 #import "SqfliteOperation.h"
 
-@class FMDatabaseQueue,FMDatabase;
+@class SqfliteDarwinDatabaseQueue,SqfliteDarwinDatabase;
 @interface SqfliteDatabase : NSObject
 
-@property (atomic, retain) FMDatabaseQueue *fmDatabaseQueue;
+@property (atomic, retain) SqfliteDarwinDatabaseQueue *fmDatabaseQueue;
 @property (atomic, retain) NSNumber *databaseId;
 @property (atomic, retain) NSString* path;
 @property (nonatomic) bool singleInstance;
@@ -29,13 +29,13 @@
 
 - (void)closeCursorById:(NSNumber*)cursorId;
 - (void)closeCursor:(SqfliteCursor*)cursor;
-- (void)inDatabase:(void (^)(FMDatabase *db))block;
-- (void)dbBatch:(FMDatabase*)db operation:(SqfliteMethodCallOperation*)mainOperation;
-- (void)dbExecute:(FMDatabase*)db operation:(SqfliteOperation*)operation;
-- (void)dbInsert:(FMDatabase*)db operation:(SqfliteOperation*)operation;
-- (void)dbUpdate:(FMDatabase*)db operation:(SqfliteOperation*)operation;
-- (void)dbQuery:(FMDatabase*)db operation:(SqfliteOperation*)operation;
-- (void)dbQueryCursorNext:(FMDatabase*)db operation:(SqfliteOperation*)operation;
+- (void)inDatabase:(void (^)(SqfliteDarwinDatabase *db))block;
+- (void)dbBatch:(SqfliteDarwinDatabase*)db operation:(SqfliteMethodCallOperation*)mainOperation;
+- (void)dbExecute:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation;
+- (void)dbInsert:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation;
+- (void)dbUpdate:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation;
+- (void)dbQuery:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation;
+- (void)dbQueryCursorNext:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation;
 @end
 
 #endif // SqfliteDatabase_h

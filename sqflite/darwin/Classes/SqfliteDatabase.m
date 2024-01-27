@@ -1,6 +1,6 @@
 #import "SqfliteDatabase.h"
 #import "SqflitePlugin.h"
-#import "SqfliteFmdbImport.m"
+#import "SqfliteDarwinImport.h"
 
 #import <sqlite3.h>
 
@@ -16,8 +16,8 @@ static NSString *const _paramOperations = @"operations";
 static int transactionIdForce = -1;
 
 // Import hidden method
-@interface FMDatabase ()
-- (void)resultSetDidClose:(FMResultSet *)resultSet;
+@interface SqfliteDarwinDatabase ()
+- (void)resultSetDidClose:(SqfliteDarwinResultSet *)resultSet;
 @end
 
 @implementation SqfliteDatabase
@@ -37,20 +37,20 @@ static int transactionIdForce = -1;
 }
 
 
-- (void)inDatabase:(void (^)(FMDatabase *db))block {
+- (void)inDatabase:(void (^)(SqfliteDarwinDatabase *db))block {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self.fmDatabaseQueue inDatabase:block];
     });
 }
 
-- (void)dbHandleError:(FMDatabase*)db result:(FlutterResult)result {
+- (void)dbHandleError:(SqfliteDarwinDatabase*)db result:(FlutterResult)result {
     // handle error
     result([FlutterError errorWithCode:SqliteErrorCode
                                message:[NSString stringWithFormat:@"%@", [db lastError]]
                                details:nil]);
 }
 
-- (void)dbHandleError:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (void)dbHandleError:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     NSMutableDictionary* details = nil;
     NSString* sql = [operation getSql];
     if (sql != nil) {
@@ -68,7 +68,7 @@ static int transactionIdForce = -1;
     
 }
 
-- (void)dbRunQueuedOperations:(FMDatabase*)db {
+- (void)dbRunQueuedOperations:(SqfliteDarwinDatabase*)db {
     while (![SqflitePlugin arrayIsEmpy:noTransactionOperationQueue]) {
         if (currentTransactionId != nil) {
             break;
@@ -79,7 +79,7 @@ static int transactionIdForce = -1;
     }
 }
 
-- (void)wrapSqlOperationHandler:(FMDatabase*)db operation:(SqfliteOperation*)operation handler:(SqfliteOperationHandler)handler {
+- (void)wrapSqlOperationHandler:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation handler:(SqfliteOperationHandler)handler {
     NSNumber* transactionId = [operation getTransactionId];
     if (currentTransactionId == nil) {
         // ignore
@@ -98,7 +98,7 @@ static int transactionIdForce = -1;
         
     }
 }
-- (bool)dbDoExecute:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (bool)dbDoExecute:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     if (![self dbExecuteOrError:db operation:operation]) {
         return false;
     }
@@ -106,8 +106,8 @@ static int transactionIdForce = -1;
     return true;
 }
 
-- (void)dbExecute:(FMDatabase*)db operation:(SqfliteOperation*)operation {
-    [self wrapSqlOperationHandler:db operation:operation handler:^(FMDatabase* db, SqfliteOperation* operation) {
+- (void)dbExecute:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
+    [self wrapSqlOperationHandler:db operation:operation handler:^(SqfliteDarwinDatabase* db, SqfliteOperation* operation) {
         NSNumber* inTransactionChange = [operation getInTransactionChange];
         bool hasNullTransactionId  = [operation hasNullTransactionId];
         bool enteringTransaction = [inTransactionChange boolValue] == true && hasNullTransactionId;
@@ -136,7 +136,7 @@ static int transactionIdForce = -1;
     }];
 }
 
-- (bool)dbExecuteOrError:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (bool)dbExecuteOrError:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     NSNumber* inTransaction = [operation getInTransactionChange];
@@ -186,12 +186,12 @@ static int transactionIdForce = -1;
 //
 // insert
 //
-- (void)dbInsert:(FMDatabase*)db operation:(SqfliteOperation*)operation {
-    [self wrapSqlOperationHandler:db operation:operation handler:^(FMDatabase* db, SqfliteOperation* operation) {
+- (void)dbInsert:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
+    [self wrapSqlOperationHandler:db operation:operation handler:^(SqfliteDarwinDatabase* db, SqfliteOperation* operation) {
         [self dbDoInsert:db operation:operation];
     }];
 }
-- (bool)dbDoInsert:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (bool)dbDoInsert:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     if (![self dbExecuteOrError:db operation:operation]) {
         return false;
     }
@@ -217,12 +217,12 @@ static int transactionIdForce = -1;
     return true;
 }
 
-- (void)dbUpdate:(FMDatabase*)db operation:(SqfliteOperation*)operation {
-    [self wrapSqlOperationHandler:db operation:operation handler:^(FMDatabase* db, SqfliteOperation* operation) {
+- (void)dbUpdate:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
+    [self wrapSqlOperationHandler:db operation:operation handler:^(SqfliteDarwinDatabase* db, SqfliteOperation* operation) {
         [self dbDoUpdate:db operation:operation];
     }];
 }
-- (bool)dbDoUpdate:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (bool)dbDoUpdate:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     if (![self dbExecuteOrError:db operation:operation]) {
         return false;
     }
@@ -241,13 +241,13 @@ static int transactionIdForce = -1;
 //
 // query
 //
-- (void)dbQuery:(FMDatabase*)db operation:(SqfliteOperation*)operation {
-    [self wrapSqlOperationHandler:db operation:operation handler:^(FMDatabase* db, SqfliteOperation* operation) {
+- (void)dbQuery:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
+    [self wrapSqlOperationHandler:db operation:operation handler:^(SqfliteDarwinDatabase* db, SqfliteOperation* operation) {
         [self dbDoQuery:db operation:operation];
     }];
 }
 
-- (bool)dbDoQuery:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (bool)dbDoQuery:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
     bool argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
@@ -258,7 +258,7 @@ static int transactionIdForce = -1;
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
     
-    FMResultSet *resultSet;
+    SqfliteDarwinResultSet *resultSet;
     if (!argumentsEmpty) {
         resultSet = [db executeQuery:sql withArgumentsInArray:sqlArguments];
     } else {
@@ -287,7 +287,7 @@ static int transactionIdForce = -1;
             self.cursorMap[cursorId] = cursor;
             // Notify cursor support in the result
             results[_paramCursorId] = cursorId;
-            // Prevent FMDB warning, we keep a result set open on purpose
+            // Prevent SqfliteDarwinDB warning, we keep a result set open on purpose
             [db resultSetDidClose:resultSet];
         }
     }
@@ -302,7 +302,7 @@ static int transactionIdForce = -1;
 // query
 //
 
-- (void)dbQueryCursorNext:(FMDatabase*)db operation:(SqfliteOperation*)operation {
+- (void)dbQueryCursorNext:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     
     NSNumber* cursorId = [operation getArgument:_paramCursorId];
     NSNumber* cancelValue = [operation getArgument:_paramCancel];
@@ -324,14 +324,14 @@ static int transactionIdForce = -1;
                                                    details:nil]];
             return;
         }
-        FMResultSet* resultSet = cursor.resultSet;
+        SqfliteDarwinResultSet* resultSet = cursor.resultSet;
         NSMutableDictionary* results = [SqflitePlugin resultSetToResults:resultSet cursorPageSize:cursor.pageSize];
         
         bool cursorHasMoreData = [resultSet hasAnotherRow];
         if (cursorHasMoreData) {
             // Keep the cursorId to specify that we have more data.
             results[_paramCursorId] = cursorId;
-            // Prevent FMDB warning, we keep a result set open on purpose
+            // Prevent SqfliteDarwinDB warning, we keep a result set open on purpose
             [db resultSetDidClose:resultSet];
         } else {
             [self closeCursor:cursor];
@@ -343,7 +343,7 @@ static int transactionIdForce = -1;
 }
 
 
-- (void)dbBatch:(FMDatabase*)db operation:(SqfliteMethodCallOperation*)mainOperation {
+- (void)dbBatch:(SqfliteDarwinDatabase*)db operation:(SqfliteMethodCallOperation*)mainOperation {
     
     bool noResult = [mainOperation getNoResult];
     bool continueOnError = [mainOperation getContinueOnError];

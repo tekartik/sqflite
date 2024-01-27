@@ -360,8 +360,8 @@ class ExceptionTestPage extends TestPage {
       await db.close();
     });
 
-    test('Bind no argument (no iOS)', () async {
-      if (!platform.isIOS) {
+    test('Bind no argument (no iOS/MacOS)', () async {
+      if (!platform.isIOS && !platform.isMacOS) {
         // await Sqflite.devSetDebugModeOn(true);
         final path = await initDeleteDb('bind_no_arg_failed.db');
         final db = await openDatabase(path);

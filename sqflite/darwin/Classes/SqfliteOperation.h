@@ -9,7 +9,7 @@
 
 #import "SqfliteImport.h"
 
-@class FMDatabase;
+@class SqfliteDarwinDatabase;
 @interface SqfliteOperation : NSObject
 
 - (NSString*)getMethod;
@@ -51,7 +51,7 @@
 
 @end
 
-typedef void(^SqfliteOperationHandler)(FMDatabase* db, SqfliteOperation* operation);
+typedef void(^SqfliteOperationHandler)(SqfliteDarwinDatabase* db, SqfliteOperation* operation);
 @interface SqfliteQueuedOperation : NSObject
 
 @property (atomic, retain) SqfliteOperation* operation;

@@ -9,12 +9,12 @@
 
 #import "SqfliteImport.h"
 
-@class FMResultSet;
+@class SqfliteDarwinResultSet;
 @interface SqflitePlugin : NSObject<FlutterPlugin>
 
 + (NSArray*)toSqlArguments:(NSArray*)rawArguments;
 + (bool)arrayIsEmpy:(NSArray*)array;
-+ (NSMutableDictionary*)resultSetToResults:(FMResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize;
++ (NSMutableDictionary*)resultSetToResults:(SqfliteDarwinResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize;
 
 @end
 
