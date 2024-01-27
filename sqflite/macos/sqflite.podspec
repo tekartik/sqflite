@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
   s.version          = '0.0.2'
   s.summary          = 'SQLite plugin.'
   s.description      = <<-DESC
-Accss SQLite database.
+Access SQLite database.
                        DESC
   s.homepage         = 'https://github.com/tekartik/sqflite'
   s.license          = { :file => '../LICENSE' }
