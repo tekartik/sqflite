@@ -20,7 +20,9 @@ funding:
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
-  flutter: ">=3.3.0"
+  # Flutter versions prior to 3.7 did not support the
+  # sharedDarwinSource option.
+  flutter: ">=3.7.0"
 
 flutter:
   plugin:
@@ -32,9 +34,11 @@ flutter:
       ios:
         pluginClass: SqflitePlugin
         dartPluginClass: SqflitePlugin
+        sharedDarwinSource: true
       macos:
         pluginClass: SqflitePlugin
         dartPluginClass: SqflitePlugin
+        sharedDarwinSource: true
 
 dependencies:
   flutter:
