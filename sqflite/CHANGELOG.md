@@ -1,4 +1,4 @@
-## 2.3.2-2
+## 2.3.2
 
 * Shared iOS/MacOS darwin implementation
 * Remove FMDB podspec dependency
