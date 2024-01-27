@@ -1,3 +1,8 @@
+## 2.3.2-1
+
+* Shared iOS/MacOS darwin implementation
+* Remove FMDB podspec dependency
+
 ## 2.3.1
 
 * Add iOS/MacOS privacy manifest
