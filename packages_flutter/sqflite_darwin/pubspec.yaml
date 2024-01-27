@@ -11,7 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
+  sqflite_common: '>=2.5.0-1 <4.0.0'
 
+# tmp
+dependency_overrides:
+  sqflite_common:
+    path: ../../sqflite_common
 dev_dependencies:
   flutter_test:
     sdk: flutter

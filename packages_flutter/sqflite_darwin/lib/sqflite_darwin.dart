@@ -1,8 +1,5 @@
+export 'src/sqflite_darwin_plugin.dart'
+    show initSqfliteDarwinPlugin, SqfliteDarwinPlugin;
 
-import 'sqflite_darwin_platform_interface.dart';
-
-class SqfliteDarwin {
-  Future<String?> getPlatformVersion() {
-    return SqfliteDarwinPlatform.instance.getPlatformVersion();
-  }
-}
+// Compat
+export 'src/sqflite_darwin.dart' show SqfliteDarwin;
