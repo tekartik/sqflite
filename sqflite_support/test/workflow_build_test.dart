@@ -7,6 +7,8 @@ import 'package:path/path.dart';
 import 'package:process_run/shell_run.dart';
 import 'package:test/test.dart';
 
+var runningOnGithubAction = Platform.environment['GITHUB_ACTION'] != null;
+
 void main() {
   workflow();
 }
@@ -77,8 +79,13 @@ void workflow({bool noBuild = false}) {
 
     test('build android', () async {
       await ensureCreate();
+      // if (!(runningOnGithubAction && Platform.isMacOS)) { // timeout on MacOS to fix
       await androidBuild();
-    }, timeout: Timeout(Duration(minutes: Platform.isWindows ? 10 : 5)));
+      // }
+      await androidBuild();
+    },
+        timeout: Timeout(Duration(
+            minutes: (Platform.isWindows || Platform.isMacOS) ? 10 : 5)));
     test('add sqflite', () async {
       await ensureCreate();
       if (await pathPubspecAddDependency(dir, 'sqflite')) {
