@@ -60,8 +60,11 @@ String? findPackageLibPath(String path) {
   return null;
 }
 
+/// Compat
+String? findWindowsDllPath() => findWindowsSqlite3DllPath();
+
 /// Find windows dll path.
-String? findWindowsDllPath() {
+String? findWindowsSqlite3DllPath() {
   var location = findPackageLibPath(Directory.current.path);
   if (location == null) {
     // Try to handle when using global run
