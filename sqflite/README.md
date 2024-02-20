@@ -19,20 +19,24 @@ Usage example:
 
 ## Getting Started
 
-In your flutter project add the dependency:
+To get started, you need to add `sqflite` to your project. Follow the steps below:
 
-```yml
-dependencies:
-  ...
-  sqflite:
+1. Open the terminal in your project root. You can do this by pressing `Alt+F12` in Android Studio or `` Ctrl+` `` in VS Code.
+
+2. Run the following command:
+
+```bash
+flutter pub add sqflite
 ```
 
-For help getting started with Flutter, view the online
-[documentation](https://flutter.io/).
+This command will add a line to your package's `pubspec.yaml` file and run an implicit `flutter pub get`. The added line will look like this:
+
+```yaml
+dependencies:
+  sqflite: 
+```
 
 ## Usage example
-
-
 
 Import `sqflite.dart`
 
