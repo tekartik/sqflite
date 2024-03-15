@@ -8,8 +8,6 @@ Future<void> main(List<String> arguments) async {
   final shell = Shell();
 
   await shell.run('''
-
-flutter run
-
+flutter run -d chrome
 ''');
 }
