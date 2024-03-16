@@ -1,3 +1,7 @@
+## 0.1.3
+
+* Remove dependency on `dart:html`
+
 ## 0.1.2
 
 * `sqflite3: >= 2.3.0`
