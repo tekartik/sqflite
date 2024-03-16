@@ -1,3 +1,7 @@
+## 2.5.4
+
+* Remove dependency on `dart:html`
+
 ## 2.5.3
 
 * Export `databaseId` and `transactionId` in logger events.
