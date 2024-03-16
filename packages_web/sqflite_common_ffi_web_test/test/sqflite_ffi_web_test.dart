@@ -17,9 +17,16 @@ var ffiTestContext = SqfliteFfiWebTestContext();
 
 Future<void> main() async {
   /// Initialize ffi loader
+  // sqliteFfiWebDebugWebWorker = true;
   sqfliteFfiInit();
-  var dbsPath = await _factory.getDatabasesPath();
-  await _factory.setDatabasesPath('${dbsPath}_web');
+  print('1');
+  try {
+    var dbsPath = await _factory.getDatabasesPath();
+    await _factory.setDatabasesPath('${dbsPath}_web');
 
-  all.run(ffiTestContext);
+    all.run(ffiTestContext);
+  } catch (e) {
+    print('Please run setup_web_tests first');
+    test('Please run setup_web_tests first', () {}, skip: true);
+  }
 }

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:html' as html;
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -9,6 +8,7 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/sw/constants.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
     show SqfliteFfiWebContextExt;
+import 'package:web/web.dart' as web;
 
 import 'ui.dart';
 
@@ -111,8 +111,9 @@ Future incrementNoWebWorker() async {
 }
 
 Future<void> main() async {
+  // sqliteFfiWebDebugWebWorker = true;
   initUi();
-  // sqliteFfiWebDebugWebWorker = devWarning(true);
+
   write('$_shc running $_debugVersion');
   // devWarning(incrementVarInSharedWorker());
   // await devWarning(bigInt());
@@ -129,7 +130,7 @@ Future<void> main() async {
 
 var _webContextRegisterAndReady = sqfliteFfiWebStartSharedWorker(swOptions);
 
-Future<html.SharedWorker> sharedWorkerRegisterAndReady() async =>
+Future<web.SharedWorker> sharedWorkerRegisterAndReady() async =>
     (await _webContextRegisterAndReady).sharedWorker!;
 
 Future<SqfliteFfiWebContext> webContextRegisterAndReady() async =>

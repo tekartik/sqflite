@@ -1,10 +1,11 @@
-import 'dart:html';
+import 'dart:async';
+import 'dart:js_interop';
 
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
-import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
 import 'package:sqflite_common_ffi_web/src/import.dart';
 import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'; // ignore: implementation_imports
 import 'package:sqflite_common_ffi_web/src/utils.dart';
+import 'package:web/web.dart' as web;
 
 import 'constants.dart';
 
@@ -20,16 +21,16 @@ var _debugVersion = 2;
 
 var _shw = '/shw$_debugVersion';
 
-Future<void> _handleMessageEvent(Event event) async {
-  var messageEvent = event as MessageEvent;
-  var rawData = messageEvent.data;
-  var port = messageEvent.ports.first;
+void _handleMessageEvent(web.Event event) async {
+  var messageEvent = event as web.MessageEvent;
+  var rawData = messageEvent.data.dartify();
+  var port = messageEvent.ports.toDart.first;
   try {
     if (rawData is String) {
       if (_debug) {
         _log('$_shw receive text message $rawData');
       }
-      port.postMessage(rawData);
+      port.postMessage(rawData.toJS);
     } else {
       if (_debug) {
         _log('$_shw recv $rawData');
@@ -51,7 +52,7 @@ Future<void> _handleMessageEvent(Event event) async {
           _log('$_shw $command $key: $value');
           port.postMessage({
             'result': {'key': key, 'value': value}
-          });
+          }.jsify());
         } else {
           _log('$_shw $command unknown');
           port.postMessage(null);
@@ -77,7 +78,11 @@ Future<void> _handleMessageEvent(Event event) async {
             sqfliteFfiHandler = SqfliteFfiHandlerWeb(_swContext!);
           }
           void postResponse(FfiMethodResponse response) {
-            port.postMessage(response.toDataMap());
+            var data = response.toDataMap();
+            if (_debug) {
+              _log('$_shw resp $data ($port)');
+            }
+            port.postMessage(data.jsify());
           }
 
           try {
@@ -108,26 +113,40 @@ void mainSharedWorker(List<String> args) {
   if (_debug) {
     _log('$_shw main($_debugVersion)');
   }
-
+  var zone = Zone.current;
   try {
-    SharedWorkerGlobalScope.instance.onConnect.listen((event) async {
-      if (_debug) {
-        _log('$_shw onConnect()');
-      }
-      var port = (event as MessageEvent).ports.first;
-      port.addEventListener('message', _handleMessageEvent);
-    });
+    final scope = (globalContext as web.SharedWorkerGlobalScope);
+
+    scope.onconnect = (web.Event event) {
+      zone.run(() {
+        if (_debug) {
+          _log('$_shw onConnect()');
+        }
+        var connectEvent = event as web.MessageEvent;
+        var port = connectEvent.ports.toDart[0];
+
+        port.onmessage = (web.MessageEvent event) {
+          zone.run(() {
+            _handleMessageEvent(event);
+          });
+        }.toJS;
+      });
+    }.toJS;
   } catch (e) {
+    final scope = (globalContext as web.DedicatedWorkerGlobalScope);
     if (_debug) {
       _log('$_shw not in shared worker, trying basic worker');
     }
 
     try {
-      WorkerGlobalScope.instance
-          .addEventListener('message', _handleMessageEvent);
+      scope.onmessage = (web.MessageEvent event) {
+        zone.run(() {
+          _handleMessageEvent(event);
+        });
+      }.toJS;
     } catch (e) {
       if (_debug) {
-        _log('$_shw not in shared worker');
+        _log('$_shw not in shared worker error $e');
       }
     }
   }
