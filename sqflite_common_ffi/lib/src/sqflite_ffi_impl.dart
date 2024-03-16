@@ -10,10 +10,11 @@ import 'package:sqflite_common_ffi/src/sqflite_ffi_handler.dart';
 import 'package:sqlite3/common.dart' as common;
 import 'package:synchronized/synchronized.dart';
 
-import 'database_tracker.dart' if (dart.library.js) 'database_tracker_web.dart';
+import 'database_tracker.dart'
+    if (dart.library.js_interop) 'database_tracker_web.dart';
 import 'import.dart';
 import 'sqflite_ffi_impl_io.dart'
-    if (dart.library.js) 'sqflite_ffi_impl_web.dart';
+    if (dart.library.js_interop) 'sqflite_ffi_impl_web.dart';
 
 export 'sqflite_ffi_handler.dart'
     show SqfliteFfiHandler; // compatibility, was defined here before

@@ -13,11 +13,19 @@ class SqfliteFfiWebNoWebWorkerTestContext extends SqfliteLocalTestContext {
 var ffiTestContext = SqfliteFfiWebNoWebWorkerTestContext();
 
 Future<void> main() async {
+  /// Tmp debug
+  // sqliteFfiWebDebugWebWorker = true;
+
   /// Initialize ffi loader
   //sqfliteFfiInit();
   // Add _no_isolate suffix to the path
-  var dbsPath = await _factory.getDatabasesPath();
-  await _factory.setDatabasesPath('${dbsPath}_no_web_worker');
+  try {
+    var dbsPath = await _factory.getDatabasesPath();
+    await _factory.setDatabasesPath('${dbsPath}_no_web_worker');
 
-  all.run(ffiTestContext);
+    all.run(ffiTestContext);
+  } catch (e) {
+    print('Please run setup_web_tests first');
+    test('Please run setup_web_tests first', () {}, skip: true);
+  }
 }

@@ -4,7 +4,7 @@ version: 0.1.0
 publish_to: none
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
   path: '>=1.7.0'
@@ -13,6 +13,7 @@ dependencies:
   sqflite_common:
   sqflite_common_test:
     path: ../../sqflite_common_test
+  web: '>=0.5.0'
 dev_dependencies:
   build_runner: '>=2.1.4'
   build_web_compilers: '>=3.2.1'

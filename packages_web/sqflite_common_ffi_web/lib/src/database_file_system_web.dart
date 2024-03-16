@@ -1,18 +1,16 @@
 import 'dart:async';
-import 'dart:html' as html;
+import 'dart:js_interop';
 import 'dart:typed_data';
 
 // ignore: implementation_imports
 import 'package:sqflite_common/src/mixin/platform.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
-import 'package:sqflite_common_ffi_web/src/debug/debug.dart';
-import 'package:sqflite_common_ffi_web/src/web/js_converter.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart';
 import 'package:sqlite3/wasm.dart';
+import 'package:web/web.dart' as web;
 
 import 'import.dart';
-
-var _log = print;
+import 'web/worker_message_utils.dart';
 
 /// Database file system on sqlite virtual file system.
 class SqfliteDatabaseFileSystemFfiWeb implements DatabaseFileSystem {
@@ -21,6 +19,7 @@ class SqfliteDatabaseFileSystemFfiWeb implements DatabaseFileSystem {
 
   /// Database file system on sqlite virtual file system.
   SqfliteDatabaseFileSystemFfiWeb(this.fs);
+
   @override
   Future<bool> databaseExists(String path) async {
     var fs = this.fs;
@@ -92,12 +91,6 @@ class SqfliteDatabaseFileSystemFfiWeb implements DatabaseFileSystem {
     }
   }
 }
-
-bool get _debug => sqliteFfiWebDebugWebWorker;
-
-/// Worker client log prefix for debug mode.
-var workerClientLogPrefix = '/sw_client'; // Log prefix
-var _swc = workerClientLogPrefix; // Log prefix
 
 /// Ffi web handler for custom open/delete operation
 class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
@@ -174,88 +167,36 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
   }
 }
 
-/// Genereric Post message handler
-abstract class RawMessageSender {
-  var _firstMessage = true;
-
-  /// Post message to implement
-  void postMessage(Object message, List<Object> transfer);
-
-  /// Returns response
-  Future<Object?> sendRawMessage(Object message) {
-    var completer = Completer<Object?>();
-    // This wraps the message posting/response in a promise, which will resolve if the response doesn't
-    // contain an error, and reject with the error if it does. If you'd prefer, it's possible to call
-    // controller.postMessage() and set up the onmessage handler independently of a promise, but this is
-    // a convenient wrapper.
-    var messageChannel = html.MessageChannel();
-    //var receivePort =ReceivePort();
-
-    if (_debug) {
-      _log('$_swc sending $message');
-    }
-    messageChannel.port1.onMessage.listen((event) {
-      if (_debug) {
-        _log('$_swc recv ${event.data}');
-      }
-      completer.complete(event.data);
-    });
-    // Let's handle initialization error on the first message.
-    if (_firstMessage) {
-      _firstMessage = false;
-      onError.listen((event) {
-        if (_debug) {
-          _log('$_swc error ${jsObjectAsMap(event)}');
-        }
-
-        if (!completer.isCompleted) {
-          completer.completeError(SqfliteFfiWebWorkerException());
-        }
-      });
-    }
-
-    // This sends the message data as well as transferring messageChannel.port2 to the shared worker.
-    // The shared worker can then use the transferred port to reply via postMessage(), which
-    // will in turn trigger the onmessage handler on messageChannel.port1.
-    // See https://html.spec.whatwg.org/multipage/workers.html#dom-worker-postmessage
-    postMessage(message, [messageChannel.port2]);
-    return completer.future;
-  }
-
-  /// Basic error handling, likely at initialization.
-  Stream<Object> get onError;
-}
-
-/// Post message sender to shared worker.
-class RawMessageSenderSharedWorker extends RawMessageSender {
-  final html.SharedWorker _sharedWorker;
-
-  html.MessagePort get _port => _sharedWorker.port as html.MessagePort;
-
-  /// Post message sender to shared worker.
-  RawMessageSenderSharedWorker(this._sharedWorker);
-
-  @override
-  void postMessage(Object message, List<Object> transfer) {
-    _port.postMessage(message, transfer);
-  }
-
-  @override
-  Stream<Object> get onError => _sharedWorker.onError;
-}
-
 /// Post message sender to worker.
 class RawMessageSenderToWorker extends RawMessageSender {
-  final html.Worker _worker;
-
-  @override
-  Stream<Object> get onError => _worker.onError;
+  final web.Worker _worker;
 
   /// Post message sender to worker.
   RawMessageSenderToWorker(this._worker);
 
   @override
-  void postMessage(Object message, List<Object> transfer) {
-    _worker.postMessage(message, transfer);
+  void postMessage(Object message, web.MessagePort responsePort) {
+    _worker.postMessage(
+        message.jsify(), messagePortToPortMessageOption(responsePort));
+  }
+
+  StreamController<Object>? _errorController;
+
+  @override
+  Stream<Object> get onError {
+    if (_errorController == null) {
+      var zone = Zone.current;
+      _errorController = StreamController<Object>.broadcast(onListen: () {
+        _worker.onerror = (web.Event event) {
+          zone.run(() {
+            _errorController!.add(event);
+          });
+        }.toJS;
+      }, onCancel: () {
+        _errorController = null;
+        _worker.onerror = null;
+      });
+    }
+    return _errorController!.stream;
   }
 }

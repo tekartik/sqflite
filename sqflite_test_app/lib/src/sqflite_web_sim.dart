@@ -1,7 +1,6 @@
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:sqflite/sqflite_dev.dart';
-
-import 'database_factory_web.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 /// The Web plugin registration.
 ///
@@ -12,6 +11,6 @@ class SqflitePluginWeb {
     /// Set the default database factory to use.
     /// Currently calling an on-purpose deprecated helper.
     // ignore: invalid_use_of_visible_for_testing_member
-    setMockDatabaseFactory(databaseFactoryWeb);
+    setMockDatabaseFactory(databaseFactoryFfiWeb);
   }
 }

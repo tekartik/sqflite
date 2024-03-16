@@ -18,7 +18,7 @@ abstract class DatabaseException implements Exception {
       if (table != null) {
         expected += table;
       }
-      return _message!.contains(expected);
+      return _message.contains(expected);
     }
     return false;
   }
@@ -30,7 +30,7 @@ abstract class DatabaseException implements Exception {
       if (column != null) {
         expected += column;
       }
-      return _message!.contains(expected);
+      return _message.contains(expected);
     }
     return false;
   }
@@ -38,7 +38,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a syntax error
   bool isSyntaxError() {
     if (_message != null) {
-      return _message!.contains('syntax error');
+      return _message.contains('syntax error');
     }
     return false;
   }
@@ -46,7 +46,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is an open failed error
   bool isOpenFailedError() {
     if (_message != null) {
-      return _message!.contains('open_failed');
+      return _message.contains('open_failed');
     }
     return false;
   }
@@ -54,8 +54,8 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a database closed error
   bool isDatabaseClosedError() {
     if (_message != null) {
-      return _message!.contains('database_closed') ||
-          _message!.contains('This database has already been closed');
+      return _message.contains('database_closed') ||
+          _message.contains('This database has already been closed');
     }
     return false;
   }
@@ -63,7 +63,7 @@ abstract class DatabaseException implements Exception {
   /// True if the exception is a read-only error
   bool isReadOnlyError() {
     if (_message != null) {
-      return _message!.contains('readonly');
+      return _message.contains('readonly');
     }
     return false;
   }
@@ -75,7 +75,7 @@ abstract class DatabaseException implements Exception {
       if (field != null) {
         expected += field;
       }
-      return _message!.toLowerCase().contains(expected.toLowerCase());
+      return _message.toLowerCase().contains(expected.toLowerCase());
     }
     return false;
   }
@@ -87,7 +87,7 @@ abstract class DatabaseException implements Exception {
       if (field != null) {
         expected += field;
       }
-      return _message!.toLowerCase().contains(expected.toLowerCase());
+      return _message.toLowerCase().contains(expected.toLowerCase());
     }
     return false;
   }
