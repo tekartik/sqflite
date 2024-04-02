@@ -34,7 +34,7 @@ android {
     if (project.android.hasProperty("namespace")) {
         namespace 'com.tekartik.sqflite'
     }
-    compileSdkVersion 33
+    compileSdk 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -42,7 +42,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdk 16
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
