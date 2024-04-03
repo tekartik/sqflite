@@ -13,13 +13,13 @@ dependencies:
 dev_dependencies:
   lints: '>=2.0.0'
   test: '>=1.21.0'
-  process_run:
+  process_run: '>=0.14.2'
 
 dependency_overrides:
   sqflite_common:
     path: ../../sqflite_common
   sqflite_common_ffi:
     path: ../../sqflite_common_ffi
-  process_run:
+
 executables:
   sqflite_ffi_simple_bin:

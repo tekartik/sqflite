@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            dart: 3.1.5
+            dart: 3.3.0
           - os: ubuntu-latest
             dart: stable
           - os: ubuntu-latest
