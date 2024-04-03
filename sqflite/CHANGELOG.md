@@ -1,3 +1,8 @@
+## 2.3.3
+
+* Use `compileSdk 34` on Android
+* `sdk: >= 3.3.0`
+
 ## 2.3.2
 
 * Shared iOS/MacOS darwin implementation
