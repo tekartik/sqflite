@@ -11,6 +11,9 @@ include: package:lints/recommended.yaml
 # https://github.com/flutter/flutter/blob/master/analysis_options.yaml
 
 analyzer:
+  # Somehow this is needed when running dart analyze
+  exclude:
+    - build/**
   language:
     strict-casts: true
     strict-inference: true
