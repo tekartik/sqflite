@@ -18,3 +18,7 @@ DatabaseFactory get databaseFactoryFfiWeb => databaseFactoryFfiWebImpl;
 /// Run in the main ui thread so long query could potentially hang.
 DatabaseFactory get databaseFactoryFfiWebNoWebWorker =>
     databaseFactoryFfiWebNoWebWorkerImpl;
+
+/// Testing only.
+DatabaseFactory get databaseFactoryFfiWebBasicWebWorker =>
+    databaseFactoryFfiWebBasicWorkerImpl;

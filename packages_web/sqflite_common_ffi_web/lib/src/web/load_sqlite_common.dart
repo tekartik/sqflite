@@ -25,6 +25,11 @@ class SqfliteFfiWebOptions {
       this.indexedDbName,
       this.sharedWorkerUri,
       @visibleForTesting this.forceAsBasicWorker});
+
+  @override
+  String toString() {
+    return 'SqfliteFfiWebOptions(inMemory: $inMemory, sqlite3WasmUri: $sqlite3WasmUri, indexedDbName: $indexedDbName, sharedWorkerUri: $sharedWorkerUri, forceAsBasicWorker: $forceAsBasicWorker)';
+  }
 }
 
 /// Abstract context for the web (holder file system and wasm)

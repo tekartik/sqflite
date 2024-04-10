@@ -14,15 +14,15 @@ Future<void> main() async {
 }
 
 /// Run using ffi (io or web)
-Future<void> mainFfi() async {
-  await initFfi();
+Future<void> mainFfi({bool? webBasicWorker}) async {
+  await initFfi(webBasicWorker: webBasicWorker);
   await runFfi();
 }
 
 /// Init Ffi for io or web
 ///
 /// if [noWorker] is true, no isolate is used on io and no web worker is used on the web.
-Future<void> initFfi({bool? noWorker}) async {
+Future<void> initFfi({bool? noWorker, bool? webBasicWorker}) async {
   noWorker ??= false;
   // getDatabasesPath implementation is lame, use the default one
   // but we could also use path_provider
@@ -35,7 +35,13 @@ Future<void> initFfi({bool? noWorker}) async {
     if (noWorker) {
       databaseFactoryOrNull = databaseFactoryFfiWebNoWebWorker;
     } else {
-      databaseFactoryOrNull = databaseFactoryFfiWeb;
+      webBasicWorker ??= false;
+      if (webBasicWorker) {
+        databaseFactoryOrNull = databaseFactoryFfiWebBasicWebWorker;
+      } else {
+        // default (not supported on io
+        databaseFactoryOrNull = databaseFactoryFfiWeb;
+      }
     }
     // Platform handler for the example app
     platformHandler = platformHandlerWeb;

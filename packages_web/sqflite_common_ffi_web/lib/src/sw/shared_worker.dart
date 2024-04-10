@@ -116,6 +116,16 @@ void mainSharedWorker(List<String> args) {
   var zone = Zone.current;
   try {
     final scope = (globalContext as web.SharedWorkerGlobalScope);
+    try {
+      var scopeName = scope.name;
+      if (_debug) {
+        _log('$_shw scopeName: $scopeName');
+      }
+    } catch (e) {
+      if (_debug) {
+        _log('$_shw scope.name error $e');
+      }
+    }
 
     scope.onconnect = (web.Event event) {
       zone.run(() {
@@ -133,23 +143,30 @@ void mainSharedWorker(List<String> args) {
       });
     }.toJS;
   } catch (e) {
-    final scope = (globalContext as web.DedicatedWorkerGlobalScope);
     if (_debug) {
       _log('$_shw not in shared worker, trying basic worker');
     }
+  }
 
-    try {
-      scope.onmessage = (web.MessageEvent event) {
-        zone.run(() {
-          _handleMessageEvent(event);
-        });
-      }.toJS;
-    } catch (e) {
-      if (_debug) {
-        _log('$_shw not in shared worker error $e');
-      }
+  final scope = (globalContext as web.DedicatedWorkerGlobalScope);
+  if (_debug) {
+    _log('$_shw basic worker support');
+  }
+
+  /// Handle basic web workers
+  /// dirty hack
+  try {
+    scope.onmessage = (web.MessageEvent event) {
+      zone.run(() {
+        _handleMessageEvent(event);
+      });
+    }.toJS;
+  } catch (e) {
+    if (_debug) {
+      _log('$_shw not in shared worker error $e');
     }
   }
+
   if (_debug) {
     _log('$_shw main done ($_debugVersion)');
   }

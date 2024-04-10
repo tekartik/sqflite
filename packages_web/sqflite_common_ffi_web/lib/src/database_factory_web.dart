@@ -20,6 +20,13 @@ var databaseFactoryFfiWebNoWebWorkerImpl = () {
   return createDatabaseFactoryFfiWeb(noWebWorker: true);
 }();
 
+/// The Ffi database factory with basic worker
+var databaseFactoryFfiWebBasicWorkerImpl = () {
+  return createDatabaseFactoryFfiWeb(
+      // ignore: invalid_use_of_visible_for_testing_member
+      options: SqfliteFfiWebOptions(forceAsBasicWorker: true));
+}();
+
 /// The Ffi database factory.
 var databaseFactoryFfiWebImpl = () {
   return createDatabaseFactoryFfiWeb();

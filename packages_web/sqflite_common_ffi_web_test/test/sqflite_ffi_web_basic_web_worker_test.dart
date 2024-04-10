@@ -6,8 +6,9 @@ import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
 var _factory = createDatabaseFactoryFfiWeb(
-    options:
-        SqfliteFfiWebOptions(sharedWorkerUri: Uri.parse('sqflite_sw_v1.js')));
+    options: SqfliteFfiWebOptions(
+        forceAsBasicWorker: true,
+        sharedWorkerUri: Uri.parse('sqflite_sw_v1.js')));
 
 class SqfliteFfiWebTestContext extends SqfliteLocalTestContext {
   SqfliteFfiWebTestContext() : super(databaseFactory: _factory);
@@ -21,7 +22,7 @@ Future<void> main() async {
   sqfliteFfiInit();
   try {
     var dbsPath = await _factory.getDatabasesPath();
-    await _factory.setDatabasesPath('${dbsPath}_web');
+    await _factory.setDatabasesPath('${dbsPath}_web_basic_worker');
 
     all.run(ffiTestContext);
   } catch (e) {

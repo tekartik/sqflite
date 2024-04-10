@@ -19,6 +19,14 @@ Future<void> main() async {
         options: SqfliteFfiWebOptions(
             sharedWorkerUri: Uri.parse('sqflite_sw_v2.js')));
   }
+  if (true) {
+    // devWarning(true)) {
+    factory = createDatabaseFactoryFfiWeb(
+        options: SqfliteFfiWebOptions(
+            // ignore: invalid_use_of_visible_for_testing_member
+            forceAsBasicWorker: true,
+            sharedWorkerUri: Uri.parse('sqflite_sw_v1.js')));
+  }
 
   var db = await factory.openDatabase(inMemoryDatabasePath);
   var sqliteVersion =
