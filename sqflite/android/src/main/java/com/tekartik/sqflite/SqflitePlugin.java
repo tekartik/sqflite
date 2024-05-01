@@ -82,15 +82,6 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         this.context = context.getApplicationContext();
     }
 
-    //
-    // Plugin registration.
-    //
-    @SuppressWarnings("deprecation")
-    public static void registerWith(io.flutter.plugin.common.PluginRegistry.Registrar registrar) {
-        SqflitePlugin sqflitePlugin = new SqflitePlugin();
-        sqflitePlugin.onAttachedToEngine(registrar.context(), registrar.messenger());
-    }
-
     static private Map<String, Object> fixMap(Map<Object, Object> map) {
         Map<String, Object> newMap = new HashMap<>();
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
