@@ -1,5 +1,6 @@
-## 2.3.3
+## 2.3.3+1
 
+* Remove android v1 embedding support
 * Use `compileSdk 34` on Android
 * `sdk: >= 3.3.0`
 
