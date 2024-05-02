@@ -65,7 +65,7 @@ void main() {
       if (await helper.getZip()) {
         final inputStream = InputFileStream(localZip);
         final archive = ZipDecoder().decodeBuffer(inputStream);
-        extractArchiveToDisk(archive, dirname(localZip));
+        await extractArchiveToDisk(archive, dirname(localZip));
 
         var downloadedDllContent =
             await File(join(dirname(localZip), 'sqlite3.dll')).readAsBytes();
