@@ -69,6 +69,6 @@ public abstract class BaseReadOperation implements Operation {
     @NonNull
     @Override
     public String toString() {
-        return "" + getMethod() + " " + getSql() + " " + getSqlArguments();
+        return getMethod() + " " + getSql() + " " + getSqlArguments();
     }
 }
