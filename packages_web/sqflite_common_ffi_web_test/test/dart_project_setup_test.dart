@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print
 
 @TestOn('vm')
+library;
+
 import 'dart:io';
 
 import 'package:path/path.dart';

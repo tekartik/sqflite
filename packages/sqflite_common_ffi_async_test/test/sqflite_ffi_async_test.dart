@@ -1,4 +1,5 @@
 @TestOn('vm')
+library;
 
 // ignore: unused_import
 import 'package:sqflite_common_test/all_test.dart' as all;
