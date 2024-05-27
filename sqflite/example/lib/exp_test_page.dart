@@ -488,6 +488,15 @@ CREATE TABLE test (
       }
     });
 
+    test('PRAGMA quick check', () async {
+      //await databaseFactory.debugSetLogLevel(sqfliteLogLevelVerbose);
+      final db = await openDatabase(inMemoryDatabasePath);
+      try {
+        await db.execute('PRAGMA quick_check');
+      } finally {
+        await db.close();
+      }
+    });
     test('ATTACH database', () async {
       final db1Path = await initDeleteDb('attach1.db');
       final db2Path = await initDeleteDb('attach2.db');
