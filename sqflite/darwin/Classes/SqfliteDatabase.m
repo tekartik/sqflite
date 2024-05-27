@@ -168,11 +168,9 @@ static int transactionIdForce = -1;
     
     // handle error
     if (!success) {
-        // Handle PRAGMA quick_check and other pragma
-        if ([db hadError]) {
-            [self dbHandleError:db operation:operation];
-            return false;
-        }
+        [self dbHandleError:db operation:operation];
+        return false;
+        
     }
     
     // We enter the transaction on success

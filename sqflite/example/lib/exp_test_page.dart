@@ -492,11 +492,7 @@ CREATE TABLE test (
       //await databaseFactory.debugSetLogLevel(sqfliteLogLevelVerbose);
       final db = await openDatabase(inMemoryDatabasePath);
       try {
-        try {
-          await db.rawQuery('PRAGMA quick_check');
-        } catch (e) {
-          print('query PRAGMA quick_check failed: $e');
-        }
+        await db.rawQuery('PRAGMA quick_check');
 
         try {
           await db.execute('PRAGMA quick_check');
