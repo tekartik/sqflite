@@ -293,6 +293,7 @@ abstract class Database implements DatabaseExecutor {
   ///   // this will deadlock!
   ///   await database.execute('CREATE TABLE Test2 (id INTEGER PRIMARY KEY)');
   /// });
+  /// ```
   Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
       {bool? exclusive});
 
