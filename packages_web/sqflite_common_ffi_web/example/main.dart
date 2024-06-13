@@ -181,7 +181,7 @@ Future<void> incrementVarInSharedWorker() async {
   write('var after $value');
 }
 
-Future<void> incrementVarInBasicdWorker() async {
+Future<void> incrementVarInBasicWorker() async {
   var context = await webBasicContextRegisterAndReady();
   write('basic worker ready');
   var value = await getTestValue(context);
@@ -246,7 +246,7 @@ void initUi() {
     await incrementVarInSharedWorker();
   });
   addButton('increment var in basic worker', () async {
-    await incrementVarInBasicdWorker();
+    await incrementVarInBasicWorker();
   });
   addButton('increment sqflite value in main thread', () async {
     await incrementNoWebWorker();
