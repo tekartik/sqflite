@@ -315,6 +315,25 @@ You could get a more recent version using [`sqflite_common_ffi`](https://pub.dev
 You could then add [`sqlite3_flutter_libs`](https://pub.dev/packages/sqlite3_flutter_libs) for ios/android or include your own
 sqlite shared library for desktop or mobile (one for each platform).
 
+
+### Open error
+
+Such error is often reported with something similar to:
+
+```text
+SqfliteFfiException(sqlite_error: 14, , open_failed: SqliteException(14): while opening the database, bad parameter or other API misuse, bad parameter or other API misuse (code 21)})
+```
+
+Please check and ensure that:
+- The database path is correct (please provide it in the bug report, best is to print it out to report it exactly as it is used)
+- The parent folder exists (you should create it if it does not exist)
+- The parent folder is writable (try to create a file in it if you still get the error).
+
+Solutions:
+- Use the `path_provider` package to find the best location for you database (`getDatabasesPath()` is only relevant for Android)
+- Build the database path properly (using `join` from the `path` package)
+- Create the parent folder if it does not exist
+
 ## Error in Flutter web
 
 Look at package [sqflite_common_ffi_web](https://pub.dev/packages/sqflite_common_ffi_web) for experimental Web support.

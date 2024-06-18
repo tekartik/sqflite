@@ -72,6 +72,11 @@ var db = openDatabase(path);
 ```
 ## Limitations
 
+### Use the same web port when debugging
+
+The database is stored in the browser indexeddb. Like any other web storage, it is tied to the port. (i.e. localhost:8080 is different from localhost:8081).
+When debugging, you should use the same port to keep the same indexeddb database.
+
 ### No shared worker available
 
 When shared worker are not supported - for example in Android Chrome as of 2022-10-20 -, a basic web worker is used.
