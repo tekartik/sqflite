@@ -69,7 +69,7 @@ static int transactionIdForce = -1;
 }
 
 - (void)dbRunQueuedOperations:(SqfliteDarwinDatabase*)db {
-    while (![SqflitePlugin arrayIsEmpy:noTransactionOperationQueue]) {
+    while (![SqflitePlugin arrayIsEmpty:noTransactionOperationQueue]) {
         if (currentTransactionId != nil) {
             break;
         }
@@ -86,7 +86,7 @@ static int transactionIdForce = -1;
         handler(db, operation);
     } else if (transactionId != nil && (transactionId.intValue == currentTransactionId.intValue || transactionId.intValue == transactionIdForce)) {
         handler(db, operation);
-        if (currentTransactionId == nil && ![SqflitePlugin arrayIsEmpy:noTransactionOperationQueue]) {
+        if (currentTransactionId == nil && ![SqflitePlugin arrayIsEmpty:noTransactionOperationQueue]) {
             [self dbRunQueuedOperations:db];
         }
     } else {
@@ -147,7 +147,7 @@ static int transactionIdForce = -1;
         sqlite3_db_config(db.sqliteHandle, SQLITE_DBCONFIG_DEFENSIVE, 0, 0);
     }
     
-    BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
+    BOOL argumentsEmpty = [SqflitePlugin arrayIsEmpty:sqlArguments];
     if (sqfliteHasSqlLogLevel(logLevel)) {
         NSLog(@"%@ %@", sql, argumentsEmpty ? @"" : sqlArguments);
     }
@@ -251,7 +251,7 @@ static int transactionIdForce = -1;
 - (bool)dbDoQuery:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
-    bool argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
+    bool argumentsEmpty = [SqflitePlugin arrayIsEmpty:sqlArguments];
     // Non null means use a cursor
     NSNumber* cursorPageSize = [operation getArgument:_paramCursorPageSize];
     

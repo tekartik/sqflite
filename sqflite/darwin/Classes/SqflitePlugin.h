@@ -13,7 +13,7 @@
 @interface SqflitePlugin : NSObject<FlutterPlugin>
 
 + (NSArray*)toSqlArguments:(NSArray*)rawArguments;
-+ (bool)arrayIsEmpy:(NSArray*)array;
++ (bool)arrayIsEmpty:(NSArray*)array;
 + (NSMutableDictionary*)resultSetToResults:(SqfliteDarwinResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize;
 
 @end

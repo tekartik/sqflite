@@ -225,13 +225,13 @@ static NSInteger _databaseOpenCount = 0;
     }
 }
 
-+ (bool)arrayIsEmpy:(NSArray*)array {
++ (bool)arrayIsEmpty:(NSArray*)array {
     return (array == nil || array == (id)[NSNull null] || [array count] == 0);
 }
 
 + (NSArray*)toSqlArguments:(NSArray*)rawArguments {
     NSMutableArray* array = [NSMutableArray new];
-    if (![SqflitePlugin arrayIsEmpy:rawArguments]) {
+    if (![SqflitePlugin arrayIsEmpty:rawArguments]) {
         for (int i = 0; i < [rawArguments count]; i++) {
             [array addObject:[SqflitePlugin toSqlValue:[rawArguments objectAtIndex:i]]];
         }
@@ -325,7 +325,7 @@ static NSInteger _databaseOpenCount = 0;
 - (bool)query:(SqfliteDatabase*)database fmdb:(SqfliteDarwinDatabase*)db operation:(SqfliteOperation*)operation {
     NSString* sql = [operation getSql];
     NSArray* sqlArguments = [operation getSqlArguments];
-    bool argumentsEmpty = [SqflitePlugin arrayIsEmpy:sqlArguments];
+    bool argumentsEmpty = [SqflitePlugin arrayIsEmpty:sqlArguments];
     // Non null means use a cursor
     NSNumber* cursorPageSize = [operation getArgument:_paramCursorPageSize];
     
