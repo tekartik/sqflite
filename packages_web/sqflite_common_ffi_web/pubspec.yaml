@@ -1,7 +1,7 @@
 name: sqflite_common_ffi_web
 repository: https://github.com/tekartik/sqflite/tree/master/packages_web/sqflite_common_ffi_web
 description: Sqflite web implementation using sqlite3 ffi and sqlite3 wasm.
-version: 0.4.3+1
+version: 0.4.3+2
 funding:
   - https://github.com/sponsors/alextekartik
 
@@ -14,7 +14,7 @@ topics:
   - database
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: '>=3.4.0 <4.0.0'
 
 dependencies:
   path: '>=1.7.0 <3.0.0'
@@ -22,7 +22,7 @@ dependencies:
   sqflite_common: '>=2.5.4 <4.0.0'
   sqlite3: '>=2.3.0 <4.0.0'
   http: '>=0.13.4 <2.0.0'
-  web: '>=0.5.0 <2.0.0'
+  web: '>=1.0.0 <3.0.0'
   synchronized: '>=3.0.0+3 <5.0.0'
   process_run: '>=0.12.3+2 <2.0.0'
   dev_build: '>=0.16.3+1 <2.0.0'

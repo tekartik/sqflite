@@ -1,4 +1,4 @@
-## 0.4.3+1
+## 0.4.3+2
 
 * Remove dependency on `dart:html`. Requires rebuilding the worker file.
 
