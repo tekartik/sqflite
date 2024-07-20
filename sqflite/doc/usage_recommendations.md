@@ -13,16 +13,28 @@ closed yet).
 
 ## Isolates
 
-Access should be done in the main isolate only.
+Access *should* be done in the main isolate:
 * sqflite native access already happens in a background native thread
 * Transaction mechanism is not cross-isolate safe
 * [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi) access is made in a separate isolate.
+
+Many people have asked about access from another isolate and unfortunately I don't have a good answer for that.
+It **should** work although I have not tested it much and I have avoid it (for example by saving the temporary data read
+in a file that I handle later in the main isolate. One common usage
+on Android and iOS is to have access from a push notification isolate or scheduled task.
+* Good if you can avoid it and only limit to this case (background notification / scheduled task)
+* In both isolates
+  * Use `singleInstance: false` in `openDatabase`
+  * Don't close the database
+* Since hot reload might fail when using `singleInstance: false` (if done while a transaction is in progress), you 
+  can try `singleInstance: true` in the main isolate only.
 
 Some related discussions here:
 * [Cannot access database instance from another Isolate](https://github.com/tekartik/sqflite/issues/186)
 * [Problem tunning Sqflite in Isolate](https://github.com/tekartik/sqflite/issues/258)
 * [Multi-Isolate access to Sqflite (iOS)](https://github.com/tekartik/sqflite/issues/168)
 * [MissingPluginException when using sqflite via flutter_isolate](https://github.com/tekartik/sqflite/issues/169)
+* [Accessing database from a background Isolate & main Isolate](https://github.com/tekartik/sqflite/issues/1118)
 
 ## Batch vs Transaction
 
