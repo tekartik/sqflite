@@ -59,7 +59,8 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
           _log(
               '$_swc registering shared worker $sharedWorkerUri (name: $name)');
         }
-        sharedWorker = web.SharedWorker(sharedWorkerUri.toString(), name.toJS);
+        sharedWorker =
+            web.SharedWorker(sharedWorkerUri.toString().toJS, name.toJS);
       }
     } catch (e) {
       if (_debug) {
@@ -70,7 +71,7 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
       if (_debug) {
         _log('$_swc registering worker $sharedWorkerUri');
       }
-      worker = web.Worker(sharedWorkerUri.toString());
+      worker = web.Worker(sharedWorkerUri.toString().toJS);
     }
     return SqfliteFfiWebContextImpl(
         options: options, sharedWorker: sharedWorker, worker: worker);
