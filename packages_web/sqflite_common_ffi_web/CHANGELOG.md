@@ -1,3 +1,7 @@
+## 0.4.4
+
+* Setup for sqlite3 2.3.5
+
 ## 0.4.3+2
 
 * Remove dependency on `dart:html`. Requires rebuilding the worker file.
