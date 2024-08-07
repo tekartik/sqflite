@@ -105,5 +105,7 @@ linter:
     - no_self_assignments
     - no_wildcard_variable_uses
     - type_literal_in_constant_pattern
+    # New in 3.5
+    - invalid_runtime_check_with_js_interop_types
     # === doc rules ===
     - public_member_api_docs
