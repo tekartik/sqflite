@@ -18,7 +18,7 @@ topics:
   - database
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: ^3.5.0
 
 dependencies:
   sqlite3: '>=2.3.0 <4.0.0'
