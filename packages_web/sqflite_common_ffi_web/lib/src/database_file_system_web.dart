@@ -5,6 +5,7 @@ import 'dart:typed_data';
 // ignore: implementation_imports
 import 'package:sqflite_common/src/mixin/platform.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi_web/src/web/js_utils.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart' as web;
@@ -176,8 +177,8 @@ class RawMessageSenderToWorker extends RawMessageSender {
 
   @override
   void postMessage(Object message, web.MessagePort responsePort) {
-    _worker.postMessage(
-        message.jsify(), messagePortToPortMessageOption(responsePort));
+    _worker.postMessage(message.jsifyValueStrict(),
+        messagePortToPortMessageOption(responsePort));
   }
 
   StreamController<Object>? _errorController;

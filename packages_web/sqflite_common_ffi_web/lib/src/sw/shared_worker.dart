@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/import.dart';
 import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'; // ignore: implementation_imports
 import 'package:sqflite_common_ffi_web/src/utils.dart';
+import 'package:sqflite_common_ffi_web/src/web/js_utils.dart';
 import 'package:web/web.dart' as web;
 
 import 'constants.dart';
@@ -23,7 +24,7 @@ var _shw = '/shw$_debugVersion';
 
 void _handleMessageEvent(web.Event event) async {
   var messageEvent = event as web.MessageEvent;
-  var rawData = messageEvent.data.dartify();
+  var rawData = messageEvent.data?.dartifyValueStrict();
   var port = messageEvent.ports.toDart.first;
   try {
     if (rawData is String) {
@@ -52,7 +53,7 @@ void _handleMessageEvent(web.Event event) async {
           _log('$_shw $command $key: $value');
           port.postMessage({
             'result': {'key': key, 'value': value}
-          }.jsify());
+          }.jsifyValueStrict());
         } else {
           _log('$_shw $command unknown');
           port.postMessage(null);
@@ -82,7 +83,7 @@ void _handleMessageEvent(web.Event event) async {
             if (_debug) {
               _log('$_shw resp $data ($port)');
             }
-            port.postMessage(data.jsify());
+            port.postMessage(data.jsifyValueStrict());
           }
 
           try {

@@ -46,7 +46,7 @@ abstract class PlatformHandler {
 // Compat, to keep the example page as is
 // ---
 
-/// delete the db, create the folder and returnes its path
+/// delete the db, create the folder and returns its path
 Future<String> initDeleteDb(String dbName) =>
     platformHandler.initDeleteDb(dbName);
 

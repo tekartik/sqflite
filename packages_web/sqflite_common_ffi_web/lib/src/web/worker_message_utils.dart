@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:js_interop';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi_web/src/web/js_utils.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart';
 import 'package:web/web.dart' as web;
 
@@ -21,7 +22,7 @@ abstract class RawMessageSender {
   }
 
   /// Message to js
-  JSAny jsifyMessage(Object message) => message.jsify()!;
+  JSAny jsifyMessage(Object message) => message.jsifyValueStrict();
 
   /// Post message to implement
   void postMessage(Object message, web.MessagePort responsePort);
@@ -42,7 +43,7 @@ abstract class RawMessageSender {
     final zone = Zone.current;
     messageChannel.port1.onmessage = (web.MessageEvent event) {
       zone.run(() {
-        var data = event.data.dartify();
+        var data = event.data?.dartifyValueStrict();
         if (_debug) {
           _log('$_swc recv $data');
         }
@@ -87,8 +88,8 @@ class RawMessageSenderSharedWorker extends RawMessageSender {
 
   @override
   void postMessage(Object message, web.MessagePort responsePort) {
-    _port.postMessage(
-        message.jsify(), messagePortToPortMessageOption(responsePort));
+    _port.postMessage(message.jsifyValueStrict(),
+        messagePortToPortMessageOption(responsePort));
   }
 
   StreamController<Object>? _errorController;
@@ -140,7 +141,7 @@ class RawMessageSenderToWorker extends RawMessageSender {
 
   @override
   void postMessage(Object message, web.MessagePort responsePort) {
-    _worker.postMessage(
-        message.jsify(), messagePortToPortMessageOption(responsePort));
+    _worker.postMessage(message.jsifyValueStrict(),
+        messagePortToPortMessageOption(responsePort));
   }
 }

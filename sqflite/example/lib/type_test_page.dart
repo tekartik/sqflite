@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -131,7 +130,7 @@ class TypeTestPage extends TestPage {
     });
 
     test('blob', () async {
-      // await Sqflite.devSetDebugModeOn(true);
+      // databaseFactory = databaseFactory.debugQuickLoggerWrapper();
       final path = await initDeleteDb('type_blob.db');
       data.db = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
