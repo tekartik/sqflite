@@ -6,5 +6,5 @@ Future<void> main() async {
 
 Future<void> setupExample() async {
   await setupSqfliteWebBinaries(
-      options: SqfliteWebSetupOptions(dir: 'example'));
+      options: SqfliteWebSetupOptions(dir: 'example', verbose: true));
 }

@@ -1,5 +1,6 @@
-import 'package:sqflite_common_ffi_web/src/setup/setup.dart';
+import 'package:sqflite_common_ffi_web/setup.dart';
 
 Future<void> main() async {
-  await setupBinaries(options: SetupOptions(force: true, verbose: true));
+  await setupSqfliteWebBinaries(
+      options: SqfliteWebSetupOptions(verbose: true, force: true));
 }

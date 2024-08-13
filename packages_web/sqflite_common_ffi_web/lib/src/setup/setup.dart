@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dev_build/build_support.dart';
@@ -13,7 +14,8 @@ import 'sqlite3_wasm_version.dart';
 
 var _log = print;
 // https://github.com/simolus3/sqlite3.dart/releases
-var _sqlite3WasmReleaseUri = Uri.parse(
+/// sqlite3 wasm release
+var sqlite3WasmReleaseUri = Uri.parse(
     'https://github.com/simolus3/sqlite3.dart/releases/download/$sqlite3WasmRelease');
 
 /// dhttpd simple server (testing only
@@ -53,18 +55,23 @@ class SetupOptions {
   /// Don't fetch sqlite3 wasm
   late final bool noSqlite3Wasm;
 
+  /// Sqlite3 wasm uri
+  late final Uri sqlite3WasmUri;
+
   /// Setup options.
   SetupOptions(
       {String? path,
       String? dir,
       bool? force,
       bool? verbose,
+      Uri? sqlite3WasmUri,
       bool? noSqlite3Wasm}) {
     this.dir = dir ?? 'web';
     this.path = normalize(absolute(path ?? '.'));
     this.force = force ?? false;
     this.verbose = verbose ?? false;
     this.noSqlite3Wasm = noSqlite3Wasm ?? false;
+    this.sqlite3WasmUri = sqlite3WasmUri ?? sqlite3WasmReleaseUri;
     assert(isRelative(this.dir));
   }
 }
@@ -97,6 +104,53 @@ class SetupContext {
 var _sourceBuild = 'web';
 var _rawBuiltSharedWorkerJsFile = 'sqflite_sw.dart.js';
 
+/// Meta data file
+var sqfliteWebMetadataFile = 'sqflite_web_meta.json';
+
+/// Sqflite web metadata
+class SqfliteWebMetadata {
+  /// Version
+  final Version? version;
+
+  /// sqlite3.wasm uri
+  final Uri? sqlite3WasmUri;
+
+  /// Sqflite web metadata
+  SqfliteWebMetadata({this.version, this.sqlite3WasmUri});
+
+  /// To json map
+  Map<String, Object?> toJsonMap() {
+    return {
+      'version': version?.toString(),
+      'sqlite3WasmUri': sqlite3WasmUri?.toString(),
+    };
+  }
+
+  @override
+  int get hashCode =>
+      (version?.hashCode ?? 0) + (sqlite3WasmUri?.hashCode ?? 0);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is SqfliteWebMetadata) {
+      return version == other.version && sqlite3WasmUri == other.sqlite3WasmUri;
+    }
+    return false;
+  }
+
+  /// From json map
+  SqfliteWebMetadata.fromJsonMap(Map map)
+      : version = map['version'] != null
+            ? Version.parse(map['version'] as String)
+            : null,
+        sqlite3WasmUri = map['sqlite3WasmUri'] != null
+            ? Uri.parse(map['sqlite3WasmUri'] as String)
+            : null;
+
+  @override
+  String toString() => '${toJsonMap()}';
+}
+
 /// Easy path access
 extension SetupContextExt on SetupContext {
   /// Working path for setup
@@ -108,6 +162,10 @@ extension SetupContextExt on SetupContext {
   String get builtSwJsFilePath =>
       join(workPath, 'build', _rawBuiltSharedWorkerJsFile);
 
+  /// Resulting metadata file
+  String get metadataFilePath =>
+      join(workPath, 'build', sqfliteWebMetadataFile);
+
   /// running from ourself, skip copy
   bool get runningFromPackage =>
       (canonicalize(path) == canonicalize(ffiWebPath));
@@ -115,11 +173,34 @@ extension SetupContextExt on SetupContext {
   /// Build shared worker.
   Future build() async {
     var force = options.force;
+    var verbose = options.verbose;
 
+    var metadata = SqfliteWebMetadata(
+        version: version, sqlite3WasmUri: options.sqlite3WasmUri);
     var needBuild = force;
+    var metadataFile = File(metadataFilePath);
     if (!needBuild) {
-      if (!File(builtSwJsFilePath).existsSync()) {
+      SqfliteWebMetadata? currentMetadata;
+
+      try {
+        if (metadataFile.existsSync()) {
+          currentMetadata = SqfliteWebMetadata.fromJsonMap(
+              jsonDecode(await File(metadataFilePath).readAsString()) as Map);
+        }
+      } catch (e) {
+        _log('Failed to read $sqfliteWebMetadataFile: $e');
+      }
+      if (currentMetadata != metadata) {
+        if (verbose) {
+          _log('Metadata changed (new: $metadata, old: $currentMetadata)');
+        }
         needBuild = true;
+      }
+
+      if (!needBuild) {
+        if (!File(builtSwJsFilePath).existsSync()) {
+          needBuild = true;
+        }
       }
     }
     if (needBuild) {
@@ -137,16 +218,23 @@ extension SetupContextExt on SetupContext {
         shellEnvironment = ShellEnvironment()
           ..aliases['webdev'] = 'dart run webdev:webdev';
       }
-      var shell = Shell(workingDirectory: workPath);
+      var shell = Shell(workingDirectory: workPath, verbose: options.verbose);
       _log(shell.path);
 
       if (!runningFromPackage) {
         // Add local webdev package
-        await shell.run('dart pub add webdev');
+        await shell.run('dart pub add dev:webdev');
       }
       await shell.run('dart pub get');
       await shell.run('webdev build -o $_sourceBuild:build');
+      if (verbose) {
+        _log('Writing meta ${metadataFile.path} $metadata');
+      }
+      await metadataFile.writeAsString(jsonEncode(metadata.toJsonMap()));
     } else {
+      if (verbose) {
+        _log('metadata $metadata ok');
+      }
       _log('$packageName binaries up to date');
     }
   }
@@ -167,7 +255,7 @@ extension SetupContextExt on SetupContext {
 
       var wasmFile = join(out, sqlite3WasmFile);
       if (!options.noSqlite3Wasm) {
-        var uri = _sqlite3WasmReleaseUri;
+        var uri = sqlite3WasmReleaseUri;
         _log('Fetching: $uri');
         var wasmBytes = await readBytes(uri);
         await File(wasmFile).writeAsBytes(wasmBytes);
@@ -185,7 +273,7 @@ extension SetupContextExt on SetupContext {
 /// Our package name.
 var packageName = 'sqflite_common_ffi_web';
 
-/// Get the teh setup context in a given directory
+/// Get the the setup context in a given directory
 Future<SetupContext> getSetupContext({SetupOptions? options}) async {
   options ??= SetupOptions();
   var path = options.path;
@@ -207,8 +295,8 @@ Future<SetupContext> getSetupContext({SetupOptions? options}) async {
       pathPackageConfigMapGetPackagePath(path, config, packageName)!;
 
   ffiWebPath = absolute(normalize(ffiWebPath));
-  var ffiPubspec = await pathGetPubspecYamlMap(path);
-  var version = pubspecYamlGetVersion(ffiPubspec);
+  var ffiWebPubspec = await pathGetPubspecYamlMap(ffiWebPath);
+  var version = pubspecYamlGetVersion(ffiWebPubspec);
   return SetupContext(
       options: options,
       ffiWebPath: ffiWebPath,
@@ -226,6 +314,14 @@ Future<void> deleteDirectory(String path) async {
   try {
     await Directory(path).delete(recursive: true);
   } catch (_) {}
+}
+
+/// Exported for setup
+typedef SqfliteWebSetupOptions = SetupOptions;
+
+/// Exported for setup
+Future<void> setupSqfliteWebBinaries({SqfliteWebSetupOptions? options}) async {
+  await setupBinaries(options: options);
 }
 
 /// Build and copy the binaries

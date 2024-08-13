@@ -23,6 +23,7 @@ void main() {
   void checkBuiltFilesSync({bool exists = true}) {
     expect(File(join(dir, expectedSharedWorkerJsFiled)).existsSync(), exists);
     expect(File(join(dir, sqlite3WasmFile)).existsSync(), exists);
+    expect(File(join(dir, sqlite3WasmFile)).existsSync(), exists);
   }
 
   void deleteBuiltFilesSync() {
