@@ -1,6 +1,6 @@
-## 0.4.4
+## 0.4.5
 
-* Setup for sqlite3 2.3.5
+* Setup for sqlite3 2.3.6
 
 ## 0.4.3+2
 
