@@ -156,7 +156,7 @@ class OpenTestPage extends TestPage {
       expect(await databaseExists(path), false);
       final db = await openDatabase(path);
       await db.close();
-      expect((await pathExists(path)), true);
+      expect(await pathExists(path), true);
       expect(await databaseExists(path), true);
       print('Deleting database $path');
       await deleteDatabase(path);

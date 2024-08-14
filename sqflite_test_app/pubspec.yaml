@@ -38,6 +38,7 @@ dependencies:
   process_run: '>=0.13.3-1'
   path:
   sqflite_common_ffi_web:
+  sqlite3: '>=2.4.6'
 
 dev_dependencies:
   flutter_lints: '>=2.0.3'

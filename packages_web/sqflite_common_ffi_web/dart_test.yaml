@@ -1,0 +1,6 @@
+platforms:
+  - vm
+  - chrome
+compilers:
+  - dart2js
+  - dart2wasm

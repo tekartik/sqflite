@@ -14,8 +14,8 @@ Future<void> main() async {
 }
 
 /// Run using ffi (io or web)
-Future<void> mainFfi({bool? webBasicWorker}) async {
-  await initFfi(webBasicWorker: webBasicWorker);
+Future<void> mainFfi({bool? noWorker, bool? webBasicWorker}) async {
+  await initFfi(noWorker: true, webBasicWorker: webBasicWorker);
   await runFfi();
 }
 
