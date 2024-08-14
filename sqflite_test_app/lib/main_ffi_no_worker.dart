@@ -7,6 +7,7 @@ import 'package:sqflite_example/main.dart';
 import 'main_ffi.dart';
 
 void main() {
+  // ignore: avoid_print
   print('running without worker');
   // debugAutoStartRouteName = testOpenRoute;
   mainFfi(noWorker: true);
