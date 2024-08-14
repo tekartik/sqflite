@@ -1,4 +1,4 @@
-## 2.5.4
+## 2.5.4+1
 
 * Remove dependency on `dart:html`
 

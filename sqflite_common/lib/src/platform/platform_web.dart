@@ -3,7 +3,7 @@ import 'package:sqflite_common/src/platform/platform.dart';
 
 class _PlatformWeb extends Platform {
   @override
-  bool get isWeb => false;
+  bool get isWeb => true;
 
   @override
   DatabaseFileSystem get databaseFileSystem =>
