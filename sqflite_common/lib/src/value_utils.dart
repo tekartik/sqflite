@@ -32,6 +32,7 @@ This will throw an exception in the future. For now it is displayed once per typ
       final printed = _debugCheckPrinted[type] ?? false;
       if (!printed) {
         _debugCheckPrinted[type] = true;
+        // ignore: avoid_print
         print(text);
       }
     }

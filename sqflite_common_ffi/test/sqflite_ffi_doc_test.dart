@@ -36,6 +36,7 @@ void main() {
     } on DatabaseException catch (e) {
       // no such table: Test
       expect(e.isNoSuchTableError('Test'), isTrue);
+      // ignore: avoid_print
       print(e.toString());
     }
 

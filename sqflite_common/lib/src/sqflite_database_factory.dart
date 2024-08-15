@@ -42,6 +42,7 @@ set databaseFactory(DatabaseFactory? databaseFactory) {
   // Warn when changing. might throw in the future
   if (databaseFactory != null) {
     if (_databaseFactory != null) {
+      // ignore: avoid_print
       print('''
 *** sqflite warning ***
 

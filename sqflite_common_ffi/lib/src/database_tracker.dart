@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS $_tableName (
         _closeExisting();
       }
     } catch (e) {
+      // ignore: avoid_print
       print('error $e creating tracker db');
     }
   }
@@ -88,6 +89,7 @@ CREATE TABLE IF NOT EXISTS $_tableName (
           try {
             sqlite3.fromPointer(ptr).dispose();
           } catch (e) {
+            // ignore: avoid_print
             print('error $e disposing $ptr');
           }
         }

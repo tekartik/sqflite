@@ -30,14 +30,15 @@ class Sqlite3DllSetupHelper {
     try {
       var map = pathGetJson(bundledJsonInfoFilePath);
       var sqlite3Info = Sqlite3DllInfo.fromMap(map);
-      print('sqlite3Info $sqlite3Info');
+      // ignore: avoid_print
+      stdout.writeln('sqlite3Info $sqlite3Info');
     } catch (_) {}
     return null;
   }
 
   Future<bool> getZip() async {
     if (!File(localZip).existsSync()) {
-      print('Downloading sqlite3 $sqlite3Info');
+      stdout.writeln('Downloading sqlite3 $sqlite3Info');
       await Directory(dirname(localZip)).create(recursive: true);
       try {
         await File(localZip).writeAsBytes(await readBytes(Uri.parse(srcZip)));
@@ -54,7 +55,7 @@ class Sqlite3DllSetupHelper {
     var jsonInfo = File(localExtractedJsonInfoFile);
     if (!jsonInfo.existsSync()) {
       // Extract the zip
-      print('Extracting $localZip to $localExtractedZipDir');
+      stdout.writeln('Extracting $localZip to $localExtractedZipDir');
       final inputStream = InputFileStream(localZip);
       final archive = ZipDecoder().decodeBuffer(inputStream);
       await extractArchiveToDisk(archive, localExtractedZipDir);
@@ -65,7 +66,7 @@ class Sqlite3DllSetupHelper {
   Future<void> copyToBundle() async {
     var srcFile = join(localExtractedZipDir, 'sqlite3.dll');
     var dstFile = bundledSqlite3DllFilePath;
-    print('Copying $srcZip to $dstFile');
+    stdout.writeln('Copying $srcZip to $dstFile');
     //await File(dstFile).delete(recursive: true);
     await File(srcFile).copy(dstFile);
     await File(bundledJsonInfoFilePath)
@@ -89,7 +90,7 @@ Future setupSqliteDll() async {
       await helper.extractZip();
       await helper.copyToBundle();
     } else {
-      print('sqlite3 $sqlite3Info already up to date');
+      stdout.writeln('sqlite3 $sqlite3Info already up to date');
     }
   } else {
     stderr.writeln('To run on linux!');

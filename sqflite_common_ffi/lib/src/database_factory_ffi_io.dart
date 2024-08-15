@@ -38,23 +38,26 @@ bool _debug = false; // devWarning(true); // false
 SqfliteIsolate? _isolate;
 final _isolateLock = Lock();
 
+// ignore: avoid_print
+void _log(Object? object) => print(object);
+
 /// Extension on MethodCall
 /// Handle a method call in a background isolate
 Future<dynamic> ffiMethodCallhandleInIsolate(FfiMethodCall methodCall,
     {SqfliteFfiInit? ffiInit}) async {
   try {
     if (_debug) {
-      print('main_send: $methodCall');
+      _log('main_send: $methodCall');
     }
     var result = await _isolateHandle(methodCall, ffiInit);
     if (_debug) {
-      print('main_recv: $result');
+      _log('main_recv: $result');
     }
     return result;
   } catch (e, st) {
     if (_debug) {
-      print(e);
-      print(st);
+      _log(e);
+      _log(st);
     }
     rethrow;
   }
@@ -64,20 +67,20 @@ Future<dynamic> ffiMethodCallhandleInIsolate(FfiMethodCall methodCall,
 Future<dynamic> ffiMethodCallHandleNoIsolate(FfiMethodCall methodCall) async {
   try {
     if (_debug) {
-      print('handle $methodCall');
+      _log('handle $methodCall');
     }
     dynamic result = await methodCall.rawHandle();
 
     if (_debug) {
-      print('result: $result');
+      _log('result: $result');
     }
 
     // devPrint('result: $result');
     return result;
   } catch (e, st) {
     if (_debug) {
-      print(e);
-      print(st);
+      _log(e);
+      _log(st);
     }
     throw methodCall.wrapAnyExceptionNoIsolate(e);
   }

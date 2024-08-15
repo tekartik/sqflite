@@ -842,6 +842,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
               paramInTransaction: false
             });
           } catch (e) {
+            // ignore: avoid_print
             print('ignore recovered database ROLLBACK error $e');
           }
         }
@@ -882,6 +883,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
               }
             });
           } catch (e) {
+            // ignore: avoid_print
             print('Error $e before rollback');
           }
         }
@@ -892,6 +894,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           try {
             await safeAction<dynamic>(() => invokeCloseDatabase(databaseId));
           } catch (e) {
+            // ignore: avoid_print
             print('error $e closing database $databaseId');
           }
         }
@@ -961,6 +964,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           } catch (e) {
             // This exception is sometimes hard te catch
             // during development
+            // ignore: avoid_print
             print(e);
 
             // create a transaction just to make the current transaction happy
@@ -1039,6 +1043,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
 
       return this;
     } catch (e) {
+      // ignore: avoid_print
       print('error $e during open, closing...');
       await doClose();
       rethrow;

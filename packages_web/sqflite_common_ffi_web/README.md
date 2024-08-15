@@ -3,6 +3,7 @@
 sqlite Web implementation (experimental). Features:
 - Persistency (in indexeddb)
 - Cross-tab safe (runs in a shared worker)
+- Wasm compatible
 
 Thanks Simon Binder for the excellent sqlite3 lib.
 
@@ -11,7 +12,7 @@ Thanks Simon Binder for the excellent sqlite3 lib.
 Add the dependency:
 ```yaml
   dependencies:
-    sqflite_common_ffi_web: '>=0.1.0-dev.1'
+    sqflite_common_ffi_web:
 ```
 
 ### Setup binaries

@@ -77,6 +77,7 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
           await dir.create(recursive: true);
         }
       } catch (e) {
+        // ignore: avoid_print
         print('error checking directory $dir: $e');
       }
       sqliteOptions = const sqlite_async.SqliteOptions.defaults();

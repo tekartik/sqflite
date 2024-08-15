@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 @TestOn('vm')
 library sqflite_common_ffi.test.sqflite_factory_ffi_test;
 

@@ -41,6 +41,7 @@ Duration? lockWarningDuration = constant.lockWarningDurationDefault;
 void Function()? lockWarningCallback = _lockWarningCallbackDefault;
 
 void _lockWarningCallbackDefault() {
+  // ignore: avoid_print
   print('Warning database has been locked for $lockWarningDuration. '
       'Make sure you always use the transaction object for database operations during a transaction');
 }

@@ -1,6 +1,7 @@
 /// Deprecated to prevent keeping the code used.
 @Deprecated('Dev only')
 void devPrint(Object? object) {
+  // ignore: avoid_print
   print(object);
 }
 

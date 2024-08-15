@@ -21,6 +21,9 @@ export 'sqflite_ffi_handler.dart'
 
 final _debug = false; // devWarning(true); // false
 
+// ignore: avoid_print
+void _log(Object? object) => print(object);
+
 final _globalHandlerLock = Lock();
 
 /// By id
@@ -150,7 +153,7 @@ class SqfliteFfiDatabase {
     }
     var id = _ffiDb.lastInsertRowId;
     if (logLevel >= sqfliteLogLevelSql) {
-      print('$_prefix Inserted $id');
+      _log('$_prefix Inserted $id');
     }
     return id;
   }
@@ -185,7 +188,7 @@ class SqfliteFfiDatabase {
       if (sql == sqflitePragmaDbDefensiveOff) {
         /// There is no good way to debug that but to use a print statements sometimes...
         if (_debug) {
-          print('Turning off defensive mode');
+          _log('Turning off defensive mode');
         }
 
         /// final int SQLITE_DBCONFIG_DEFENSIVE = 1010;
@@ -212,14 +215,14 @@ class SqfliteFfiDatabase {
   /// Log the result if needed.
   void logResult({String? result}) {
     if (result != null && (logLevel >= sqfliteLogLevelSql)) {
-      print('$_prefix $result');
+      _log('$_prefix $result');
     }
   }
 
   /// Log the sql statement if needed.
   void logSql({required String sql, List? sqlArguments, String? result}) {
     if (logLevel >= sqfliteLogLevelSql) {
-      print(
+      _log(
           '$_prefix $sql${(sqlArguments?.isNotEmpty ?? false) ? ' $sqlArguments' : ''}');
       logResult(result: result);
     }
@@ -319,7 +322,7 @@ class SqfliteFfiDatabase {
     // null means no insert
     var id = _getLastInsertId();
     if (logLevel >= sqfliteLogLevelSql) {
-      print('$_prefix Inserted id $id');
+      _log('$_prefix Inserted id $id');
     }
     return id;
   }
@@ -460,7 +463,7 @@ class SqfliteFfiDatabase {
   int _getUpdatedRows() {
     var rowCount = _ffiDb.updatedRows;
     if (logLevel >= sqfliteLogLevelSql) {
-      print('$_prefix Modified $rowCount rows');
+      _log('$_prefix Modified $rowCount rows');
     }
     return rowCount;
   }
@@ -508,7 +511,7 @@ class SqfliteFfiDatabase {
 
       void addError(dynamic e, [dynamic st]) {
         if (_debug && st != null) {
-          print('stack: $st');
+          _log('stack: $st');
         }
         SqfliteFfiException wrap(dynamic e) {
           return _ffiWrapAnyException(e,
@@ -678,12 +681,12 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     // devPrint('$this');
     try {
       if (_debug) {
-        print('handle $this');
+        _log('handle $this');
       }
       dynamic result = await rawHandle();
 
       if (_debug) {
-        print('result: $result');
+        _log('result: $result');
       }
 
       // devPrint('result: $result');
@@ -691,8 +694,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     } catch (e, st) {
       // devPrint('st $st');
       if (_debug) {
-        print('error: $e');
-        print('st $st');
+        _log('error: $e');
+        _log('st $st');
       }
 
       var ffiException = wrapAnyException(e);

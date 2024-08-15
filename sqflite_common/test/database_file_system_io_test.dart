@@ -13,6 +13,7 @@ void main() {
       try {
         await fileSystem.readDatabaseBytes(path);
       } catch (e) {
+        // ignore: avoid_print
         print(e);
       }
       await fileSystem.writeDatabaseBytes(path, Uint8List.fromList([1, 2, 3]));

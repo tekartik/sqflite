@@ -17,6 +17,7 @@ void main() {
                 event.dump(
                     print: (msg) {
                       lines.add(msg?.toString() ?? '<null>');
+                      // ignore: avoid_print
                       print(msg);
                     },
                     noStopwatch: true);
@@ -46,6 +47,7 @@ void main() {
                 event.dump(
                     print: (msg) {
                       lines.add(msg?.toString() ?? '<null>');
+                      // ignore: avoid_print
                       print(msg);
                     },
                     noStopwatch: true);

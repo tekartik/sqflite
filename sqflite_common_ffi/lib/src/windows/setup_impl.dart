@@ -10,6 +10,7 @@ Map<String, Object?> pathGetJson(String path) {
   try {
     return (jsonDecode(content) as Map).cast<String, Object?>();
   } catch (e) {
+    // ignore: avoid_print
     print('error in $path $e');
     rethrow;
   }

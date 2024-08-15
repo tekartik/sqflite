@@ -21,6 +21,7 @@ class SqfliteIsolate {
     var recvPort = ReceivePort();
     var map = methodCall.toDataMap();
     if (_debug) {
+      // ignore: avoid_print
       print('send $map');
     }
     map['sendPort'] = recvPort.sendPort;
@@ -28,6 +29,7 @@ class SqfliteIsolate {
     sendPort.send(map);
     var response = await recvPort.first;
     if (_debug) {
+      // ignore: avoid_print
       print('recv $response');
     }
     return responseToResultOrThrow(response);
