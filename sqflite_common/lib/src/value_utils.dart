@@ -26,14 +26,20 @@ Only num, String and Uint8List are supported. See https://github.com/tekartik/sq
 This will throw an exception in the future. For now it is displayed once per type.
 
     ''';
-    if (checkThrowException) {
+    try {
       throw ArgumentError(text);
-    } else {
-      final printed = _debugCheckPrinted[type] ?? false;
-      if (!printed) {
-        _debugCheckPrinted[type] = true;
-        // ignore: avoid_print
-        print(text);
+    } catch (e, st) {
+      if (checkThrowException) {
+        rethrow;
+      } else {
+        final printed = _debugCheckPrinted[type] ?? false;
+        if (!printed) {
+          _debugCheckPrinted[type] = true;
+          // ignore: avoid_print
+          print(text);
+          // ignore: avoid_print
+          print(st);
+        }
       }
     }
   }
