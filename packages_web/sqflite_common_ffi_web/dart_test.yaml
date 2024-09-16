@@ -4,3 +4,4 @@ platforms:
 compilers:
   - dart2js
   - dart2wasm
+concurrency: 1
