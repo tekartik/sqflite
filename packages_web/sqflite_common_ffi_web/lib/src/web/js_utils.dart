@@ -30,9 +30,10 @@ extension SqfliteWebJSNumberExt on JSNumber {
 }
 
 /// JavaScript Array extension.
-extension SqfliteWebJJSArrayExt on JSArray {
-  /// Get the length of the array
-  external int get length;
+extension SqfliteWebJSArrayExt on JSArray {
+  /// Get the length of the array missing up to 3.6
+  @JS('length')
+  external int get compatLength;
 }
 
 /// dartify helper for JavaScript objects (handle Uint8List, DateTime, Map, List, String, num, bool)
@@ -50,7 +51,7 @@ extension SqfliteWebDartifyExtension on JSAny {
       return (value as JSUint8Array).toDart;
     } else if (value.isA<JSArray>()) {
       var jsArray = value as JSArray;
-      var list = List.generate(jsArray.length,
+      var list = List.generate(jsArray.compatLength,
           (index) => jsArray.getProperty(index.toJS)?.dartifyValueStrict());
       return list;
     }

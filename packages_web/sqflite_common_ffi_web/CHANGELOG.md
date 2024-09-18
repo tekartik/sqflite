@@ -1,4 +1,4 @@
-## 0.4.5+2
+## 0.4.5+3
 
 * Setup for sqlite3 2.3.6
 * Improved Wasm support
