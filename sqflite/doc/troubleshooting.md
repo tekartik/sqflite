@@ -107,24 +107,18 @@ If you get this output in debug mode:
 One common mistake is to use the db object in a transaction:
 
 ```dart
-await
-db.transaction
-(
-(txn) async {
-// DEADLOCK HERE
-await db.insert('my_table', {'name': 'my_name'});
+await db.transaction((txn) async {
+  // DEADLOCK HERE
+  await db.insert('my_table', {'name': 'my_name'});
 });
 ```
 
 ...instead of using the correct transaction object (below named `txn`):
 
 ```dart
-await
-db.transaction
-(
-(txn) async {
-// Ok!
-await txn.insert('my_table', {'name': 'my_name'});
+await db.transaction ((txn) async {
+  // Ok!
+  await txn.insert('my_table', {'name': 'my_name'});
 });
 ```
 
@@ -133,9 +127,7 @@ await txn.insert('my_table', {'name': 'my_name'});
 A quick way to view SQL commands printed out is to call before opening any database
 
 ```dart
-await
-Sqflite.devSetDebugModeOn
-(true);
+await Sqflite.devSetDebugModeOn(true);
 ```
 
 This call is on purpose deprecated to force removing it once the SQL issues has been resolved.
