@@ -315,8 +315,8 @@ then use command:
 If all is okay then you'll see this message after using -vv command.
 ```
 $ codesign -vv sqflite.xcframework
-sqflite.xcframework: valid on disk`
-sqflite.xcframework: satisfies its Designated Requirement`
+sqflite.xcframework: valid on disk
+sqflite.xcframework: satisfies its Designated Requirement
 ```
 
 All set, you're good to go with archiving your iOS app.
