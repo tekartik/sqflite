@@ -266,7 +266,9 @@ end
 
 ### Module 'FMDB' not found
 
-Since v2.2.1-1, you might encounter `Module 'FMDB' not found` on old projects.
+Versions after v2.3.2 don't include FMDB anymore. You can remove it from your Podfile.
+
+Before v2.3.2 and after v2.2.1, you might encounter `Module 'FMDB' not found` on old projects.
 
 You need to add `use_frameworks!` in your Podfile:
 
@@ -279,6 +281,47 @@ target 'Runner' do
   ...
 end
 ```
+
+### Missing signature
+
+When uploading to App Store Connect, you might get the following warning:
+
+> ITMS-91065: Messing signature - Your app includes “Frameworks/sqflite.framework/sqflite”,
+> which includes sqflite, an SDK that was identified in the documentation as a 
+> privacy-impacting third-party SDK
+
+Relevant issues:
+- https://github.com/tekartik/sqflite/issues/1129
+- https://github.com/flutter/flutter/issues/148300
+
+This might happen if you use frameworks (see https://docs.flutter.dev/add-to-app/ios/project-setup).
+
+Thanks to [@swaraj-rawal](https://github.com/swaraj-raw) for the solution:
+
+So first we need to manually sign the xcFramework using the below command:
+
+```
+codesign --timestamp -v -f --sign "<Identity> (**********)" sqflite.xcframework
+```
+
+use command to check the signature details of the xcFramework:
+
+```
+codesign -dv sqflite.xcframework
+```
+
+then use command:
+`codesign -vv sqflite.xcframework` to check the integrity of the xcFramework, like to find if any error is there in the signature or not.
+If all is okay then you'll see this message after using -vv command.
+```
+$ codesign -vv sqflite.xcframework
+sqflite.xcframework: valid on disk`
+sqflite.xcframework: satisfies its Designated Requirement`
+```
+
+All set, you're good to go with archiving your iOS app.
+
+Note: There is a .dSYM file associated with the xcFramework Signature, make your .gitignore file is ignoring that .dSYM file.
 
 ## Runtime exception
 
