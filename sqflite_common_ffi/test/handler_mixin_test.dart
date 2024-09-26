@@ -1,5 +1,5 @@
 @TestOn('vm')
-library sqflite_common_ffi.test.handler_mixin_test;
+library;
 
 import 'package:sqflite_common_ffi/src/mixin/handler_mixin.dart';
 import 'package:test/test.dart';

@@ -1,5 +1,5 @@
 @TestOn('vm')
-library sqflite_common_ffi.test.sqlite3_raw_test;
+library;
 
 import 'dart:io';
 

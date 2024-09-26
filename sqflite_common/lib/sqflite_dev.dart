@@ -1,5 +1,5 @@
 /// To be deprecated
-library sqflite_common_sqflite_dev;
+library;
 
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
