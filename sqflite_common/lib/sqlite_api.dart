@@ -38,7 +38,7 @@ abstract class DatabaseFactory {
   /// Get the default databases location path.
   ///
   /// When using sqfliteFactory:
-  /// * On Android, it is typically data/data/<package_name>/databases
+  /// * On Android, it is typically `data/data/<package_name>/databases`
   /// * On iOS and MacOS, it is the Documents directory
   ///
   /// For other implementation (ffi), the location is a default location
