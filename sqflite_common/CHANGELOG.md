@@ -1,4 +1,4 @@
-## 2.5.4+3
+## 2.5.4+4
 
 * Remove dependency on `dart:html`
 * Add more keywords to escape from sqlite.org
