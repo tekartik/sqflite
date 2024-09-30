@@ -19,7 +19,7 @@ class FactoryServiceDelegate with SqfliteDatabaseFactoryMixin {
   /// List of invoke calls (m: method, a: arguments)
   List<dynamic> get ins => _ins;
 
-  /// Results of invocation, error as `{ e: <error> }`
+  /// Results of invocation, error as `{ e: '<error>' }`
   List<dynamic> get outs => _outs;
   final SqfliteDatabaseFactory _factory;
 
