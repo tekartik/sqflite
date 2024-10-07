@@ -1,7 +1,8 @@
-## 2.5.4+4
+## 2.5.4+5
 
 * Remove dependency on `dart:html`
 * Add more keywords to escape from sqlite.org
+* Export deprecated `SqfliteOptions` in sqflite_dev
 
 ## 2.5.3
 
