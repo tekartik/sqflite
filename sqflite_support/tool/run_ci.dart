@@ -6,9 +6,13 @@ Future main() async {
     'sqflite_common',
     'sqflite_common_test',
     'sqflite_common_ffi',
-    'sqflite/example',
+    join('sqflite', 'example'),
     'sqflite',
+    'sqflite_darwin',
+    'sqflite_android',
+    'sqflite_platform_interface',
     join('packages', 'console_test_app'),
+    join('packages_flutter', 'sqflite_example_common'),
   ]) {
     await packageRunCi(join('..', dir));
   }
