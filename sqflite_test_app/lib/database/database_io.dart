@@ -1,4 +1,4 @@
-import 'package:sqflite_example/database/database.dart';
+import 'package:sqflite_example_common/database/database.dart';
 
 /// Web platform handler.
 PlatformHandler get platformHandlerWeb =>

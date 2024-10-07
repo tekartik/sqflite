@@ -44,7 +44,7 @@ dependencies:
   path: '>=1.8.0 <3.0.0'
 
 dev_dependencies:
-  flutter_lints: '>=5.0.0'
+  flutter_lints: ">=5.0.0"
   process_run: '>=1.2.0'
   http: '>=1.0.0'
   flutter_test:

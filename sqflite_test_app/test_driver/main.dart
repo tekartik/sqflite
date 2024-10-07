@@ -5,7 +5,7 @@ import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_test/all_test.dart' as all;
 import 'package:sqflite_common_test/sqflite_test.dart';
-import 'package:sqflite_example/src/common_import.dart';
+import 'package:sqflite_example_common/src/common_import.dart';
 import 'package:sqflite_test_app/setup_flutter.dart';
 
 class SqfliteDriverTestContext extends SqfliteLocalTestContext {

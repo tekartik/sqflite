@@ -1,4 +1,4 @@
-import 'package:sqflite_example/main.dart';
+import 'package:sqflite_example_common/main.dart';
 import 'package:sqflite_test_app/main_dev.dart';
 import 'package:sqflite_test_app/src/import.dart';
 

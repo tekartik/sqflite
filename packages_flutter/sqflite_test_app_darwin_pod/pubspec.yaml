@@ -36,7 +36,7 @@ dependencies:
     path: ../sqflite_example_common
 
 dev_dependencies:
-  flutter_lints: ">=2.0.3"
+  flutter_lints: ">=5.0.0"
   flutter_test:
     sdk: flutter
   flutter_driver:

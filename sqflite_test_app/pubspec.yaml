@@ -28,8 +28,6 @@ dependencies:
   sqflite: '>=2.0.0-nullsafety.2'
   sqflite_common_ffi:
   sqflite_common_ffi_async:
-  sqflite_example:
-    path: ../sqflite/example
   flutter_web_plugins:
     sdk: flutter
   path_provider:
@@ -39,9 +37,13 @@ dependencies:
   path:
   sqflite_common_ffi_web:
   sqlite3: '>=2.4.6'
-
+  sqflite_example_common:
+    git:
+      url: https://github.com/tekartik/sqflite
+      ref: dart3a
+      path: packages_flutter/sqflite_example_common
 dev_dependencies:
-  flutter_lints: '>=2.0.3'
+  flutter_lints: ">=5.0.0"
   flutter_test:
     sdk: flutter
   flutter_driver:
@@ -65,51 +67,12 @@ dependency_overrides:
     path: ../packages_web/sqflite_common_ffi_web
   sqflite_common_ffi_async:
     path: ../packages/sqflite_common_ffi_async
+  sqflite_example_common:
+    path: ../packages_flutter/sqflite_example_common
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter.
 flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
 
-  # plugin:
-  #  platforms:
-  #    web:
-  #      pluginClass: SqflitePluginWeb
-  #      fileName: src/sqflite_web_sim.dart
-
-  # To add assets to your application, add an assets section, like this:
-  assets:
-    - assets/example.db
-    - assets/issue_64.db
-    # - packages/sqflite_common_ffi_web/src/web/sqlite3.wasm
-
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware.
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages

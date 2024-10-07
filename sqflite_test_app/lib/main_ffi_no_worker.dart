@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
-import 'package:sqflite_example/main.dart';
+import 'package:sqflite_example_common/main.dart';
 
 import 'main_ffi.dart';
 

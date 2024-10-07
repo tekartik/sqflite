@@ -22,7 +22,7 @@ dependencies:
   meta: ">=1.15.0 <3.0.0"
 
 dev_dependencies:
-  flutter_lints: '>=5.0.0'
+  flutter_lints: ">=5.0.0"
   flutter_test:
     sdk: flutter
   test_api: '>=0.2.19'

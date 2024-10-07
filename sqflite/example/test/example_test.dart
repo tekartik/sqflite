@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_example/src/common_import.dart';
-import 'package:sqflite_example/utils.dart';
+import 'package:sqflite_example_common/utils.dart';
 
 void main() {
   group('example', () {

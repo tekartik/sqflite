@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_example/database/database.dart';
+import 'package:sqflite_example_common/database/database.dart';
 // ignore: depend_on_referenced_packages
 import 'package:sqlite3/wasm.dart';
 

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_async/sqflite_ffi_async.dart';
-import 'package:sqflite_example/main.dart';
+import 'package:sqflite_example_common/main.dart';
 
 Future<void> main() async {
   await mainFfiAsync();
