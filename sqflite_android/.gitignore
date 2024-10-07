@@ -1,0 +1,19 @@
+.DS_Store
+.packages
+.pub/
+ios/.generated/
+packages
+pubspec.lock
+
+# Directory created by dartdoc
+doc/api/
+
+# Local folder
+.local/
+
+# Conventional directory for build outputs
+build/
+coverage/
+
+# flutter
+.metadata

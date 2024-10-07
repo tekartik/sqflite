@@ -1,0 +1,47 @@
+name: sqflite_android
+repository: https://github.com/tekartik/sqflite/tree/master/sqflite
+issue_tracker: https://github.com/tekartik/sqflite/issues
+description: Flutter plugin for SQLite, a self-contained, high-reliability,
+  embedded, SQL database engine.
+version: 2.3.3+2
+
+# This package supports all platforms listed below.
+platforms:
+  android:
+
+topics:
+  - sql
+  - database
+
+funding:
+  - https://github.com/sponsors/alextekartik
+
+environment:
+  sdk: ^3.5.0
+  # Flutter versions prior to 3.7 did not support the
+  # sharedDarwinSource option.
+  flutter: ">=3.7.0"
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.tekartik.sqflite
+        pluginClass: SqflitePlugin
+        dartPluginClass: SqfliteAndroid
+
+dependencies:
+  flutter:
+    sdk: flutter
+  sqflite_common: '>=2.5.0-1 <4.0.0'
+  path: '>=1.8.0 <3.0.0'
+  sqflite_platform_interface: '>=2.0.0 <4.0.0'
+
+dev_dependencies:
+  flutter_lints: '>=1.0.0'
+  process_run: '>=0.12.0'
+  http: '>=0.13.0'
+  flutter_test:
+    sdk: flutter
+  test_api: '>=0.2.19'
+  pub_semver: '>=2.0.0'

@@ -1,7 +1,7 @@
 import 'package:sqflite_platform_interface/sqflite_platform_interface.dart';
 
 /// sqflite_darwin plugin
-class SqfliteDarwin extends SqflitePlatform {
+class SqfliteAndroid extends SqflitePlatform {
   /// Main entry point called by the Flutter platform.
   ///
   /// Registers this plugin as the default database factory (if not already set).

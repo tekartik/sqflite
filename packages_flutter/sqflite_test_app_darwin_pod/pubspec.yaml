@@ -32,8 +32,8 @@ dependencies:
   dev_build: ">=1.0.0+14"
   process_run: ">=1.2.0"
   path:
-  sqflite_example:
-    path: ../../sqflite_platform_interface/example
+  sqflite_example_common:
+    path: ../sqflite_example_common
 
 dev_dependencies:
   flutter_lints: ">=2.0.3"
