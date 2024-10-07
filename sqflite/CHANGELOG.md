@@ -1,3 +1,7 @@
+## 2.4.0-0
+
+* Make `sqflite` a federated plugin including `sqflite_android` and `sqflite_darwin` (iOS/macOS) plugins
+
 ## 2.3.3+2
 
 * Remove android v1 embedding support
