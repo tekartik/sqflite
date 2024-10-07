@@ -1,0 +1,59 @@
+include: package:flutter_lints/flutter.yaml
+
+# Until there are meta linter rules, each desired lint must be explicitly enabled.
+# See: https://github.com/dart-lang/linter/issues/288
+#
+# For a list of lints, see: http://dart-lang.github.io/linter/lints/
+# See the configuration guide for more
+# https://github.com/dart-lang/sdk/tree/master/pkg/analyzer#configuring-the-analyzer
+#
+# NOTE: Please keep this file in sync with
+# https://github.com/flutter/flutter/blob/master/analysis_options.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+
+  errors:
+    # treat missing required parameters as a warning (not a hint)
+    missing_required_param: warning
+    # allow having TODOs in the code
+    todo: ignore
+    # Ignore errors like
+    # 'super_goes_last' is a deprecated lint rule and should not be used • included_file_warning
+    included_file_warning: ignore
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_dynamic_calls
+    - avoid_slow_async_io
+    - cancel_subscriptions
+    - deprecated_member_use_from_same_package
+    - directives_ordering
+    - implicit_reopen
+    - invalid_case_patterns
+    - iterable_contains_unrelated_type
+    - library_names
+    - list_remove_unrelated_type
+    - no_adjacent_strings_in_list
+    - no_literal_bool_comparisons
+    - no_self_assignments
+    - omit_local_variable_types
+    - package_api_docs
+    - package_prefixed_library_names
+    - prefer_final_locals
+    - prefer_if_elements_to_conditional_expressions
+    - prefer_single_quotes
+    - prefer_void_to_null
+    - public_member_api_docs
+    - sort_constructors_first
+    - sort_unnamed_constructors_first
+    - test_types_in_equals
+    - throw_in_finally
+    - unawaited_futures
+    - unintended_html_in_doc_comment
+    - unnecessary_statements
+    - unsafe_html
+

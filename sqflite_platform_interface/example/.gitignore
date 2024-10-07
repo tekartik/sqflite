@@ -1,0 +1,20 @@
+.DS_Store
+.atom/
+.idea
+.packages
+.pub/
+build/
+ios/.generated/
+packages
+pubspec.lock
+.flutter-plugins
+sqflite_example.iml
+
+# local files
+.local/
+tmp/
+
+# no project files support
+/web/
+/macos/
+/ios/

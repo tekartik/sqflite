@@ -3,6 +3,8 @@ library;
 
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/mixin/import_mixin.dart';
+// ignore: deprecated_member_use_from_same_package
+export 'package:sqflite_common/src/mixin/import_mixin.dart' show SqfliteOptions;
 
 /// Dev extension
 ///

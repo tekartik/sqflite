@@ -7,12 +7,13 @@ publish_to: none
 environment:
   sdk: ^3.5.0
 
-dev_dependencies:
-  lints: '>=1.0.0'
-  process_run: '>=0.11.0+2'
-  dev_build: '>=0.16.2'
+dependencies:
+  pub_semver: ">=2.0.0"
+  lints: '>=5.0.0'
+  process_run: '>=1.2.0'
+  dev_build: '>=1.0.0+14'
   test:
   path:
-  pub_semver:
+
 
 dependency_overrides:
