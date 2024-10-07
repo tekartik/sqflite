@@ -31,6 +31,9 @@ dev_dependencies:
   process_run: '>=1.2.0'
   pub_semver: 
 
+dependency_overrides:
+  sqflite_android:
+    path: ../
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 

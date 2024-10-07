@@ -65,3 +65,4 @@ GeneratedPluginRegistrant.java
 .local/
 pubspec_overrides.yaml
 _pubspec_overrides.yaml
+*.tmp
