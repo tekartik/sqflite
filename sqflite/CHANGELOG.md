@@ -1,4 +1,4 @@
-## 2.4.0-0
+## 2.4.0
 
 * Make `sqflite` a federated plugin including `sqflite_android` and `sqflite_darwin` (iOS/macOS) plugins
 
