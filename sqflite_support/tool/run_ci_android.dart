@@ -7,7 +7,7 @@ late String workDir;
 String get workAndroidDir => join(workDir, 'android');
 
 Future main() async {
-  workDir = join('..', 'sqflite', 'example');
+  workDir = join('..', 'sqflite_android', 'example');
   await buildApk();
   await runAndroidTest();
   workDir = join('..', 'sqflite_test_app');
