@@ -7,10 +7,6 @@
 #ifndef SqfliteImport_h
 #define SqfliteImport_h
 
-#if TARGET_OS_IPHONE
-#import <Flutter/Flutter.h>
-#else
-#import <FlutterMacOS/FlutterMacOS.h>
-#endif
+#import "include/sqflite_darwin/SqfliteImportPublic.h"
 
 #endif // SqfliteImport_h

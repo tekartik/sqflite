@@ -7,16 +7,7 @@
 #ifndef SqflitePlugin_h
 #define SqflitePlugin_h
 
-#import "SqfliteImport.h"
-
-@class SqfliteDarwinResultSet;
-@interface SqflitePlugin : NSObject<FlutterPlugin>
-
-+ (NSArray*)toSqlArguments:(NSArray*)rawArguments;
-+ (bool)arrayIsEmpty:(NSArray*)array;
-+ (NSMutableDictionary*)resultSetToResults:(SqfliteDarwinResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize;
-
-@end
+#import "include/sqflite_darwin/SqflitePluginPublic.h"
 
 extern NSString *const SqfliteMethodExecute;;
 extern NSString *const SqfliteMethodInsert;
