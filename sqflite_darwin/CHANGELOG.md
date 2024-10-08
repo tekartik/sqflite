@@ -1,4 +1,4 @@
-## 2.4.1-0
+## 2.4.1-1
 
 * Add Swift Package Manager support
 
