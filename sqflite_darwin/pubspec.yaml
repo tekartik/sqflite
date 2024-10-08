@@ -1,7 +1,7 @@
 name: sqflite_darwin
-repository: https://github.com/tekartik/sqflite/tree/master/sqflite
+repository: https://github.com/tekartik/sqflite/tree/master/sqflite_darwin
 issue_tracker: https://github.com/tekartik/sqflite/issues
-description: iOS/MacOS Flutter plugin for SQLite, a self-contained, high-reliability,
+description: iOS/MacOS flutter plugin for SQLite, a self-contained, high-reliability,
   embedded, SQL database engine.
 version: 2.4.1-1
 
