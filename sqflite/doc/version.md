@@ -13,7 +13,15 @@ which should give a version formatted like this:
 3.22.0
 ```
 
-Unfortunately the version of SQLite depends on the OS version.
+Unfortunately the version of SQLite depends on the OS version as sqflite
+uses the SQLite version available on the platform.
+
+Some features may not be available depending on the SQLite version.
+For example `UPSERT` statement (`INSERT INTO ..... ON CONFLICT UPDATE SET`) is only available starting from SQLite 3.24.0 so
+is not available on iOS 11.0 or android 10 (API Level 29).
+Check the [SQLite documentation](https://www.sqlite.org/lang_UPSERT.html) for more information on this topic.
+
+And check the available SQLite version on the platform you are targeting.
 
 You could get a more recent version using [`sqflite_common_ffi`](https://pub.dev/packages/sqflite_common_ffi).
 
