@@ -22,7 +22,7 @@ You can add the following run step (that works on all platforms as it only perfo
 
 ```
       ...
-      # Setup sqlite3 lib (done for linux only)
+      # Setup sqlite3 lib (done for linux only but works safely on all platform)
       - name: Install libsqlite3-dev
         run: |
           dart pub global activate --source git https://github.com/tekartik/ci.dart --git-path ci
@@ -32,5 +32,5 @@ You can add the following run step (that works on all platforms as it only perfo
 
 Or if you know that you are on linux you can simply add:
 ```
-     - run: sudo apt-get -y install libsqlite3-dev'
+     - run: sudo apt-get -y install libsqlite3-dev
 ```
