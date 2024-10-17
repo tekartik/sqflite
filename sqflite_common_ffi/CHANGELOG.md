@@ -1,4 +1,4 @@
-## 2.3.4-0
+## 2.3.4
 
 * Improve sqlite3.dll finder on windows
  
