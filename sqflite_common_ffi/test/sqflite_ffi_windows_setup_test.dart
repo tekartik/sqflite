@@ -43,6 +43,7 @@ Future<String?> windowsFindOpenssl() async {
 }
 
 void main() {
+  var dllPath = findWindowsSqlite3DllPath()!;
   var helper = Sqlite3DllSetupHelper(sqlite3Info);
   var srcZip = sqlite3Info.srcZip;
   var localZip = join('.local', basename(srcZip));
@@ -63,7 +64,6 @@ void main() {
     });
 
     test('checkDll', () async {
-      var dllPath = findWindowsDllPath()!;
       if (await helper.getZip()) {
         final inputStream = InputFileStream(localZip);
         final archive = ZipDecoder().decodeBuffer(inputStream);
@@ -73,6 +73,16 @@ void main() {
             await File(join(dirname(localZip), 'sqlite3.dll')).readAsBytes();
         var existingDllContent = await File(dllPath).readAsBytes();
         expect(existingDllContent, downloadedDllContent);
+      }
+    });
+
+    test('findWindowsSqlite3DllPathFromPath', () async {
+      expect(findWindowsSqlite3DllPathFromPath('.'), dllPath);
+      expect(findWindowsSqlite3DllPathFromPath('test'), dllPath);
+      var path = join('..', 'sqflite_common_test');
+      if (Directory(path).existsSync()) {
+        expect(findWindowsSqlite3DllPathFromPath(path), dllPath);
+        expect(findWindowsSqlite3DllPathFromPath(join(path, 'test')), dllPath);
       }
     });
   });
