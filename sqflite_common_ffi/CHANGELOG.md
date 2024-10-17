@@ -1,4 +1,8 @@
-## 2.3.3+1
+## 2.3.4-0
+
+* Improve sqlite3.dll finder on windows
+ 
+## 2.3.3+2
 
 * Remove dependency on `dart:html`.
 
