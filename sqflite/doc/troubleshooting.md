@@ -369,6 +369,18 @@ Solutions:
 - Build the database path properly (using `join` from the `path` package)
 - Create the parent folder if it does not exist
 
+### Out of memory
+
+#### java.lang.OutOfMemoryError
+
+It is an out of memory error so there is not much we can do. Maybe your query result are too big (try to limit the column and rows),
+
+In some Android version, the cursor are limited to 1Mb so this limits the size of each row when doing a query. Big content should indeed not be saved in sqflite.
+
+If it happens while writing, you can try to split into multiple transactions (for example with 1000 operation per transaction).
+
+Sometimes adding `android:largeHeap="true"` in manifest file could help.
+
 ## Error in Flutter web
 
 Look at package [sqflite_common_ffi_web](https://pub.dev/packages/sqflite_common_ffi_web) for experimental Web support.
