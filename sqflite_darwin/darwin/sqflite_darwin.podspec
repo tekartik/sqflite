@@ -6,9 +6,10 @@ Pod::Spec.new do |s|
   s.version          = '0.0.4'
   s.summary          = 'An iOS and macOS implementation for the sqflite plugin.'
   s.description      = <<-DESC
-Access SQLite database.
+    An iOS and macOS implementation of the Flutter sqflite plugin to
+    Access SQLite database.
                        DESC
-  s.homepage         = 'https://github.com/tekartik/sqflite/sqflite_darwin'
+  s.homepage         = 'https://github.com/tekartik/sqflite/tree/master/sqflite_darwin'
   s.license          = { :type => 'BSD', :file => '../LICENSE' }
   s.author           = { 'Tekartik' => 'alex@tekartik.com' }
   s.source           = { :http => 'https://github.com/tekartik/sqflite/tree/master/sqflite_darwin' }
