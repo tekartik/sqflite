@@ -315,6 +315,34 @@ All set, you're good to go with archiving your iOS app.
 
 Note: There is a .dSYM file associated with the xcFramework Signature, make your .gitignore file is ignoring that .dSYM file.
 
+## Android build issue
+
+### Could not resolve all files for configuration ':sqflite_android:androidJdkImage'
+
+*2024/11/06: Happening on flutter 3.5.4 using latest AndroidStudio*
+
+I found out the same happens using path_provider: https://github.com/flutter/flutter/issues/156558#issuecomment-2446956094
+
+solution summary:
+
+`gradle-wrapper.properties`:
+```
+# distributionUrl=https\://services.gradle.org/distributions/gradle-8.3-all.zip
+# Updated to 8.9
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.9-all.zip
+```
+
+`settings.gradle`:
+```
+plugins {
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+    /// id "com.android.application" version "8.1.0" apply false
+    /// Updated to 8.7.1
+    id "com.android.application" version "8.7.1" apply false
+    id "org.jetbrains.kotlin.android" version "1.8.22" apply false
+}
+```
+
 ## Runtime exception
 
 ### Json1 extension
