@@ -1,3 +1,7 @@
+## 2.4.1
+
+* Add darwin extension to allow creating unprotected folder in iOS (issue #924)
+
 ## 2.4.0
 
 * Make `sqflite` a federated plugin including `sqflite_android` and `sqflite_darwin` (iOS/macOS) plugins
