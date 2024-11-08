@@ -15,6 +15,7 @@ export 'package:sqflite_common/sqflite.dart';
 
 export 'sqlite_api.dart';
 export 'src/factory_impl.dart' show databaseFactorySqflitePlugin;
+export 'src/sqflite_darwin.dart' show SqfliteDarwin;
 export 'src/sqflite_plugin.dart' show SqflitePlugin;
 
 ///

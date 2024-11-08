@@ -397,6 +397,57 @@ Solutions:
 - Build the database path properly (using `join` from the `path` package)
 - Create the parent folder if it does not exist
 
+### iOS runtime error
+
+#### DatabaseException(open_failed) in a background isolate when the device is locked
+
+*experimental*
+
+This issue happens when the device is locked and the data is encrypted and you 
+want to open your database in a background isolate (push notification, background fetch).
+
+The issue is explained here:
+- https://github.com/tekartik/sqflite/issues/924
+
+With a solution explained here:
+- https://github.com/groue/GRDB.swift/issues/571
+
+Basically, when the device is locked and the data is encrypted, the database file is not accessible.
+One solution, if your data is not sensitive, is to disable data protection for the database file by
+creating it in an unprotected directory.
+
+To handle this an iOS specific entry point has been added to create an unprotected folder where
+your database file can be created.
+
+```dart
+/// Default location for database (or use path_provider)
+var databasesPath = await factory.getDatabasesPath();
+
+late String dir;
+
+/// If you want to allow opening the db while your device is locked
+/// (push notification, background fetch) create an unprotected folder
+/// where the db will be created.
+if (Platform.isIOS) {
+  dir = join(databasesPath, 'unprotected');
+  if (!Directory(dir).existsSync()) {
+    await SqfliteDarwin.createUnprotectedFolder(parent, unprotected);
+  }
+} else {
+  // ok for other platforms
+  dir = databasesPath;
+}
+
+var db = await factory.openDatabase(
+  join(dir, 'my_database.db'),
+  options: OpenDatabaseOptions(
+      version: 1,
+      onCreate: (db, version) async {
+        // ...
+      }),
+);
+```
+
 ### Out of memory
 
 #### java.lang.OutOfMemoryError

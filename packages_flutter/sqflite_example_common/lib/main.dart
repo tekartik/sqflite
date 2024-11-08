@@ -67,6 +67,9 @@ const String testExpRoute = '/test/exp';
 /// Deprecated test page.
 const String testDeprecatedRoute = '/test/deprecated';
 
+/// Extra routes added by the application.
+Map<String, WidgetBuilder>? extraRoutes;
+
 class _SqfliteExampleAppState extends State<SqfliteExampleApp> {
   var routes = <String, WidgetBuilder>{
     '/test': (BuildContext context) => MyHomePage(),
@@ -80,7 +83,7 @@ class _SqfliteExampleAppState extends State<SqfliteExampleApp> {
     testExceptionRoute: (BuildContext context) => ExceptionTestPage(),
     testExpRoute: (BuildContext context) => ExpTestPage(),
     testDeprecatedRoute: (BuildContext context) => DeprecatedTestPage(),
-  };
+  }..addAll(extraRoutes ?? {});
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +132,11 @@ class MyHomePage extends StatefulWidget {
     _items.add(MainItem('Deprecated test',
         'Keeping some old tests for deprecated functionalities',
         route: testDeprecatedRoute));
-
+    if (extraRoutes != null) {
+      for (var entry in extraRoutes!.entries) {
+        _items.add(MainItem(entry.key, 'Extra test', route: entry.key));
+      }
+    }
     // Uncomment to view all logs
     //Sqflite.devSetDebugModeOn(true);
   }

@@ -9,6 +9,8 @@ import 'package:sqflite_common/src/env_utils.dart'; // ignore: implementation_im
 
 /// Test context for testing
 abstract class SqfliteTestContext {
+  bool get isPlugin;
+
   /// The factory.
   DatabaseFactory get databaseFactory;
 
@@ -118,6 +120,9 @@ mixin SqfliteTestContextMixin implements SqfliteTestContext {
 
   @override
   bool get supportsUri => false;
+
+  @override
+  bool get isPlugin => false;
 }
 
 /// sqflite local test context mixin.

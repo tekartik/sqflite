@@ -42,6 +42,9 @@ dependencies:
       url: https://github.com/tekartik/sqflite
       ref: dart3a
       path: packages_flutter/sqflite_example_common
+  sqflite_common_test:
+    path: ../sqflite_common_test
+  test: '>=1.16.0-nullsafety.10'
 dev_dependencies:
   flutter_lints: ">=5.0.0"
   flutter_test:
@@ -50,15 +53,19 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
-  sqflite_common_test:
-    path: ../sqflite_common_test
-  test: '>=1.16.0-nullsafety.10'
   pub_semver:
   sqlite3_flutter_libs:
-
+  sqflite_support:
+    path: ../sqflite_support
 dependency_overrides:
   sqflite:
     path: ../sqflite
+  sqflite_darwin:
+    path: ../sqflite_darwin
+  sqflite_android:
+    path: ../sqflite_android
+  sqflite_platform_interface:
+    path: ../sqflite_platform_interface
   sqflite_common:
     path: ../sqflite_common
   sqflite_common_ffi:

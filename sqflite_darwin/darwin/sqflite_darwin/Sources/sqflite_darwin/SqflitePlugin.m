@@ -20,6 +20,7 @@ static NSString *const _methodDatabaseExists = @"databaseExists";
 
 static NSString *const _methodQueryCursorNext = @"queryCursorNext";
 static NSString *const _methodBatch = @"batch";
+static NSString *const _methodDarwinCreateUnprotectedFolder = @"darwinCreateUnprotectedFolder";
 
 // For open
 static NSString *const _paramReadOnly = @"readOnly";
@@ -52,6 +53,10 @@ static NSString *const _paramCancel = @"cancel";
 static NSString *const _paramCursorId = @"cursorId";
 static NSString *const _paramCursorPageSize = @"cursorPageSize";
 
+// create unprotected folder
+static NSString *const _paramParent = @"parent";
+static NSString *const _paramName = @"name";
+
 // Shared
 NSString *const SqfliteMethodExecute = @"execute";
 NSString *const SqfliteMethodInsert = @"insert";
@@ -60,6 +65,7 @@ NSString *const SqfliteMethodQuery = @"query";
 
 NSString *const SqliteErrorCode = @"sqlite_error";
 NSString *const SqfliteErrorBadParam = @"bad_param"; // internal only
+NSString *const SqfliteFsErrorCode = @"fs_error";
 
 NSString *const SqfliteParamSql = @"sql";
 NSString *const SqfliteParamSqlArguments = @"arguments";
@@ -516,7 +522,7 @@ static NSInteger _databaseOpenCount = 0;
                 NSLog(@"Creating parent dir %@", parentDir);
             }
             [[NSFileManager defaultManager] createDirectoryAtPath:parentDir withIntermediateDirectories:YES attributes:nil error:&error];
-            // Ingore the error, it will break later during open
+            // Ignore the error, it will break later during open
         }
     }
     SqfliteDarwinDatabaseQueue *queue = [SqfliteDarwinDatabaseQueue databaseQueueWithPath:path flags:(readOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE))];
@@ -749,6 +755,37 @@ static NSInteger _databaseOpenCount = 0;
     result(paths.firstObject);
 }
 
+//
+// Options
+//
+- (void)handleDarwinCreateUnprotectedFolder:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSString* parent = call.arguments[_paramParent];
+    NSString* name = call.arguments[_paramName];
+    
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:parent]) {
+        NSError* error = nil;
+        // Create the parent with the default attribute
+        [fileManager createDirectoryAtPath:parent withIntermediateDirectories:YES attributes:nil error:&error];
+        // ignore the error, it will fail later
+    }
+    NSString* path = [parent stringByAppendingPathComponent:name];
+    if ([fileManager fileExistsAtPath:path]) {
+        // if it exists, ok too bad
+        // Maybe try to change permission later
+    } else {
+        NSError* error = nil;
+        [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:@{NSFileProtectionKey: NSFileProtectionNone} error:&error];
+        if (error != nil) {
+            result([FlutterError errorWithCode:SqfliteFsErrorCode
+                                       message:[NSString stringWithFormat:@"error creating unprotected dir: %@", error]
+                                       details:nil]);
+            return;
+        }
+    }
+    
+    result(nil);
+}
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
 #if !TARGET_OS_IPHONE
     // result wrapper to post the result on the main thread
@@ -797,6 +834,9 @@ static NSInteger _databaseOpenCount = 0;
     } else if ([_methodDebugMode isEqualToString:call.method]) {
         [self handleDebugModeCall:call
                            result:result];
+    } else if ([_methodDarwinCreateUnprotectedFolder isEqualToString:call.method]) {
+        [self handleDarwinCreateUnprotectedFolder:call
+                                           result:result];
     } else {
         result(FlutterMethodNotImplemented);
     }
