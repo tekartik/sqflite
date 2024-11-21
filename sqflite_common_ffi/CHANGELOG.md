@@ -1,6 +1,7 @@
-## 2.3.4+2
+## 2.3.4+3
 
 * Improve sqlite3.dll finder on windows
+* Fix conditional import for web support
  
 ## 2.3.3+2
 
