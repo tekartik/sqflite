@@ -1,5 +1,5 @@
 /// Windows setup helper.
 library;
 
-export 'package:sqflite_common_ffi/src/windows/setup.dart'
-    show findWindowsSqlite3DllPath, findWindowsSqlite3DllPathFromPath;
+export 'package:sqflite_common_ffi/src/windows/sqflite_ffi_setup_stub.dart'
+    if (dart.libary.io) 'package:sqflite_common_ffi/src/windows/sqflite_ffi_setup_io.dart';
