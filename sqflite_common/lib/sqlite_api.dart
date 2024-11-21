@@ -1,3 +1,12 @@
+/// {@canonicalFor sqflite_debug.SqfliteDatabaseFactoryDebug}
+/// {@canonicalFor constant.inMemoryDatabasePath}
+/// {@canonicalFor constant.sqfliteLogLevelNone}
+/// {@canonicalFor constant.sqfliteLogLevelSql}
+/// {@canonicalFor constant.sqfliteLogLevelVerbose}
+/// {@canonicalFor exception.DatabaseException}
+/// {@canonicalFor sql_builder.ConflictAlgorithm}
+library;
+
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -354,13 +363,13 @@ typedef OnDatabaseCreateFn = FutureOr<void> Function(Database db, int version);
 /// Post initialization should happen here.
 typedef OnDatabaseOpenFn = FutureOr<void> Function(Database db);
 
-/// Prototype of the function called before calling [onCreate]/[onUpdate]/[onOpen]
+/// Prototype of the function called before calling [OpenDatabaseOptions.onCreate]/[OpenDatabaseOptions.onUpgrade]/[OpenDatabaseOptions.onOpen]
 /// when the database is open.
 ///
 /// Post initialization should happen here.
 typedef OnDatabaseConfigureFn = FutureOr<void> Function(Database db);
 
-/// to specify during [openDatabase] for [onDowngrade]
+/// to specify during [openDatabase] for [OpenDatabaseOptions.onDowngrade]
 /// Downgrading will always fail
 Future<void> onDatabaseVersionChangeError(
     Database db, int oldVersion, int newVersion) async {
@@ -374,7 +383,7 @@ Future<void> __onDatabaseDowngradeDelete(
 
 /// Downgrading will delete the database and open it again.
 ///
-/// To set in [onDowngrade] if you want to delete everything on downgrade.
+/// To set in [OpenDatabaseOptions.onDowngrade] if you want to delete everything on downgrade.
 final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
     __onDatabaseDowngradeDelete;
 
@@ -416,7 +425,7 @@ abstract class OpenDatabaseOptions {
   /// database version
   ///
   /// In the first case where [onCreate] is not specified, [onUpgrade] is called
-  /// with its [oldVersion] parameter as `0`. In the second case, you can perform
+  /// with its [OnDatabaseVersionChangeFn.oldVersion] parameter as `0`. In the second case, you can perform
   /// the necessary migration procedures to handle the differing schema
   ///
   /// [onDowngrade] is called only when [version] is lower than the last database
@@ -509,9 +518,9 @@ abstract class Batch {
   /// and the failure are ignored (i.e. the result for the given operation will
   /// be a DatabaseException)
   ///
-  /// During [Database.onCreate], [Database.onUpgrade], [Database.onDowngrade]
-  /// (we are already in a transaction) or if the batch was created in a
-  /// transaction it will only be commited when
+  /// During [OpenDatabaseOptions.onCreate], [OpenDatabaseOptions.onUpgrade],
+  /// [OpenDatabaseOptions.onDowngrade] (we are already in a transaction) or if
+  /// the batch was created in a transaction it will only be commited when
   /// the transaction is commited ([exclusive] is not used then).
   ///
   /// Otherwise, sqflite will start a transaction to commit this batch. In rare

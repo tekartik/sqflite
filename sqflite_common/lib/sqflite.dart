@@ -43,7 +43,7 @@ export 'sqlite_api.dart';
 /// database version
 ///
 /// In the first case where [onCreate] is not specified, [onUpgrade] is called
-/// with its [oldVersion] parameter as `0`. In the second case, you can perform
+/// with its [OnDatabaseVersionChangeFn.oldVersion] parameter as `0`. In the second case, you can perform
 /// the necessary migration procedures to handle the differing schema
 ///
 /// [onDowngrade] is called only when [version] is lower than the last database
@@ -99,7 +99,7 @@ Future<Database> openReadOnlyDatabase(String path,
 ///
 /// Note for iOS and non-Android platforms: Using `path_provider` is recommended to get the
 /// databases directory. The most appropriate location on iOS would be
-/// the Library directory that you could get from the [`path_provider` package]
+/// the Library directory that you could get from the `path_provider` package
 /// (https://pub.dev/documentation/path_provider/latest/path_provider/getLibraryDirectory.html).
 ///
 Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();

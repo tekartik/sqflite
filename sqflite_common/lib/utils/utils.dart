@@ -14,7 +14,7 @@ int? firstIntValue(List<Map<String, Object?>> list) {
 }
 
 /// Utility to encode a blob to allow blob query using
-/// 'hex(blob_field) = ?', Sqlite.hex([1,2,3])
+/// `'hex(blob_field) = ?', Sqlite.hex([1,2,3])`
 String hex(List<int> bytes) {
   final buffer = StringBuffer();
   for (var part in bytes) {
