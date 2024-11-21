@@ -1,7 +1,8 @@
-## 0.4.5+3
+## 0.4.5+4
 
 * Setup for sqlite3 2.3.6
 * Improved Wasm support
+* Mark it wasm ready for pub.dev
 
 ## 0.4.3+2
 
