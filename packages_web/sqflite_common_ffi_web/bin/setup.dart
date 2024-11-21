@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:sqflite_common_ffi_web/src/setup/setup.dart';
+
+import 'package:sqflite_common_ffi_web/src/setup/setup_io.dart';
 
 var noSqlite3Wasm = 'no-sqlite3-wasm';
 var sqlite3WasmUrl = 'sqlite3-wasm-url';
@@ -37,8 +38,8 @@ Future<void> main(List<String> args) async {
   }
   var path = result.rest.isNotEmpty ? result.rest.first : null;
   await webdevReady;
-  await setupBinaries(
-      options: SetupOptions(
+  await setupSqfliteWebBinaries(
+      options: SqfliteWebSetupOptions(
           path: path,
           dir: dir,
           force: force,

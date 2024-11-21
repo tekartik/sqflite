@@ -1,4 +1,4 @@
-import 'package:sqflite_common_ffi_web/src/setup/setup.dart';
+import 'setup_io.dart';
 
 Future<void> main() async {
   var context = await getSetupContext();

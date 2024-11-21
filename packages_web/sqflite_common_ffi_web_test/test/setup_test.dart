@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
 import 'package:sqflite_common_ffi_web/src/constant.dart';
-import 'package:sqflite_common_ffi_web/src/setup/setup.dart';
+import 'package:sqflite_common_ffi_web/src/setup/setup_io.dart';
 import 'package:test/test.dart';
 
 void deleteFileSync(String path) {
@@ -36,13 +36,14 @@ void main() {
     test('force setup', () async {
       dir = join('.dart_tool', packageName, 'test', 'force_setup');
       deleteBuiltFilesSync();
-      await setupBinaries(options: SetupOptions(dir: dir, force: true));
+      await setupBinaries(
+          options: SqfliteWebSetupOptions(dir: dir, force: true));
       checkBuiltFilesSync();
     });
     test('normal setup', () async {
       dir = join('.dart_tool', packageName, 'test', 'normal_setup');
       deleteBuiltFilesSync();
-      await setupBinaries(options: SetupOptions(dir: dir));
+      await setupBinaries(options: SqfliteWebSetupOptions(dir: dir));
       checkBuiltFilesSync();
     });
     test('bin setup', () async {
