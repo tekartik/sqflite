@@ -66,7 +66,7 @@ void main() {
     test('checkDll', () async {
       if (await helper.getZip()) {
         final inputStream = InputFileStream(localZip);
-        final archive = ZipDecoder().decodeBuffer(inputStream);
+        final archive = ZipDecoder().decodeStream(inputStream);
         await extractArchiveToDisk(archive, dirname(localZip));
 
         var downloadedDllContent =

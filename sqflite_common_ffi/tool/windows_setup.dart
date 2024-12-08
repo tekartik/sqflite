@@ -57,7 +57,7 @@ class Sqlite3DllSetupHelper {
       // Extract the zip
       stdout.writeln('Extracting $localZip to $localExtractedZipDir');
       final inputStream = InputFileStream(localZip);
-      final archive = ZipDecoder().decodeBuffer(inputStream);
+      final archive = ZipDecoder().decodeStream(inputStream);
       await extractArchiveToDisk(archive, localExtractedZipDir);
       await jsonInfo.writeAsString(jsonEncode(sqlite3Info.toMap()));
     }

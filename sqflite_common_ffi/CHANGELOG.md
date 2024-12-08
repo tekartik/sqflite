@@ -1,7 +1,8 @@
-## 2.3.4+3
+## 2.3.4+4
 
 * Improve sqlite3.dll finder on windows
 * Fix conditional import for web support
+* Fix dev archive deps to 4.0.0
  
 ## 2.3.3+2
 
