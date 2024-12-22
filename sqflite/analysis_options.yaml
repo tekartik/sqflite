@@ -34,7 +34,6 @@ linter:
     - directives_ordering
     - implicit_reopen
     - invalid_case_patterns
-    - invalid_runtime_check_with_js_interop_types
     - iterable_contains_unrelated_type
     - library_names
     - list_remove_unrelated_type
@@ -42,7 +41,6 @@ linter:
     - no_literal_bool_comparisons
     - no_self_assignments
     - omit_local_variable_types
-    - package_api_docs
     - package_prefixed_library_names
     - prefer_final_locals
     - prefer_if_elements_to_conditional_expressions
@@ -55,5 +53,4 @@ linter:
     - throw_in_finally
     - unawaited_futures
     - unnecessary_statements
-    - unsafe_html
 

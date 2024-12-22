@@ -41,7 +41,6 @@ linter:
     - no_literal_bool_comparisons
     - no_self_assignments
     - omit_local_variable_types
-    - package_api_docs
     - package_prefixed_library_names
     - prefer_final_locals
     - prefer_if_elements_to_conditional_expressions
@@ -55,5 +54,4 @@ linter:
     - unawaited_futures
     - unintended_html_in_doc_comment
     - unnecessary_statements
-    - unsafe_html
 
