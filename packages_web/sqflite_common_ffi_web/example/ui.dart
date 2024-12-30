@@ -6,6 +6,7 @@ var countLineMax = 100;
 var _output = web.document.querySelector('#output')!;
 var _input = web.document.querySelector('#input')!;
 void write(String message) {
+  // ignore: avoid_print
   print(message);
   lines.add(message);
   if (lines.length > countLineMax + 10) {
@@ -15,7 +16,7 @@ void write(String message) {
 }
 
 void addButton(String text, FutureOr<void> Function() action) {
-  _input.append((web.document.createElement('button') as web.HTMLButtonElement)
+  _input.append(web.HTMLButtonElement()
     ..innerText = text
     ..onClick.listen((event) async {
       await action();
