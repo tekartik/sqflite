@@ -103,6 +103,9 @@ class _ManualTestPageState extends State<ManualTestPage> {
       SqfMenuItem('openDatabase', () async {
         await _openDatabase();
       }, summary: 'Open the database'),
+      SqfMenuItem('transaction add and query', () async {
+        await _addAndQuery();
+      }, summary: 'open/create table/add/query'),
       SqfMenuItem('transaction add and query and pause', () async {
         await _addAndQuery(msDelay: 5000);
       }, summary: 'open/create table/add/query/pause'),
