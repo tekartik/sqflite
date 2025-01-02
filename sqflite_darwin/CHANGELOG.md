@@ -1,6 +1,7 @@
-## 2.4.1
+## 2.4.1+1
 
 * Allow creating unprotected folder in iOS (issue #924)
+  * Fix delete database to properly delete all related files (`-shm`, `-wal`, `-journal`)
 
 ## 2.4.1-1
 
