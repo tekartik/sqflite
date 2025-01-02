@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' hide context;
 import 'package:sqflite_common/sqflite.dart';
 import 'package:sqflite_common/sqflite_dev.dart';
 // ignore: implementation_imports
@@ -35,8 +36,15 @@ class _ManualTestPageState extends State<ManualTestPage> {
           content: Text(message), duration: const Duration(milliseconds: 300)));
   }
 
-  Future<Database> _openDatabase() async {
-    return database ??= await databaseFactory.openDatabase(dbName);
+  Future<Database> _openDatabase({bool wal = false}) async {
+    var path = await getDatabasesPath();
+    print('path ${join(path, dbName)}');
+    return database ??= await databaseFactory.openDatabase(dbName,
+        options: OpenDatabaseOptions(onConfigure: (db) async {
+      if (wal) {
+        await db.execute('PRAGMA journal_mode = WAL');
+      }
+    }));
   }
 
   Future _closeDatabase() async {
@@ -103,6 +111,9 @@ class _ManualTestPageState extends State<ManualTestPage> {
       SqfMenuItem('openDatabase', () async {
         await _openDatabase();
       }, summary: 'Open the database'),
+      SqfMenuItem('openDatabase WAL', () async {
+        await _openDatabase(wal: true);
+      }, summary: 'Open the database on set WAL mode'),
       SqfMenuItem('transaction add and query', () async {
         await _addAndQuery();
       }, summary: 'open/create table/add/query'),

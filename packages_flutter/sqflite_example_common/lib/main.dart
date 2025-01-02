@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite_example_common/batch_test_page.dart';
 import 'package:sqflite_example_common/deprecated_test_page.dart';
@@ -8,6 +9,7 @@ import 'package:sqflite_example_common/exp_test_page.dart';
 import 'package:sqflite_example_common/manual_test_page.dart';
 import 'package:sqflite_example_common/src/dev_utils.dart';
 
+import 'io_test_page.dart';
 import 'model/main_item.dart';
 import 'open_test_page.dart';
 import 'raw_test_page.dart';
@@ -64,6 +66,9 @@ const String testManualRoute = '/test/manual';
 /// Experiment test page.
 const String testExpRoute = '/test/exp';
 
+/// IO only test page.
+const String testIoRoute = '/test/io';
+
 /// Deprecated test page.
 const String testDeprecatedRoute = '/test/deprecated';
 
@@ -82,6 +87,7 @@ class _SqfliteExampleAppState extends State<SqfliteExampleApp> {
     testBatchRoute: (BuildContext context) => BatchTestPage(),
     testExceptionRoute: (BuildContext context) => ExceptionTestPage(),
     testExpRoute: (BuildContext context) => ExpTestPage(),
+    if (!kIsWeb) testIoRoute: (BuildContext context) => IoTestPage(),
     testDeprecatedRoute: (BuildContext context) => DeprecatedTestPage(),
   }..addAll(extraRoutes ?? {});
 
@@ -127,8 +133,12 @@ class MyHomePage extends StatefulWidget {
         route: testExpRoute));
     _items.add(MainItem('Exception tests', 'Tests that trigger exceptions',
         route: testExceptionRoute));
+    if (!kIsWeb) {
+      _items.add(MainItem('IO tests', 'IO tests', route: testIoRoute));
+    }
     _items.add(MainItem('Manual tests', 'Tests that requires manual execution',
         route: testManualRoute));
+
     _items.add(MainItem('Deprecated test',
         'Keeping some old tests for deprecated functionalities',
         route: testDeprecatedRoute));

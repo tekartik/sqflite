@@ -619,14 +619,26 @@ static NSInteger _databaseOpenCount = 0;
     });
 }
 
+- (void)deleteSimpleFile:(NSString*)path {
+    bool _log = sqfliteHasSqlLogLevel(logLevel);
+    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        if (_log) {
+            NSLog(@"Deleting file %@", path);
+        }
+        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    }
+}
+
 - (void)deleteDatabaseFile:(NSString*)path {
     bool _log = sqfliteHasSqlLogLevel(logLevel);
     if (_log) {
-        NSLog(@"Deleting %@", path);
+        NSLog(@"Deleting db %@", path);
     }
-    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
-        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
-    }
+    [self deleteSimpleFile:path];
+    [self deleteSimpleFile:[path stringByAppendingString:@"-shm"]];
+    [self deleteSimpleFile:[path stringByAppendingString:@"-wal"]];
+    [self deleteSimpleFile:[path stringByAppendingString:@"-journal"]];
 }
 
 //
