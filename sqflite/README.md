@@ -251,9 +251,44 @@ await database.transaction((txn) async {
 ```
 
 A transaction is committed if the callback does not throw an error. If an error is thrown,
-the transaction is cancelled. So to rollback a  transaction one way is to throw an exception.
+the transaction is cancelled and the same error is re-thrown. So to rollback a transaction one way is to throw an exception.
 
+```dart
+try {
+   await database.transaction((txn) async {
+      await txn.update('TABLE', {'foo': 'bar'});
+   });
+   // No error, the transaction is committed
+} catch (e, st) {
+   // this reliably catch if there is a key conflict
+   // We know that the transaction is rolled back.
+}
 
+try {
+  await database.transaction((txn) async {
+    // ...
+    // cancel the transaction (any error will do)
+    throw StateError('cancel transaction');
+  });
+} catch (e, st) {
+  // We know that the transaction is rolled back.
+}
+```
+You can however catch the exception inside the transaction and not rethrow it to commit the transaction. Only the failed statement will not be executed.
+
+```dart
+await database.transaction((txn) async {
+  // ...
+  try {
+    await txn.update('TABLE', {'foo': 'bar'});
+  } catch (e, st) {
+   // this reliably catch if there is a key conflict
+   // We know that the transaction is rolled back.
+  }
+  // ...
+  // The transaction will be committed
+});
+```
 ### Batch support
 
 To avoid ping-pong between dart and native code, you can use `Batch`:

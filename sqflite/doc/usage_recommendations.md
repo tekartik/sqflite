@@ -44,7 +44,7 @@ Transaction:
 - A transaction is a SQLite concept (`BEGIN TRANSACTION`, `COMMIT`). In a transaction, you run SQL statements
  as you would do normally (i.e. you await each statement) but the changes are only effective on COMMIT
 - A transaction is committed if the callback does not throw an error. If an error is thrown,
-  the transaction is cancelled. So to rollback a transaction one way is to throw an exception.
+  the transaction is cancelled and the same error is rethrown. So to rollback a transaction one way is to throw an exception.
 
 Batch
 - A batch is just a list of statement to execute all at once
