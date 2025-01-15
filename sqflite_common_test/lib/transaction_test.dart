@@ -496,5 +496,22 @@ void run(SqfliteTestContext context) {
         await db.close();
       }
     });
+    test('throw in transaction', () async {
+      var path = await context.initDeleteDb('throw_in_transaction.db');
+
+      Object? exception;
+      var db = await factory.openDatabase(path);
+      try {
+        await db.transaction((txn) async {
+          throw _MyException();
+        });
+      } on _MyException catch (e) {
+        exception = e;
+      }
+      // Check that the exception has been thrown
+      expect(exception, isA<_MyException>());
+    });
   });
 }
+
+class _MyException {}
