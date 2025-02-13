@@ -13,10 +13,14 @@ class Sqlite3DllSetupHelper {
 
   late var srcZip = sqlite3Info.srcZip;
   late var localZip = join('.local', basename(srcZip));
-  late var localExtractedZipDir =
-      join('.local', basenameWithoutExtension(srcZip));
-  late var localExtractedJsonInfoFile =
-      join(localExtractedZipDir, sqflite3InfoJsonFileName);
+  late var localExtractedZipDir = join(
+    '.local',
+    basenameWithoutExtension(srcZip),
+  );
+  late var localExtractedJsonInfoFile = join(
+    localExtractedZipDir,
+    sqflite3InfoJsonFileName,
+  );
   var bundledDir = join('lib', dirname(packageGetSqlite3DllPath('.')));
   late var bundledJsonInfoFilePath = join(bundledDir, 'sqlite3_info.json');
   late var bundledSqlite3DllFilePath = join(bundledDir, 'sqlite3.dll');
@@ -44,7 +48,8 @@ class Sqlite3DllSetupHelper {
         await File(localZip).writeAsBytes(await readBytes(Uri.parse(srcZip)));
       } catch (e) {
         stderr.writeln(
-            'Fail to fetch sqlite.zip version $sqlite3_38_2Info at $srcZip');
+          'Fail to fetch sqlite.zip version $sqlite3_38_2Info at $srcZip',
+        );
         return false;
       }
     }
@@ -69,8 +74,9 @@ class Sqlite3DllSetupHelper {
     stdout.writeln('Copying $srcZip to $dstFile');
     //await File(dstFile).delete(recursive: true);
     await File(srcFile).copy(dstFile);
-    await File(bundledJsonInfoFilePath)
-        .writeAsString(jsonEncode(sqlite3Info.toMap()));
+    await File(
+      bundledJsonInfoFilePath,
+    ).writeAsString(jsonEncode(sqlite3Info.toMap()));
     //await File()
   }
 }

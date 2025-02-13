@@ -25,18 +25,22 @@ void walTests(SqfliteTestContext context) {
         await walDir.create(recursive: true);
         var dbPath = join(walFolder, 'wal_test.db');
 
-        var db = await factory.openDatabase(dbPath,
-            options: OpenDatabaseOptions(
-                version: 1,
-                singleInstance: false,
-                onConfigure: (db) {
-                  // make sure we have a wal file
-                  db.execute('PRAGMA journal_mode = WAL');
-                },
-                onCreate: (db, version) async {
-                  await db.execute(
-                      'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
-                }));
+        var db = await factory.openDatabase(
+          dbPath,
+          options: OpenDatabaseOptions(
+            version: 1,
+            singleInstance: false,
+            onConfigure: (db) {
+              // make sure we have a wal file
+              db.execute('PRAGMA journal_mode = WAL');
+            },
+            onCreate: (db, version) async {
+              await db.execute(
+                'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+              );
+            },
+          ),
+        );
 
         try {
           await db.transaction((txn) async {

@@ -14,5 +14,6 @@ Future<void> main() async {
   print('http://localhost:8080');
 
   await shell.run(
-      'dart pub global run dhttpd:dhttpd . --headers=Cross-Origin-Embedder-Policy=credentialless;Cross-Origin-Opener-Policy=same-origin');
+    'dart pub global run dhttpd:dhttpd . --headers=Cross-Origin-Embedder-Policy=credentialless;Cross-Origin-Opener-Policy=same-origin',
+  );
 }

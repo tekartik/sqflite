@@ -18,25 +18,32 @@ void main() {
     expect(await db.getVersion(), 0);
     await db.close();
 
-    db = await databaseFactory.openDatabase(inMemoryDatabasePath,
-        options: OpenDatabaseOptions(version: 1));
+    db = await databaseFactory.openDatabase(
+      inMemoryDatabasePath,
+      options: OpenDatabaseOptions(version: 1),
+    );
     expect(await db.getVersion(), 1);
     await db.close();
 
-    db = await databaseFactory.openDatabase('simple_version_1.db',
-        options: OpenDatabaseOptions(version: 1));
+    db = await databaseFactory.openDatabase(
+      'simple_version_1.db',
+      options: OpenDatabaseOptions(version: 1),
+    );
     expect(await db.getVersion(), 1);
     await db.close();
   });
   test('basic sqflite example', () async {
     var path = 'sqfite_ffi_async_basic.db';
     await databaseFactory.deleteDatabase(path);
-    var database = await databaseFactory.openDatabase(path,
-        options: OpenDatabaseOptions(
-            version: 1,
-            onCreate: (Database db, int version) async {
-              await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
-            }));
+    var database = await databaseFactory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+        },
+      ),
+    );
     await database.insert('Test', {'id': 1});
     await database.close();
   });
@@ -45,12 +52,16 @@ void main() {
     expect(await db.getVersion(), 0);
     await db.close();
 
-    db = await databaseFactory.openDatabase(inMemoryDatabasePath,
-        options: OpenDatabaseOptions(version: 1));
+    db = await databaseFactory.openDatabase(
+      inMemoryDatabasePath,
+      options: OpenDatabaseOptions(version: 1),
+    );
     expect(await db.getVersion(), 1);
     await db.close();
-    db = await databaseFactory.openDatabase('simple_version_1.db',
-        options: OpenDatabaseOptions(version: 1));
+    db = await databaseFactory.openDatabase(
+      'simple_version_1.db',
+      options: OpenDatabaseOptions(version: 1),
+    );
     expect(await db.getVersion(), 1);
     await db.close();
   }, skip: 'in-memory');
@@ -63,7 +74,7 @@ void main() {
 
     try {
       await db.insert('test', <String, Object?>{
-        'blob': Uint8List.fromList([1, 2, 3])
+        'blob': Uint8List.fromList([1, 2, 3]),
       });
       fail('should fail');
     } catch (e) {
@@ -74,7 +85,7 @@ void main() {
     try {
       var batch = db.batch();
       batch.insert('test', <String, Object?>{
-        'blob': Uint8List.fromList([1, 2, 3])
+        'blob': Uint8List.fromList([1, 2, 3]),
       });
       await batch.commit();
       fail('should fail');

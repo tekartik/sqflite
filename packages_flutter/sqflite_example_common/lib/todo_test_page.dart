@@ -42,7 +42,7 @@ class Todo {
   Map<String, Object?> toMap() {
     final map = <String, Object?>{
       columnTitle: title,
-      columnDone: done == true ? 1 : 0
+      columnDone: done == true ? 1 : 0,
     };
     if (id != null) {
       map[columnId] = id;
@@ -58,15 +58,18 @@ class TodoProvider {
 
   /// Open the database.
   Future open(String path) async {
-    db = await openDatabase(path, version: 1,
-        onCreate: (Database db, int version) async {
-      await db.execute('''
+    db = await openDatabase(
+      path,
+      version: 1,
+      onCreate: (Database db, int version) async {
+        await db.execute('''
 create table $tableTodo ( 
   $columnId integer primary key autoincrement, 
   $columnTitle text not null,
   $columnDone integer not null)
 ''');
-    });
+      },
+    );
   }
 
   /// Insert a todo.
@@ -77,10 +80,12 @@ create table $tableTodo (
 
   /// Get a todo.
   Future<Todo?> getTodo(int id) async {
-    final List<Map> maps = await db.query(tableTodo,
-        columns: [columnId, columnDone, columnTitle],
-        where: '$columnId = ?',
-        whereArgs: [id]);
+    final List<Map> maps = await db.query(
+      tableTodo,
+      columns: [columnId, columnDone, columnTitle],
+      where: '$columnId = ?',
+      whereArgs: [id],
+    );
     if (maps.isNotEmpty) {
       return Todo.fromMap(maps.first);
     }
@@ -94,8 +99,12 @@ create table $tableTodo (
 
   /// Update a todo.
   Future<int> update(Todo todo) async {
-    return await db.update(tableTodo, todo.toMap(),
-        where: '$columnId = ?', whereArgs: [todo.id!]);
+    return await db.update(
+      tableTodo,
+      todo.toMap(),
+      where: '$columnId = ?',
+      whereArgs: [todo.id!],
+    );
   }
 
   /// Close database.

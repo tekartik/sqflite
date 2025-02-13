@@ -189,15 +189,18 @@ class _TestPageState extends State<TestPage> with Group {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(widget.title), actions: <Widget>[
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Run again',
             onPressed: _run,
           ),
-        ]),
-        body:
-            ListView.builder(itemBuilder: _itemBuilder, itemCount: _itemCount));
+        ],
+      ),
+      body: ListView.builder(itemBuilder: _itemBuilder, itemCount: _itemCount),
+    );
   }
 
   Widget _itemBuilder(BuildContext context, int index) {

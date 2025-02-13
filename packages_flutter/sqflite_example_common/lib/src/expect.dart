@@ -21,8 +21,14 @@ class TestFailure {
 /// The type used for functions that can be used to build up error reports
 /// upon failures in [expect].
 @Deprecated('Will be removed in 0.13.0.')
-typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
-    String? reason, Map matchState, bool verbose);
+typedef ErrorFormatter =
+    String Function(
+      dynamic actual,
+      Matcher matcher,
+      String? reason,
+      Map matchState,
+      bool verbose,
+    );
 
 /// Assert that [actual] matches [matcher].
 ///
@@ -48,12 +54,7 @@ typedef ErrorFormatter = String Function(dynamic actual, Matcher matcher,
 /// the test doesn't complete until the matcher has either matched or failed. If
 /// you want to wait for the matcher to complete before continuing the test, you
 /// can call [expectLater] instead and `await` the result.
-void expect(
-  Object? actual,
-  Object? matcher, {
-  String? reason,
-  Object? skip,
-}) {
+void expect(Object? actual, Object? matcher, {String? reason, Object? skip}) {
   _expect(actual, matcher, reason: reason, skip: skip);
 }
 
@@ -68,12 +69,19 @@ void expect(
 ///
 /// If the matcher fails asynchronously, that failure is piped to the returned
 /// future where it can be handled by user code.
-Future expectLater(Object? actual, Object? matcher,
-        {String? reason, Object? skip}) =>
-    _expect(actual, matcher, reason: reason, skip: skip) as Future;
+Future expectLater(
+  Object? actual,
+  Object? matcher, {
+  String? reason,
+  Object? skip,
+}) => _expect(actual, matcher, reason: reason, skip: skip) as Future;
 
-String _formatFailure(Matcher expected, Object? actual, String which,
-    {String? reason}) {
+String _formatFailure(
+  Matcher expected,
+  Object? actual,
+  String which, {
+  String? reason,
+}) {
   final buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
   buffer.writeln(indent(prettyPrint(actual), first: '  Actual: '));
@@ -83,19 +91,26 @@ String _formatFailure(Matcher expected, Object? actual, String which,
 }
 
 /// The implementation of [expect] and [expectLater].
-FutureOr _expect(Object? actual, Object? matcher,
-    {String? reason,
-    Object? skip,
-    bool verbose = false,
-    // ignore: deprecated_member_use, deprecated_member_use_from_same_package
-    ErrorFormatter? formatter}) {
+FutureOr _expect(
+  Object? actual,
+  Object? matcher, {
+  String? reason,
+  Object? skip,
+  bool verbose = false,
+  // ignore: deprecated_member_use, deprecated_member_use_from_same_package
+  ErrorFormatter? formatter,
+}) {
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     final mismatchDescription = StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
 
     // ignore: deprecated_member_use
-    return _formatFailure(matcher, actual, mismatchDescription.toString(),
-        reason: reason);
+    return _formatFailure(
+      matcher,
+      actual,
+      mismatchDescription.toString(),
+      reason: reason,
+    );
   };
 
   if (skip != null && skip is! bool && skip is! String) {
@@ -137,8 +152,12 @@ String prettyPrint(dynamic text, {String? first}) {
 
 /// The default error formatter.
 @Deprecated('Will be removed in 0.13.0.')
-String formatFailure(Matcher expected, Object? actual, String which,
-    {String? reason}) {
+String formatFailure(
+  Matcher expected,
+  Object? actual,
+  String which, {
+  String? reason,
+}) {
   final buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
   buffer.writeln(indent(prettyPrint(actual), first: '  Actual: '));

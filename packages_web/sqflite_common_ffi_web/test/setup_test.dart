@@ -33,7 +33,8 @@ void main() {
       dir = join('.dart_tool', packageName, 'test', 'bin_setup');
       deleteBuiltFilesSync();
       await run(
-          'dart run sqflite_common_ffi_web:setup --verbose --dir ${shellArgument(dir)}');
+        'dart run sqflite_common_ffi_web:setup --verbose --dir ${shellArgument(dir)}',
+      );
       checkBuiltFilesSync();
     });
   }, timeout: const Timeout(Duration(minutes: 5)));

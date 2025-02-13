@@ -10,19 +10,23 @@ void main() {
     test('invoke', () async {
       var events = <SqfliteLoggerEvent>[];
       var lines = <String>[];
-      final factory = SqfliteDatabaseFactoryLogger(MockDatabaseFactoryEmpty(),
-          options: SqfliteLoggerOptions(
-              type: SqfliteDatabaseFactoryLoggerType.invoke,
-              log: (event) {
-                event.dump(
-                    print: (msg) {
-                      lines.add(msg?.toString() ?? '<null>');
-                      // ignore: avoid_print
-                      print(msg);
-                    },
-                    noStopwatch: true);
-                events.add(event);
-              }));
+      final factory = SqfliteDatabaseFactoryLogger(
+        MockDatabaseFactoryEmpty(),
+        options: SqfliteLoggerOptions(
+          type: SqfliteDatabaseFactoryLoggerType.invoke,
+          log: (event) {
+            event.dump(
+              print: (msg) {
+                lines.add(msg?.toString() ?? '<null>');
+                // ignore: avoid_print
+                print(msg);
+              },
+              noStopwatch: true,
+            );
+            events.add(event);
+          },
+        ),
+      );
       try {
         await factory.internalsInvokeMethod<Object?>('test', {'some': 'param'});
       } catch (_) {
@@ -34,25 +38,31 @@ void main() {
       expect(event.sw!.isRunning, isFalse);
       // is currently an error
       //  'invoke:({method: test, arguments: {some: param}, error: UnimplementedError: test {some: param}})'
-      expect(lines.first,
-          startsWith('invoke:({method: test, arguments: {some: param}'));
+      expect(
+        lines.first,
+        startsWith('invoke:({method: test, arguments: {some: param}'),
+      );
     });
     test('all', () async {
       var events = <SqfliteLoggerEvent>[];
       var lines = <String>[];
-      final factory = SqfliteDatabaseFactoryLogger(MockDatabaseFactoryEmpty(),
-          options: SqfliteLoggerOptions(
-              type: SqfliteDatabaseFactoryLoggerType.all,
-              log: (event) {
-                event.dump(
-                    print: (msg) {
-                      lines.add(msg?.toString() ?? '<null>');
-                      // ignore: avoid_print
-                      print(msg);
-                    },
-                    noStopwatch: true);
-                events.add(event);
-              }));
+      final factory = SqfliteDatabaseFactoryLogger(
+        MockDatabaseFactoryEmpty(),
+        options: SqfliteLoggerOptions(
+          type: SqfliteDatabaseFactoryLoggerType.all,
+          log: (event) {
+            event.dump(
+              print: (msg) {
+                lines.add(msg?.toString() ?? '<null>');
+                // ignore: avoid_print
+                print(msg);
+              },
+              noStopwatch: true,
+            );
+            events.add(event);
+          },
+        ),
+      );
       var db = await factory.openDatabase(inMemoryDatabasePath);
       var batch = db.batch();
       batch.rawQuery('PRAGMA user_version');
@@ -68,7 +78,7 @@ void main() {
         'batch:({db: 1})',
         '  query({sql: PRAGMA user_version})',
         'execute:({db: 1, sql: COMMIT})',
-        'closeDatabase:({db: 1})'
+        'closeDatabase:({db: 1})',
       ]);
     });
     test('batch', () async {});

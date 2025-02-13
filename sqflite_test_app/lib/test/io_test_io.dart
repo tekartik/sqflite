@@ -11,7 +11,9 @@ void runIoTests(SqfliteTestContext context) {
   if (context.isPlugin && Platform.isIOS) {
     test('darwinCreateUnprotectedFolder', () async {
       var path = join(
-          await factory.getDatabasesPath(), 'darwinCreateUnprotectedFolder');
+        await factory.getDatabasesPath(),
+        'darwinCreateUnprotectedFolder',
+      );
       var unprotected = 'unprotected';
 
       await Directory(path).delete(recursive: true);

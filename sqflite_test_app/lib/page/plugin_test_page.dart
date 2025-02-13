@@ -16,8 +16,10 @@ class PluginTestPage extends TestPage {
     if (Platform.isIOS) {
       test('darwinCreateUnprotectedFolder', () async {
         print('darwinCreateUnprotectedFolder');
-        var parent =
-            join(await factory.getDatabasesPath(), 'darwinUnprotectedParent');
+        var parent = join(
+          await factory.getDatabasesPath(),
+          'darwinUnprotectedParent',
+        );
         var unprotected = 'unprotected';
 
         if (Directory(parent).existsSync()) {
@@ -51,10 +53,11 @@ class PluginTestPage extends TestPage {
         var db = await factory.openDatabase(
           join(dir, 'my_database.db'),
           options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (db, version) async {
-                // ...
-              }),
+            version: 1,
+            onCreate: (db, version) async {
+              // ...
+            },
+          ),
         );
 
         await db.close();

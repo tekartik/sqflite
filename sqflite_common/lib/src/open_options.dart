@@ -15,8 +15,8 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     this.onOpen,
     bool? readOnly = false,
     bool? singleInstance = true,
-  })  : readOnly = readOnly ?? false,
-        singleInstance = singleInstance ?? true;
+  }) : readOnly = readOnly ?? false,
+       singleInstance = singleInstance ?? true;
 
   @override
   int? version;

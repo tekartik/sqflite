@@ -6,22 +6,26 @@ import 'package:test/test.dart';
 import 'sqflite_logger_test.dart';
 
 var _events = <SqfliteLoggerEvent>[];
-var _factory =
-    SqfliteDatabaseFactoryLogger(createDatabaseFactoryFfi(noIsolate: true),
-        options: SqfliteLoggerOptions(
-            type: SqfliteDatabaseFactoryLoggerType.all,
-            log: (e) {
-              print(e);
-              _events.add(e);
-            }));
-var _invokeFactory =
-    SqfliteDatabaseFactoryLogger(createDatabaseFactoryFfi(noIsolate: false),
-        options: SqfliteLoggerOptions(
-            type: SqfliteDatabaseFactoryLoggerType.invoke,
-            log: (e) {
-              print(e);
-              _events.add(e);
-            }));
+var _factory = SqfliteDatabaseFactoryLogger(
+  createDatabaseFactoryFfi(noIsolate: true),
+  options: SqfliteLoggerOptions(
+    type: SqfliteDatabaseFactoryLoggerType.all,
+    log: (e) {
+      print(e);
+      _events.add(e);
+    },
+  ),
+);
+var _invokeFactory = SqfliteDatabaseFactoryLogger(
+  createDatabaseFactoryFfi(noIsolate: false),
+  options: SqfliteLoggerOptions(
+    type: SqfliteDatabaseFactoryLoggerType.invoke,
+    log: (e) {
+      print(e);
+      _events.add(e);
+    },
+  ),
+);
 Future<void> main() async {
   /// Initialize ffi loader
   sqfliteFfiInit();
@@ -34,15 +38,15 @@ Future<void> main() async {
       _events.clear();
       // await _invokeFactory.deleteDatabase(inMemoryDatabasePath);
       await _invokeFactory.invokeMethod<void>(
-          'deleteDatabase', <String, Object?>{
-        'path': ':memory:'
-      }); // deleteDatabase(inMemoryDatabasePath);
+        'deleteDatabase',
+        <String, Object?>{'path': ':memory:'},
+      ); // deleteDatabase(inMemoryDatabasePath);
 
       expect(_events.toMapListNoSw(), [
         {
           'method': 'deleteDatabase',
-          'arguments': {'path': ':memory:'}
-        }
+          'arguments': {'path': ':memory:'},
+        },
       ]);
       var event = _events.first as SqfliteLoggerInvokeEvent;
       expect(event.sw!.isRunning, isFalse);
@@ -54,7 +58,7 @@ Future<void> main() async {
       expect(deleteEvent.sw!.isRunning, isFalse);
       expect(deleteEvent.path, inMemoryDatabasePath);
       expect(_events.toMapListNoSw(), [
-        {'path': ':memory:'}
+        {'path': ':memory:'},
       ]);
     });
     test('exists', () async {
@@ -64,8 +68,8 @@ Future<void> main() async {
         {
           'method': 'databaseExists',
           'arguments': {'path': ':memory:'},
-          'result': false
-        }
+          'result': false,
+        },
       ]);
       _events.clear();
       await _factory.databaseExists(inMemoryDatabasePath);
@@ -77,14 +81,18 @@ Future<void> main() async {
     late int? dbId;
     setUp(() async {
       _events.clear();
-      db = await _factory.openDatabase(inMemoryDatabasePath,
-          options: OpenDatabaseOptions(
-              singleInstance: true,
-              version: 1,
-              onCreate: (db, version) async {
-                await db.execute(
-                    'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value INTEGER)');
-              }));
+      db = await _factory.openDatabase(
+        inMemoryDatabasePath,
+        options: OpenDatabaseOptions(
+          singleInstance: true,
+          version: 1,
+          onCreate: (db, version) async {
+            await db.execute(
+              'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value INTEGER)',
+            );
+          },
+        ),
+      );
       dbId = db.databaseId;
     });
     tearDown(() async {
@@ -96,35 +104,35 @@ Future<void> main() async {
         {
           'path': ':memory:',
           'options': {'readOnly': false, 'singleInstance': true, 'version': 1},
-          'id': dbId
+          'id': dbId,
         },
         {
           'db': dbId,
           'sql': 'PRAGMA user_version',
           'result': [
-            {'user_version': 0}
-          ]
+            {'user_version': 0},
+          ],
         },
         {
           'db': dbId,
           'sql': 'BEGIN EXCLUSIVE',
-          'result': {'transactionId': 1}
+          'result': {'transactionId': 1},
         },
         {
           'db': dbId,
           'txn': 1,
           'sql': 'PRAGMA user_version',
           'result': [
-            {'user_version': 0}
-          ]
+            {'user_version': 0},
+          ],
         },
         {
           'db': dbId,
           'txn': 1,
-          'sql': 'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value INTEGER)'
+          'sql': 'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value INTEGER)',
         },
         {'db': dbId, 'txn': 1, 'sql': 'PRAGMA user_version = 1'},
-        {'db': dbId, 'txn': 1, 'sql': 'COMMIT'}
+        {'db': dbId, 'txn': 1, 'sql': 'COMMIT'},
       ]);
       var event = _events[0];
       expect(event, isA<SqfliteLoggerDatabaseOpenEvent>());
@@ -137,7 +145,7 @@ Future<void> main() async {
 
       await db.close();
       expect(_events.toMapListNoSw(), [
-        {'db': 1}
+        {'db': 1},
       ]);
       event = _events[0];
       expect(event, isA<SqfliteLoggerDatabaseCloseEvent>());
@@ -157,8 +165,8 @@ Future<void> main() async {
           'db': dbId,
           'sql': 'INSERT INTO Test (value) VALUES (?)',
           'arguments': [1],
-          'result': 1
-        }
+          'result': 1,
+        },
       ]);
       var event = _events[0];
       expect(event, isA<SqfliteLoggerSqlCommandInsert>());
@@ -167,15 +175,19 @@ Future<void> main() async {
       expect(sqlEvent.type, SqliteSqlCommandType.insert);
 
       _events.clear();
-      await db.update('Test', {'value': 2},
-          where: '_id = ?', whereArgs: [key1]);
+      await db.update(
+        'Test',
+        {'value': 2},
+        where: '_id = ?',
+        whereArgs: [key1],
+      );
       expect(_events.toMapListNoSw(), [
         {
           'db': dbId,
           'sql': 'UPDATE Test SET value = ? WHERE _id = ?',
           'arguments': [2, 1],
-          'result': 1
-        }
+          'result': 1,
+        },
       ]);
       event = _events[0];
       expect(event, isA<SqfliteLoggerSqlCommandUpdate>());
@@ -192,9 +204,9 @@ Future<void> main() async {
           'db': dbId,
           'sql': 'SELECT * FROM Test',
           'result': [
-            {'_id': 1, 'value': 2}
-          ]
-        }
+            {'_id': 1, 'value': 2},
+          ],
+        },
       ]);
 
       event = _events[0];
@@ -207,7 +219,7 @@ Future<void> main() async {
       _events.clear();
       await db.delete('Test');
       expect(_events.toMapListNoSw(), [
-        {'db': dbId, 'sql': 'DELETE FROM Test', 'result': 1}
+        {'db': dbId, 'sql': 'DELETE FROM Test', 'result': 1},
       ]);
 
       event = _events[0];
@@ -220,7 +232,7 @@ Future<void> main() async {
       _events.clear();
       await db.execute('DROP TABLE IF EXISTS Dummy');
       expect(_events.toMapListNoSw(), [
-        {'db': dbId, 'sql': 'DROP TABLE IF EXISTS Dummy'}
+        {'db': dbId, 'sql': 'DROP TABLE IF EXISTS Dummy'},
       ]);
 
       event = _events[0];
@@ -247,23 +259,23 @@ Future<void> main() async {
             {
               'sql': 'INSERT INTO Test (value) VALUES (?)',
               'arguments': [1],
-              'result': 1
+              'result': 1,
             },
             {
               'sql': 'UPDATE Test SET value = ? WHERE _id = ?',
               'arguments': [2, 1],
-              'result': 1
+              'result': 1,
             },
             {
               'sql': 'SELECT * FROM Test',
               'result': [
-                {'_id': 1, 'value': 2}
-              ]
+                {'_id': 1, 'value': 2},
+              ],
             },
             {'sql': 'DELETE FROM Test', 'result': 1},
             {'sql': 'DROP TABLE IF EXISTS Dummy'},
-          ]
-        }
+          ],
+        },
       ]);
       var operationEvent = _events[0];
       var operations = (operationEvent as SqfliteLoggerBatchEvent).operations;
@@ -298,12 +310,20 @@ Future<void> main() async {
       await db.transaction((txn) async {
         key2 = await txn.insert('Test', {'value': 2});
         await txn.query('Test');
-        await txn.update('Test', {'value': 3},
-            where: '_id = ?', whereArgs: [key1]);
+        await txn.update(
+          'Test',
+          {'value': 3},
+          where: '_id = ?',
+          whereArgs: [key1],
+        );
         await txn.delete('Test', where: '_id = ?', whereArgs: [key1]);
       });
-      await db.update('Test', {'value': 4},
-          where: '_id = ?', whereArgs: [key2]);
+      await db.update(
+        'Test',
+        {'value': 4},
+        where: '_id = ?',
+        whereArgs: [key2],
+      );
       await db.delete('Test', where: '_id = ?', whereArgs: [key2]);
       var batch = db.batch();
       batch.insert('Test', {'value': 5});
@@ -314,26 +334,26 @@ Future<void> main() async {
           'db': dbId,
           'sql': 'INSERT INTO Test (value) VALUES (?)',
           'arguments': [1],
-          'result': 1
+          'result': 1,
         },
         {
           'db': dbId,
           'sql': 'SELECT * FROM Test',
           'result': [
-            {'_id': 1, 'value': 1}
-          ]
+            {'_id': 1, 'value': 1},
+          ],
         },
         {
           'db': dbId,
           'sql': 'BEGIN IMMEDIATE',
-          'result': {'transactionId': 2}
+          'result': {'transactionId': 2},
         },
         {
           'db': dbId,
           'txn': 2,
           'sql': 'INSERT INTO Test (value) VALUES (?)',
           'arguments': [2],
-          'result': 2
+          'result': 2,
         },
         {
           'db': dbId,
@@ -341,40 +361,40 @@ Future<void> main() async {
           'sql': 'SELECT * FROM Test',
           'result': [
             {'_id': 1, 'value': 1},
-            {'_id': 2, 'value': 2}
-          ]
+            {'_id': 2, 'value': 2},
+          ],
         },
         {
           'db': dbId,
           'txn': 2,
           'sql': 'UPDATE Test SET value = ? WHERE _id = ?',
           'arguments': [3, 1],
-          'result': 1
+          'result': 1,
         },
         {
           'db': dbId,
           'txn': 2,
           'sql': 'DELETE FROM Test WHERE _id = ?',
           'arguments': [1],
-          'result': 1
+          'result': 1,
         },
         {'db': dbId, 'txn': 2, 'sql': 'COMMIT'},
         {
           'db': dbId,
           'sql': 'UPDATE Test SET value = ? WHERE _id = ?',
           'arguments': [4, 2],
-          'result': 1
+          'result': 1,
         },
         {
           'db': dbId,
           'sql': 'DELETE FROM Test WHERE _id = ?',
           'arguments': [2],
-          'result': 1
+          'result': 1,
         },
         {
           'db': dbId,
           'sql': 'BEGIN IMMEDIATE',
-          'result': {'transactionId': 3}
+          'result': {'transactionId': 3},
         },
         {
           'db': dbId,
@@ -383,11 +403,11 @@ Future<void> main() async {
             {
               'sql': 'INSERT INTO Test (value) VALUES (?)',
               'arguments': [5],
-              'result': 1
-            }
-          ]
+              'result': 1,
+            },
+          ],
         },
-        {'db': dbId, 'txn': 3, 'sql': 'COMMIT'}
+        {'db': dbId, 'txn': 3, 'sql': 'COMMIT'},
       ]);
       var event = _events[4] as SqfliteLoggerSqlEvent;
       expect(event.databaseId, dbId);
@@ -405,7 +425,7 @@ Future<void> main() async {
         {
           'db': dbId,
           'sql': 'BEGIN IMMEDIATE',
-          'result': {'transactionId': 4}
+          'result': {'transactionId': 4},
         },
         {
           'db': dbId,
@@ -413,11 +433,11 @@ Future<void> main() async {
           'operations': [
             {
               'sql': 'INSERT INTO Test (value) VALUES (?)',
-              'arguments': [5]
-            }
-          ]
+              'arguments': [5],
+            },
+          ],
         },
-        {'db': dbId, 'txn': 4, 'sql': 'COMMIT'}
+        {'db': dbId, 'txn': 4, 'sql': 'COMMIT'},
       ]);
 
       await db.close();

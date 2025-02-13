@@ -24,9 +24,7 @@ void main() {
 
     // Check that public api are exported
     test('exported', () {
-      for (var value in <dynamic>[
-        MockDatabaseFactoryEmpty,
-      ]) {
+      for (var value in <dynamic>[MockDatabaseFactoryEmpty]) {
         expect(value, isNotNull);
       }
     });

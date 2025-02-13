@@ -19,12 +19,13 @@ class SqfliteFfiWebOptions {
   final bool? forceAsBasicWorker;
 
   /// Default ok for regular dart applications but not flutter app.
-  SqfliteFfiWebOptions(
-      {this.inMemory,
-      this.sqlite3WasmUri,
-      this.indexedDbName,
-      this.sharedWorkerUri,
-      @visibleForTesting this.forceAsBasicWorker});
+  SqfliteFfiWebOptions({
+    this.inMemory,
+    this.sqlite3WasmUri,
+    this.indexedDbName,
+    this.sharedWorkerUri,
+    @visibleForTesting this.forceAsBasicWorker,
+  });
 
   @override
   String toString() {

@@ -19,16 +19,19 @@ void run(SqfliteTestContext context) {
         await db.execute('PRAGMA foreign_keys = ON');
       }
 
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(onConfigure: onConfigure));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(onConfigure: onConfigure),
+      );
       await db.close();
     }
 
     {
       Future onCreate(Database db, int version) async {
         // Database is created, delete the table
-        await db
-            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
+        await db.execute(
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)',
+        );
       }
 
       Future onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -37,12 +40,15 @@ void run(SqfliteTestContext context) {
       }
 
       // Special callback used for onDowngrade here to recreate the database
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: onCreate,
-              onUpgrade: onUpgrade,
-              onDowngrade: onDatabaseDowngradeDelete));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: onCreate,
+          onUpgrade: onUpgrade,
+          onDowngrade: onDatabaseDowngradeDelete,
+        ),
+      );
       await db.close();
     }
 
@@ -52,10 +58,10 @@ void run(SqfliteTestContext context) {
         print('db version ${await db.getVersion()}');
       }
 
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-            onOpen: onOpen,
-          ));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(onOpen: onOpen),
+      );
       await db.close();
     }
   });

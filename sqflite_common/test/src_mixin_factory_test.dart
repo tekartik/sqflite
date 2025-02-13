@@ -17,12 +17,13 @@ void main() {
     test('buildDatabaseFactory', () async {
       final methods = <String>[];
       final factory = buildDatabaseFactory(
-          tag: 'mock',
-          invokeMethod: (String method, [Object? arguments]) async {
-            final dynamic result = mockResult(method, arguments);
-            methods.add(method);
-            return result;
-          });
+        tag: 'mock',
+        invokeMethod: (String method, [Object? arguments]) async {
+          final dynamic result = mockResult(method, arguments);
+          methods.add(method);
+          return result;
+        },
+      );
       expect((factory as SqfliteDatabaseFactoryMixin).tag, 'mock');
       // ignore: unnecessary_type_check
       expect(factory is SqfliteInvokeHandler, isTrue);

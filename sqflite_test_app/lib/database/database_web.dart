@@ -24,13 +24,18 @@ class _PlatformHandlerWeb extends PlatformHandler {
 
   /// Write the db file directly to the file system
   @override
-  Future<void> writeFileAsBytes(String path, List<int> bytes,
-      {bool flush = false}) async {
+  Future<void> writeFileAsBytes(
+    String path,
+    List<int> bytes, {
+    bool flush = false,
+  }) async {
     final fs = await IndexedDbFileSystem.open(dbName: _dbName);
     if (fs.xAccess(path, 0) != 0) fs.xDelete(path, 0);
 
-    final openResult =
-        fs.xOpen(Sqlite3Filename(path), SqlFlag.SQLITE_OPEN_CREATE);
+    final openResult = fs.xOpen(
+      Sqlite3Filename(path),
+      SqlFlag.SQLITE_OPEN_CREATE,
+    );
     openResult.file
       ..xWrite(Uint8List.fromList(bytes), 0)
       ..xClose();
@@ -42,8 +47,10 @@ class _PlatformHandlerWeb extends PlatformHandler {
   @override
   Future<Uint8List> readFileAsBytes(String path) async {
     final fs = await IndexedDbFileSystem.open(dbName: _dbName);
-    final openResult =
-        fs.xOpen(Sqlite3Filename(path), SqlFlag.SQLITE_OPEN_CREATE);
+    final openResult = fs.xOpen(
+      Sqlite3Filename(path),
+      SqlFlag.SQLITE_OPEN_CREATE,
+    );
 
     var target = Uint8List(openResult.file.xFileSize());
     openResult.file.xRead(target, 0);
@@ -54,8 +61,11 @@ class _PlatformHandlerWeb extends PlatformHandler {
 
   /// Write a file as a string
   @override
-  Future<void> writeFileAsString(String path, String text,
-      {bool flush = false}) async {
+  Future<void> writeFileAsString(
+    String path,
+    String text, {
+    bool flush = false,
+  }) async {
     var bytes = const Utf8Encoder().convert(text);
     await writeFileAsBytes(path, bytes, flush: flush);
   }

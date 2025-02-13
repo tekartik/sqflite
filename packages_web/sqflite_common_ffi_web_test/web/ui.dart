@@ -15,9 +15,11 @@ void write(String message) {
 }
 
 void addButton(String text, FutureOr<void> Function() action) {
-  _input.append((web.document.createElement('button') as web.HTMLButtonElement)
-    ..innerText = text
-    ..onClick.listen((event) async {
-      await action();
-    }));
+  _input.append(
+    (web.document.createElement('button') as web.HTMLButtonElement)
+      ..innerText = text
+      ..onClick.listen((event) async {
+        await action();
+      }),
+  );
 }

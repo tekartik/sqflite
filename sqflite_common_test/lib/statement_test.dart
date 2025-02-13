@@ -8,12 +8,14 @@ void run(SqfliteTestContext context) {
   var factory = context.databaseFactory;
 
   group('statement', () {
-    test('with_sudoku_solver', () async {
-      //await Sqflite.setDebugModeOn(true);
-      var path = await context.initDeleteDb('with_sudoku_solver.db');
-      var db = await factory.openDatabase(path);
-      try {
-        var result = await db.rawQuery('''
+    test(
+      'with_sudoku_solver',
+      () async {
+        //await Sqflite.setDebugModeOn(true);
+        var path = await context.initDeleteDb('with_sudoku_solver.db');
+        var db = await factory.openDatabase(path);
+        try {
+          var result = await db.rawQuery('''
 WITH RECURSIVE
   input(sud) AS (
     VALUES('53..7....6..195....98....6.8...6...34..8.3..17...2...6.6....28....419..5....8..79')
@@ -43,62 +45,65 @@ WITH RECURSIVE
   )
 SELECT s FROM x WHERE ind=0;
             ''');
-        //print(result);
-        expect(result, [
-          {
-            's':
-                '534678912672195348198342567859761423426853791713924856961537284287419635345286179'
-          }
-        ]);
-      } finally {
-        await db.close();
-      }
-    },
-        // This fail on ubuntu...why
-        skip: context.strict && !platform.isWindows);
+          //print(result);
+          expect(result, [
+            {
+              's':
+                  '534678912672195348198342567859761423426853791713924856961537284287419635345286179',
+            },
+          ]);
+        } finally {
+          await db.close();
+        }
+      },
+      // This fail on ubuntu...why
+      skip: context.strict && !platform.isWindows,
+    );
 
     test('indexed_param', () async {
       final db = await factory.openDatabase(inMemoryDatabasePath);
       expect(await db.rawQuery('SELECT ?1 + ?2', [3, 4]), [
-        {'?1 + ?2': 7}
+        {'?1 + ?2': 7},
       ]);
       try {
         expect(await db.rawQuery('SELECT ? as a', [2]), [
-          {'a': 2}
+          {'a': 2},
         ]);
       } catch (e) {
         print('failed on Android $e');
         expect(await db.rawQuery('SELECT ? as a', [2]), [
-          {'a': '2'}
+          {'a': '2'},
         ]);
       }
       try {
         expect(await db.rawQuery('SELECT ? as a', [1.5]), [
-          {'a': 1.5}
+          {'a': 1.5},
         ]);
       } catch (e) {
         print('failed on Android $e');
         expect(await db.rawQuery('SELECT ?1 as a', [1.5]), [
-          {'a': '1.5'}
+          {'a': '1.5'},
         ]);
       }
       try {
         expect(await db.rawQuery('SELECT ?1 as a', [1.5]), [
-          {'a': 1.5}
+          {'a': 1.5},
         ]);
       } catch (e) {
         print('failed on Android $e');
         expect(await db.rawQuery('SELECT ?1 as a', [1.5]), [
-          {'a': '1.5'}
+          {'a': '1.5'},
         ]);
       }
       expect(
-          await db.rawQuery(
-              'SELECT ?1 + 0 as item1, ?2 + 0 as item2, ?1 + ?2 as sum',
-              [3, 4]),
-          [
-            {'item1': 3, 'item2': 4, 'sum': 7}
-          ]);
+        await db.rawQuery(
+          'SELECT ?1 + 0 as item1, ?2 + 0 as item2, ?1 + ?2 as sum',
+          [3, 4],
+        ),
+        [
+          {'item1': 3, 'item2': 4, 'sum': 7},
+        ],
+      );
       await db.close();
     });
 
@@ -108,7 +113,9 @@ SELECT s FROM x WHERE ind=0;
 
       var map = {'COUNT(*)': 1};
       await db.insert(
-          'Test', map.map((key, value) => MapEntry('"$key"', value)));
+        'Test',
+        map.map((key, value) => MapEntry('"$key"', value)),
+      );
 
       await db.execute('CREATE TABLE Test2 (\'""\' INTEGER)');
       await db.close();

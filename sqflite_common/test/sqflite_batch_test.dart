@@ -16,24 +16,24 @@ void main() {
             'sql': 'BEGIN IMMEDIATE',
             'id': 1,
             'inTransaction': true,
-            'transactionId': null
+            'transactionId': null,
           },
-          null
+          null,
         ],
         [
           'batch',
           {
             'operations': [
-              {'method': 'execute', 'sql': 'PRAGMA dummy'}
+              {'method': 'execute', 'sql': 'PRAGMA dummy'},
             ],
-            'id': 1
+            'id': 1,
           },
-          null
+          null,
         ],
         [
           'execute',
           {'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
-          null
+          null,
         ],
         ...endCommands,
       ]);
@@ -54,11 +54,11 @@ void main() {
           'batch',
           {
             'operations': [
-              {'method': 'execute', 'sql': 'PRAGMA dummy'}
+              {'method': 'execute', 'sql': 'PRAGMA dummy'},
             ],
-            'id': 1
+            'id': 1,
           },
-          null
+          null,
         ],
         ...endCommands,
       ]);

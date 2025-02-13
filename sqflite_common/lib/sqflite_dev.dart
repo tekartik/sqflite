@@ -24,7 +24,9 @@ extension SqfliteDatabaseFactoryDev on DatabaseFactory {
   /// deprecated on purpose to remove from code.
   @Deprecated('Dev only')
   Future<void> setOptions(SqfliteOptions options) async {
-    await (this as SqfliteInvokeHandler)
-        .invokeMethod<dynamic>(methodOptions, options.toMap());
+    await (this as SqfliteInvokeHandler).invokeMethod<dynamic>(
+      methodOptions,
+      options.toMap(),
+    );
   }
 }

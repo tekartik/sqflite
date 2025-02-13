@@ -12,12 +12,12 @@ void main() {
         [
           'openDatabase',
           {'path': ':memory:', 'singleInstance': false},
-          1
+          1,
         ],
         [
           'closeDatabase',
           {'id': 1},
-          null
+          null,
         ],
       ]);
       final factory = scenario.factory;
@@ -35,7 +35,7 @@ void main() {
         [
           'closeDatabase',
           {'id': 1},
-          null
+          null,
         ],
       ]);
       final factory = scenario.factory;
@@ -50,7 +50,7 @@ void main() {
           'query',
           {'sql': 'PRAGMA user_version', 'id': 1},
           // ignore: inference_failure_on_collection_literal
-          {}
+          {},
         ],
         [
           'execute',
@@ -58,30 +58,32 @@ void main() {
             'sql': 'BEGIN EXCLUSIVE',
             'id': 1,
             'inTransaction': true,
-            'transactionId': null
+            'transactionId': null,
           },
-          null
+          null,
         ],
         [
           'query',
           {'sql': 'PRAGMA user_version', 'id': 1},
           // ignore: inference_failure_on_collection_literal
-          {}
+          {},
         ],
         [
           'execute',
           {'sql': 'PRAGMA user_version = 1', 'id': 1},
-          null
+          null,
         ],
         [
           'execute',
           {'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
-          null
+          null,
         ],
         protocolCloseStep,
       ]);
-      final db = await scenario.factory.openDatabase(inMemoryDatabasePath,
-          options: OpenDatabaseOptions(version: 1, onCreate: (db, version) {}));
+      final db = await scenario.factory.openDatabase(
+        inMemoryDatabasePath,
+        options: OpenDatabaseOptions(version: 1, onCreate: (db, version) {}),
+      );
       await db.close();
       scenario.end();
     });
@@ -99,13 +101,15 @@ void main() {
           'readDatabaseBytes',
           {'path': ':memory:'},
           {
-            'bytes': Uint8List.fromList([1, 2, 3])
-          }
+            'bytes': Uint8List.fromList([1, 2, 3]),
+          },
         ],
       ]);
       final factory = scenario.factory;
       await factory.writeDatabaseBytes(
-          inMemoryDatabasePath, Uint8List.fromList([1, 2, 3]));
+        inMemoryDatabasePath,
+        Uint8List.fromList([1, 2, 3]),
+      );
       expect(await factory.readDatabaseBytes(inMemoryDatabasePath), [1, 2, 3]);
 
       scenario.end();

@@ -17,7 +17,7 @@ var useFfi = !kIsWeb && (Platform.isWindows || Platform.isLinux);
 
 class SqfliteDriverTestContext extends SqfliteLocalTestContext {
   SqfliteDriverTestContext()
-      : super(databaseFactory: useFfi ? databaseFactoryFfi : databaseFactory);
+    : super(databaseFactory: useFfi ? databaseFactoryFfi : databaseFactory);
 
   @override
   bool get isPlugin {

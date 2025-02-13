@@ -108,8 +108,12 @@ abstract class DatabaseException implements Exception {
 /// Exception implementation
 class SqfliteDatabaseException extends DatabaseException {
   /// ctor with a message and some data
-  SqfliteDatabaseException(super.message, this.result,
-      {int? resultCode, bool? transactionClosed}) {
+  SqfliteDatabaseException(
+    super.message,
+    this.result, {
+    int? resultCode,
+    bool? transactionClosed,
+  }) {
     _resultCode = resultCode;
     _transactionClosed = transactionClosed;
   }
@@ -153,17 +157,19 @@ class SqfliteDatabaseException extends DatabaseException {
   /// iOS returns normal code while Android/ffi returns extended code for now
   /// The application should handle both.
   @override
-  int? getResultCode() => _resultCode ??= () {
+  int? getResultCode() =>
+      _resultCode ??= () {
         final message = _message!.toLowerCase();
         int? findCode(String patternPrefix) {
           final index = message.indexOf(patternPrefix);
           if (index != -1) {
             try {
               // Split at first space
-              var code = message
-                  .substring(index + patternPrefix.length)
-                  .trim()
-                  .split(' ')[0];
+              var code =
+                  message
+                      .substring(index + patternPrefix.length)
+                      .trim()
+                      .split(' ')[0];
               // Find ending parenthesis if any
               final endIndex = code.indexOf(')');
               if (endIndex != -1) {

@@ -11,11 +11,12 @@ class SqfliteDarwin {
   ///
   /// See iOS runtime troubleshooting for more information.
   static Future<void> createUnprotectedFolder(
-      String parent, String name) async {
+    String parent,
+    String name,
+  ) async {
     await invokeMethod<Object?>(
-        methodDarwinCreateUnprotectedFolder, <String, Object?>{
-      'parent': parent,
-      'name': name,
-    });
+      methodDarwinCreateUnprotectedFolder,
+      <String, Object?>{'parent': parent, 'name': name},
+    );
   }
 }

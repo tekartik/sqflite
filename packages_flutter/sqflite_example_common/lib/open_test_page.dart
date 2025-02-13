@@ -4,11 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqflite.dart';
 import 'package:sqflite_common/src/database_mixin.dart' // ignore: implementation_imports
-    show
-        SqfliteDatabaseMixin;
+    show SqfliteDatabaseMixin;
 import 'package:sqflite_common/src/factory_mixin.dart' // ignore: implementation_imports
-    show
-        SqfliteDatabaseFactoryMixin;
+    show SqfliteDatabaseFactoryMixin;
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_example_common/utils.dart';
 import 'package:synchronized/synchronized.dart';
@@ -25,9 +23,11 @@ class OpenCallbacks {
     onConfigure = (Database db) {
       // devPrint('onConfigure');
       //verify(!onConfigureCalled, 'onConfigure must be called once');
-      expect(onConfigureCalled, false,
-          reason:
-              'onConfigure already called'); // onConfigure must be called once
+      expect(
+        onConfigureCalled,
+        false,
+        reason: 'onConfigure already called',
+      ); // onConfigure must be called once
       onConfigureCalled = true;
     };
 
@@ -102,14 +102,17 @@ class OpenCallbacks {
   /// open the database.
   Future<Database> open(String path, {required int version}) async {
     reset();
-    return await databaseFactory.openDatabase(path,
-        options: OpenDatabaseOptions(
-            version: version,
-            onCreate: onCreate,
-            onConfigure: onConfigure!,
-            onDowngrade: onDowngrade,
-            onUpgrade: onUpgrade,
-            onOpen: onOpen));
+    return await databaseFactory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: version,
+        onCreate: onCreate,
+        onConfigure: onConfigure!,
+        onDowngrade: onDowngrade,
+        onUpgrade: onUpgrade,
+        onOpen: onOpen,
+      ),
+    );
   }
 }
 
@@ -192,10 +195,13 @@ class OpenTestPage extends TestPage {
       verify(!(await pathExists(path)));
       Database? db;
       try {
-        db = await openDatabase(path, onCreate: (Database db, int version) {
-          // never called
-          verify(false);
-        });
+        db = await openDatabase(
+          path,
+          onCreate: (Database db, int version) {
+            // never called
+            verify(false);
+          },
+        );
         verify(false);
       } on ArgumentError catch (_) {}
       verify(!await pathExists(path));
@@ -207,16 +213,19 @@ class OpenTestPage extends TestPage {
       final path = await initDeleteDb('open_test2.db');
       var onCreate = false;
       var onCreateTransaction = false;
-      final db = await openDatabase(path, version: 1,
-          onCreate: (Database db, int version) async {
-        expect(version, 1);
-        onCreate = true;
+      final db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          expect(version, 1);
+          onCreate = true;
 
-        await db.transaction((txn) async {
-          await txn.execute('CREATE TABLE Test2 (id INTEGER PRIMARY KEY)');
-          onCreateTransaction = true;
-        });
-      });
+          await db.transaction((txn) async {
+            await txn.execute('CREATE TABLE Test2 (id INTEGER PRIMARY KEY)');
+            onCreateTransaction = true;
+          });
+        },
+      );
       verify(onCreate);
       expect(onCreateTransaction, true);
       expect(await db.getVersion(), 1);
@@ -228,20 +237,26 @@ class OpenTestPage extends TestPage {
       final path = await initDeleteDb('open_simple_on_create.db');
       expect(await isDatabase(path), isFalse);
 
-      final db =
-          await openDatabase(path, version: 1, onCreate: (db, version) async {
-        final batch = db.batch();
+      final db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (db, version) async {
+          final batch = db.batch();
 
-        batch.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, text NAME)');
-        await batch.commit();
-      });
+          batch.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, text NAME)',
+          );
+          await batch.commit();
+        },
+      );
       try {
         expect(
-            await db.rawInsert('INSERT INTO Test (text) VALUES (?)', ['test']),
-            1);
+          await db.rawInsert('INSERT INTO Test (text) VALUES (?)', ['test']),
+          1,
+        );
         final result = await db.query('Test');
         final expected = [
-          {'id': 1, 'text': 'test'}
+          {'id': 1, 'text': 'test'},
         ];
         expect(result, expected);
 
@@ -266,33 +281,44 @@ class OpenTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn(true);
       var onUpgrade = false;
       final path = await initDeleteDb('open_on_upgrade.db');
-      var database = await openDatabase(path, version: 1,
-          onCreate: (Database db, int version) async {
-        await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
-      });
+      var database = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+        },
+      );
       try {
-        await database
-            .insert('Test', <String, Object?>{'id': 1, 'name': 'test'});
+        await database.insert('Test', <String, Object?>{
+          'id': 1,
+          'name': 'test',
+        });
         fail('should fail');
       } on DatabaseException catch (e) {
         print(e);
       }
       expect(await database.getVersion(), 1);
       await database.close();
-      database = await openDatabase(path, version: 2,
-          onUpgrade: (Database db, int oldVersion, int newVersion) async {
-        expect(oldVersion, 1);
-        expect(newVersion, 2);
-        await db.execute('ALTER TABLE Test ADD name TEXT');
-        onUpgrade = true;
-      });
+      database = await openDatabase(
+        path,
+        version: 2,
+        onUpgrade: (Database db, int oldVersion, int newVersion) async {
+          expect(oldVersion, 1);
+          expect(newVersion, 2);
+          await db.execute('ALTER TABLE Test ADD name TEXT');
+          onUpgrade = true;
+        },
+      );
       verify(onUpgrade);
       expect(await database.getVersion(), 2);
       try {
         expect(
-            await database
-                .insert('Test', <String, Object?>{'id': 1, 'name': 'test'}),
-            1);
+          await database.insert('Test', <String, Object?>{
+            'id': 1,
+            'name': 'test',
+          }),
+          1,
+        );
       } finally {
         await database.close();
       }
@@ -301,23 +327,30 @@ class OpenTestPage extends TestPage {
     test('Open onDowngrade', () async {
       // await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('open_on_downgrade.db');
-      var database = await openDatabase(path, version: 2,
-          onCreate: (Database db, int version) async {
-        await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
-      }, onDowngrade: (Database db, int oldVersion, int newVersion) async {
-        verify(false, 'should not be called');
-      });
+      var database = await openDatabase(
+        path,
+        version: 2,
+        onCreate: (Database db, int version) async {
+          await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+        },
+        onDowngrade: (Database db, int oldVersion, int newVersion) async {
+          verify(false, 'should not be called');
+        },
+      );
       expect(await database.getVersion(), 2);
       await database.close();
 
       var onDowngrade = false;
-      database = await openDatabase(path, version: 1,
-          onDowngrade: (Database db, int oldVersion, int newVersion) async {
-        expect(oldVersion, 2);
-        expect(newVersion, 1);
-        await db.execute('ALTER TABLE Test ADD name TEXT');
-        onDowngrade = true;
-      });
+      database = await openDatabase(
+        path,
+        version: 1,
+        onDowngrade: (Database db, int oldVersion, int newVersion) async {
+          expect(oldVersion, 2);
+          expect(newVersion, 1);
+          await db.execute('ALTER TABLE Test ADD name TEXT');
+          onDowngrade = true;
+        },
+      );
       verify(onDowngrade);
       expect(await database.getVersion(), 1);
 
@@ -347,10 +380,13 @@ class OpenTestPage extends TestPage {
       } catch (_) {}
 
       // Copy from asset to a database file.
-      final data = await rootBundle.load(url.join(
-          'packages', 'sqflite_example_common', 'assets', 'example.db'));
-      final bytes =
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      final data = await rootBundle.load(
+        url.join('packages', 'sqflite_example_common', 'assets', 'example.db'),
+      );
+      final bytes = data.buffer.asUint8List(
+        data.offsetInBytes,
+        data.lengthInBytes,
+      );
       await databaseFactory.writeDatabaseBytes(path, bytes);
 
       // open the database
@@ -389,10 +425,13 @@ class OpenTestPage extends TestPage {
       // await Sqflite.devSetDebugModeOn(false);
 
       final path = await initDeleteDb('open_on_downgrade_delete.db');
-      var database = await openDatabase(path, version: 3,
-          onCreate: (Database db, int version) async {
-        await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
-      });
+      var database = await openDatabase(
+        path,
+        version: 3,
+        onCreate: (Database db, int version) async {
+          await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+        },
+      );
       await database.close();
 
       // should fail going back in versions
@@ -401,27 +440,33 @@ class OpenTestPage extends TestPage {
       var onConfiguredOnce = false; // onConfigure will be called twice here
       // since the database is re-opened
       var onConfigured = false;
-      database =
-          await openDatabase(path, version: 2, onConfigure: (Database db) {
-        // Must not be configured nor created yet
-        verify(!onConfigured);
-        verify(!onCreated);
-        if (!onConfiguredOnce) {
-          // first time
-          onConfiguredOnce = true;
-        } else {
-          onConfigured = true;
-        }
-      }, onCreate: (Database db, int version) {
-        verify(onConfigured);
-        verify(!onCreated);
-        verify(!onOpened);
-        onCreated = true;
-        expect(version, 2);
-      }, onOpen: (Database db) {
-        verify(onCreated);
-        onOpened = true;
-      }, onDowngrade: onDatabaseDowngradeDelete);
+      database = await openDatabase(
+        path,
+        version: 2,
+        onConfigure: (Database db) {
+          // Must not be configured nor created yet
+          verify(!onConfigured);
+          verify(!onCreated);
+          if (!onConfiguredOnce) {
+            // first time
+            onConfiguredOnce = true;
+          } else {
+            onConfigured = true;
+          }
+        },
+        onCreate: (Database db, int version) {
+          verify(onConfigured);
+          verify(!onCreated);
+          verify(!onOpened);
+          onCreated = true;
+          expect(version, 2);
+        },
+        onOpen: (Database db) {
+          verify(onCreated);
+          onOpened = true;
+        },
+        onDowngrade: onDatabaseDowngradeDelete,
+      );
       await database.close();
 
       expect(onCreated, true);
@@ -431,12 +476,17 @@ class OpenTestPage extends TestPage {
       onCreated = false;
       onOpened = false;
 
-      database = await openDatabase(path, version: 2,
-          onCreate: (Database db, int version) {
-        expect(false, 'should not be called');
-      }, onOpen: (Database db) {
-        onOpened = true;
-      }, onDowngrade: onDatabaseDowngradeDelete);
+      database = await openDatabase(
+        path,
+        version: 2,
+        onCreate: (Database db, int version) {
+          expect(false, 'should not be called');
+        },
+        onOpen: (Database db) {
+          onOpened = true;
+        },
+        onDowngrade: onDatabaseDowngradeDelete,
+      );
       expect(onOpened, true);
       await database.close();
     });
@@ -526,11 +576,13 @@ class OpenTestPage extends TestPage {
         await batch.commit();
       }
 
-      final db = await openDatabase(path,
-          version: 1,
-          onConfigure: onConfigure,
-          onCreate: onCreate,
-          onOpen: onOpen);
+      final db = await openDatabase(
+        path,
+        version: 1,
+        onConfigure: onConfigure,
+        onCreate: onCreate,
+        onOpen: onOpen,
+      );
       expect(firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test')), 2);
 
       await db.close();
@@ -589,7 +641,8 @@ class OpenTestPage extends TestPage {
         Future onCreate(Database db, int version) async {
           // Database is created, delete the table
           await db.execute(
-              'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)',
+          );
         }
 
         Future onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -598,11 +651,13 @@ class OpenTestPage extends TestPage {
         }
 
         // Special callback used for onDowngrade here to recreate the database
-        final db = await openDatabase(path,
-            version: 1,
-            onCreate: onCreate,
-            onUpgrade: onUpgrade,
-            onDowngrade: onDatabaseDowngradeDelete);
+        final db = await openDatabase(
+          path,
+          version: 1,
+          onCreate: onCreate,
+          onUpgrade: onUpgrade,
+          onDowngrade: onDatabaseDowngradeDelete,
+        );
         await db.close();
       }
 
@@ -612,10 +667,7 @@ class OpenTestPage extends TestPage {
           print('db version ${await db.getVersion()}');
         }
 
-        final db = await openDatabase(
-          path,
-          onOpen: onOpen,
-        );
+        final db = await openDatabase(path, onOpen: onOpen);
         await db.close();
       }
 
@@ -638,10 +690,18 @@ class OpenTestPage extends TestPage {
           print('Creating new copy from asset');
 
           // Copy from asset
-          final data = await rootBundle.load(url.join(
-              'packages', 'sqflite_example_common', 'assets', 'example.db'));
-          final bytes =
-              data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+          final data = await rootBundle.load(
+            url.join(
+              'packages',
+              'sqflite_example_common',
+              'assets',
+              'example.db',
+            ),
+          );
+          final bytes = data.buffer.asUint8List(
+            data.offsetInBytes,
+            data.lengthInBytes,
+          );
           await writeFileAsBytes(path, bytes);
 
           // open the database
@@ -673,12 +733,18 @@ class OpenTestPage extends TestPage {
       final path = await initDeleteDb('instances_test.db');
       Database? db1, db2, db3;
       try {
-        db1 = await databaseFactory.openDatabase(path,
-            options: OpenDatabaseOptions(singleInstance: false));
-        db2 = await databaseFactory.openDatabase(path,
-            options: OpenDatabaseOptions(singleInstance: true));
-        db3 = await databaseFactory.openDatabase(path,
-            options: OpenDatabaseOptions(singleInstance: true));
+        db1 = await databaseFactory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(singleInstance: false),
+        );
+        db2 = await databaseFactory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(singleInstance: true),
+        );
+        db3 = await databaseFactory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(singleInstance: true),
+        );
         expect(db1, isNot(db2));
         expect(db2, db3);
       } finally {
@@ -707,11 +773,12 @@ class OpenTestPage extends TestPage {
       const path = inMemoryPath;
 
       var db = await openDatabase(path);
-      await db
-          .execute('CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
+      await db.execute(
+        'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)',
+      );
       await db.insert('Test', {'id': 1});
       expect(await db.query('Test'), [
-        {'id': 1}
+        {'id': 1},
       ]);
       await db.close();
 
@@ -731,18 +798,19 @@ class OpenTestPage extends TestPage {
       final path = await initDeleteDb('not_in_memory.db');
 
       var db = await openDatabase(path);
-      await db
-          .execute('CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
+      await db.execute(
+        'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)',
+      );
       await db.insert('Test', {'id': 1});
       expect(await db.query('Test'), [
-        {'id': 1}
+        {'id': 1},
       ]);
       await db.close();
 
       // reopen, content should be done
       db = await openDatabase(path);
       expect(await db.query('Test'), [
-        {'id': 1}
+        {'id': 1},
       ]);
       await db.close();
     });
@@ -763,8 +831,11 @@ class OpenTestPage extends TestPage {
     test('open in sub sub directory', () async {
       // await Sqflite.devSetDebugModeOn(true);
       final databasesPath = await factory.getDatabasesPath();
-      final path =
-          join(databasesPath, 'sub2_that_should_not_exists', 'sub_sub');
+      final path = join(
+        databasesPath,
+        'sub2_that_should_not_exists',
+        'sub_sub',
+      );
       try {
         await deleteDirectory(path);
       } catch (_) {}
@@ -781,18 +852,23 @@ class OpenTestPage extends TestPage {
       const path = 'open_close_open_no_wait.db';
       final factory = databaseFactory;
       await factory.deleteDatabase(path);
-      final db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(version: 1));
+      final db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(version: 1),
+      );
       try {
         expect(await db.getVersion(), 1);
         // close no wait
         unawaited(db.close());
-        final db2 = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(version: 1));
+        final db2 = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(version: 1),
+        );
         print('$db, $db2');
         verify(db != db2);
-        verify((db as SqfliteDatabaseMixin).id !=
-            (db2 as SqfliteDatabaseMixin).id);
+        verify(
+          (db as SqfliteDatabaseMixin).id != (db2 as SqfliteDatabaseMixin).id,
+        );
         expect(await db2.getVersion(), 1);
       } finally {
         await db.close();
@@ -803,15 +879,19 @@ class OpenTestPage extends TestPage {
       const path = 'test_close_in_transaction.db';
       final factory = databaseFactory;
       await factory.deleteDatabase(path);
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(version: 1));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(version: 1),
+      );
       try {
         //await db.getVersion();
         await db.execute('BEGIN IMMEDIATE');
         await db.close();
 
-        db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(version: 1));
+        db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(version: 1),
+        );
       } finally {
         await db.close();
       }
@@ -822,27 +902,35 @@ class OpenTestPage extends TestPage {
       const path = 'test_open_in_transaction.db';
       final factory = databaseFactory;
       await factory.deleteDatabase(path);
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(version: 1));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(version: 1),
+      );
       try {
         //await db.getVersion();
         await db.execute('BEGIN IMMEDIATE');
         // Trick to make sure we don't reuse the same instance during open
-        (factory as SqfliteDatabaseFactoryMixin)
-            .databaseOpenHelpers
-            .remove(db.path);
+        (factory as SqfliteDatabaseFactoryMixin).databaseOpenHelpers.remove(
+          db.path,
+        );
 
-        final db2 = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(version: 1));
+        final db2 = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(version: 1),
+        );
         print('after open');
         verify(db != db2);
         expect(
-            (db as SqfliteDatabaseMixin).id, (db2 as SqfliteDatabaseMixin).id);
+          (db as SqfliteDatabaseMixin).id,
+          (db2 as SqfliteDatabaseMixin).id,
+        );
         //await db.getVersion();
         //await db.execute('ROLLBACK');
 
-        db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(version: 1));
+        db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(version: 1),
+        );
         expect(db, db2);
       } finally {
         await db.close();
@@ -853,8 +941,10 @@ class OpenTestPage extends TestPage {
       // Kind of corruption simulation
       // await Sqflite.devSetDebugModeOn(true);
       final factory = databaseFactory;
-      final path =
-          join(await factory.getDatabasesPath(), 'test_non_sqlite_file.db');
+      final path = join(
+        await factory.getDatabasesPath(),
+        'test_non_sqlite_file.db',
+      );
 
       await factory.deleteDatabase(path);
       // Write dummy content
@@ -866,8 +956,10 @@ class OpenTestPage extends TestPage {
       {
         late Database db;
         try {
-          db = await factory.openDatabase(path,
-              options: OpenDatabaseOptions(readOnly: true));
+          db = await factory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(readOnly: true),
+          );
         } catch (e) {
           print('open error');
         }
@@ -906,14 +998,18 @@ class OpenTestPage extends TestPage {
       if (versionShouldFail) {
         // On iOS it fails
         try {
-          db = await factory.openDatabase(path,
-              options: OpenDatabaseOptions(version: 1));
+          db = await factory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(version: 1),
+          );
         } catch (e) {
           print('getVersion error');
         }
       } else {
-        db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(version: 1));
+        db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(version: 1),
+        );
         // On Android the database is re-created
         await db.getVersion();
       }
@@ -922,38 +1018,39 @@ class OpenTestPage extends TestPage {
       if (platform.isAndroid) {
         // Content has changed, it is a big file now!
         expect(
-            (await readFileAsBytes(path)).length, greaterThan(minExpectedSize));
+          (await readFileAsBytes(path)).length,
+          greaterThan(minExpectedSize),
+        );
       }
     });
     test('Read/write bytes', () async {
       var path = await initDeleteDb('database_read_bytes.db');
       var writtenPath = await initDeleteDb('database_written_bytes.db');
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (db, version) async {
-                await db.execute(
-                    'CREATE TABLE Test(id INTEGER PRIMARY KEY, value TEXT)');
-              }));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, version) async {
+            await db.execute(
+              'CREATE TABLE Test(id INTEGER PRIMARY KEY, value TEXT)',
+            );
+          },
+        ),
+      );
       var textValue = 'value_to_read';
       await db.insert('Test', {'id': 1, 'value': textValue});
       expect(await db.query('Test'), [
-        {'id': 1, 'value': textValue}
+        {'id': 1, 'value': textValue},
       ]);
       await db.close();
       var bytes = await factory.readDatabaseBytes(path);
       //expect(bytes.length, 8192);
-      expect(bytes.sublist(0, 4), [
-        83,
-        81,
-        76,
-        105,
-      ]);
+      expect(bytes.sublist(0, 4), [83, 81, 76, 105]);
 
       await factory.writeDatabaseBytes(writtenPath, bytes);
       db = await factory.openDatabase(writtenPath);
       expect(await db.query('Test'), [
-        {'id': 1, 'value': textValue}
+        {'id': 1, 'value': textValue},
       ]);
       await db.close();
     });

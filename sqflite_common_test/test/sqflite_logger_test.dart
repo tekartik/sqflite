@@ -27,19 +27,22 @@ void main() {
       final delegate = createMockFactoryFromData(transactionScenarioData);
 
       var events = <SqfliteLoggerEvent>[];
-      final factory = SqfliteDatabaseFactoryLogger(delegate,
-          options: SqfliteLoggerOptions(
-              type: SqfliteDatabaseFactoryLoggerType.invoke,
-              log: (event) {
-                print(event);
-                events.add(event);
-              }));
+      final factory = SqfliteDatabaseFactoryLogger(
+        delegate,
+        options: SqfliteLoggerOptions(
+          type: SqfliteDatabaseFactoryLoggerType.invoke,
+          log: (event) {
+            print(event);
+            events.add(event);
+          },
+        ),
+      );
       await runProtocolTransactionSteps(factory);
       expect(events.toMapListNoSw(), [
         {
           'method': 'openDatabase',
           'arguments': {'path': ':memory:', 'singleInstance': false},
-          'result': {'id': 1}
+          'result': {'id': 1},
         },
         {
           'method': 'execute',
@@ -47,9 +50,9 @@ void main() {
             'sql': 'BEGIN IMMEDIATE',
             'id': 1,
             'transactionId': null,
-            'inTransaction': true
+            'inTransaction': true,
           },
-          'result': {'transactionId': 1}
+          'result': {'transactionId': 1},
         },
         {
           'method': 'execute',
@@ -57,12 +60,12 @@ void main() {
             'sql': 'COMMIT',
             'id': 1,
             'transactionId': 1,
-            'inTransaction': false
-          }
+            'inTransaction': false,
+          },
         },
         {
           'method': 'closeDatabase',
-          'arguments': {'id': 1}
+          'arguments': {'id': 1},
         },
       ]);
     });
@@ -71,100 +74,98 @@ void main() {
 
       var events = <SqfliteLoggerEvent>[];
       var lines = <String>[];
-      final factory = SqfliteDatabaseFactoryLogger(delegate,
-          options: SqfliteLoggerOptions(
-              type: SqfliteDatabaseFactoryLoggerType.all,
-              log: (event) {
-                event.dump(
-                    print: (line) {
-                      lines.add(line?.toString() ?? '<null>');
-                      print(line);
-                    },
-                    noStopwatch: true);
-                print(event);
-                events.add(event);
-              }));
+      final factory = SqfliteDatabaseFactoryLogger(
+        delegate,
+        options: SqfliteLoggerOptions(
+          type: SqfliteDatabaseFactoryLoggerType.all,
+          log: (event) {
+            event.dump(
+              print: (line) {
+                lines.add(line?.toString() ?? '<null>');
+                print(line);
+              },
+              noStopwatch: true,
+            );
+            print(event);
+            events.add(event);
+          },
+        ),
+      );
       await runProtocolTransactionSteps(factory);
-      expect(
-          events.toMapListNoSw(),
-          [
-            {
-              'path': ':memory:',
-              'options': {'readOnly': false, 'singleInstance': true},
-              'id': 1
-            },
-            {
-              'db': 1,
-              'sql': 'BEGIN IMMEDIATE',
-              'result': {'transactionId': 1}
-            },
-            {'db': 1, 'txn': 1, 'sql': 'COMMIT'},
-            {'db': 1}
-          ],
-          reason: '$events');
+      expect(events.toMapListNoSw(), [
+        {
+          'path': ':memory:',
+          'options': {'readOnly': false, 'singleInstance': true},
+          'id': 1,
+        },
+        {
+          'db': 1,
+          'sql': 'BEGIN IMMEDIATE',
+          'result': {'transactionId': 1},
+        },
+        {'db': 1, 'txn': 1, 'sql': 'COMMIT'},
+        {'db': 1},
+      ], reason: '$events');
       expect(lines, [
         'openDatabase:({path: :memory:, options: {readOnly: false, singleInstance: true}})',
         'execute:({db: 1, sql: BEGIN IMMEDIATE, result: {transactionId: 1}})',
         'execute:({db: 1, txn: 1, sql: COMMIT})',
-        'closeDatabase:({db: 1})'
+        'closeDatabase:({db: 1})',
       ]);
     });
     var events = <SqfliteLoggerEvent>[];
     late SqfliteDatabaseFactoryLogger factory;
     void initFactoryAll(DatabaseFactory delegate) {
       events.clear();
-      factory = SqfliteDatabaseFactoryLogger(delegate,
-          options: SqfliteLoggerOptions(
-              type: SqfliteDatabaseFactoryLoggerType.all,
-              log: (event) {
-                print(event);
-                events.add(event);
-              }));
+      factory = SqfliteDatabaseFactoryLogger(
+        delegate,
+        options: SqfliteLoggerOptions(
+          type: SqfliteDatabaseFactoryLoggerType.all,
+          log: (event) {
+            print(event);
+            events.add(event);
+          },
+        ),
+      );
     }
 
     test('allOnCreate', () async {
-      final delegate =
-          createMockFactoryFromData(transactionOnCreateScenarioData);
+      final delegate = createMockFactoryFromData(
+        transactionOnCreateScenarioData,
+      );
       initFactoryAll(delegate);
 
       await runProtocolTransactionOnCreateSteps(factory);
-      expect(
-          events.toMapListNoSw(),
-          [
-            {
-              'path': ':memory:',
-              'options': {
-                'version': 1,
-                'readOnly': false,
-                'singleInstance': true
-              },
-              'id': 1
-            },
-            {
-              'db': 1,
-              'sql': 'PRAGMA user_version',
-              'result': [
-                {'user_version': 0}
-              ]
-            },
-            {
-              'db': 1,
-              'sql': 'BEGIN EXCLUSIVE',
-              'result': {'transactionId': 1}
-            },
-            {
-              'db': 1,
-              'txn': 1,
-              'sql': 'PRAGMA user_version',
-              'result': [
-                {'user_version': 0}
-              ]
-            },
-            {'db': 1, 'txn': 1, 'sql': 'PRAGMA user_version = 1'},
-            {'db': 1, 'txn': 1, 'sql': 'COMMIT'},
-            {'db': 1}
+      expect(events.toMapListNoSw(), [
+        {
+          'path': ':memory:',
+          'options': {'version': 1, 'readOnly': false, 'singleInstance': true},
+          'id': 1,
+        },
+        {
+          'db': 1,
+          'sql': 'PRAGMA user_version',
+          'result': [
+            {'user_version': 0},
           ],
-          reason: '$events');
+        },
+        {
+          'db': 1,
+          'sql': 'BEGIN EXCLUSIVE',
+          'result': {'transactionId': 1},
+        },
+        {
+          'db': 1,
+          'txn': 1,
+          'sql': 'PRAGMA user_version',
+          'result': [
+            {'user_version': 0},
+          ],
+        },
+        {'db': 1, 'txn': 1, 'sql': 'PRAGMA user_version = 1'},
+        {'db': 1, 'txn': 1, 'sql': 'COMMIT'},
+        {'db': 1},
+      ], reason: '$events');
     });
   });
 }

@@ -15,7 +15,7 @@ void main() {
           {'sql': 'PRAGMA user_version = 1', 'id': 1},
           null,
         ],
-        protocolCloseStep
+        protocolCloseStep,
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.setVersion(1);
@@ -32,7 +32,7 @@ void main() {
             'sql': 'BEGIN IMMEDIATE',
             'id': 1,
             'inTransaction': true,
-            'transactionId': null
+            'transactionId': null,
           },
           {'transactionId': 1},
         ],
@@ -42,11 +42,11 @@ void main() {
             'sql': 'COMMIT',
             'id': 1,
             'inTransaction': false,
-            'transactionId': 1
+            'transactionId': 1,
           },
           null,
         ],
-        protocolCloseStep
+        protocolCloseStep,
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.transaction((txn) async {});
@@ -64,20 +64,16 @@ void main() {
             'sql': 'BEGIN IMMEDIATE',
             'id': 1,
             'inTransaction': true,
-            'transactionId': null
+            'transactionId': null,
           },
           null,
         ],
         [
           'execute',
-          {
-            'sql': 'COMMIT',
-            'id': 1,
-            'inTransaction': false,
-          },
+          {'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
           null,
         ],
-        protocolCloseStep
+        protocolCloseStep,
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.transaction((txn) async {});
@@ -100,11 +96,11 @@ void main() {
             'sql': 'ROLLBACK',
             'id': 1,
             'inTransaction': false,
-            'transactionId': -1
+            'transactionId': -1,
           },
           null,
         ],
-        protocolCloseStep
+        protocolCloseStep,
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.execute('BEGIN TRANSACTION');
@@ -126,7 +122,7 @@ void main() {
           {'sql': 'ROLLBACK TRANSACTION', 'id': 1, 'inTransaction': false},
           null,
         ],
-        protocolCloseStep
+        protocolCloseStep,
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       await db.execute('BEGIN TRANSACTION');
@@ -143,20 +139,21 @@ void main() {
           {
             'sql': 'INSERT INTO test (blob) VALUES (?)',
             'arguments': [
-              [1, 2, 3]
+              [1, 2, 3],
             ],
-            'id': 1
+            'id': 1,
           },
-          1
+          1,
         ],
-        protocolCloseStep
+        protocolCloseStep,
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       expect(
-          await db.insert('test', {
-            'blob': Uint8List.fromList([1, 2, 3])
-          }),
-          1);
+        await db.insert('test', {
+          'blob': Uint8List.fromList([1, 2, 3]),
+        }),
+        1,
+      );
       await db.close();
       scenario.end();
     });
@@ -169,17 +166,19 @@ void main() {
           {
             'sql': 'INSERT OR IGNORE INTO test (value) VALUES (?)',
             'arguments': [1],
-            'id': 1
+            'id': 1,
           },
-          1
+          1,
         ],
-        protocolCloseStep
+        protocolCloseStep,
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       expect(
-          await db.insert('test', {'value': 1},
-              conflictAlgorithm: ConflictAlgorithm.ignore),
-          1);
+        await db.insert('test', {
+          'value': 1,
+        }, conflictAlgorithm: ConflictAlgorithm.ignore),
+        1,
+      );
       await db.close();
       scenario.end();
     });
@@ -195,7 +194,7 @@ void main() {
             'inTransaction': true,
             'transactionId': null,
           },
-          {'transactionId': 1}
+          {'transactionId': 1},
         ],
         [
           'batch',
@@ -205,14 +204,14 @@ void main() {
                 'method': 'insert',
                 'sql': 'INSERT INTO test (blob) VALUES (?)',
                 'arguments': [
-                  [1, 2, 3]
-                ]
-              }
+                  [1, 2, 3],
+                ],
+              },
             ],
             'id': 1,
-            'transactionId': 1
+            'transactionId': 1,
           },
-          null
+          null,
         ],
         [
           'execute',
@@ -220,16 +219,16 @@ void main() {
             'sql': 'COMMIT',
             'id': 1,
             'inTransaction': false,
-            'transactionId': 1
+            'transactionId': 1,
           },
-          null
+          null,
         ],
-        protocolCloseStep
+        protocolCloseStep,
       ]);
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
       final batch = db.batch();
       batch.insert('test', {
-        'blob': Uint8List.fromList([1, 2, 3])
+        'blob': Uint8List.fromList([1, 2, 3]),
       });
       await batch.commit();
       await db.close();
@@ -241,20 +240,16 @@ void main() {
         protocolOpenStep,
         [
           'query',
-          {
-            'sql': '_',
-            'id': 1,
-            'cursorPageSize': 2,
-          },
+          {'sql': '_', 'id': 1, 'cursorPageSize': 2},
           {
             'cursorId': 1,
             'rows': [
               // ignore: inference_failure_on_collection_literal
-              [{}]
+              [{}],
             ],
             // ignore: inference_failure_on_collection_literal
-            'columns': []
-          }
+            'columns': [],
+          },
         ],
         [
           'queryCursorNext',
@@ -263,26 +258,22 @@ void main() {
             'cursorId': 1,
             'rows': [
               // ignore: inference_failure_on_collection_literal
-              [{}]
+              [{}],
             ],
             // ignore: inference_failure_on_collection_literal
-            'columns': []
+            'columns': [],
           },
         ],
         [
           'queryCursorNext',
           {'cursorId': 1, 'cancel': true, 'id': 1},
-          null
+          null,
         ],
-        protocolCloseStep
+        protocolCloseStep,
       ]);
       var resultList = <Map<String, Object?>>[];
       final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
-      var cursor = await db.rawQueryCursor(
-        '_',
-        null,
-        bufferSize: 2,
-      );
+      var cursor = await db.rawQueryCursor('_', null, bufferSize: 2);
       expect(await cursor.moveNext(), isTrue);
       resultList.add(cursor.current);
       expect(await cursor.moveNext(), isTrue);

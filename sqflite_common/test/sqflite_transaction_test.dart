@@ -12,7 +12,7 @@ void main() {
         'sql': 'BEGIN IMMEDIATE',
         'id': 1,
         'inTransaction': true,
-        'transactionId': null
+        'transactionId': null,
       },
       null,
     ];
@@ -29,19 +29,19 @@ void main() {
         'sql': 'BEGIN IMMEDIATE',
         'id': 1,
         'inTransaction': true,
-        'transactionId': null
+        'transactionId': null,
       },
       SqfliteDatabaseException('failure', null),
     ];
     final transactionEndStep = [
       'execute',
       {'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
-      1
+      1,
     ];
     final readTransactionEndStep = [
       'execute',
       {'sql': 'ROLLBACK', 'id': 1, 'inTransaction': false},
-      1
+      1,
     ];
     test('basic', () async {
       final scenario = startScenario([
@@ -109,7 +109,7 @@ void main() {
             'sql': 'BEGIN EXCLUSIVE',
             'id': 1,
             'inTransaction': true,
-            'transactionId': null
+            'transactionId': null,
           },
           SqfliteDatabaseException('failure', null),
         ],
@@ -119,7 +119,7 @@ void main() {
             'sql': 'ROLLBACK',
             'id': 1,
             'transactionId': -1,
-            'inTransaction': false
+            'inTransaction': false,
           },
           null,
         ],
@@ -127,19 +127,17 @@ void main() {
       ]);
       final factory = scenario.factory;
       try {
-        await factory.openDatabase(inMemoryDatabasePath,
-            options:
-                OpenDatabaseOptions(version: 1, onCreate: (db, version) {}));
+        await factory.openDatabase(
+          inMemoryDatabasePath,
+          options: OpenDatabaseOptions(version: 1, onCreate: (db, version) {}),
+        );
       } on DatabaseException catch (_) {}
       scenario.end();
     });
     test('simple rolled back', () async {
       final causingRollbackStep = [
         'execute',
-        {
-          'sql': 'SOME ERROR CAUSING ROLLBACK',
-          'id': 1,
-        },
+        {'sql': 'SOME ERROR CAUSING ROLLBACK', 'id': 1},
         SqfliteDatabaseException('failure', null, transactionClosed: true),
       ];
       final scenario = startScenario([

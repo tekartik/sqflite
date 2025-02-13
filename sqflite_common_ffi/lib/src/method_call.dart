@@ -30,10 +30,7 @@ class FfiMethodCall
 
   /// Data map for invocation.
   Map<String, Object?> toDataMap() {
-    var map = <String, Object?>{
-      'method': method,
-      'arguments': arguments,
-    };
+    var map = <String, Object?>{'method': method, 'arguments': arguments};
     return map;
   }
 
@@ -104,14 +101,17 @@ class FfiMethodResponse {
     var errorMap = error;
     if (errorMap is Map) {
       return SqfliteFfiException(
-          code: (errorMap['code'] as String?) ?? anyErrorCode,
-          message: errorMap['message'] as String,
-          details: (errorMap['details'] as Map?)?.cast<String, Object?>(),
-          resultCode: errorMap['resultCode'] as int?,
-          transactionClosed: errorMap['transactionClosed'] as bool?);
+        code: (errorMap['code'] as String?) ?? anyErrorCode,
+        message: errorMap['message'] as String,
+        details: (errorMap['details'] as Map?)?.cast<String, Object?>(),
+        resultCode: errorMap['resultCode'] as int?,
+        transactionClosed: errorMap['transactionClosed'] as bool?,
+      );
     } else {
       return SqfliteFfiException(
-          code: anyErrorCode, message: error?.toString() ?? 'no info');
+        code: anyErrorCode,
+        message: error?.toString() ?? 'no info',
+      );
     }
   }
 }

@@ -19,21 +19,27 @@ var _debugVersion = 1;
 var _shc = '/_shc$_debugVersion';
 
 var swOptions = SqfliteFfiWebOptions(
-    sharedWorkerUri: Uri.parse('sw.dart.js'),
-    // ignore: invalid_use_of_visible_for_testing_member
-    forceAsBasicWorker: _useBasicWebWorker);
+  sharedWorkerUri: Uri.parse('sw.dart.js'),
+  // ignore: invalid_use_of_visible_for_testing_member
+  forceAsBasicWorker: _useBasicWebWorker,
+);
 var swBasicOptions = SqfliteFfiWebOptions(
-    sharedWorkerUri: Uri.parse('sw.dart.js'),
-    // ignore: invalid_use_of_visible_for_testing_member
-    forceAsBasicWorker: true);
+  sharedWorkerUri: Uri.parse('sw.dart.js'),
+  // ignore: invalid_use_of_visible_for_testing_member
+  forceAsBasicWorker: true,
+);
 Future incrementPrebuilt() async {
-  await incrementSqfliteValueInDatabaseFactory(databaseFactoryWebPrebuilt,
-      tag: 'prebuilt');
+  await incrementSqfliteValueInDatabaseFactory(
+    databaseFactoryWebPrebuilt,
+    tag: 'prebuilt',
+  );
 }
 
 Future incrementWork() async {
-  await incrementSqfliteValueInDatabaseFactory(databaseFactoryWebLocal,
-      tag: 'work');
+  await incrementSqfliteValueInDatabaseFactory(
+    databaseFactoryWebLocal,
+    tag: 'work',
+  );
 }
 
 Future exceptionWork() async {
@@ -74,7 +80,8 @@ Future bigInt() async {
     var factory = databaseFactoryWebLocal;
     var db = data.db = await factory.openDatabase('test_big_int');
     await db.execute(
-        'CREATE TABLE IF NOT EXISTS Test (id INTEGER PRIMARY KEY AUTOINCREMENT, value INTEGER)');
+      'CREATE TABLE IF NOT EXISTS Test (id INTEGER PRIMARY KEY AUTOINCREMENT, value INTEGER)',
+    );
     await db.query('Test');
   } catch (e) {
     write('exception $e');
@@ -109,8 +116,9 @@ Future bigInt() async {
 
 Future incrementNoWebWorker() async {
   await incrementSqfliteValueInDatabaseFactory(
-      databaseFactoryWebNoWebWorkerLocal,
-      tag: 'ui');
+    databaseFactoryWebNoWebWorkerLocal,
+    tag: 'ui',
+  );
 }
 
 Future<void> main() async {
@@ -133,8 +141,9 @@ Future<void> main() async {
 
 var _webContextRegisterAndReady = sqfliteFfiWebStartSharedWorker(swOptions);
 
-var _webBasicContextRegisterAndReady =
-    sqfliteFfiWebStartSharedWorker(swBasicOptions);
+var _webBasicContextRegisterAndReady = sqfliteFfiWebStartSharedWorker(
+  swBasicOptions,
+);
 
 Future<web.SharedWorker> sharedWorkerRegisterAndReady() async =>
     (await _webContextRegisterAndReady).sharedWorker!;
@@ -147,23 +156,26 @@ Future<SqfliteFfiWebContext> webBasicContextRegisterAndReady() async =>
 var databaseFactoryWebPrebuilt = databaseFactoryFfiWeb;
 var databaseFactoryWebNoWebWorkerLocal = databaseFactoryFfiWebNoWebWorker;
 var databaseFactoryWebLocal = createDatabaseFactoryFfiWeb(options: swOptions);
-var databaseFactoryWebBasicWorkerLocal =
-    createDatabaseFactoryFfiWeb(options: swBasicOptions);
+var databaseFactoryWebBasicWorkerLocal = createDatabaseFactoryFfiWeb(
+  options: swBasicOptions,
+);
 
 var key = 'testValue';
 
 Future<Object?> getTestValue(SqfliteFfiWebContext context) async {
-  var response = await context.sendRawMessage([
-    commandVarGet,
-    {'key': key}
-  ]) as Map;
+  var response =
+      await context.sendRawMessage([
+            commandVarGet,
+            {'key': key},
+          ])
+          as Map;
   return (response['result'] as Map)['value'] as Object?;
 }
 
 Future<void> setTestValue(SqfliteFfiWebContext context, Object? value) async {
   await context.sendRawMessage([
     commandVarSet,
-    {'key': key, 'value': value}
+    {'key': key, 'value': value},
   ]);
 }
 
@@ -195,22 +207,30 @@ Future<void> incrementVarInBasicWorker() async {
   write('var after $value');
 }
 
-Future<void> incrementSqfliteValueInDatabaseFactory(DatabaseFactory factory,
-    {String? tag}) async {
+Future<void> incrementSqfliteValueInDatabaseFactory(
+  DatabaseFactory factory, {
+  String? tag,
+}) async {
   tag ??= 'db';
   try {
     write('/$tag accessing db...');
     // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
-    var db = await factory.openDatabase('test.db',
-        options: OpenDatabaseOptions(
-            version: 1,
-            onCreate: (db, version) async {
-              await db.execute(
-                  'CREATE TABLE Test(id INTEGER PRIMARY KEY, value INTEGER)');
-            }));
+    var db = await factory.openDatabase(
+      'test.db',
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (db, version) async {
+          await db.execute(
+            'CREATE TABLE Test(id INTEGER PRIMARY KEY, value INTEGER)',
+          );
+        },
+      ),
+    );
     Future<int?> readValue() async {
-      var value = firstIntValue(
-              await db.query('Test', columns: ['value'], where: 'id = 1')) ??
+      var value =
+          firstIntValue(
+            await db.query('Test', columns: ['value'], where: 'id = 1'),
+          ) ??
           0;
 
       return value;
@@ -218,8 +238,10 @@ Future<void> incrementSqfliteValueInDatabaseFactory(DatabaseFactory factory,
 
     var value = await readValue();
     write('/$tag read before $value');
-    await db.insert('Test', {'id': 1, 'value': (value ?? 0) + 1},
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert('Test', {
+      'id': 1,
+      'value': (value ?? 0) + 1,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
     value = await readValue() ?? 0;
     write('/$tag read after $value');
   } catch (e) {
@@ -264,7 +286,7 @@ void initUi() {
     for (var factory in [
       databaseFactoryWebNoWebWorkerLocal,
       databaseFactoryWebPrebuilt,
-      databaseFactoryWebLocal
+      databaseFactoryWebLocal,
     ]) {
       write('factory: $factory');
       await readWiteDatabase(factory, 3);

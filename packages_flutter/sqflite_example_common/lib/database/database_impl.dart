@@ -16,15 +16,21 @@ abstract class PlatformHandler {
   }
 
   /// Write the db file directly to the file system
-  Future<void> writeFileAsBytes(String path, List<int> bytes,
-      {bool flush = false});
+  Future<void> writeFileAsBytes(
+    String path,
+    List<int> bytes, {
+    bool flush = false,
+  });
 
   /// Read a file as bytes
   Future<Uint8List> readFileAsBytes(String path);
 
   /// Write a file as a string
-  Future<void> writeFileAsString(String path, String text,
-      {bool flush = false});
+  Future<void> writeFileAsString(
+    String path,
+    String text, {
+    bool flush = false,
+  });
 
   /// Read a file as a string
   Future<String> readFileAsString(String path);
@@ -51,18 +57,22 @@ Future<String> initDeleteDb(String dbName) =>
     platformHandler.initDeleteDb(dbName);
 
 /// Write the db file directly to the file system
-Future<void> writeFileAsBytes(String path, List<int> bytes,
-        {bool flush = false}) =>
-    platformHandler.writeFileAsBytes(path, bytes, flush: flush);
+Future<void> writeFileAsBytes(
+  String path,
+  List<int> bytes, {
+  bool flush = false,
+}) => platformHandler.writeFileAsBytes(path, bytes, flush: flush);
 
 /// Read a file as bytes
 Future<Uint8List> readFileAsBytes(String path) =>
     platformHandler.readFileAsBytes(path);
 
 /// Write a file as a string
-Future<void> writeFileAsString(String path, String text,
-        {bool flush = false}) =>
-    platformHandler.writeFileAsString(path, text, flush: flush);
+Future<void> writeFileAsString(
+  String path,
+  String text, {
+  bool flush = false,
+}) => platformHandler.writeFileAsString(path, text, flush: flush);
 
 /// Read a file as a string
 Future<String> readFileAsString(String path) =>

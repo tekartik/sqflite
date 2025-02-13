@@ -4,6 +4,8 @@ import 'package:test/test.dart';
 void main() {
   test('basic', () async {
     await expectLater(
-        () => openDatabase(inMemoryDatabasePath), throwsA(isA<StateError>()));
+      () => openDatabase(inMemoryDatabasePath),
+      throwsA(isA<StateError>()),
+    );
   });
 }

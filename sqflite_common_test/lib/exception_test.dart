@@ -30,8 +30,9 @@ void run(SqfliteTestContext context) {
       try {
         await db.transaction((txn) async {
           await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item']);
-          var afterCount = utils
-              .firstIntValue(await txn.rawQuery('SELECT COUNT(*) FROM Test'));
+          var afterCount = utils.firstIntValue(
+            await txn.rawQuery('SELECT COUNT(*) FROM Test'),
+          );
           expect(afterCount, 1);
 
           hasFailed = true;
@@ -45,8 +46,9 @@ void run(SqfliteTestContext context) {
       }
       verify(hasFailed);
 
-      var afterCount =
-          utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test'));
+      var afterCount = utils.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM Test'),
+      );
       expect(afterCount, 0);
 
       await db.close();
@@ -73,8 +75,9 @@ void run(SqfliteTestContext context) {
 
       verify(hasFailed);
 
-      var afterCount =
-          utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test'));
+      var afterCount = utils.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM Test'),
+      );
       expect(afterCount, 0);
 
       await db.close();
@@ -185,8 +188,10 @@ void run(SqfliteTestContext context) {
 
       // Opening a non-existent database should fail
       try {
-        await factory.openDatabase(path,
-            options: OpenDatabaseOptions(readOnly: true));
+        await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(readOnly: true),
+        );
         fail('should fail');
       } on DatabaseException catch (_) {
         /// Ffi: SqfliteFfiException(error, Bad state: file read_only_exception.db not found
@@ -199,8 +204,10 @@ void run(SqfliteTestContext context) {
       await db.close();
 
       // Open in read-only
-      db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(readOnly: true));
+      db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(readOnly: true),
+      );
       // Change the user version to test read-only mode
       try {
         // await db.setVersion(2);
@@ -219,12 +226,15 @@ void run(SqfliteTestContext context) {
     test('Sqlite constraint Exception', () async {
       // await utils.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('constraint_exception.db');
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (db, version) {
-                db.execute('CREATE TABLE Test (name TEXT UNIQUE)');
-              }));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, version) {
+            db.execute('CREATE TABLE Test (name TEXT UNIQUE)');
+          },
+        ),
+      );
       await db.insert('Test', <String, Object?>{'name': 'test1'});
 
       try {
@@ -244,13 +254,17 @@ void run(SqfliteTestContext context) {
     test('Sqlite constraint not null', () async {
       // await utils.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('constraint_not_null_exception.db');
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (db, version) {
-                db.execute(
-                    'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL)');
-              }));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, version) {
+            db.execute(
+              'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL)',
+            );
+          },
+        ),
+      );
       await db.insert('Test', <String, Object?>{'id': 1, 'name': 'test1'});
       try {
         await db.insert('Test', <String, Object?>{'id': 1});
@@ -267,14 +281,18 @@ void run(SqfliteTestContext context) {
 
     test('Sqlite constraint primary key', () async {
       // await context.devSetDebugModeOn(true);
-      var path =
-          await context.initDeleteDb('constraint_primary_key_exception.db');
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (db, version) {
-                db.execute('CREATE TABLE Test (name TEXT PRIMARY KEY)');
-              }));
+      var path = await context.initDeleteDb(
+        'constraint_primary_key_exception.db',
+      );
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, version) {
+            db.execute('CREATE TABLE Test (name TEXT PRIMARY KEY)');
+          },
+        ),
+      );
       await db.insert('Test', <String, Object?>{'name': 'test1'});
 
       try {
@@ -307,8 +325,9 @@ void run(SqfliteTestContext context) {
       // update
       await db.insert('Test', <String, Object?>{'name': 'test2'});
       try {
-        await db.update('Test', <String, Object?>{'name': 'test1'},
-            where: 'name = "test2"');
+        await db.update('Test', <String, Object?>{
+          'name': 'test1',
+        }, where: 'name = "test2"');
         fail('should fail');
       } on DatabaseException catch (e) {
         // iOS DatabaseException(Error Domain=FMDatabase Code=1555 "UNIQUE constraint failed: Test.name"
@@ -408,29 +427,40 @@ void run(SqfliteTestContext context) {
 
     test('Open onDowngrade fail', () async {
       var path = await context.initDeleteDb('open_on_downgrade_fail.db');
-      var database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 2,
-              onCreate: (Database db, int version) async {
-                await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
-              }));
+      var database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 2,
+          onCreate: (Database db, int version) async {
+            await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+          },
+        ),
+      );
       await database.close();
 
       // currently this is crashing...
       // should fail going back in versions
       try {
-        database = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(
-                version: 1, onDowngrade: onDatabaseVersionChangeError));
+        database = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onDowngrade: onDatabaseVersionChangeError,
+          ),
+        );
         verify(false);
       } catch (e) {
         print(e);
       }
 
       // should work
-      database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 2, onDowngrade: onDatabaseVersionChangeError));
+      database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 2,
+          onDowngrade: onDatabaseVersionChangeError,
+        ),
+      );
       print(database);
       await database.close();
     });
@@ -438,12 +468,15 @@ void run(SqfliteTestContext context) {
     test('Access after close', () async {
       // await utils.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('access_after_close.db');
-      var database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 3,
-              onCreate: (Database db, int version) async {
-                await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
-              }));
+      var database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 3,
+          onCreate: (Database db, int version) async {
+            await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+          },
+        ),
+      );
       await database.close();
       try {
         await database.getVersion();
@@ -525,7 +558,7 @@ void run(SqfliteTestContext context) {
         '1',
         'table',
         r'$',
-        '[](){}:;?/\\&éçà^ù*-+,!̣'
+        '[](){}:;?/\\&éçà^ù*-+,!̣',
       ]) {
         try {
           await db.execute('CREATE TABLE $name ($safeColumnName INTEGER)');
@@ -543,17 +576,20 @@ void run(SqfliteTestContext context) {
         await db.execute('CREATE TABLE "$name" ("$name" INTEGER)');
         await db.insert('"$name"', {'"$name"': 1});
         expect(await db.query('"$name"'), [
-          {name: 1}
+          {name: 1},
         ]);
         expect(await db.update('"$name"', {'"$name"': 2}), 1);
         expect(await db.query('"$name"'), [
-          {name: 2}
+          {name: 2},
         ]);
         expect(
-            (await db.query('sqlite_master',
-                    where: 'name = ?', whereArgs: [name]))
-                .first['tbl_name'],
-            name);
+          (await db.query(
+            'sqlite_master',
+            where: 'name = ?',
+            whereArgs: [name],
+          )).first['tbl_name'],
+          name,
+        );
       }
 
       await db.close();
@@ -638,24 +674,27 @@ void run(SqfliteTestContext context) {
       await db.execute('CREATE TABLE Test (name TEXT)');
 
       try {
-        await db.rawInsert(
-            'INSERT INTO Test (name) VALUES (\'value\')', ['value2']);
+        await db.rawInsert('INSERT INTO Test (name) VALUES (\'value\')', [
+          'value2',
+        ]);
       } on DatabaseException catch (e) {
         print('ERR: $e');
         expect(e.toString().contains('INSERT INTO Test'), true);
       }
 
       try {
-        await db
-            .rawQuery('SELECT * FROM Test WHERE name = \'value\'', ['value2']);
+        await db.rawQuery('SELECT * FROM Test WHERE name = \'value\'', [
+          'value2',
+        ]);
       } on DatabaseException catch (e) {
         print('ERR: $e');
         expect(e.toString().contains('SELECT * FROM Test'), true);
       }
 
       try {
-        await db
-            .rawDelete('DELETE FROM Test WHERE name = \'value\'', ['value2']);
+        await db.rawDelete('DELETE FROM Test WHERE name = \'value\'', [
+          'value2',
+        ]);
       } on DatabaseException catch (e) {
         print('ERR: $e');
         expect(e.toString().contains('DELETE FROM Test'), true);
@@ -673,15 +712,18 @@ void run(SqfliteTestContext context) {
       var hasTimedOut = false;
       var callbackCount = 0;
       utils.setLockWarningInfo(
-          duration: const Duration(milliseconds: 200),
-          callback: () {
-            callbackCount++;
-          });
+        duration: const Duration(milliseconds: 200),
+        callback: () {
+          callbackCount++;
+        },
+      );
       try {
-        await db.transaction((txn) async {
-          await db.getVersion();
-          fail('should fail');
-        }).timeout(const Duration(milliseconds: 1500));
+        await db
+            .transaction((txn) async {
+              await db.getVersion();
+              fail('should fail');
+            })
+            .timeout(const Duration(milliseconds: 1500));
       } on TimeoutException catch (_) {
         hasTimedOut = true;
       }
@@ -699,20 +741,24 @@ void run(SqfliteTestContext context) {
       var hasTimedOut = false;
       var callbackCount = 0;
       utils.setLockWarningInfo(
-          duration: const Duration(milliseconds: 200),
-          callback: () {
-            callbackCount++;
-          });
+        duration: const Duration(milliseconds: 200),
+        callback: () {
+          callbackCount++;
+        },
+      );
       try {
-        await db.transaction((txn) async {
-          var versionFuture = db.getVersion();
-          if (useTimeout) {
-            versionFuture =
-                versionFuture.timeout(const Duration(milliseconds: 2000));
-          }
-          await versionFuture;
-          fail('should fail');
-        }).timeout(const Duration(milliseconds: 1500));
+        await db
+            .transaction((txn) async {
+              var versionFuture = db.getVersion();
+              if (useTimeout) {
+                versionFuture = versionFuture.timeout(
+                  const Duration(milliseconds: 2000),
+                );
+              }
+              await versionFuture;
+              fail('should fail');
+            })
+            .timeout(const Duration(milliseconds: 1500));
       } on TimeoutException catch (_) {
         hasTimedOut = true;
       }
@@ -725,10 +771,14 @@ void run(SqfliteTestContext context) {
     test('Thread dead lock', () async {
       // await Sqflite.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('thread_dead_lock.db');
-      var db1 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: false));
-      var db2 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: false));
+      var db1 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
+      var db2 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
       expect(db1, isNot(db2));
       try {
         await db1.execute('BEGIN EXCLUSIVE TRANSACTION');
@@ -755,10 +805,14 @@ void run(SqfliteTestContext context) {
     test('Thread dead lock safe', () async {
       // await Sqflite.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('thread_dead_lock_safe.db');
-      var db1 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: false));
-      var db2 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: false));
+      var db1 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
+      var db2 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
       expect(db1, isNot(db2));
       try {
         await db1.execute('BEGIN EXCLUSIVE TRANSACTION');
@@ -908,5 +962,5 @@ var _allEscapeNames = [
   'when',
   'where',
   'with',
-  'without'
+  'without',
 ];

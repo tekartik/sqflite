@@ -21,10 +21,11 @@ class _MainItemWidgetState extends State<MainItemWidget> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-        dense: true,
-        title: Text(widget.item.title),
-        subtitle: Text(widget.item.description),
-        onTap: _onTap);
+      dense: true,
+      title: Text(widget.item.title),
+      subtitle: Text(widget.item.description),
+      onTap: _onTap,
+    );
   }
 
   void _onTap() {

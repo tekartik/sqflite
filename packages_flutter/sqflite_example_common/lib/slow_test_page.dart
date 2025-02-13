@@ -17,8 +17,9 @@ class SlowTestPage extends TestPage {
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
       await db.transaction((txn) async {
         for (var i = 0; i < 100; i++) {
-          await txn
-              .rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
+          await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', [
+            'item $i',
+          ]);
         }
       });
       await db.close();
@@ -55,8 +56,9 @@ class SlowTestPage extends TestPage {
     });
 
     test('Perf 1000 insert batch no result', () async {
-      final path =
-          await initDeleteDb('slow_txn_1000_insert_batch_no_result.db');
+      final path = await initDeleteDb(
+        'slow_txn_1000_insert_batch_no_result.db',
+      );
       final db = await openDatabase(path);
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
 
@@ -82,15 +84,17 @@ class SlowTestPage extends TestPage {
     if (platform.isAndroid) {
       test('Perf android NORMAL_PRIORITY', () async {
         // ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
-        await databaseFactory
-            .setOptions(SqfliteOptions()..androidThreadPriority = 0);
+        await databaseFactory.setOptions(
+          SqfliteOptions()..androidThreadPriority = 0,
+        );
         try {
           await perfInsert();
           await perfDo(count);
         } finally {
           // Background priority
-          await databaseFactory
-              .setOptions(SqfliteOptions()..androidThreadPriority = 10);
+          await databaseFactory.setOptions(
+            SqfliteOptions()..androidThreadPriority = 10,
+          );
         }
       });
     }
@@ -117,16 +121,24 @@ class SlowTestPage extends TestPage {
       print('sw ${sw.elapsed} SELECT * From Test : ${result.length} items');
 
       sw = Stopwatch()..start();
-      result =
-          await db.query('Test', where: 'name LIKE ?', whereArgs: ['%item%']);
+      result = await db.query(
+        'Test',
+        where: 'name LIKE ?',
+        whereArgs: ['%item%'],
+      );
       print(
-          'sw ${sw.elapsed} SELECT * FROM Test WHERE name LIKE %item% ${result.length} items');
+        'sw ${sw.elapsed} SELECT * FROM Test WHERE name LIKE %item% ${result.length} items',
+      );
 
       sw = Stopwatch()..start();
-      result =
-          await db.query('Test', where: 'name LIKE ?', whereArgs: ['%dummy%']);
+      result = await db.query(
+        'Test',
+        where: 'name LIKE ?',
+        whereArgs: ['%dummy%'],
+      );
       print(
-          'sw ${sw.elapsed} SELECT * FROM Test WHERE name LIKE %dummy% ${result.length} items');
+        'sw ${sw.elapsed} SELECT * FROM Test WHERE name LIKE %dummy% ${result.length} items',
+      );
     } finally {
       await db.close();
     }
@@ -148,7 +160,7 @@ class SlowTestPage extends TestPage {
     await db.close();
   }
 
-// 2019-02-26
+  // 2019-02-26
 
-// BACKGROUND
+  // BACKGROUND
 }

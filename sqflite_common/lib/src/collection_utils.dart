@@ -27,10 +27,14 @@ QueryResultSet queryResultSetFromMap(Map<dynamic, dynamic> queryResultSetMap) {
 
 /// Native exception wrapper
 DatabaseException databaseExceptionFromOperationError(
-    Map<dynamic, dynamic> errorMap) {
+  Map<dynamic, dynamic> errorMap,
+) {
   final message = errorMap[paramErrorMessage] as String?;
-  return SqfliteDatabaseException(message, errorMap[paramErrorData],
-      resultCode: errorMap[paramErrorResultCode] as int?);
+  return SqfliteDatabaseException(
+    message,
+    errorMap[paramErrorData],
+    resultCode: errorMap[paramErrorResultCode] as int?,
+  );
 }
 
 /// A batch operation result is either

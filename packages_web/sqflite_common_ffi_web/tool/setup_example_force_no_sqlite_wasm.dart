@@ -6,6 +6,10 @@ Future<void> main() async {
 
 Future<void> setupExample() async {
   await setupSqfliteWebBinaries(
-      options: SqfliteWebSetupOptions(
-          dir: 'example', noSqlite3Wasm: true, force: true));
+    options: SqfliteWebSetupOptions(
+      dir: 'example',
+      noSqlite3Wasm: true,
+      force: true,
+    ),
+  );
 }

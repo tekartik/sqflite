@@ -51,8 +51,11 @@ void windowsInit() {
 String? findPackageLibPath(String path) {
   try {
     var map = pathGetPackageConfigMap(path);
-    var packagePath =
-        pathPackageConfigMapGetPackagePath(path, map, 'sqflite_common_ffi');
+    var packagePath = pathPackageConfigMapGetPackagePath(
+      path,
+      map,
+      'sqflite_common_ffi',
+    );
     if (packagePath != null) {
       return join(packagePath, 'lib');
     }
@@ -83,8 +86,10 @@ String? findWindowsSqlite3DllPathFromPath(String path) {
 ///
 /// checking recursively to find a valid parent directory
 ///
-String? pathFindTopLevelPath(String path,
-    {required bool Function(String path) pathIsTopLevel}) {
+String? pathFindTopLevelPath(
+  String path, {
+  required bool Function(String path) pathIsTopLevel,
+}) {
   path = normalize(absolute(path));
   String parent;
   while (true) {
@@ -105,13 +110,16 @@ String? pathFindTopLevelPath(String path,
 /// Look for pubspec.lock file
 /// Which seems the safest to handle package in global pub too
 String? findCurrentPackageTopPath(String path) {
-  return pathFindTopLevelPath(path, pathIsTopLevel: (path) {
-    var lockFile = File(join(path, 'pubspec.lock'));
-    if (lockFile.existsSync()) {
-      return true;
-    }
-    return false;
-  });
+  return pathFindTopLevelPath(
+    path,
+    pathIsTopLevel: (path) {
+      var lockFile = File(join(path, 'pubspec.lock'));
+      if (lockFile.existsSync()) {
+        return true;
+      }
+      return false;
+    },
+  );
 }
 
 /// Compat

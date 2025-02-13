@@ -51,8 +51,10 @@ extension SqfliteWebDartifyExtension on JSAny {
       return (value as JSUint8Array).toDart;
     } else if (value.isA<JSArray>()) {
       var jsArray = value as JSArray;
-      var list = List.generate(jsArray.compatLength,
-          (index) => jsArray.getProperty(index.toJS)?.dartifyValueStrict());
+      var list = List.generate(
+        jsArray.compatLength,
+        (index) => jsArray.getProperty(index.toJS)?.dartifyValueStrict(),
+      );
       return list;
     }
     try {
@@ -66,7 +68,8 @@ extension SqfliteWebDartifyExtension on JSAny {
       return object;
     } catch (e) {
       throw UnsupportedError(
-          'Unsupported value: $value (type: ${value.runtimeType}) ($e)');
+        'Unsupported value: $value (type: ${value.runtimeType}) ($e)',
+      );
     }
   }
 }
@@ -99,6 +102,7 @@ extension SqfliteWebJsifyExtension on Object {
       return value.toJS;
     }
     throw UnsupportedError(
-        'Unsupported value: $value (type: ${value.runtimeType})');
+      'Unsupported value: $value (type: ${value.runtimeType})',
+    );
   }
 }

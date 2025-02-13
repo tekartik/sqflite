@@ -37,11 +37,14 @@ class DatabaseTracker {
         'file:sqflite_database_tracker?mode=memory&cache=shared',
         uri: true,
       );
-      var tableExists = (_db!
-              .select(
-                  'SELECT COUNT(*) FROM sqlite_master WHERE tbl_name = \'$_tableName\'')
-              .first
-              .columnAt(0) as int) >
+      var tableExists =
+          (_db!
+                  .select(
+                    'SELECT COUNT(*) FROM sqlite_master WHERE tbl_name = \'$_tableName\'',
+                  )
+                  .first
+                  .columnAt(0)
+              as int) >
           0;
       if (!tableExists) {
         _db!.execute('''

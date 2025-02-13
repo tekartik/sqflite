@@ -16,9 +16,9 @@ void main() {
     _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
         .defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      log.add(methodCall);
-      return response;
-    });
+          log.add(methodCall);
+          return response;
+        });
 
     tearDown(() {
       log.clear();

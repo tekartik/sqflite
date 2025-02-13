@@ -18,9 +18,9 @@ void main() {
     _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
         .defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      log.add(methodCall);
-      return response;
-    });
+          log.add(methodCall);
+          return response;
+        });
 
     tearDown(() {
       log.clear();
@@ -65,52 +65,60 @@ void main() {
 
     test('firstIntValue', () {
       expect(
-          Sqflite.firstIntValue(<Map<String, Object?>>[
-            <String, Object?>{'test': 1}
-          ]),
-          1);
+        Sqflite.firstIntValue(<Map<String, Object?>>[
+          <String, Object?>{'test': 1},
+        ]),
+        1,
+      );
       expect(
-          Sqflite.firstIntValue(<Map<String, Object?>>[
-            <String, Object?>{'test': 1},
-            <String, Object?>{'test': 1}
-          ]),
-          1);
+        Sqflite.firstIntValue(<Map<String, Object?>>[
+          <String, Object?>{'test': 1},
+          <String, Object?>{'test': 1},
+        ]),
+        1,
+      );
       expect(
-          Sqflite.firstIntValue(<Map<String, Object?>>[
-            <String, Object?>{'test': null}
-          ]),
-          null);
-      expect(Sqflite.firstIntValue(<Map<String, Object?>>[<String, Object?>{}]),
-          isNull);
+        Sqflite.firstIntValue(<Map<String, Object?>>[
+          <String, Object?>{'test': null},
+        ]),
+        null,
+      );
+      expect(
+        Sqflite.firstIntValue(<Map<String, Object?>>[<String, Object?>{}]),
+        isNull,
+      );
       expect(Sqflite.firstIntValue(<Map<String, Object?>>[]), isNull);
-      expect(Sqflite.firstIntValue(<Map<String, Object?>>[<String, Object?>{}]),
-          isNull);
+      expect(
+        Sqflite.firstIntValue(<Map<String, Object?>>[<String, Object?>{}]),
+        isNull,
+      );
     });
 
     test('hex', () {
       expect(
-          Sqflite.hex(<int>[
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            255
-          ]),
-          '000102030405060708090A0B0C0D0E0F1011FF');
+        Sqflite.hex(<int>[
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          255,
+        ]),
+        '000102030405060708090A0B0C0D0E0F1011FF',
+      );
       expect(Sqflite.hex(<int>[]), '');
       expect(Sqflite.hex(<int>[32]), '20');
 

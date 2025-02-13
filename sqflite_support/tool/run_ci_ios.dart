@@ -11,15 +11,18 @@ Future<void> main() async {
   await createAndBuildIos(appPath: appExp2Path, lang: 'swift');
 }
 
-Future<void> createAndBuildIos(
-    {required String appPath, required String lang}) async {
+Future<void> createAndBuildIos({
+  required String appPath,
+  required String lang,
+}) async {
   var shell = Shell();
 
   try {
     await Directory(appPath).delete(recursive: true);
   } catch (_) {}
   await shell.run(
-      'flutter create --template app --platforms ios --ios-language $lang ${shellArgument(appPath)}');
+    'flutter create --template app --platforms ios --ios-language $lang ${shellArgument(appPath)}',
+  );
 
   shell = shell.cd(appPath);
   await fixProject(appPath);
@@ -29,7 +32,8 @@ Future<void> createAndBuildIos(
 Future<void> fixProject(String appPath) async {
   var shell = Shell().cd(appPath);
   await shell.run(
-      'flutter pub add sqflite_example --path ../../../../sqflite/example');
+    'flutter pub add sqflite_example --path ../../../../sqflite/example',
+  );
   await addDepOverrides(appPath);
 }
 

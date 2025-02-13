@@ -43,17 +43,19 @@ class _ItemWidgetState extends State<ItemWidget> {
         break;
     }
     return ListTile(
-        dense: true,
-        // isThreeLine: widget.summary != null,
-        leading: SizedBox(
-            child: IconButton(
+      dense: true,
+      // isThreeLine: widget.summary != null,
+      leading: SizedBox(
+        child: IconButton(
           icon: Icon(icon, color: color),
 
           onPressed: null, // null disables the button
-        )),
-        title: Text(widget.item.name),
-        subtitle: widget.summary != null ? Text(widget.summary!) : null,
-        onTap: _onTap);
+        ),
+      ),
+      title: Text(widget.item.name),
+      subtitle: widget.summary != null ? Text(widget.summary!) : null,
+      onTap: _onTap,
+    );
   }
 
   void _onTap() {

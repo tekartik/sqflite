@@ -76,9 +76,9 @@ abstract class _SqfliteLoggerEvent
 
   @override
   Map<String, Object?> toMap() => {
-        if (sw != null) 'sw': '${sw!.elapsed}',
-        if (error != null) 'error': error
-      };
+    if (sw != null) 'sw': '${sw!.elapsed}',
+    if (error != null) 'error': error,
+  };
 
   @override
   String toString() => toLogString(toMap());
@@ -205,9 +205,9 @@ abstract class _SqfliteLoggerDatabaseEvent extends _SqfliteLoggerEvent
   }
 
   Map<String, Object?> get _databasePrefixMap => {
-        if (client.database is SqfliteDatabase) 'db': databaseId,
-        if (transactionId != null) 'txn': transactionId
-      };
+    if (client.database is SqfliteDatabase) 'db': databaseId,
+    if (transactionId != null) 'txn': transactionId,
+  };
 
   late int? txnId;
 
@@ -287,13 +287,14 @@ abstract class _SqfliteLoggerSqlEvent<T> extends _SqfliteLoggerDatabaseEvent
   _SqfliteLoggerSqlEvent() : super._();
 
   static _SqfliteLoggerSqlEvent fromDynamic(
-      Stopwatch sw,
-      DatabaseExecutor client,
-      SqliteSqlCommandType type,
-      String sql,
-      List<Object?>? arguments,
-      Object? result,
-      Object? error) {
+    Stopwatch sw,
+    DatabaseExecutor client,
+    SqliteSqlCommandType type,
+    String sql,
+    List<Object?>? arguments,
+    Object? result,
+    Object? error,
+  ) {
     _SqfliteLoggerSqlEvent event;
     switch (type) {
       case SqliteSqlCommandType.execute:
@@ -325,12 +326,12 @@ abstract class _SqfliteLoggerSqlEvent<T> extends _SqfliteLoggerDatabaseEvent
 
   @override
   Map<String, Object?> toMap() => {
-        ..._databasePrefixMap,
-        'sql': sql,
-        if (arguments != null) 'arguments': arguments,
-        if (result != null) 'result': result,
-        ...super.toMap()
-      };
+    ..._databasePrefixMap,
+    'sql': sql,
+    if (arguments != null) 'arguments': arguments,
+    if (result != null) 'result': result,
+    ...super.toMap(),
+  };
 
   @override
   String toString() => '$_typeAsText(${super.toString()})';
@@ -345,16 +346,21 @@ class _SqfliteLoggerBatchEvent extends _SqfliteLoggerDatabaseEvent
   final List<SqfliteLoggerBatchOperation> operations;
 
   _SqfliteLoggerBatchEvent(
-      super.sw, super.client, this.operations, super.error);
+    super.sw,
+    super.client,
+    this.operations,
+    super.error,
+  );
 
   @override
   Map<String, Object?> toMap() => {
-        ..._databasePrefixMap,
-        'operations': operations
+    ..._databasePrefixMap,
+    'operations':
+        operations
             .map((e) => (e as _SqfliteLoggerBatchOperation).toMap())
             .toList(),
-        ...super.toMap()
-      };
+    ...super.toMap(),
+  };
 }
 
 class _SqfliteLoggerBatchInsertOperation
@@ -389,8 +395,13 @@ abstract class _SqfliteLoggerBatchOperation<T>
   @override
   late final Object? error;
 
-  static _SqfliteLoggerBatchOperation fromDynamic(SqliteSqlCommandType type,
-      String sql, List<Object?>? arguments, Object? result, Object? error) {
+  static _SqfliteLoggerBatchOperation fromDynamic(
+    SqliteSqlCommandType type,
+    String sql,
+    List<Object?>? arguments,
+    Object? result,
+    Object? error,
+  ) {
     _SqfliteLoggerBatchOperation operation;
     switch (type) {
       case SqliteSqlCommandType.execute:
@@ -423,7 +434,7 @@ abstract class _SqfliteLoggerBatchOperation<T>
       'sql': sql,
       if (arguments != null) 'arguments': arguments,
       if (result != null) 'result': result,
-      if (error != null) 'error': error
+      if (error != null) 'error': error,
     };
     return map;
   }
@@ -438,9 +449,7 @@ class _SqfliteLoggerDatabaseDeleteEvent extends _SqfliteLoggerEvent
   final String path;
 
   @override
-  Map<String, Object?> toMap() => {
-        'path': path,
-      };
+  Map<String, Object?> toMap() => {'path': path};
 
   _SqfliteLoggerDatabaseDeleteEvent(super.sw, this.path, super.error);
 
@@ -464,14 +473,19 @@ class _SqfliteLoggerDatabaseOpenEvent extends _SqfliteLoggerEvent
 
   @override
   Map<String, Object?> toMap() => {
-        'path': path,
-        if (options != null) 'options': options!.toMap(),
-        if (databaseId != null) 'id': databaseId,
-        ...super.toMap()
-      };
+    'path': path,
+    if (options != null) 'options': options!.toMap(),
+    if (databaseId != null) 'id': databaseId,
+    ...super.toMap(),
+  };
 
   _SqfliteLoggerDatabaseOpenEvent(
-      super.sw, this.path, this.options, this.db, super.error);
+    super.sw,
+    this.path,
+    this.options,
+    this.db,
+    super.error,
+  );
 
   @override
   String get name => 'openDatabase';
@@ -503,14 +517,19 @@ class _SqfliteLoggerInvokeEvent extends _SqfliteLoggerEvent
 
   @override
   Map<String, Object?> toMap() => {
-        'method': method,
-        if (arguments != null) 'arguments': arguments,
-        if (result != null) 'result': result,
-        ...super.toMap()
-      };
+    'method': method,
+    if (arguments != null) 'arguments': arguments,
+    if (result != null) 'result': result,
+    ...super.toMap(),
+  };
 
   _SqfliteLoggerInvokeEvent(
-      super.sw, this.method, this.arguments, this.result, super.error);
+    super.sw,
+    this.method,
+    this.arguments,
+    this.result,
+    super.error,
+  );
 
   @override
   String get name => 'invoke';
@@ -554,9 +573,10 @@ class SqfliteLoggerOptions {
   late final SqfliteDatabaseFactoryLoggerType type;
 
   /// Sqflite logger option.
-  SqfliteLoggerOptions(
-      {SqfliteLoggerEventFunction? log,
-      SqfliteDatabaseFactoryLoggerType? type}) {
+  SqfliteLoggerOptions({
+    SqfliteLoggerEventFunction? log,
+    SqfliteDatabaseFactoryLoggerType? type,
+  }) {
     this.log = log ?? _logDefault;
     this.type = type ?? _typeDefault;
   }
@@ -566,14 +586,18 @@ class SqfliteLoggerOptions {
 abstract class SqfliteDatabaseFactoryLogger implements SqfliteDatabaseFactory {
   /// Wrap each call in a logger.
   @experimental
-  factory SqfliteDatabaseFactoryLogger(DatabaseFactory factory,
-      {SqfliteLoggerOptions? options}) {
+  factory SqfliteDatabaseFactoryLogger(
+    DatabaseFactory factory, {
+    SqfliteLoggerOptions? options,
+  }) {
     var delegate = factory;
     if (factory is SqfliteDatabaseFactoryLogger) {
       delegate = (factory as _SqfliteDatabaseFactoryLogger)._delegate;
     }
     return _SqfliteDatabaseFactoryLogger(
-        delegate as SqfliteDatabaseFactory, options ?? SqfliteLoggerOptions());
+      delegate as SqfliteDatabaseFactory,
+      options ?? SqfliteLoggerOptions(),
+    );
   }
 }
 
@@ -592,9 +616,11 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
   @override
   _SqfliteDatabaseFactoryLogger get factory => _factory;
 
-  _SqfliteDatabaseLogger(SqfliteDatabaseOpenHelper openHelper, String path,
-      {OpenDatabaseOptions? options})
-      : super(openHelper, path, options: options) {
+  _SqfliteDatabaseLogger(
+    SqfliteDatabaseOpenHelper openHelper,
+    String path, {
+    OpenDatabaseOptions? options,
+  }) : super(openHelper, path, options: options) {
     _factory = openHelper.factory as _SqfliteDatabaseFactoryLogger;
   }
 
@@ -612,8 +638,15 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
       return await doOpenDatabase();
     } else {
       var info = await _wrap<int>(doOpenDatabase);
-      _options.log(_SqfliteLoggerDatabaseOpenEvent(
-          info.sw, path, options, this, info.error));
+      _options.log(
+        _SqfliteLoggerDatabaseOpenEvent(
+          info.sw,
+          path,
+          options,
+          this,
+          info.error,
+        ),
+      );
       return info.throwOrResult();
     }
   }
@@ -636,11 +669,18 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
   /// Commit a batch.
   @override
   Future<List<Object?>> txnApplyBatch(
-      SqfliteTransaction? txn, SqfliteBatch batch,
-      {bool? noResult, bool? continueOnError}) async {
+    SqfliteTransaction? txn,
+    SqfliteBatch batch, {
+    bool? noResult,
+    bool? continueOnError,
+  }) async {
     Future<List<Object?>> doApplyBatch() {
-      return super.txnApplyBatch(txn, batch,
-          noResult: noResult, continueOnError: continueOnError);
+      return super.txnApplyBatch(
+        txn,
+        batch,
+        noResult: noResult,
+        continueOnError: continueOnError,
+      );
     }
 
     if (_needLogAll) {
@@ -662,16 +702,25 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
               result = resultOrError;
             }
           }
-          logOperations.add(_SqfliteLoggerBatchOperation.fromDynamic(
+          logOperations.add(
+            _SqfliteLoggerBatchOperation.fromDynamic(
               operation.type,
               operation.sql,
               operation.arguments,
               result,
-              error));
+              error,
+            ),
+          );
         }
       }
-      _options.log(_SqfliteLoggerBatchEvent(
-          info.sw, _executor(txn), logOperations, info.error));
+      _options.log(
+        _SqfliteLoggerBatchEvent(
+          info.sw,
+          _executor(txn),
+          logOperations,
+          info.error,
+        ),
+      );
       return info.throwOrResult();
     } else {
       return await doApplyBatch();
@@ -683,29 +732,53 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
   /// Returns a list of rows that were found
   @override
   Future<List<Map<String, Object?>>> txnRawQuery(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
-    return _txnWrapSql(txn, SqliteSqlCommandType.query, sql, arguments,
-        () async {
-      return super.txnRawQuery(txn, sql, arguments);
-    });
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  ) {
+    return _txnWrapSql(
+      txn,
+      SqliteSqlCommandType.query,
+      sql,
+      arguments,
+      () async {
+        return super.txnRawQuery(txn, sql, arguments);
+      },
+    );
   }
 
   @override
   Future<int> txnRawDelete(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
-    return _txnWrapSql(txn, SqliteSqlCommandType.delete, sql, arguments,
-        () async {
-      return super.txnRawDelete(txn, sql, arguments);
-    });
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  ) {
+    return _txnWrapSql(
+      txn,
+      SqliteSqlCommandType.delete,
+      sql,
+      arguments,
+      () async {
+        return super.txnRawDelete(txn, sql, arguments);
+      },
+    );
   }
 
   @override
   Future<int> txnRawUpdate(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
-    return _txnWrapSql(txn, SqliteSqlCommandType.update, sql, arguments,
-        () async {
-      return super.txnRawUpdate(txn, sql, arguments);
-    });
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  ) {
+    return _txnWrapSql(
+      txn,
+      SqliteSqlCommandType.update,
+      sql,
+      arguments,
+      () async {
+        return super.txnRawUpdate(txn, sql, arguments);
+      },
+    );
   }
 
   /// for INSERT sql query
@@ -714,35 +787,65 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
   /// 0 returned instead of null
   @override
   Future<int> txnRawInsert(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
-    return _txnWrapSql(txn, SqliteSqlCommandType.insert, sql, arguments,
-        () async {
-      return super.txnRawInsert(txn, sql, arguments);
-    });
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  ) {
+    return _txnWrapSql(
+      txn,
+      SqliteSqlCommandType.insert,
+      sql,
+      arguments,
+      () async {
+        return super.txnRawInsert(txn, sql, arguments);
+      },
+    );
   }
 
   /// Execute a command.
   @override
   Future<T> txnExecute<T>(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments,
-      {bool? beginTransaction}) {
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments, {
+    bool? beginTransaction,
+  }) {
     return _txnWrapSql(
+      txn,
+      SqliteSqlCommandType.execute,
+      sql,
+      arguments,
+      () => super.txnExecute(
         txn,
-        SqliteSqlCommandType.execute,
         sql,
         arguments,
-        () => super.txnExecute(txn, sql, arguments,
-            beginTransaction: beginTransaction));
+        beginTransaction: beginTransaction,
+      ),
+    );
   }
 
-  Future<T> _txnWrapSql<T>(SqfliteTransaction? txn, SqliteSqlCommandType type,
-      String sql, List<Object?>? arguments, Future<T> Function() action) async {
+  Future<T> _txnWrapSql<T>(
+    SqfliteTransaction? txn,
+    SqliteSqlCommandType type,
+    String sql,
+    List<Object?>? arguments,
+    Future<T> Function() action,
+  ) async {
     if (!_needLogAll) {
       return await action();
     } else {
       var info = await _wrap<T>(action);
-      _options.log(_SqfliteLoggerSqlEvent.fromDynamic(info.sw, _executor(txn),
-          type, sql, arguments, info.result, info.error));
+      _options.log(
+        _SqfliteLoggerSqlEvent.fromDynamic(
+          info.sw,
+          _executor(txn),
+          type,
+          sql,
+          arguments,
+          info.result,
+          info.error,
+        ),
+      );
       return info.throwOrResult();
     }
   }
@@ -767,7 +870,9 @@ class _SqfliteDatabaseFactoryLogger
   /// The only method to override to create a custom object.
   @override
   SqfliteDatabaseMixin newDatabase(
-      SqfliteDatabaseOpenHelper openHelper, String path) {
+    SqfliteDatabaseOpenHelper openHelper,
+    String path,
+  ) {
     return _SqfliteDatabaseLogger(openHelper, path);
   }
 
@@ -796,8 +901,15 @@ class _SqfliteDatabaseFactoryLogger
 
     if (_options.type == SqfliteDatabaseFactoryLoggerType.invoke) {
       var info = await _wrap(doInvokeMethod);
-      _options.log(_SqfliteLoggerInvokeEvent(
-          info.sw, method, arguments, info.result, info.error));
+      _options.log(
+        _SqfliteLoggerInvokeEvent(
+          info.sw,
+          method,
+          arguments,
+          info.result,
+          info.error,
+        ),
+      );
       return info.throwOrResult();
     } else {
       return await doInvokeMethod();
@@ -812,8 +924,9 @@ class _SqfliteDatabaseFactoryLogger
 
     if (_options.type == SqfliteDatabaseFactoryLoggerType.all) {
       var info = await _wrap(doDeleteDatabase);
-      _options
-          .log(_SqfliteLoggerDatabaseDeleteEvent(info.sw, path, info.error));
+      _options.log(
+        _SqfliteLoggerDatabaseDeleteEvent(info.sw, path, info.error),
+      );
       return info.throwOrResult();
     } else {
       return await doDeleteDatabase();
@@ -832,10 +945,10 @@ class _SqfliteDatabaseFactoryLogger
 extension OpenDatabaseOptionsLogger on OpenDatabaseOptions {
   /// To map view
   Map<String, Object?> toMap() => <String, Object?>{
-        'readOnly': readOnly,
-        'singleInstance': singleInstance,
-        if (version != null) 'version': version
-      };
+    'readOnly': readOnly,
+    'singleInstance': singleInstance,
+    if (version != null) 'version': version,
+  };
 }
 
 /// Basic dump
@@ -897,9 +1010,10 @@ extension DatabaseFactoryLoggerDebugExt on DatabaseFactory {
   /// databaseFactory = databaseFactory.debugQuickLoggerWrapper()
   @Deprecated('Debug/dev mode')
   DatabaseFactory debugQuickLoggerWrapper() {
-    var factoryWithLogs = SqfliteDatabaseFactoryLogger(this,
-        options:
-            SqfliteLoggerOptions(type: SqfliteDatabaseFactoryLoggerType.all));
+    var factoryWithLogs = SqfliteDatabaseFactoryLogger(
+      this,
+      options: SqfliteLoggerOptions(type: SqfliteDatabaseFactoryLoggerType.all),
+    );
     return factoryWithLogs;
   }
 }

@@ -21,7 +21,7 @@ void run(SqfliteTestContext context) {
       var dbResult = await db.rawQuery('SELECT id, name FROM Test');
       // devPrint('dbResult $dbResult');
       expect(dbResult, [
-        {'id': 1, 'name': 'item1'}
+        {'id': 1, 'name': 'item1'},
       ]);
 
       // one query
@@ -32,11 +32,11 @@ void run(SqfliteTestContext context) {
       // devPrint('select $results ${results?.first}');
       expect(results, [
         [
-          {'id': 1, 'name': 'item1'}
+          {'id': 1, 'name': 'item1'},
         ],
         [
-          {'id': 1, 'name': 'item1'}
-        ]
+          {'id': 1, 'name': 'item1'},
+        ],
       ]);
       await db.close();
     });
@@ -77,11 +77,11 @@ void run(SqfliteTestContext context) {
       // devPrint('select $results ${results?.first}');
       expect(results, [
         [
-          {'id': 1, 'name': 'item1'}
+          {'id': 1, 'name': 'item1'},
         ],
         [
-          {'id': 1, 'name': 'item1'}
-        ]
+          {'id': 1, 'name': 'item1'},
+        ],
       ]);
 
       // two insert
@@ -94,26 +94,39 @@ void run(SqfliteTestContext context) {
 
       // update
       batch = db.batch();
-      batch.rawUpdate(
-          'UPDATE Test SET name = ? WHERE name = ?', ['new_item', 'item1']);
-      batch.update('Test', {'name': 'new_other_item'},
-          where: 'name != ?', whereArgs: <String>['new_item']);
+      batch.rawUpdate('UPDATE Test SET name = ? WHERE name = ?', [
+        'new_item',
+        'item1',
+      ]);
+      batch.update(
+        'Test',
+        {'name': 'new_other_item'},
+        where: 'name != ?',
+        whereArgs: <String>['new_item'],
+      );
       results = await batch.commit();
       expect(results, [1, 2]);
 
       // delete
       batch = db.batch();
       batch.rawDelete('DELETE FROM Test WHERE name = ?', ['new_item']);
-      batch.delete('Test',
-          where: 'name = ?', whereArgs: <String>['new_other_item']);
+      batch.delete(
+        'Test',
+        where: 'name = ?',
+        whereArgs: <String>['new_other_item'],
+      );
       results = await batch.commit();
       expect(results, [1, 2]);
 
       // No result
       batch = db.batch();
       batch.insert('Test', {'name': 'item'});
-      batch.update('Test', {'name': 'new_item'},
-          where: 'name = ?', whereArgs: <String>['item']);
+      batch.update(
+        'Test',
+        {'name': 'new_item'},
+        where: 'name = ?',
+        whereArgs: <String>['item'],
+      );
       batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
       results = await batch.commit(noResult: true);
       expect(batch.length, 3);
@@ -161,7 +174,7 @@ void run(SqfliteTestContext context) {
       // Sanity check too see whether values have been written
       final result = await db.rawQuery('SELECT * FROM Test');
       expect(result, [
-        {'id': 1, 'name': 'item1'}
+        {'id': 1, 'name': 'item1'},
       ]);
 
       await db.close();
@@ -192,7 +205,7 @@ void run(SqfliteTestContext context) {
         expect(results[3], 1);
         // Fifth is a select
         expect(results[4], [
-          {'id': 1, 'name': 'item1'}
+          {'id': 1, 'name': 'item1'},
         ]);
       } finally {
         await db.close();
@@ -203,18 +216,22 @@ void run(SqfliteTestContext context) {
       // Here we expect the batch to be rolled back even if continueOnError is true
       // since the transaction has been rolled back
       // This used to fail (before 2024-01-01)
-      var path =
-          await context.initDeleteDb('batch_rolled_back_continue_on_error.db');
+      var path = await context.initDeleteDb(
+        'batch_rolled_back_continue_on_error.db',
+      );
       var db = await factory.openDatabase(path);
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
       try {
         var batch = db.batch();
-        batch.insert('Test', {'id': 1},
-            conflictAlgorithm: ConflictAlgorithm.rollback);
-        batch.insert('Test', {'id': 1},
-            conflictAlgorithm: ConflictAlgorithm.rollback);
-        batch.insert('Test', {'id': 2},
-            conflictAlgorithm: ConflictAlgorithm.rollback);
+        batch.insert('Test', {
+          'id': 1,
+        }, conflictAlgorithm: ConflictAlgorithm.rollback);
+        batch.insert('Test', {
+          'id': 1,
+        }, conflictAlgorithm: ConflictAlgorithm.rollback);
+        batch.insert('Test', {
+          'id': 2,
+        }, conflictAlgorithm: ConflictAlgorithm.rollback);
         try {
           await batch.commit(continueOnError: true);
           fail('should fail');

@@ -26,8 +26,9 @@ Future<int> _insertValue(dynamic value) async {
 
 // insert the value field and return the id
 Future<int> _updateValue(int id, dynamic value) async {
-  return await _data.db
-      .update('Test', <String, Object?>{'value': value}, where: '_id = $id');
+  return await _data.db.update('Test', <String, Object?>{
+    'value': value,
+  }, where: '_id = $id');
 }
 
 /// Run type tests.
@@ -37,13 +38,17 @@ void run(SqfliteTestContext context) {
     test('int', () async {
       //await Sqflite.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('type_int.db');
-      _data.db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute(
-                    'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value INTEGER)');
-              }));
+      _data.db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value INTEGER)',
+            );
+          },
+        ),
+      );
 
       // text
       var id = await _insertValue('test');
@@ -70,9 +75,11 @@ void run(SqfliteTestContext context) {
 
       id = await _insertValue(pow(2, 62));
       //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
-      expect(await _getValue(id),
-          context.isWeb ? BigInt.parse('4611686018427387904') : pow(2, 62),
-          reason: '2^62: ${pow(2, 62)} ${await _getValue(id)}');
+      expect(
+        await _getValue(id),
+        context.isWeb ? BigInt.parse('4611686018427387904') : pow(2, 62),
+        reason: '2^62: ${pow(2, 62)} ${await _getValue(id)}',
+      );
 
       var maxValue = pow(2, 63).round() - 1;
       var maxValueBigInt = BigInt.parse('9223372036854775807');
@@ -85,8 +92,11 @@ void run(SqfliteTestContext context) {
       var value = context.isWeb ? maxValueBigInt : maxValue;
       id = await _insertValue(value);
       //devPrint('${value} ${await getValue(id)}');
-      expect(await _getValue(id), value,
-          reason: '$value ${await _getValue(id)}');
+      expect(
+        await _getValue(id),
+        value,
+        reason: '$value ${await _getValue(id)}',
+      );
 
       var minValue = -(pow(2, 63)).round();
       var minValueBigInt = BigInt.parse('-9223372036854775808');
@@ -101,8 +111,11 @@ void run(SqfliteTestContext context) {
       value = context.isWeb ? minValueBigInt : minValue;
       id = await _insertValue(value);
       //devPrint('${value} ${await getValue(id)}');
-      expect(await _getValue(id), value,
-          reason: '$value ${await _getValue(id)}');
+      expect(
+        await _getValue(id),
+        value,
+        reason: '$value ${await _getValue(id)}',
+      );
 
       if (!context.isWeb) {
         // BigInt not supported but no exception is thrown...yet
@@ -118,9 +131,10 @@ void run(SqfliteTestContext context) {
 
         // Too big!
         await expectLater(
-            () async =>
-                await _insertValue(BigInt.parse('92233720368547758080000')),
-            throwsA(isA<SqfliteDatabaseException>()));
+          () async =>
+              await _insertValue(BigInt.parse('92233720368547758080000')),
+          throwsA(isA<SqfliteDatabaseException>()),
+        );
       }
       await _data.db.close();
     });
@@ -128,13 +142,17 @@ void run(SqfliteTestContext context) {
     test('real', () async {
       //await Sqflite.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('type_real.db');
-      _data.db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute(
-                    'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value REAL)');
-              }));
+      _data.db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value REAL)',
+            );
+          },
+        ),
+      );
       // text
       var id = await _insertValue('test');
       expect(await _getValue(id), 'test');
@@ -173,13 +191,17 @@ void run(SqfliteTestContext context) {
     test('text', () async {
       //await Sqflite.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('type_text.db');
-      _data.db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute(
-                    'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)');
-              }));
+      _data.db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)',
+            );
+          },
+        ),
+      );
       var id = await _insertValue('simple text');
       expect(await _getValue(id), 'simple text');
       // null
@@ -196,13 +218,17 @@ void run(SqfliteTestContext context) {
     test('blob', () async {
       // await context.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('type_blob.db');
-      _data.db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute(
-                    'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value BLOB)');
-              }));
+      _data.db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value BLOB)',
+            );
+          },
+        ),
+      );
       int id;
       dynamic value;
       try {
@@ -231,13 +257,18 @@ void run(SqfliteTestContext context) {
 
         // Insert blob manually
 
-        id = await _data.db
-            .rawInsert("INSERT INTO Test(value) VALUES ( X'deadbeef' )");
+        id = await _data.db.rawInsert(
+          "INSERT INTO Test(value) VALUES ( X'deadbeef' )",
+        );
         var blobRead = await _getValue(id);
         expect(blobRead, const TypeMatcher<Uint8List>());
         // print('${blobRead.length}');
-        expect(await _getValue(id), [0xDE, 0xAD, 0xBE, 0xEF],
-            reason: '${await _getValue(id)}');
+        expect(await _getValue(id), [
+          0xDE,
+          0xAD,
+          0xBE,
+          0xEF,
+        ], reason: '${await _getValue(id)}');
         // empty array not supported
         //id = await insertValue([]);
         //print(await getValue(id));
@@ -254,23 +285,32 @@ void run(SqfliteTestContext context) {
           id = await _insertValue(blob1234Int);
           // print(await _getValue(id));
           // print('${(await _getValue(id)).length}');
-          expect(await _getValue(id), blob1234Int,
-              reason: '${await _getValue(id)}');
+          expect(
+            await _getValue(id),
+            blob1234Int,
+            reason: '${await _getValue(id)}',
+          );
         }
 
         // test hex feature on sqlite
-        var hexResult = await _data.db
-            .rawQuery('SELECT hex(value) FROM Test WHERE _id = ?', [id]);
+        var hexResult = await _data.db.rawQuery(
+          'SELECT hex(value) FROM Test WHERE _id = ?',
+          [id],
+        );
         expect(hexResult[0].values.first, '01020304');
 
         // try blob lookup - does work but not on Android
-        var rows = await _data.db
-            .rawQuery('SELECT * FROM Test WHERE value = ?', [blob1234]);
+        var rows = await _data.db.rawQuery(
+          'SELECT * FROM Test WHERE value = ?',
+          [blob1234],
+        );
         expect(rows.length, 1);
 
         // try blob lookup using hex
         rows = await _data.db.rawQuery(
-            'SELECT * FROM Test WHERE hex(value) = ?', [utils.hex(blob1234)]);
+          'SELECT * FROM Test WHERE hex(value) = ?',
+          [utils.hex(blob1234)],
+        );
         expect(rows.length, context.strict ? 1 : 2);
         expect(rows.last['_id'], id);
 
@@ -298,13 +338,17 @@ void run(SqfliteTestContext context) {
     test('null', () async {
       // await Sqflite.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('type_null.db');
-      _data.db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute(
-                    'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)');
-              }));
+      _data.db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)',
+            );
+          },
+        ),
+      );
       try {
         var id = await _insertValue(null);
         expect(await _getValue(id), null);
@@ -323,13 +367,17 @@ void run(SqfliteTestContext context) {
     test('date_time', () async {
       // await Sqflite.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('type_date_time.db');
-      _data.db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute(
-                    'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)');
-              }));
+      _data.db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value TEXT)',
+            );
+          },
+        ),
+      );
       try {
         var failed = false;
         try {
@@ -347,13 +395,18 @@ void run(SqfliteTestContext context) {
     test('sql timestamp', () async {
       // await Sqflite.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('type_sql_timestamp.db');
-      _data.db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute('CREATE TABLE Test (_id INTEGER PRIMARY KEY,'
-                    ' value TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)');
-              }));
+      _data.db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE TABLE Test (_id INTEGER PRIMARY KEY,'
+              ' value TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)',
+            );
+          },
+        ),
+      );
       try {
         var id = await _data.db.insert('Test', <String, Object?>{'_id': 1});
         expect(DateTime.parse(await _getValue(id) as String), isNotNull);
@@ -363,14 +416,16 @@ void run(SqfliteTestContext context) {
 
       _data.db = await factory.openDatabase(inMemoryDatabasePath);
       try {
-        var dateTimeText = (await _data.db
-                .rawQuery("SELECT datetime(1092941466, 'unixepoch')"))
-            .first
-            .values
-            .first as String;
+        var dateTimeText =
+            (await _data.db.rawQuery(
+                  "SELECT datetime(1092941466, 'unixepoch')",
+                )).first.values.first
+                as String;
         expect(dateTimeText, '2004-08-19 18:51:06');
-        expect(DateTime.parse(dateTimeText).toIso8601String(),
-            '2004-08-19T18:51:06.000');
+        expect(
+          DateTime.parse(dateTimeText).toIso8601String(),
+          '2004-08-19T18:51:06.000',
+        );
       } finally {
         await _data.db.close();
       }
@@ -379,13 +434,18 @@ void run(SqfliteTestContext context) {
     test('sql numeric', () async {
       // await Sqflite.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('type_sql_numeric.db');
-      _data.db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute('CREATE TABLE Test (_id INTEGER PRIMARY KEY,'
-                    ' value NUMERIC)');
-              }));
+      _data.db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE TABLE Test (_id INTEGER PRIMARY KEY,'
+              ' value NUMERIC)',
+            );
+          },
+        ),
+      );
       try {
         var id = await _insertValue(1);
         expect(await _getValue(id), 1);
@@ -442,13 +502,17 @@ void run(SqfliteTestContext context) {
       try {
         //await Sqflite.devSetDebugModeOn(true);
         var path = await context.initDeleteDb('type_bool.db');
-        _data.db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (Database db, int version) async {
-                  await db.execute(
-                      'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value BOOL)');
-                }));
+        _data.db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (Database db, int version) async {
+              await db.execute(
+                'CREATE TABLE Test (_id INTEGER PRIMARY KEY, value BOOL)',
+              );
+            },
+          ),
+        );
 
         // text
         var id = await _insertValue('test');

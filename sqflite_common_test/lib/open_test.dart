@@ -23,9 +23,11 @@ class _OpenCallbacks {
     onConfigure = (Database db) {
       //print('onConfigure');
       //verify(!onConfigureCalled, 'onConfigure must be called once');
-      expect(onConfigureCalled, false,
-          reason:
-              'onConfigure already called'); // onConfigure must be called once
+      expect(
+        onConfigureCalled,
+        false,
+        reason: 'onConfigure already called',
+      ); // onConfigure must be called once
       onConfigureCalled = true;
     };
 
@@ -38,8 +40,11 @@ class _OpenCallbacks {
 
     onOpen = (Database db) {
       //print('onOpen');
-      expect(onConfigureCalled, isTrue,
-          reason: 'onConfigure must be called before onOpen');
+      expect(
+        onConfigureCalled,
+        isTrue,
+        reason: 'onConfigure must be called before onOpen',
+      );
       expect(onOpenCalled, isFalse, reason: 'onOpen already called');
       onOpenCalled = true;
     };
@@ -82,14 +87,17 @@ class _OpenCallbacks {
 
   Future<Database> open(String path, {required int version}) async {
     reset();
-    return await databaseFactory.openDatabase(path,
-        options: OpenDatabaseOptions(
-            version: version,
-            onCreate: onCreate,
-            onConfigure: onConfigure!,
-            onDowngrade: onDowngrade,
-            onUpgrade: onUpgrade,
-            onOpen: onOpen));
+    return await databaseFactory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: version,
+        onCreate: onCreate,
+        onConfigure: onConfigure!,
+        onDowngrade: onDowngrade,
+        onUpgrade: onUpgrade,
+        onOpen: onOpen,
+      ),
+    );
   }
 }
 
@@ -107,8 +115,10 @@ void run(SqfliteTestContext context) {
       } else if (platform.isIOS) {
         expect(basename(databasesPath), 'Documents');
       }
-      var path =
-          context.pathContext.join(databasesPath, 'in_default_directory.db');
+      var path = context.pathContext.join(
+        databasesPath,
+        'in_default_directory.db',
+      );
       await factory.deleteDatabase(path);
       var db = await factory.openDatabase(path);
       await db.close();
@@ -117,9 +127,10 @@ void run(SqfliteTestContext context) {
     Future<bool> checkFileExists(String path) async {
       var exists = false;
       try {
-        var db = await factory.openDatabase(path,
-            options:
-                OpenDatabaseOptions(readOnly: true, singleInstance: false));
+        var db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(readOnly: true, singleInstance: false),
+        );
         exists = true;
         await db.close();
       } catch (_) {}
@@ -171,20 +182,24 @@ void run(SqfliteTestContext context) {
       var path = await context.initDeleteDb('open_version_0.db');
       expect(await checkFileExists(path), false);
       try {
-        await factory.openDatabase(path,
-            options: OpenDatabaseOptions(
-                version: 0,
-                onCreate: (Database db, int version) async {
-                  fail('Should fail');
-                }));
+        await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 0,
+            onCreate: (Database db, int version) async {
+              fail('Should fail');
+            },
+          ),
+        );
       } on ArgumentError catch (_) {}
       expect(await checkFileExists(path), false);
     });
 
     test('open in sub directory', () async {
       // await context.devSetDebugModeOn(true);
-      var path =
-          await context.deleteDirectory(join('sub_that_should_not_exists'));
+      var path = await context.deleteDirectory(
+        join('sub_that_should_not_exists'),
+      );
       var dbPath = join(path, 'open.db');
       var db = await factory.openDatabase(dbPath);
       try {} finally {
@@ -194,8 +209,9 @@ void run(SqfliteTestContext context) {
 
     test('open in sub sub directory', () async {
       // await context.devSetDebugModeOn(true);
-      var path = await context
-          .deleteDirectory(join('sub2_that_should_not_exists', 'sub_sub'));
+      var path = await context.deleteDirectory(
+        join('sub2_that_should_not_exists', 'sub_sub'),
+      );
       var dbPath = join(path, 'open.db');
       var db = await factory.openDatabase(dbPath);
       try {} finally {
@@ -222,11 +238,15 @@ void run(SqfliteTestContext context) {
       }
       Database? db;
       try {
-        db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(onCreate: (Database db, int version) {
-          // never called
-          verify(false);
-        }));
+        db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            onCreate: (Database db, int version) {
+              // never called
+              verify(false);
+            },
+          ),
+        );
         verify(false);
       } on ArgumentError catch (_) {}
       verify(!File(path).existsSync());
@@ -238,19 +258,21 @@ void run(SqfliteTestContext context) {
       var path = await context.initDeleteDb('open_test2.db');
       var onCreate = false;
       var onCreateTransaction = false;
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                expect(version, 1);
-                onCreate = true;
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            expect(version, 1);
+            onCreate = true;
 
-                await db.transaction((txn) async {
-                  await txn
-                      .execute('CREATE TABLE Test2 (id INTEGER PRIMARY KEY)');
-                  onCreateTransaction = true;
-                });
-              }));
+            await db.transaction((txn) async {
+              await txn.execute('CREATE TABLE Test2 (id INTEGER PRIMARY KEY)');
+              onCreateTransaction = true;
+            });
+          },
+        ),
+      );
       verify(onCreate);
       expect(onCreateTransaction, true);
       await db.close();
@@ -260,10 +282,14 @@ void run(SqfliteTestContext context) {
       //await utils.devSetDebugModeOn(true);
       var path1 = await context.initDeleteDb('open_db_1.db');
       var path2 = await context.initDeleteDb('open_db_2.db');
-      var db1 = await factory.openDatabase(path1,
-          options: OpenDatabaseOptions(version: 1));
-      var db2 = await factory.openDatabase(path2,
-          options: OpenDatabaseOptions(version: 1));
+      var db1 = await factory.openDatabase(
+        path1,
+        options: OpenDatabaseOptions(version: 1),
+      );
+      var db2 = await factory.openDatabase(
+        path2,
+        options: OpenDatabaseOptions(version: 1),
+      );
       await db1.close();
       await db2.close();
     });
@@ -271,15 +297,20 @@ void run(SqfliteTestContext context) {
     test('Open onUpgrade', () async {
       var onUpgrade = false;
       var path = await context.initDeleteDb('open_on_upgrade.db');
-      var database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
-              }));
+      var database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+          },
+        ),
+      );
       try {
-        await database
-            .insert('Test', <String, Object?>{'id': 1, 'name': 'test'});
+        await database.insert('Test', <String, Object?>{
+          'id': 1,
+          'name': 'test',
+        });
         fail('should fail');
       } on DatabaseException catch (e) {
         print(e);
@@ -289,47 +320,59 @@ void run(SqfliteTestContext context) {
       }
       await database.close();
 
-      database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 2,
-              onUpgrade: (Database db, int oldVersion, int newVersion) async {
-                expect(oldVersion, 1);
-                expect(newVersion, 2);
-                await db.execute('ALTER TABLE Test ADD name TEXT');
-                onUpgrade = true;
-              }));
+      database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 2,
+          onUpgrade: (Database db, int oldVersion, int newVersion) async {
+            expect(oldVersion, 1);
+            expect(newVersion, 2);
+            await db.execute('ALTER TABLE Test ADD name TEXT');
+            onUpgrade = true;
+          },
+        ),
+      );
       expect(onUpgrade, isTrue);
 
       expect(
-          await database
-              .insert('Test', <String, Object?>{'id': 1, 'name': 'test'}),
-          1);
+        await database.insert('Test', <String, Object?>{
+          'id': 1,
+          'name': 'test',
+        }),
+        1,
+      );
       await database.close();
     });
 
     test('Open onDowngrade', () async {
       var path = await context.initDeleteDb('open_on_downgrade.db');
-      var database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 2,
-              onCreate: (Database db, int version) async {
-                await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
-              },
-              onDowngrade: (Database db, int oldVersion, int newVersion) async {
-                verify(false, 'should not be called');
-              }));
+      var database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 2,
+          onCreate: (Database db, int version) async {
+            await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+          },
+          onDowngrade: (Database db, int oldVersion, int newVersion) async {
+            verify(false, 'should not be called');
+          },
+        ),
+      );
       await database.close();
 
       var onDowngrade = false;
-      database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onDowngrade: (Database db, int oldVersion, int newVersion) async {
-                expect(oldVersion, 2);
-                expect(newVersion, 1);
-                await db.execute('ALTER TABLE Test ADD name TEXT');
-                onDowngrade = true;
-              }));
+      database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onDowngrade: (Database db, int oldVersion, int newVersion) async {
+            expect(oldVersion, 2);
+            expect(newVersion, 1);
+            await db.execute('ALTER TABLE Test ADD name TEXT');
+            onDowngrade = true;
+          },
+        ),
+      );
       verify(onDowngrade);
 
       await database.close();
@@ -362,8 +405,10 @@ void run(SqfliteTestContext context) {
         });
       }
 
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(onConfigure: onConfigure));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(onConfigure: onConfigure),
+      );
       expect(onConfigured, true);
       expect(onConfiguredTransaction, true);
 
@@ -375,12 +420,15 @@ void run(SqfliteTestContext context) {
       // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
 
       var path = await context.initDeleteDb('open_on_downgrade_delete.db');
-      var database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 3,
-              onCreate: (Database db, int version) async {
-                await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
-              }));
+      var database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 3,
+          onCreate: (Database db, int version) async {
+            await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+          },
+        ),
+      );
       await database.close();
 
       // should fail going back in versions
@@ -389,32 +437,35 @@ void run(SqfliteTestContext context) {
       var onConfiguredOnce = false; // onConfigure will be called twice here
       // since the database is re-opened
       var onConfigured = false;
-      database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 2,
-              onConfigure: (Database db) {
-                // Must not be configured nor created yet
-                verify(!onConfigured);
-                verify(!onCreated);
-                if (!onConfiguredOnce) {
-                  // first time
-                  onConfiguredOnce = true;
-                } else {
-                  onConfigured = true;
-                }
-              },
-              onCreate: (Database db, int version) {
-                verify(onConfigured);
-                verify(!onCreated);
-                verify(!onOpened);
-                onCreated = true;
-                expect(version, 2);
-              },
-              onOpen: (Database db) {
-                verify(onCreated);
-                onOpened = true;
-              },
-              onDowngrade: onDatabaseDowngradeDelete));
+      database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 2,
+          onConfigure: (Database db) {
+            // Must not be configured nor created yet
+            verify(!onConfigured);
+            verify(!onCreated);
+            if (!onConfiguredOnce) {
+              // first time
+              onConfiguredOnce = true;
+            } else {
+              onConfigured = true;
+            }
+          },
+          onCreate: (Database db, int version) {
+            verify(onConfigured);
+            verify(!onCreated);
+            verify(!onOpened);
+            onCreated = true;
+            expect(version, 2);
+          },
+          onOpen: (Database db) {
+            verify(onCreated);
+            onOpened = true;
+          },
+          onDowngrade: onDatabaseDowngradeDelete,
+        ),
+      );
       await database.close();
 
       expect(onCreated, true);
@@ -424,16 +475,19 @@ void run(SqfliteTestContext context) {
       onCreated = false;
       onOpened = false;
 
-      database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 2,
-              onCreate: (Database db, int version) {
-                expect(false, 'should not be called');
-              },
-              onOpen: (Database db) {
-                onOpened = true;
-              },
-              onDowngrade: onDatabaseDowngradeDelete));
+      database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 2,
+          onCreate: (Database db, int version) {
+            expect(false, 'should not be called');
+          },
+          onOpen: (Database db) {
+            onOpened = true;
+          },
+          onDowngrade: onDatabaseDowngradeDelete,
+        ),
+      );
       expect(onOpened, true);
       await database.close();
     });
@@ -530,15 +584,19 @@ void run(SqfliteTestContext context) {
         await batch.commit();
       }
 
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onConfigure: onConfigure,
-              onCreate: onCreate,
-              onOpen: onOpen));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onConfigure: onConfigure,
+          onCreate: onCreate,
+          onOpen: onOpen,
+        ),
+      );
       expect(
-          utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test')),
-          2);
+        utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test')),
+        2,
+      );
 
       await db.close();
     });
@@ -554,19 +612,25 @@ void run(SqfliteTestContext context) {
         await batch.commit();
       }
 
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(version: 1, onCreate: onCreate));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(version: 1, onCreate: onCreate),
+      );
       expect(
-          utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test')),
-          1);
+        utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test')),
+        1,
+      );
 
       await db.close();
 
-      db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(readOnly: true));
+      db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(readOnly: true),
+      );
       expect(
-          utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test')),
-          1);
+        utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test')),
+        1,
+      );
 
       try {
         await db.rawInsert("INSERT INTO Test(value) VALUES('value1')");
@@ -593,8 +657,10 @@ void run(SqfliteTestContext context) {
           await db.execute('PRAGMA foreign_keys = ON');
         }
 
-        var db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(onConfigure: onConfigure));
+        var db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(onConfigure: onConfigure),
+        );
         await db.close();
       }
 
@@ -602,7 +668,8 @@ void run(SqfliteTestContext context) {
         Future onCreate(Database db, int version) async {
           // Database is created, delete the table
           await db.execute(
-              'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)',
+          );
         }
 
         Future onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -611,12 +678,15 @@ void run(SqfliteTestContext context) {
         }
 
         // Special callback used for onDowngrade here to recreate the database
-        var db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: onCreate,
-                onUpgrade: onUpgrade,
-                onDowngrade: onDatabaseDowngradeDelete));
+        var db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: onCreate,
+            onUpgrade: onUpgrade,
+            onDowngrade: onDatabaseDowngradeDelete,
+          ),
+        );
         await db.close();
       }
 
@@ -626,10 +696,10 @@ void run(SqfliteTestContext context) {
           print('db version ${await db.getVersion()}');
         }
 
-        var db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(
-              onOpen: onOpen,
-            ));
+        var db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(onOpen: onOpen),
+        );
         await db.close();
       }
 
@@ -642,8 +712,10 @@ void run(SqfliteTestContext context) {
         // try opening (will work if it exists)
         Database? db;
         try {
-          db = await factory.openDatabase(path,
-              options: OpenDatabaseOptions(readOnly: true));
+          db = await factory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(readOnly: true),
+          );
         } catch (e) {
           print('Error $e');
         }
@@ -668,12 +740,18 @@ void run(SqfliteTestContext context) {
     test('single/multi instance (using factory)', () async {
       // await utils.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('instances_test.db');
-      var db1 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: false));
-      var db2 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: true));
-      var db3 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: true));
+      var db1 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
+      var db2 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: true),
+      );
+      var db3 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: true),
+      );
       verify(db1 != db2);
       verify(db2 == db3);
       await db1.close();
@@ -684,12 +762,18 @@ void run(SqfliteTestContext context) {
     test('single/multi instance', () async {
       // await utils.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('instances_test.db');
-      var db1 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: false));
-      var db2 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: true));
-      var db3 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: true));
+      var db1 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
+      var db2 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: true),
+      );
+      var db3 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: true),
+      );
       verify(db1 != db2);
       verify(db2 == db3);
       await db1.close();
@@ -698,17 +782,22 @@ void run(SqfliteTestContext context) {
     });
 
     /// Use single instance to force its value (which default to true).
-    Future<void> testInMemoryDatabase(String path,
-        {bool? singleInstance}) async {
+    Future<void> testInMemoryDatabase(
+      String path, {
+      bool? singleInstance,
+    }) async {
       await factory.deleteDatabase(path);
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(singleInstance: singleInstance ?? true));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(singleInstance: singleInstance ?? true),
+      );
       try {
-        await db
-            .execute('CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
+        await db.execute(
+          'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)',
+        );
         await db.insert('Test', <String, Object?>{'id': 1});
         expect(await db.query('Test'), [
-          {'id': 1}
+          {'id': 1},
         ]);
 
         await db.close();
@@ -736,29 +825,40 @@ void run(SqfliteTestContext context) {
       group('uri', () {
         test('uri in memory', () async {
           await testInMemoryDatabase('file:memdb1?mode=memory');
-          await testInMemoryDatabase('file:memdb1?mode=memory',
-              singleInstance: false);
+          await testInMemoryDatabase(
+            'file:memdb1?mode=memory',
+            singleInstance: false,
+          );
         });
 
-        test('uri int shared cache', () async {
-          var dbFactory = factory; // .debugQuickLoggerWrapper();
-          var path = 'file:memdb2?mode=memory&cache=shared';
-          await dbFactory.deleteDatabase(path);
-          var db1 = await dbFactory.openDatabase(path,
-              options: OpenDatabaseOptions(singleInstance: false));
-          var db2 = await dbFactory.openDatabase(path,
-              options: OpenDatabaseOptions(singleInstance: false));
+        test(
+          'uri int shared cache',
+          () async {
+            var dbFactory = factory; // .debugQuickLoggerWrapper();
+            var path = 'file:memdb2?mode=memory&cache=shared';
+            await dbFactory.deleteDatabase(path);
+            var db1 = await dbFactory.openDatabase(
+              path,
+              options: OpenDatabaseOptions(singleInstance: false),
+            );
+            var db2 = await dbFactory.openDatabase(
+              path,
+              options: OpenDatabaseOptions(singleInstance: false),
+            );
 
-          verify(db1 != db2);
-          await db1.execute(
-              'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
-          await db1.insert('Test', <String, Object?>{'id': 1});
-          expect(await db2.query('Test'), [
-            {'id': 1}
-          ]);
-          await db1.close();
-          await db2.close();
-        }, skip: 'uri mode not consistently working with shared cache');
+            verify(db1 != db2);
+            await db1.execute(
+              'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)',
+            );
+            await db1.insert('Test', <String, Object?>{'id': 1});
+            expect(await db2.query('Test'), [
+              {'id': 1},
+            ]);
+            await db1.close();
+            await db2.close();
+          },
+          skip: 'uri mode not consistently working with shared cache',
+        );
 
         test('uri absolute', () async {
           var path = await context.initDeleteDb('uri_absolute.db');
@@ -767,10 +867,11 @@ void run(SqfliteTestContext context) {
           var db = await factory.openDatabase(uriPath);
           try {
             await db.execute(
-                'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
+              'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)',
+            );
             await db.insert('Test', <String, Object?>{'id': 1});
             expect(await db.query('Test'), [
-              {'id': 1}
+              {'id': 1},
             ]);
 
             await db.close();
@@ -789,18 +890,19 @@ void run(SqfliteTestContext context) {
       var path = await context.initDeleteDb('not_in_memory.db');
 
       var db = await factory.openDatabase(path);
-      await db
-          .execute('CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)');
+      await db.execute(
+        'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)',
+      );
       await db.insert('Test', <String, Object?>{'id': 1});
       expect(await db.query('Test'), [
-        {'id': 1}
+        {'id': 1},
       ]);
       await db.close();
 
       // reopen, content should be done
       db = await factory.openDatabase(path);
       expect(await db.query('Test'), [
-        {'id': 1}
+        {'id': 1},
       ]);
       await db.close();
     });
@@ -809,14 +911,18 @@ void run(SqfliteTestContext context) {
       //await utils.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('close_in_transaction.db');
 
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(version: 1));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(version: 1),
+      );
       try {
         await db.execute('BEGIN TRANSACTION');
         await db.close();
 
-        db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(version: 1));
+        db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(version: 1),
+        );
       } finally {
         await db.close();
       }
@@ -835,24 +941,30 @@ void run(SqfliteTestContext context) {
 
       try {
         // Don't wait here
-        var futureDb1 = factory.openDatabase(path1,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (db, version) async {
-                  // wait for db2
-                  await onCreateCompleter2.future;
-                  // mark as called
-                  onCreateCompleter1.complete();
-                }));
-        db2 = await factory.openDatabase(path2,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (db, version) async {
-                  // mark as called
-                  onCreateCompleter2.complete();
-                  // wait for db1;
-                  await onCreateCompleter1.future;
-                }));
+        var futureDb1 = factory.openDatabase(
+          path1,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              // wait for db2
+              await onCreateCompleter2.future;
+              // mark as called
+              onCreateCompleter1.complete();
+            },
+          ),
+        );
+        db2 = await factory.openDatabase(
+          path2,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              // mark as called
+              onCreateCompleter2.complete();
+              // wait for db1;
+              await onCreateCompleter1.future;
+            },
+          ),
+        );
         db1 = await futureDb1;
         await onCreateCompleter1.future;
         await onCreateCompleter2.future;
@@ -875,30 +987,37 @@ void run(SqfliteTestContext context) {
 
       try {
         // Don't wait here
-        var futureDb1 = factory.openDatabase(path1,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (db, version) async {
-                  // wait for db2
-                  try {
-                    await onCreateCompleter2.future
-                        .timeout(const Duration(milliseconds: 1000));
-                    fail('should fail before with a timeout exception');
-                  } on TimeoutException catch (_) {
-                    // expected
-                  }
-                  // mark as called
-                  onCreateCompleter1.complete();
-                }));
-        db2 = await factory.openDatabase(path2,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (db, version) async {
-                  fail('should never be called');
-                },
-                onOpen: (db) async {
-                  fail('should never be called');
-                }));
+        var futureDb1 = factory.openDatabase(
+          path1,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              // wait for db2
+              try {
+                await onCreateCompleter2.future.timeout(
+                  const Duration(milliseconds: 1000),
+                );
+                fail('should fail before with a timeout exception');
+              } on TimeoutException catch (_) {
+                // expected
+              }
+              // mark as called
+              onCreateCompleter1.complete();
+            },
+          ),
+        );
+        db2 = await factory.openDatabase(
+          path2,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              fail('should never be called');
+            },
+            onOpen: (db) async {
+              fail('should never be called');
+            },
+          ),
+        );
         db1 = await futureDb1;
         // same db!
         expect(db1, db2);

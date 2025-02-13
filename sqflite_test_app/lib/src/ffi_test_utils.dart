@@ -39,9 +39,10 @@ Future<void> deleteFile(String path) async {
 }
 
 /// release exe dir (linux and windows for now)
-String get platformExeDir => Platform.isLinux
-    ? _linuxExeDir
-    : (Platform.isMacOS ? _macOSExeDir : _windowsExeDir);
+String get platformExeDir =>
+    Platform.isLinux
+        ? _linuxExeDir
+        : (Platform.isMacOS ? _macOSExeDir : _windowsExeDir);
 
 /// Windows platform
 var buildPlatformWindows = 'windows';
@@ -98,8 +99,11 @@ Future<String> getBuildProjectAppFilename(String path) async {
 }
 
 /// Recreate and build a project
-Future<void> buildProject(String path,
-    {String? target, String? platform}) async {
+Future<void> buildProject(
+  String path, {
+  String? target,
+  String? platform,
+}) async {
   var shell = Shell(workingDirectory: path);
   platform ??= buildPlatformCurrent;
   await shell.run('''

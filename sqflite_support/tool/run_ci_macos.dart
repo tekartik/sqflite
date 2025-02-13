@@ -19,7 +19,8 @@ Future<void> createAndBuildMacos({required String appPath}) async {
       await Directory(appPath).delete(recursive: true);
     } catch (_) {}
     await shell.run(
-        'flutter create --template app --platforms macos ${shellArgument(appPath)}');
+      'flutter create --template app --platforms macos ${shellArgument(appPath)}',
+    );
   }
   shell = shell.cd(appPath);
   await fixProject(appPath);

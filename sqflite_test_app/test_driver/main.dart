@@ -34,8 +34,8 @@ void main() {
       setUpAll(() async {
         // ignore: deprecated_member_use, deprecated_member_use_from_same_package
         await databaseFactory
-            // ignore: deprecated_member_use
-            .setOptions(SqfliteOptions()..androidThreadCount = 2);
+        // ignore: deprecated_member_use
+        .setOptions(SqfliteOptions()..androidThreadCount = 2);
       });
       all.run(testContext);
     });

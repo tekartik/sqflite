@@ -5,7 +5,8 @@ import 'sqlite3_wasm_version.dart';
 
 /// sqlite3 wasm release
 var sqlite3WasmReleaseUri = Uri.parse(
-    'https://github.com/simolus3/sqlite3.dart/releases/download/$sqlite3WasmRelease');
+  'https://github.com/simolus3/sqlite3.dart/releases/download/$sqlite3WasmRelease',
+);
 
 /// Setup options.
 class SetupOptions {
@@ -28,13 +29,14 @@ class SetupOptions {
   late final Uri sqlite3WasmUri;
 
   /// Setup options.
-  SetupOptions(
-      {String? path,
-      String? dir,
-      bool? force,
-      bool? verbose,
-      Uri? sqlite3WasmUri,
-      bool? noSqlite3Wasm}) {
+  SetupOptions({
+    String? path,
+    String? dir,
+    bool? force,
+    bool? verbose,
+    Uri? sqlite3WasmUri,
+    bool? noSqlite3Wasm,
+  }) {
     this.dir = dir ?? 'web';
     this.path = normalize(absolute(path ?? '.'));
     this.force = force ?? false;

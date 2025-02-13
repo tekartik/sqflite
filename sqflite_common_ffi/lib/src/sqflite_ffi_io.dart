@@ -56,7 +56,9 @@ void sqfliteFfiInit() {
 ///   ...
 /// }
 /// ```
-DatabaseFactory createDatabaseFactoryFfi(
-    {SqfliteFfiInit? ffiInit, bool noIsolate = false}) {
+DatabaseFactory createDatabaseFactoryFfi({
+  SqfliteFfiInit? ffiInit,
+  bool noIsolate = false,
+}) {
   return createDatabaseFactoryFfiImpl(ffiInit: ffiInit, noIsolate: noIsolate);
 }

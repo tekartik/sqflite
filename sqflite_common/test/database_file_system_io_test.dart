@@ -8,7 +8,11 @@ void main() {
   group('database_file_sytem_io', () {
     test('read/write', () async {
       var path = join(
-          '.dart_tool', 'sqflite_common', 'database_file_sytem_io', 'test.db');
+        '.dart_tool',
+        'sqflite_common',
+        'database_file_sytem_io',
+        'test.db',
+      );
       await fileSystem.deleteDatabase(path);
       try {
         await fileSystem.readDatabaseBytes(path);

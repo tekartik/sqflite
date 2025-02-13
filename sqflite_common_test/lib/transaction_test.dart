@@ -16,19 +16,24 @@ void run(SqfliteTestContext context) {
       var path = await context.initDeleteDb('simple_transaction.db');
       var db = await factory.openDatabase(path);
       try {
-        await db
-            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+        await db.execute(
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+        );
 
         Future testInsert(int i) async {
           await db.transaction((txn) async {
-            var count = utils.firstIntValue(
-                await txn.rawQuery('SELECT COUNT(*) FROM Test'))!;
+            var count =
+                utils.firstIntValue(
+                  await txn.rawQuery('SELECT COUNT(*) FROM Test'),
+                )!;
             await Future<dynamic>.delayed(const Duration(milliseconds: 40));
-            await txn
-                .rawInsert('INSERT INTO Test (name) VALUES (?)', ['item $i']);
+            await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', [
+              'item $i',
+            ]);
             //print(await db.query('SELECT COUNT(*) FROM Test'));
-            var afterCount = utils
-                .firstIntValue(await txn.rawQuery('SELECT COUNT(*) FROM Test'));
+            var afterCount = utils.firstIntValue(
+              await txn.rawQuery('SELECT COUNT(*) FROM Test'),
+            );
             expect(count + 1, afterCount);
           });
         }
@@ -52,8 +57,9 @@ void run(SqfliteTestContext context) {
       var step3 = Completer<dynamic>();
 
       Future action1() async {
-        await db
-            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+        await db.execute(
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+        );
         step1.complete();
 
         await step2.future;
@@ -78,8 +84,9 @@ void run(SqfliteTestContext context) {
 
           await step3.future;
 
-          var count = utils
-              .firstIntValue(await txn.rawQuery('SELECT COUNT(*) FROM Test'));
+          var count = utils.firstIntValue(
+            await txn.rawQuery('SELECT COUNT(*) FROM Test'),
+          );
           expect(count, 1);
         });
       }
@@ -89,8 +96,9 @@ void run(SqfliteTestContext context) {
 
       await Future.wait<dynamic>([future1, future2]);
 
-      var count =
-          utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test'));
+      var count = utils.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM Test'),
+      );
       expect(count, 1);
 
       await db.close();
@@ -105,8 +113,9 @@ void run(SqfliteTestContext context) {
       var step3 = Completer<dynamic>();
 
       Future action1() async {
-        await db
-            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+        await db.execute(
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+        );
         step1.complete();
 
         await step2.future;
@@ -134,8 +143,9 @@ void run(SqfliteTestContext context) {
 
           await step3.future;
 
-          var count = utils
-              .firstIntValue(await txn.rawQuery('SELECT COUNT(*) FROM Test'));
+          var count = utils.firstIntValue(
+            await txn.rawQuery('SELECT COUNT(*) FROM Test'),
+          );
           expect(count, 1);
         });
       }
@@ -145,8 +155,9 @@ void run(SqfliteTestContext context) {
 
       await Future.wait<dynamic>([future1, future2]);
 
-      var count =
-          utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test'));
+      var count = utils.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM Test'),
+      );
       expect(count, 1);
 
       await db.close();
@@ -171,21 +182,23 @@ void run(SqfliteTestContext context) {
 
         final random = Random();
         for (var i = 0; i < count; i++) {
-          unawaited(executor.rawInsert(
-            'INSERT INTO Test (name) VALUES (?)',
-            ['$name $i'],
-          ).then((_) {
-            onOneInsert(i);
-            completeCount++;
-            if (completeCount == count) {
-              all.complete(null);
-            }
-          }));
+          unawaited(
+            executor
+                .rawInsert('INSERT INTO Test (name) VALUES (?)', ['$name $i'])
+                .then((_) {
+                  onOneInsert(i);
+                  completeCount++;
+                  if (completeCount == count) {
+                    all.complete(null);
+                  }
+                }),
+          );
           // Make random gaps so calls of other database are able to cut the
           // queue. And the test will not accidentally pass because of lack
           // of 'concurrency'.
           await Future<void>.delayed(
-              Duration(microseconds: random.nextInt(50)));
+            Duration(microseconds: random.nextInt(50)),
+          );
         }
         return all.future;
       }
@@ -293,8 +306,9 @@ void run(SqfliteTestContext context) {
 
         await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item 2']);
       });
-      var afterCount =
-          utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test'));
+      var afterCount = utils.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM Test'),
+      );
       expect(afterCount, 2);
 
       await db.close();
@@ -311,8 +325,9 @@ void run(SqfliteTestContext context) {
 
       await db.transaction((txn) async {
         await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', ['item']);
-        var afterCount = utils
-            .firstIntValue(await txn.rawQuery('SELECT COUNT(*) FROM Test'));
+        var afterCount = utils.firstIntValue(
+          await txn.rawQuery('SELECT COUNT(*) FROM Test'),
+        );
         expect(afterCount, 1);
 
         /*
@@ -322,12 +337,14 @@ void run(SqfliteTestContext context) {
         assert(db2AfterCount == 0);
         */
       });
-      var db2AfterCount =
-          utils.firstIntValue(await db2.rawQuery('SELECT COUNT(*) FROM Test'));
+      var db2AfterCount = utils.firstIntValue(
+        await db2.rawQuery('SELECT COUNT(*) FROM Test'),
+      );
       expect(db2AfterCount, 1);
 
-      var afterCount =
-          utils.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM Test'));
+      var afterCount = utils.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM Test'),
+      );
       expect(afterCount, 1);
 
       await db.close();
@@ -340,10 +357,12 @@ void run(SqfliteTestContext context) {
       db.internalsDoNotUseSynchronized = true;
       try {
         var completer = Completer<void>();
-        unawaited(db.transaction((txn) async {
-          await txn.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
-          await completer.future;
-        }));
+        unawaited(
+          db.transaction((txn) async {
+            await txn.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
+            await completer.future;
+          }),
+        );
         var futureVersion = db.getVersion();
         var futureUpdate = db.update('Test', <String, Object?>{'id': 1});
         var futureQuery = db.queryCursor('Test');
@@ -359,9 +378,14 @@ void run(SqfliteTestContext context) {
           futureInsert,
           futureExecute,
         ];
-        await Future.wait(futures.map((e) => expectLater(
-            () => e.timeout(const Duration(milliseconds: 500)),
-            throwsA(isA<TimeoutException>()))));
+        await Future.wait(
+          futures.map(
+            (e) => expectLater(
+              () => e.timeout(const Duration(milliseconds: 500)),
+              throwsA(isA<TimeoutException>()),
+            ),
+          ),
+        );
 
         completer.complete();
         expect(await futureVersion, 0);
@@ -375,38 +399,41 @@ void run(SqfliteTestContext context) {
       }
     });
 
-    test('Transaction and concurrent call and close without synchronized',
-        () async {
-      // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
-      var db = await factory.openDatabase(inMemoryDatabasePath);
-      // Special trick to avoid the built-in synchronization
-      db.internalsDoNotUseSynchronized = true;
-      try {
-        late Future futureVersion;
-        var transactionFuture = db.transaction((txn) async {
-          //await completer.future;
-          futureVersion = db.getVersion();
-          await db.close();
-        });
-        //var futureVersion = db.getVersion();
-        //completer.complete();
+    test(
+      'Transaction and concurrent call and close without synchronized',
+      () async {
+        // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
+        var db = await factory.openDatabase(inMemoryDatabasePath);
+        // Special trick to avoid the built-in synchronization
+        db.internalsDoNotUseSynchronized = true;
         try {
-          await transactionFuture;
-          fail('Should fail');
-        } on SqfliteDatabaseException catch (e) {
-          expect(e.isDatabaseClosedError(), isTrue);
+          late Future futureVersion;
+          var transactionFuture = db.transaction((txn) async {
+            //await completer.future;
+            futureVersion = db.getVersion();
+            await db.close();
+          });
+          //var futureVersion = db.getVersion();
+          //completer.complete();
+          try {
+            await transactionFuture;
+            fail('Should fail');
+          } on SqfliteDatabaseException catch (e) {
+            expect(e.isDatabaseClosedError(), isTrue);
+          }
+          // Had time to succeed!
+          expect(await futureVersion, 0);
+        } finally {
+          await db.close();
         }
-        // Had time to succeed!
-        expect(await futureVersion, 0);
-      } finally {
-        await db.close();
-      }
-    });
+      },
+    );
     test('simple readTransaction', () async {
       var path = await context.initDeleteDb('simple_read_transaction.db');
       var db = await factory.openDatabase(path);
       await db.execute(
-          'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)');
+        'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)',
+      );
       await db.insert('Test', {'name': 'test'});
 
       var result = await db.readTransaction((txn) async {
@@ -414,7 +441,7 @@ void run(SqfliteTestContext context) {
       });
 
       expect(result, [
-        {'id': 1, 'name': 'test'}
+        {'id': 1, 'name': 'test'},
       ]);
     });
     test('write in readTransaction', () async {
@@ -422,7 +449,8 @@ void run(SqfliteTestContext context) {
       var db = await factory.openDatabase(path);
       try {
         await db.execute(
-            'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)');
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)',
+        );
         try {
           var id = await db.readTransaction((txn) async {
             return await txn.insert('Test', {'name': 'test'});
@@ -445,12 +473,15 @@ void run(SqfliteTestContext context) {
       var db = await factory.openDatabase(path);
       try {
         await db.execute(
-            'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)');
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)',
+        );
 
-        unawaited(db.readTransaction((txn) async {
-          txn1Started.complete();
-          await txn2Started.future;
-        }));
+        unawaited(
+          db.readTransaction((txn) async {
+            txn1Started.complete();
+            await txn2Started.future;
+          }),
+        );
         await txn1Started.future;
         await db.readTransaction((txn) async {
           txn2Started.complete();
@@ -465,22 +496,26 @@ void run(SqfliteTestContext context) {
 
       var db = await factory.openDatabase(path);
       try {
-        await db
-            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+        await db.execute(
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+        );
         try {
           await db.transaction((txn) async {
-            await txn.insert('Test', {'id': 1},
-                conflictAlgorithm: ConflictAlgorithm.rollback);
+            await txn.insert('Test', {
+              'id': 1,
+            }, conflictAlgorithm: ConflictAlgorithm.rollback);
             try {
-              await txn.insert('Test', {'id': 1},
-                  conflictAlgorithm: ConflictAlgorithm.rollback);
+              await txn.insert('Test', {
+                'id': 1,
+              }, conflictAlgorithm: ConflictAlgorithm.rollback);
               fail('should fail 1');
             } on DatabaseException catch (e) {
               expect(e.isUniqueConstraintError(), true);
             }
             try {
-              await txn.insert('Test', {'id': 2},
-                  conflictAlgorithm: ConflictAlgorithm.rollback);
+              await txn.insert('Test', {
+                'id': 2,
+              }, conflictAlgorithm: ConflictAlgorithm.rollback);
               fail('should fail 2');
             } on DatabaseException catch (e) {
               /// Transaction already closed

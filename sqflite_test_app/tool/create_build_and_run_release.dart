@@ -14,12 +14,14 @@ Future<void> main() async {
 
     if (platformIsWindows) {
       /// Copy the sqlite3.dll
-      await File('../sqflite_common_ffi/lib/src/windows/sqlite3.dll')
-          .copy('build/windows/runner/Release/sqlite3.dll');
+      await File(
+        '../sqflite_common_ffi/lib/src/windows/sqlite3.dll',
+      ).copy('build/windows/runner/Release/sqlite3.dll');
 
       /// Set the current dir somewhere else
-      await Shell(workingDirectory: Directory.systemTemp.path)
-          .run(absolute('build/windows/runner/Release/$appName'));
+      await Shell(
+        workingDirectory: Directory.systemTemp.path,
+      ).run(absolute('build/windows/runner/Release/$appName'));
     } else if (platformIsLinux) {
       var exePath = absolute('build/linux/x64/release/bundle/sqflite_test_app');
 
@@ -27,8 +29,9 @@ Future<void> main() async {
       await Shell(workingDirectory: dirname(exePath)).run(join('.', appName));
     } else if (platformIsMacOS) {
       // MacOS
-      await Shell(workingDirectory: platformExeDir)
-          .run('sqflite_test_app.app/Contents/MacOS/sqflite_test_app');
+      await Shell(
+        workingDirectory: platformExeDir,
+      ).run('sqflite_test_app.app/Contents/MacOS/sqflite_test_app');
     }
   }
 }

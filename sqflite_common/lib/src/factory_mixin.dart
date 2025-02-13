@@ -55,7 +55,9 @@ mixin SqfliteDatabaseFactoryMixin
 
   @override
   SqfliteDatabase newDatabase(
-      SqfliteDatabaseOpenHelper openHelper, String path) {
+    SqfliteDatabaseOpenHelper openHelper,
+    String path,
+  ) {
     return SqfliteDatabaseBase(openHelper, path);
   }
 
@@ -70,8 +72,7 @@ mixin SqfliteDatabaseFactoryMixin
     // Lock per database name
     final lock = _getDatabaseOpenLock(database.path);
     return lock.synchronized(() async {
-      await (database as SqfliteDatabaseWithOpenHelperMixin)
-          .openHelper!
+      await (database as SqfliteDatabaseWithOpenHelperMixin).openHelper!
           .closeDatabase(database);
       if (database.options?.singleInstance != false) {
         removeDatabaseOpenHelper(database.path);
@@ -80,8 +81,10 @@ mixin SqfliteDatabaseFactoryMixin
   }
 
   @override
-  Future<Database> openDatabase(String path,
-      {OpenDatabaseOptions? options}) async {
+  Future<Database> openDatabase(
+    String path, {
+    OpenDatabaseOptions? options,
+  }) async {
     path = await fixPath(path);
     // Lock per database name
     final lock = _getDatabaseOpenLock(path);
@@ -118,8 +121,11 @@ mixin SqfliteDatabaseFactoryMixin
           rethrow;
         }
       } else {
-        final databaseOpenHelper =
-            SqfliteDatabaseOpenHelper(this, path, options);
+        final databaseOpenHelper = SqfliteDatabaseOpenHelper(
+          this,
+          path,
+          options,
+        );
         return await databaseOpenHelper.openDatabase();
       }
     });
@@ -139,15 +145,17 @@ mixin SqfliteDatabaseFactoryMixin
 
   /// Invoke delete database.
   Future<void> invokeDeleteDatabase(String path) async {
-    return safeInvokeMethod<void>(
-        methodDeleteDatabase, <String, Object?>{paramPath: path});
+    return safeInvokeMethod<void>(methodDeleteDatabase, <String, Object?>{
+      paramPath: path,
+    });
   }
 
   @override
   Future<bool> databaseExists(String path) async {
     path = await fixPath(path);
-    return safeInvokeMethod<bool>(
-        methodDatabaseExists, <String, Object?>{paramPath: path});
+    return safeInvokeMethod<bool>(methodDatabaseExists, <String, Object?>{
+      paramPath: path,
+    });
   }
 
   @override
@@ -155,8 +163,10 @@ mixin SqfliteDatabaseFactoryMixin
     path = await fixPath(path);
     final lock = _getDatabaseOpenLock(path);
     return lock.synchronized(() async {
-      return safeInvokeMethod<void>(methodWriteDatabaseBytes,
-          <String, Object?>{paramPath: path, paramBytes: bytes});
+      return safeInvokeMethod<void>(methodWriteDatabaseBytes, <String, Object?>{
+        paramPath: path,
+        paramBytes: bytes,
+      });
     });
   }
 
@@ -166,7 +176,9 @@ mixin SqfliteDatabaseFactoryMixin
     final lock = _getDatabaseOpenLock(path);
     return lock.synchronized(() async {
       var result = await safeInvokeMethod<dynamic>(
-          methodReadDatabaseBytes, <String, Object?>{paramPath: path});
+        methodReadDatabaseBytes,
+        <String, Object?>{paramPath: path},
+      );
       if (result is Map) {
         return result[paramBytes] as Uint8List;
       }
@@ -228,8 +240,9 @@ mixin SqfliteDatabaseFactoryMixin
   /// Debug information.
   Future<SqfliteDebugInfo> getDebugInfo() async {
     final info = SqfliteDebugInfo();
-    final map = await safeInvokeMethod<Map>(
-        methodDebug, <String, Object?>{'cmd': 'get'});
+    final map = await safeInvokeMethod<Map>(methodDebug, <String, Object?>{
+      'cmd': 'get',
+    });
     final databasesMap = map[paramDatabases];
     if (databasesMap is Map) {
       info.databases = databasesMap.map((dynamic id, dynamic info) {
@@ -279,7 +292,7 @@ class SqfliteDatabaseDebugInfo {
   Map<String, Object?> toDebugMap() {
     final map = <String, Object?>{
       paramPath: path,
-      paramSingleInstance: singleInstance
+      paramSingleInstance: singleInstance,
     };
     if ((logLevel ?? sqfliteLogLevelNone) > sqfliteLogLevelNone) {
       map[paramLogLevel] = logLevel;
@@ -304,8 +317,9 @@ class SqfliteDebugInfo {
     final map = <String, Object?>{};
     if (databases != null) {
       map[paramDatabases] = databases!.map(
-          (String key, SqfliteDatabaseDebugInfo dbInfo) =>
-              MapEntry<String, Map<String, Object?>>(key, dbInfo.toDebugMap()));
+        (String key, SqfliteDatabaseDebugInfo dbInfo) =>
+            MapEntry<String, Map<String, Object?>>(key, dbInfo.toDebugMap()),
+      );
     }
     if ((logLevel ?? sqfliteLogLevelNone) > sqfliteLogLevelNone) {
       map[paramLogLevel] = logLevel;

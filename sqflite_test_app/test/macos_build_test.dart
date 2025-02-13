@@ -15,23 +15,28 @@ Future<void> main() async {
   var binDir = join(platformExeDir, binSubDir);
   var exeDir = platformExeDir;
   var exePath = join(binDir, 'sqflite_test_app');
-  test('build $platform', () async {
-    var cachedExePath = join(binDir, 'ffi_create_and_exit');
-    var absoluteExePath = absolute(cachedExePath);
+  test(
+    'build $platform',
+    () async {
+      var cachedExePath = join(binDir, 'ffi_create_and_exit');
+      var absoluteExePath = absolute(cachedExePath);
 
-    // If you change the app code, you must delete the built executable since it
-    // since it won't rebuild
-    if (!File(absoluteExePath).existsSync()) {
-      await createProject('.');
-      await buildProject('.', target: 'test/ffi_create_and_exit_main.dart');
+      // If you change the app code, you must delete the built executable since it
+      // since it won't rebuild
+      if (!File(absoluteExePath).existsSync()) {
+        await createProject('.');
+        await buildProject('.', target: 'test/ffi_create_and_exit_main.dart');
 
-      // Cache executable
-      await File(exePath).copy(cachedExePath);
-    }
-    // Create an empty shell environment
-    var env = ShellEnvironment.empty();
-    var runAppShell = Shell(environment: env, workingDirectory: exeDir);
-    // We run the generated exe, not the copy as it does not work
-    await runAppShell.run(shellArgument(join(binSubDir, 'sqflite_test_app')));
-  }, skip: !platformIsMacOS, timeout: const Timeout(Duration(minutes: 20)));
+        // Cache executable
+        await File(exePath).copy(cachedExePath);
+      }
+      // Create an empty shell environment
+      var env = ShellEnvironment.empty();
+      var runAppShell = Shell(environment: env, workingDirectory: exeDir);
+      // We run the generated exe, not the copy as it does not work
+      await runAppShell.run(shellArgument(join(binSubDir, 'sqflite_test_app')));
+    },
+    skip: !platformIsMacOS,
+    timeout: const Timeout(Duration(minutes: 20)),
+  );
 }

@@ -18,24 +18,27 @@ void run(SqfliteTestContext context) {
   var databaseFactory = factory;
 
   /// Copy shortcut implementation
-  Future<Database> openDatabase(String path,
-      {int? version,
-      OnDatabaseConfigureFn? onConfigure,
-      OnDatabaseCreateFn? onCreate,
-      OnDatabaseVersionChangeFn? onUpgrade,
-      OnDatabaseVersionChangeFn? onDowngrade,
-      OnDatabaseOpenFn? onOpen,
-      bool readOnly = false,
-      bool singleInstance = true}) {
+  Future<Database> openDatabase(
+    String path, {
+    int? version,
+    OnDatabaseConfigureFn? onConfigure,
+    OnDatabaseCreateFn? onCreate,
+    OnDatabaseVersionChangeFn? onUpgrade,
+    OnDatabaseVersionChangeFn? onDowngrade,
+    OnDatabaseOpenFn? onOpen,
+    bool readOnly = false,
+    bool singleInstance = true,
+  }) {
     final options = OpenDatabaseOptions(
-        version: version,
-        onConfigure: onConfigure,
-        onCreate: onCreate,
-        onUpgrade: onUpgrade,
-        onDowngrade: onDowngrade,
-        onOpen: onOpen,
-        readOnly: readOnly,
-        singleInstance: singleInstance);
+      version: version,
+      onConfigure: onConfigure,
+      onCreate: onCreate,
+      onUpgrade: onUpgrade,
+      onDowngrade: onDowngrade,
+      onOpen: onOpen,
+      readOnly: readOnly,
+      singleInstance: singleInstance,
+    );
     return databaseFactory.openDatabase(path, options: options);
   }
 
@@ -66,17 +69,20 @@ void run(SqfliteTestContext context) {
 )''');
           }
 
-// First version of the database
-          db = await factory.openDatabase(path,
-              options: OpenDatabaseOptions(
-                  version: 1,
-                  onCreate: (db, version) async {
-                    var batch = db.batch();
-                    createTableCompanyV1(batch);
-                    await batch.commit();
-                  },
-                  onConfigure: onConfigure,
-                  onDowngrade: onDatabaseDowngradeDelete));
+          // First version of the database
+          db = await factory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(
+              version: 1,
+              onCreate: (db, version) async {
+                var batch = db.batch();
+                createTableCompanyV1(batch);
+                await batch.commit();
+              },
+              onConfigure: onConfigure,
+              onDowngrade: onDatabaseDowngradeDelete,
+            ),
+          );
 
           await db!.close();
           db = null;
@@ -116,28 +122,31 @@ void run(SqfliteTestContext context) {
 )''');
           }
 
-// 2nd version of the database
-          db = await factory.openDatabase(path,
-              options: OpenDatabaseOptions(
-                  version: 2,
-                  onConfigure: onConfigure,
-                  onCreate: (db, version) async {
-                    var batch = db.batch();
-                    // We create all the tables
-                    createTableCompanyV2(batch);
-                    createTableEmployeeV2(batch);
-                    await batch.commit();
-                  },
-                  onUpgrade: (db, oldVersion, newVersion) async {
-                    var batch = db.batch();
-                    if (oldVersion == 1) {
-                      // We update existing table and create the new tables
-                      updateTableCompanyV1toV2(batch);
-                      createTableEmployeeV2(batch);
-                    }
-                    await batch.commit();
-                  },
-                  onDowngrade: onDatabaseDowngradeDelete));
+          // 2nd version of the database
+          db = await factory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(
+              version: 2,
+              onConfigure: onConfigure,
+              onCreate: (db, version) async {
+                var batch = db.batch();
+                // We create all the tables
+                createTableCompanyV2(batch);
+                createTableEmployeeV2(batch);
+                await batch.commit();
+              },
+              onUpgrade: (db, oldVersion, newVersion) async {
+                var batch = db.batch();
+                if (oldVersion == 1) {
+                  // We update existing table and create the new tables
+                  updateTableCompanyV1toV2(batch);
+                  createTableEmployeeV2(batch);
+                }
+                await batch.commit();
+              },
+              onDowngrade: onDatabaseDowngradeDelete,
+            ),
+          );
 
           await db!.close();
           db = null;
@@ -146,10 +155,10 @@ void run(SqfliteTestContext context) {
         Future readTest() async {
           db ??= await factory.openDatabase(path);
           expect(await db!.query('Company'), [
-            {'name': 'Watch', 'description': 'Black Wristatch', 'id': 1}
+            {'name': 'Watch', 'description': 'Black Wristatch', 'id': 1},
           ]);
           expect(await db!.query('Employee'), [
-            {'name': '1st Employee', 'companyId': 1, 'id': 1}
+            {'name': '1st Employee', 'companyId': 1, 'id': 1},
           ]);
         }
 
@@ -158,11 +167,11 @@ void run(SqfliteTestContext context) {
           try {
             var companyId = await db!.insert('Company', <String, Object?>{
               'name': 'Watch',
-              'description': 'Black Wristatch'
+              'description': 'Black Wristatch',
             });
             await db!.insert('Employee', <String, Object?>{
               'name': '1st Employee',
-              'companyId': companyId
+              'companyId': companyId,
             });
             await readTest();
           } finally {
@@ -173,16 +182,18 @@ void run(SqfliteTestContext context) {
 
         {
           // Test1
-          path =
-              await context.initDeleteDb('upgrade_add_table_and_column_doc.db');
+          path = await context.initDeleteDb(
+            'upgrade_add_table_and_column_doc.db',
+          );
           await openCloseV1();
           await openCloseV2();
           await insertTest();
         }
         {
           // Test2
-          path =
-              await context.initDeleteDb('upgrade_add_table_and_column_doc.db');
+          path = await context.initDeleteDb(
+            'upgrade_add_table_and_column_doc.db',
+          );
           await openCloseV2();
           await insertTest();
         }
@@ -207,18 +218,18 @@ void run(SqfliteTestContext context) {
     test('record map', () async {
       var map = <String, Object?>{
         'title': 'Table',
-        'size': <String, Object?>{'width': 80, 'height': 80}
+        'size': <String, Object?>{'width': 80, 'height': 80},
       };
 
       map = <String, Object?>{'title': 'Table', 'width': 80, 'height': 80};
 
       map = <String, Object?>{
         'title': 'Table',
-        'size': jsonEncode(<String, Object?>{'width': 80, 'height': 80})
+        'size': jsonEncode(<String, Object?>{'width': 80, 'height': 80}),
       };
       final map2 = <String, Object?>{
         'title': 'Table',
-        'size': '{"width":80,"height":80}'
+        'size': '{"width":80,"height":80}',
       };
       expect(map, map2);
     });
@@ -239,20 +250,23 @@ CREATE TABLE Product (
         }
 
         // First version of the database
-        var db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (db, version) async {
-                  var batch = db.batch();
-                  createTableCompanyV1(batch);
-                  await batch.commit();
-                },
-                onDowngrade: onDatabaseDowngradeDelete));
+        var db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              var batch = db.batch();
+              createTableCompanyV1(batch);
+              await batch.commit();
+            },
+            onDowngrade: onDatabaseDowngradeDelete,
+          ),
+        );
 
         var map = <String, Object?>{
           'title': 'Table',
           'width': 80,
-          'height': 80
+          'height': 80,
         };
         await db.insert('Product', map);
         await db.close();
@@ -271,19 +285,22 @@ CREATE TABLE Product (
 
         path = await context.initDeleteDb('data_types.db');
         // First version of the database
-        var db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (db, version) async {
-                  var batch = db.batch();
-                  createProductTable(batch);
-                  await batch.commit();
-                },
-                onDowngrade: onDatabaseDowngradeDelete));
+        var db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              var batch = db.batch();
+              createProductTable(batch);
+              await batch.commit();
+            },
+            onDowngrade: onDatabaseDowngradeDelete,
+          ),
+        );
 
         var map = <String, Object?>{
           'title': 'Table',
-          'size': '{"width":80,"height":80}'
+          'size': '{"width":80,"height":80}',
         };
         await db.insert('Product', map);
         await db.close();
@@ -303,28 +320,39 @@ CREATE TABLE Product (
 )''');
         }
 
-// First version of the database
-        var db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (db, version) async {
-                  var batch = db.batch();
-                  createTableProduct(batch);
-                  await batch.commit();
-                },
-                onDowngrade: onDatabaseDowngradeDelete));
+        // First version of the database
+        var db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              var batch = db.batch();
+              createTableProduct(batch);
+              await batch.commit();
+            },
+            onDowngrade: onDatabaseDowngradeDelete,
+          ),
+        );
 
         Future<bool> exists(Transaction txn, Product product) async {
-          return firstIntValue(await txn.query('Product',
+          return firstIntValue(
+                await txn.query(
+                  'Product',
                   columns: ['COUNT(*)'],
                   where: 'id = ?',
-                  whereArgs: [product.id!])) ==
+                  whereArgs: [product.id!],
+                ),
+              ) ==
               1;
         }
 
         Future update(Transaction txn, Product product) async {
-          await txn.update('Product', product.toMap(),
-              where: 'id = ?', whereArgs: [product.id!]);
+          await txn.update(
+            'Product',
+            product.toMap(),
+            where: 'id = ?',
+            whereArgs: [product.id!],
+          );
         }
 
         Future insert(Transaction txn, Product product) async {
@@ -341,9 +369,10 @@ CREATE TABLE Product (
           });
         }
 
-        var product = Product()
-          ..id = 'table'
-          ..title = 'Table';
+        var product =
+            Product()
+              ..id = 'table'
+              ..title = 'Table';
         await upsertRecord(product);
         await upsertRecord(product);
 
@@ -381,20 +410,27 @@ CREATE TABLE Product (
 )''');
         }
 
-// First version of the database
-        var db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (db, version) async {
-                  var batch = db.batch();
-                  createTableProduct(batch);
-                  await batch.commit();
-                },
-                onDowngrade: onDatabaseDowngradeDelete));
+        // First version of the database
+        var db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              var batch = db.batch();
+              createTableProduct(batch);
+              await batch.commit();
+            },
+            onDowngrade: onDatabaseDowngradeDelete,
+          ),
+        );
 
         Future update(Product product) async {
-          await db.update('Product', product.toMap(),
-              where: 'id = ?', whereArgs: [product.id!]);
+          await db.update(
+            'Product',
+            product.toMap(),
+            where: 'id = ?',
+            whereArgs: [product.id!],
+          );
         }
 
         Future insert(Product product) async {
@@ -413,9 +449,10 @@ CREATE TABLE Product (
           }
         }
 
-        var product = Product()
-          ..id = 'table'
-          ..title = 'Table';
+        var product =
+            Product()
+              ..id = 'table'
+              ..title = 'Table';
         await upsertRecord(product);
         await upsertRecord(product);
 
@@ -440,19 +477,25 @@ CREATE TABLE Product (
 
     test('Logger', () async {
       if (databaseFactory is! SqfliteDatabaseFactoryLogger) {
-        var factoryWithLogs = SqfliteDatabaseFactoryLogger(databaseFactory,
-            options: SqfliteLoggerOptions(
-                type: SqfliteDatabaseFactoryLoggerType.all));
-        var db = await factoryWithLogs.openDatabase(inMemoryDatabasePath,
-            options: OpenDatabaseOptions(
-                version: 1,
-                onCreate: (db, _) {
-                  db.execute('''
+        var factoryWithLogs = SqfliteDatabaseFactoryLogger(
+          databaseFactory,
+          options: SqfliteLoggerOptions(
+            type: SqfliteDatabaseFactoryLoggerType.all,
+          ),
+        );
+        var db = await factoryWithLogs.openDatabase(
+          inMemoryDatabasePath,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, _) {
+              db.execute('''
   CREATE TABLE Product (
     id TEXT PRIMARY KEY,
     title TEXT
    )''');
-                }));
+            },
+          ),
+        );
         await db.close();
       }
     });
@@ -462,9 +505,7 @@ CREATE TABLE Product (
         inMemoryDatabasePath,
         version: 1,
         onCreate: (db, version) async {
-          await db.execute(
-            'CREATE TABLE test (id BLOB, value INTEGER)',
-          );
+          await db.execute('CREATE TABLE test (id BLOB, value INTEGER)');
         },
       );
       final id = Uint8List.fromList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
@@ -473,8 +514,11 @@ CREATE TABLE Product (
       print('regular blob lookup (failing on Android)): $result');
 
       // The compatible way to lookup for BLOBs (even work on Android) using the hex function
-      result = await db
-          .query('test', where: 'hex(id) = ?', whereArgs: [utils.hex(id)]);
+      result = await db.query(
+        'test',
+        where: 'hex(id) = ?',
+        whereArgs: [utils.hex(id)],
+      );
       print('correct blob lookup: $result');
 
       expect(result.first['value'], 1);

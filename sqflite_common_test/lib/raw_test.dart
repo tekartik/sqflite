@@ -25,19 +25,23 @@ void run(SqfliteTestContext context) {
 
       print('dropped');
       await database.execute(
-          'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
+        'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)',
+      );
       print('table created');
       var id = await database.rawInsert(
-          "INSERT INTO Test(name, value, num) VALUES('some name',1234,?)",
-          [456.789]);
+        "INSERT INTO Test(name, value, num) VALUES('some name',1234,?)",
+        [456.789],
+      );
       print('inserted1: $id');
       id = await database.rawInsert(
-          'INSERT INTO Test(name, value) VALUES(?, ?)',
-          ['another name', 12345678]);
+        'INSERT INTO Test(name, value) VALUES(?, ?)',
+        ['another name', 12345678],
+      );
       print('inserted2: $id');
       var count = await database.rawUpdate(
-          'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
-          ['updated name', '9876', 'some name']);
+        'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
+        ['updated name', '9876', 'some name'],
+      );
       print('updated: $count');
       expect(count, 1);
       var list = await database.rawQuery('SELECT * FROM Test');
@@ -46,22 +50,23 @@ void run(SqfliteTestContext context) {
           'name': 'updated name',
           'id': 1,
           'value': 9876,
-          'num': 456.789
+          'num': 456.789,
         },
         <String, Object?>{
           'name': 'another name',
           'id': 2,
           'value': 12345678,
-          'num': null
-        }
+          'num': null,
+        },
       ];
 
       print('list: ${json.encode(list)}');
       print('expected $expectedList');
       expect(list, expectedList);
 
-      count = await database
-          .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
+      count = await database.rawDelete('DELETE FROM Test WHERE name = ?', [
+        'another name',
+      ]);
       print('deleted: $count');
       expect(count, 1);
       list = await database.rawQuery('SELECT * FROM Test');
@@ -70,7 +75,7 @@ void run(SqfliteTestContext context) {
           'name': 'updated name',
           'id': 1,
           'value': 9876,
-          'num': 456.789
+          'num': 456.789,
         },
       ];
 
@@ -96,30 +101,37 @@ void run(SqfliteTestContext context) {
       await factory.deleteDatabase(path);
 
       // open the database
-      var database = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (Database db, int version) async {
-                // When creating the db, create the table
-                await db.execute(
-                    'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
-              }));
+      var database = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            // When creating the db, create the table
+            await db.execute(
+              'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)',
+            );
+          },
+        ),
+      );
 
       // Insert some records in a transaction
       await database.transaction((txn) async {
         var id1 = await txn.rawInsert(
-            "INSERT INTO Test(name, value, num) VALUES('some name', 1234, 456.789)");
+          "INSERT INTO Test(name, value, num) VALUES('some name', 1234, 456.789)",
+        );
         print('inserted1: $id1');
         var id2 = await txn.rawInsert(
-            'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
-            ['another name', 12345678, 3.1416]);
+          'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
+          ['another name', 12345678, 3.1416],
+        );
         print('inserted2: $id2');
       });
 
       // Update some record
       var count = await database.rawUpdate(
-          'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
-          ['updated name', '9876', 'some name']);
+        'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
+        ['updated name', '9876', 'some name'],
+      );
       print('updated: $count');
 
       // Get the records
@@ -129,14 +141,14 @@ void run(SqfliteTestContext context) {
           'name': 'updated name',
           'id': 1,
           'value': 9876,
-          'num': 456.789
+          'num': 456.789,
         },
         <String, Object?>{
           'name': 'another name',
           'id': 2,
           'value': 12345678,
-          'num': 3.1416
-        }
+          'num': 3.1416,
+        },
       ];
       print(list);
       print(expectedList);
@@ -144,13 +156,16 @@ void run(SqfliteTestContext context) {
       expect(list, expectedList);
 
       // Count the records
-      count = utils
-          .firstIntValue(await database.rawQuery('SELECT COUNT(*) FROM Test'))!;
+      count =
+          utils.firstIntValue(
+            await database.rawQuery('SELECT COUNT(*) FROM Test'),
+          )!;
       expect(count, 2);
 
       // Delete a record
-      count = await database
-          .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
+      count = await database.rawDelete('DELETE FROM Test WHERE name = ?', [
+        'another name',
+      ]);
       expect(count, 1);
 
       // Close the database
@@ -172,7 +187,7 @@ void run(SqfliteTestContext context) {
       var dbResult = await db.rawQuery('SELECT id, name FROM Test');
       // devPrint('dbResult $dbResult');
       expect(dbResult, [
-        {'id': 1, 'name': 'item1'}
+        {'id': 1, 'name': 'item1'},
       ]);
 
       // one query
@@ -183,11 +198,11 @@ void run(SqfliteTestContext context) {
       // devPrint('select $results ${results?.first}');
       expect(results, [
         [
-          {'id': 1, 'name': 'item1'}
+          {'id': 1, 'name': 'item1'},
         ],
         [
-          {'id': 1, 'name': 'item1'}
-        ]
+          {'id': 1, 'name': 'item1'},
+        ],
       ]);
       await db.close();
     });
@@ -224,11 +239,11 @@ void run(SqfliteTestContext context) {
       // devPrint('select $results ${results?.first}');
       expect(results, [
         [
-          {'id': 1, 'name': 'item1'}
+          {'id': 1, 'name': 'item1'},
         ],
         [
-          {'id': 1, 'name': 'item1'}
-        ]
+          {'id': 1, 'name': 'item1'},
+        ],
       ]);
 
       // two insert
@@ -240,26 +255,39 @@ void run(SqfliteTestContext context) {
 
       // update
       batch = db.batch();
-      batch.rawUpdate(
-          'UPDATE Test SET name = ? WHERE name = ?', ['new_item', 'item1']);
-      batch.update('Test', <String, Object?>{'name': 'new_other_item'},
-          where: 'name != ?', whereArgs: <String>['new_item']);
+      batch.rawUpdate('UPDATE Test SET name = ? WHERE name = ?', [
+        'new_item',
+        'item1',
+      ]);
+      batch.update(
+        'Test',
+        <String, Object?>{'name': 'new_other_item'},
+        where: 'name != ?',
+        whereArgs: <String>['new_item'],
+      );
       results = await batch.commit();
       expect(results, [1, 2]);
 
       // delete
       batch = db.batch();
       batch.rawDelete('DELETE FROM Test WHERE name = ?', ['new_item']);
-      batch.delete('Test',
-          where: 'name = ?', whereArgs: <String>['new_other_item']);
+      batch.delete(
+        'Test',
+        where: 'name = ?',
+        whereArgs: <String>['new_other_item'],
+      );
       results = await batch.commit();
       expect(results, [1, 2]);
 
       // No result
       batch = db.batch();
       batch.insert('Test', <String, Object?>{'name': 'item'});
-      batch.update('Test', <String, Object?>{'name': 'new_item'},
-          where: 'name = ?', whereArgs: <String>['item']);
+      batch.update(
+        'Test',
+        <String, Object?>{'name': 'new_item'},
+        where: 'name = ?',
+        whereArgs: <String>['item'],
+      );
       batch.delete('Test', where: 'name = ?', whereArgs: <Object>['item']);
       results = await batch.commit(noResult: true);
       expect(results, isEmpty);
@@ -294,11 +322,14 @@ void run(SqfliteTestContext context) {
       var path = await context.initDeleteDb('open_twice.db');
       var db = await factory.openDatabase(path);
       await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
-      var db2 = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(readOnly: true));
+      var db2 = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(readOnly: true),
+      );
 
-      var count =
-          utils.firstIntValue(await db2.rawQuery('SELECT COUNT(*) FROM Test'));
+      var count = utils.firstIntValue(
+        await db2.rawQuery('SELECT COUNT(*) FROM Test'),
+      );
       expect(count, 0);
       await db.close();
       await db2.close();
@@ -318,12 +349,12 @@ void run(SqfliteTestContext context) {
       var list = await db.query('Test');
       expect(list, [
         {'name': 'test'},
-        {'name': 'other'}
+        {'name': 'other'},
       ]);
       list = await db.query('Test', columns: ['name', 'rowid']);
       expect(list, [
         {'name': 'test', 'rowid': 1},
-        {'name': 'other', 'rowid': 2}
+        {'name': 'other', 'rowid': 2},
       ]);
 
       await db.close();
@@ -339,8 +370,9 @@ void run(SqfliteTestContext context) {
         db = await factory.openDatabase(path);
         // This table has no primary key and we ask sqlite not to generate
         // a rowid
-        await db
-            .execute('CREATE TABLE Test (name TEXT PRIMARY KEY) WITHOUT ROWID');
+        await db.execute(
+          'CREATE TABLE Test (name TEXT PRIMARY KEY) WITHOUT ROWID',
+        );
         var id = await db.insert('Test', <String, Object?>{'name': 'test'});
         // it seems to always return 1 on Android, 0 on iOS...
         if (context.isIOS) {
@@ -367,7 +399,7 @@ void run(SqfliteTestContext context) {
         var list = await db.query('Test');
         expect(list, [
           {'name': 'other'},
-          {'name': 'test'}
+          {'name': 'test'},
         ]);
       } finally {
         await db.close();
@@ -382,25 +414,33 @@ void run(SqfliteTestContext context) {
 
         batch.execute('CREATE TABLE Other (id INTEGER PRIMARY KEY, name TEXT)');
         batch.execute(
-            'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, other REFERENCES Other(id))');
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, other REFERENCES Other(id))',
+        );
         batch.rawInsert('INSERT INTO Other (name) VALUES (?)', ['other 1']);
-        batch.rawInsert(
-            'INSERT INTO Test (other, name) VALUES (?, ?)', [1, 'item 2']);
+        batch.rawInsert('INSERT INTO Test (other, name) VALUES (?, ?)', [
+          1,
+          'item 2',
+        ]);
         await batch.commit();
 
-        var result = await db.query('Test',
-            columns: ['other', 'name'], where: 'other = 1');
+        var result = await db.query(
+          'Test',
+          columns: ['other', 'name'],
+          where: 'other = 1',
+        );
         print(result);
         expect(result, [
-          {'other': 1, 'name': 'item 2'}
+          {'other': 1, 'name': 'item 2'},
         ]);
-        result = await db.query('Test',
-            columns: ['other', 'name'],
-            where: 'other = ?',
-            whereArgs: <Object>[1]);
+        result = await db.query(
+          'Test',
+          columns: ['other', 'name'],
+          where: 'other = ?',
+          whereArgs: <Object>[1],
+        );
         print(result);
         expect(result, [
-          {'other': 1, 'name': 'item 2'}
+          {'other': 1, 'name': 'item 2'},
         ]);
       } finally {
         await db.close();
@@ -423,22 +463,29 @@ void run(SqfliteTestContext context) {
       CREATE TABLE test (
         name TEXT PRIMARY KEY
       )''');
-        var key1 = await db.insert('test', {'name': 'name 1'},
-            conflictAlgorithm: ConflictAlgorithm.ignore);
-        var key2 = await db.insert('test', {'name': 'name 2'},
-            conflictAlgorithm: ConflictAlgorithm.ignore);
+        var key1 = await db.insert('test', {
+          'name': 'name 1',
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+        var key2 = await db.insert('test', {
+          'name': 'name 2',
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
         // Conflict, key3 should be null
-        var key3 = await db.insert('test', {'name': 'name 1'},
-            conflictAlgorithm: ConflictAlgorithm.ignore);
+        var key3 = await db.insert('test', {
+          'name': 'name 1',
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
         expect([key1, key2, key3], [1, 2, 0]);
       });
 
       test('binding null', () async {
         for (var value in [null, 2]) {
           expect(
-              utils.firstIntValue(await db.rawQuery(
-                  'SELECT CASE WHEN 0 = 1 THEN 1 ELSE ? END', [value])),
-              value);
+            utils.firstIntValue(
+              await db.rawQuery('SELECT CASE WHEN 0 = 1 THEN 1 ELSE ? END', [
+                value,
+              ]),
+            ),
+            value,
+          );
         }
       });
 
@@ -501,14 +548,20 @@ void run(SqfliteTestContext context) {
         expect(results, [
           {'id': 1},
           {'id': 2},
-          {'id': 3}
+          {'id': 3},
         ]);
 
         // Multiple cursors a cursor
-        var cursor1 =
-            await db.rawQueryCursor('SELECT * FROM test', null, bufferSize: 2);
-        var cursor2 =
-            await db.rawQueryCursor('SELECT * FROM test', null, bufferSize: 1);
+        var cursor1 = await db.rawQueryCursor(
+          'SELECT * FROM test',
+          null,
+          bufferSize: 2,
+        );
+        var cursor2 = await db.rawQueryCursor(
+          'SELECT * FROM test',
+          null,
+          bufferSize: 1,
+        );
         await cursor1.moveNext();
         expect(cursor1.current.values, [1]);
         await cursor2.moveNext();
@@ -527,13 +580,15 @@ void run(SqfliteTestContext context) {
         expect(() => cursor2.current, throwsStateError);
 
         // No data
-        cursor = await db.rawQueryCursor('SELECT * FROM test WHERE id > ?', [3],
-            bufferSize: 2);
+        cursor = await db.rawQueryCursor('SELECT * FROM test WHERE id > ?', [
+          3,
+        ], bufferSize: 2);
         expect(await cursor.moveNext(), isFalse);
 
         // Matching page size
-        cursor = await db.rawQueryCursor('SELECT * FROM test WHERE id > ?', [1],
-            bufferSize: 2);
+        cursor = await db.rawQueryCursor('SELECT * FROM test WHERE id > ?', [
+          1,
+        ], bufferSize: 2);
         expect(await cursor.moveNext(), isTrue);
         expect(await cursor.moveNext(), isTrue);
         expect(await cursor.moveNext(), isFalse);

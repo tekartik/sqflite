@@ -57,7 +57,8 @@ Future<void> initFfi({bool? noWorker, bool? webBasicWorker}) async {
   // Use sqflite databases path provider (ffi implementation is lame))
   if (isSqfliteCompatible) {
     await databaseFactory.setDatabasesPath(
-        await databaseFactorySqflitePlugin.getDatabasesPath());
+      await databaseFactorySqflitePlugin.getDatabasesPath(),
+    );
   }
 }
 

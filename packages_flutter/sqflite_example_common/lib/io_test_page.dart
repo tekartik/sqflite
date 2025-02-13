@@ -20,21 +20,25 @@ class IoTestPage extends TestPage {
       // print(path);
       Future<List<String>> findDbRelatedFiles() async {
         var dir = io.Directory(dirname(path));
-        var files = await dir
-            .list()
-            .map((e) => basename(e.path))
-            .where((e) => e.startsWith(basename(path)))
-            .toList();
+        var files =
+            await dir
+                .list()
+                .map((e) => basename(e.path))
+                .where((e) => e.startsWith(basename(path)))
+                .toList();
         // print('files: $files');
         return files;
       }
 
       expect(await findDbRelatedFiles(), isEmpty);
 
-      var db =
-          await openDatabase(path, version: 1, onCreate: (db, version) async {
-        await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
-      });
+      var db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (db, version) async {
+          await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
+        },
+      );
       expect(await findDbRelatedFiles(), isNotEmpty);
       await db.close();
 
@@ -43,17 +47,22 @@ class IoTestPage extends TestPage {
       expect(await findDbRelatedFiles(), isEmpty);
 
       // try wal mode
-      db = await openDatabase(path, version: 1, onConfigure: (db) async {
-        try {
-          await db.execute('PRAGMA journal_mode = WAL');
-        } catch (e) {
-          if (kDebugMode) {
-            print('Error setting WAL mode: $e');
+      db = await openDatabase(
+        path,
+        version: 1,
+        onConfigure: (db) async {
+          try {
+            await db.execute('PRAGMA journal_mode = WAL');
+          } catch (e) {
+            if (kDebugMode) {
+              print('Error setting WAL mode: $e');
+            }
           }
-        }
-      }, onCreate: (db, version) async {
-        await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
-      });
+        },
+        onCreate: (db, version) async {
+          await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
+        },
+      );
       expect(await findDbRelatedFiles(), isNotEmpty);
       await deleteDatabase(path);
       expect(await findDbRelatedFiles(), isEmpty);

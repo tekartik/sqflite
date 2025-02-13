@@ -23,13 +23,17 @@ void main() {
         //await devVerbose();
         final path = join('test_missing_sub_dir', 'simple.db');
         try {
-          await Directory(join(await getDatabasesPath(), dirname(path)))
-              .delete(recursive: true);
+          await Directory(
+            join(await getDatabasesPath(), dirname(path)),
+          ).delete(recursive: true);
         } catch (_) {}
-        final db =
-            await openDatabase(path, version: 1, onCreate: (db, version) async {
-          expect(await db.getVersion(), 0);
-        });
+        final db = await openDatabase(
+          path,
+          version: 1,
+          onCreate: (db, version) async {
+            expect(await db.getVersion(), 0);
+          },
+        );
         expect(await db.getVersion(), 1);
         await db.close();
       });
@@ -38,10 +42,13 @@ void main() {
         // fail('regular test failure');
       });
       test('in_memory', () async {
-        final db = await openDatabase(inMemoryDatabasePath, version: 1,
-            onCreate: (db, version) async {
-          expect(await db.getVersion(), 0);
-        });
+        final db = await openDatabase(
+          inMemoryDatabasePath,
+          version: 1,
+          onCreate: (db, version) async {
+            expect(await db.getVersion(), 0);
+          },
+        );
         expect(await db.getVersion(), 1);
         await db.close();
       });
@@ -64,14 +71,18 @@ void main() {
       const path = 'test_close_in_transaction.db';
       final factory = databaseFactory;
       await deleteDatabase(path);
-      var db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(version: 1));
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(version: 1),
+      );
       try {
         await db.execute('BEGIN TRANSACTION');
         await db.close();
 
-        db = await factory.openDatabase(path,
-            options: OpenDatabaseOptions(version: 1));
+        db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(version: 1),
+        );
       } finally {
         await db.close();
       }
@@ -159,24 +170,29 @@ void main() {
       for (var i = 0; i < count; i++) {
         final path = 'test_multiple_$i.db';
         await deleteDatabase(path);
-        dbs[i] =
-            await openDatabase(path, version: 1, onCreate: (db, version) async {
-          await db
-              .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
-          expect(
-              await db
-                  .rawInsert('INSERT INTO Test (name) VALUES (?)', ['test_$i']),
-              1);
-        });
+        dbs[i] = await openDatabase(
+          path,
+          version: 1,
+          onCreate: (db, version) async {
+            await db.execute(
+              'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+            );
+            expect(
+              await db.rawInsert('INSERT INTO Test (name) VALUES (?)', [
+                'test_$i',
+              ]),
+              1,
+            );
+          },
+        );
       }
 
       for (var i = 0; i < count; i++) {
         final db = dbs[i]!;
         try {
-          final name = (await db.query('Test', columns: ['name']))
-              .first
-              .values
-              .first as String?;
+          final name =
+              (await db.query('Test', columns: ['name'])).first.values.first
+                  as String?;
           expect(name, 'test_$i');
         } finally {
           await db.close();
@@ -225,9 +241,10 @@ void main() {
         await db.insert('Test', {'col1': 1, 'col2': 2});
 
         final result = await db.rawQuery(
-            'SELECT t.col1, col1, t.col2, col2 AS col1 FROM Test AS t');
+          'SELECT t.col1, col1, t.col2, col2 AS col1 FROM Test AS t',
+        );
         expect(result, [
-          {'col1': 2, 'col2': 2}
+          {'col1': 2, 'col2': 2},
         ]);
       } finally {
         await db.close();
@@ -237,7 +254,7 @@ void main() {
     test('indexed_param', () async {
       final db = await openDatabase(':memory:');
       expect(await db.rawQuery('SELECT ?1 + ?2', [3, 4]), [
-        {'?1 + ?2': 7}
+        {'?1 + ?2': 7},
       ]);
       await db.close();
     });
@@ -288,25 +305,28 @@ void main() {
         await deleteDatabase(path);
         late Database db;
 
-        db = await openDatabase(path,
-            onConfigure: (db) async {
-              await db.androidSetLocale('zh-CN');
-            },
-            version: 1,
-            onCreate: (db, v) async {
-              await db.execute('CREATE TABLE Test(name TEXT)');
-              for (var row in <Map<String, Object?>>[
-                {'name': '桌'},
-                {'name': '椅'},
-                {'name': '盘'},
-              ]) {
-                await db.insert('Test', row);
-              }
-            });
+        db = await openDatabase(
+          path,
+          onConfigure: (db) async {
+            await db.androidSetLocale('zh-CN');
+          },
+          version: 1,
+          onCreate: (db, v) async {
+            await db.execute('CREATE TABLE Test(name TEXT)');
+            for (var row in <Map<String, Object?>>[
+              {'name': '桌'},
+              {'name': '椅'},
+              {'name': '盘'},
+            ]) {
+              await db.insert('Test', row);
+            }
+          },
+        );
         Future<List<String>> getNames() async {
-          return (await db.query('Test', orderBy: 'name COLLATE LOCALIZED ASC'))
-              .map((e) => e.values.first!.toString())
-              .toList();
+          return (await db.query(
+            'Test',
+            orderBy: 'name COLLATE LOCALIZED ASC',
+          )).map((e) => e.values.first!.toString()).toList();
         }
 
         try {

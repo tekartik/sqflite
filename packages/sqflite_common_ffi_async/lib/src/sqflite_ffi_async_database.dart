@@ -20,8 +20,10 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
   SqfliteDatabaseFfiAsync(super.openHelper, super.path);
 
   @override
-  Future<T> transaction<T>(Future<T> Function(Transaction txn) action,
-      {bool? exclusive}) async {
+  Future<T> transaction<T>(
+    Future<T> Function(Transaction txn) action, {
+    bool? exclusive,
+  }) async {
     return _wrapFfiAsyncCall(() async {
       if (openTransaction is SqfliteFfiAsyncTransaction) {
         var sqfliteTxn = openTransaction as SqfliteFfiAsyncTransaction;
@@ -38,7 +40,8 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
 
   @override
   Future<T> readTransaction<T>(
-      Future<T> Function(Transaction txn) action) async {
+    Future<T> Function(Transaction txn) action,
+  ) async {
     return _wrapFfiAsyncCall(() async {
       if (openTransaction is SqfliteFfiAsyncTransaction) {
         var sqfliteTxn = openTransaction as SqfliteFfiAsyncTransaction;
@@ -65,10 +68,15 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
     if (options?.readOnly ?? false) {
       if (!await factoryFfi.databaseExists(path)) {
         throw SqfliteDatabaseException(
-            'read-only Database not found: $path', null);
+          'read-only Database not found: $path',
+          null,
+        );
       }
       sqliteOptions = const sqlite_async.SqliteOptions(
-          journalMode: null, journalSizeLimit: null, synchronous: null);
+        journalMode: null,
+        journalSizeLimit: null,
+        synchronous: null,
+      );
     } else {
       var dir = Directory(dirname(path));
       try {
@@ -83,23 +91,33 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
       sqliteOptions = const sqlite_async.SqliteOptions.defaults();
     }
     final factory = sqlite_async.DefaultSqliteOpenFactory(
-        path: path, sqliteOptions: sqliteOptions);
+      path: path,
+      sqliteOptions: sqliteOptions,
+    );
 
-    _database = sqlite_async.SqliteDatabase.withFactory(factory,
-        maxReaders: maxReaders);
+    _database = sqlite_async.SqliteDatabase.withFactory(
+      factory,
+      maxReaders: maxReaders,
+    );
     //_database = sqlite_async.SqliteDatabase(path: path);
     return _asyncId;
   }
 
-  Future<List<Map<String, Object?>>> _select(sqlite_async.SqliteReadContext wc,
-      String sql, List<Object?>? arguments) async {
+  Future<List<Map<String, Object?>>> _select(
+    sqlite_async.SqliteReadContext wc,
+    String sql,
+    List<Object?>? arguments,
+  ) async {
     var resultSet = await wc.getAll(sql, _fixArguments(arguments));
     return SqfliteResultSet(resultSet);
   }
 
   @override
   Future<List<Map<String, Object?>>> txnRawQuery(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments) async {
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  ) async {
     return _wrapFfiAsyncCall(() {
       return _select(_readContext(txn), sql, arguments);
     });
@@ -108,8 +126,12 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
   /// Execute a raw SELECT command by page.
   /// TODO not supported yet
   @override
-  Future<SqfliteQueryCursor> txnRawQueryCursor(SqfliteTransaction? txn,
-      String sql, List<Object?>? arguments, int pageSize) async {
+  Future<SqfliteQueryCursor> txnRawQueryCursor(
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+    int pageSize,
+  ) async {
     var results = await _select(_readContext(txn), sql, arguments);
     return SqfliteQueryCursor(this, txn, null, results);
   }
@@ -129,8 +151,9 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
   sqlite_async.SqliteWriteContext _writeContext(SqfliteTransaction? txn) {
     if (txn is SqfliteFfiAsyncReadTransaction) {
       throw SqfliteFfiException(
-          code: internalErrorCode,
-          message: 'read transaction cannot be used for write');
+        code: internalErrorCode,
+        message: 'read transaction cannot be used for write',
+      );
     }
     return (txn as SqfliteFfiAsyncTransaction?)?.writeContext ?? _database;
   }
@@ -142,8 +165,10 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
     return _writeContext(txn);
   }
 
-  Future<T> _writeTransaction<T>(SqfliteTransaction? txn,
-      Future<T> Function(sqlite_async.SqliteWriteContext writeContext) action) {
+  Future<T> _writeTransaction<T>(
+    SqfliteTransaction? txn,
+    Future<T> Function(sqlite_async.SqliteWriteContext writeContext) action,
+  ) {
     if (txn == null) {
       return _wrapFfiAsyncCall(() async {
         return await _database.writeTransaction(action);
@@ -157,8 +182,11 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
 
   @override
   Future<T> txnExecute<T>(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments,
-      {bool? beginTransaction}) {
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments, {
+    bool? beginTransaction,
+  }) {
     // devPrint('txnExecute $sql $arguments');
     return _writeTransaction<T>(txn, (wc) async {
       var result = await wc.execute(sql, _fixArguments(arguments));
@@ -168,13 +196,17 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
 
   //}
 
-  Future<int> _insert(sqlite_async.SqliteWriteContext wc, String sql,
-      List<Object?>? arguments) async {
+  Future<int> _insert(
+    sqlite_async.SqliteWriteContext wc,
+    String sql,
+    List<Object?>? arguments,
+  ) async {
     // Result is empty list
     await wc.execute(sql, _fixArguments(arguments));
 
-    var result =
-        await wc.get('SELECT last_insert_rowid() as rowid, changes() as count');
+    var result = await wc.get(
+      'SELECT last_insert_rowid() as rowid, changes() as count',
+    );
     // devPrint('insert $result');
     var count = result['count'] as int;
     if (count > 0) {
@@ -186,7 +218,10 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
 
   @override
   Future<int> txnRawInsert(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments) async {
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  ) async {
     // devPrint('txnRawInsert $sql $arguments');
     return _writeTransaction<int>(txn, (wc) async {
       return _insert(wc, sql, arguments);
@@ -195,8 +230,11 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
 
   @override
   Future<List<Object?>> txnApplyBatch(
-      SqfliteTransaction? txn, SqfliteBatch batch,
-      {bool? noResult, bool? continueOnError}) {
+    SqfliteTransaction? txn,
+    SqfliteBatch batch, {
+    bool? noResult,
+    bool? continueOnError,
+  }) {
     return _writeTransaction(txn, (wc) async {
       var results = <Object?>[];
 
@@ -213,17 +251,21 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
               addResult(await _insert(wc, operation.sql, operation.arguments));
               break;
             case SqliteSqlCommandType.update:
-              addResult(await _updateOrDelete(
-                  wc, operation.sql, operation.arguments));
+              addResult(
+                await _updateOrDelete(wc, operation.sql, operation.arguments),
+              );
               break;
 
             case SqliteSqlCommandType.delete:
-              addResult(await _updateOrDelete(
-                  wc, operation.sql, operation.arguments));
+              addResult(
+                await _updateOrDelete(wc, operation.sql, operation.arguments),
+              );
               break;
             case SqliteSqlCommandType.execute:
               await wc.execute(
-                  operation.sql, _fixArguments(operation.arguments));
+                operation.sql,
+                _fixArguments(operation.arguments),
+              );
               addResult(null);
             case SqliteSqlCommandType.query:
               addResult(await _select(wc, operation.sql, operation.arguments));
@@ -246,26 +288,36 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
   /// returns the update count
   @override
   Future<int> txnRawUpdate(
-          SqfliteTransaction? txn, String sql, List<Object?>? arguments) =>
-      _txnRawUpdateOrDelete(txn, sql, arguments);
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  ) => _txnRawUpdateOrDelete(txn, sql, arguments);
 
   /// for Delete sql query
   /// returns the delete count
   @override
   Future<int> txnRawDelete(
-          SqfliteTransaction? txn, String sql, List<Object?>? arguments) =>
-      _txnRawUpdateOrDelete(txn, sql, arguments);
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  ) => _txnRawUpdateOrDelete(txn, sql, arguments);
 
   Future<int> _txnRawUpdateOrDelete(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments) {
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  ) {
     return _writeTransaction<int>(txn, (wc) async {
       // Result is empty list
       return await _updateOrDelete(wc, sql, arguments);
     });
   }
 
-  Future<int> _updateOrDelete(sqlite_async.SqliteWriteContext wc, String sql,
-      List<Object?>? arguments) async {
+  Future<int> _updateOrDelete(
+    sqlite_async.SqliteWriteContext wc,
+    String sql,
+    List<Object?>? arguments,
+  ) async {
     // Result is empty list
     await wc.execute(sql, _fixArguments(arguments));
 

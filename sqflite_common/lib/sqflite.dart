@@ -62,33 +62,37 @@ export 'sqlite_api.dart';
 /// same path will return the same instance, and will discard all other
 /// parameters such as callbacks for that invocation.
 ///
-Future<Database> openDatabase(String path,
-    {int? version,
-    OnDatabaseConfigureFn? onConfigure,
-    OnDatabaseCreateFn? onCreate,
-    OnDatabaseVersionChangeFn? onUpgrade,
-    OnDatabaseVersionChangeFn? onDowngrade,
-    OnDatabaseOpenFn? onOpen,
-    bool? readOnly = false,
-    bool? singleInstance = true}) {
+Future<Database> openDatabase(
+  String path, {
+  int? version,
+  OnDatabaseConfigureFn? onConfigure,
+  OnDatabaseCreateFn? onCreate,
+  OnDatabaseVersionChangeFn? onUpgrade,
+  OnDatabaseVersionChangeFn? onDowngrade,
+  OnDatabaseOpenFn? onOpen,
+  bool? readOnly = false,
+  bool? singleInstance = true,
+}) {
   final options = OpenDatabaseOptions(
-      version: version,
-      onConfigure: onConfigure,
-      onCreate: onCreate,
-      onUpgrade: onUpgrade,
-      onDowngrade: onDowngrade,
-      onOpen: onOpen,
-      readOnly: readOnly,
-      singleInstance: singleInstance);
+    version: version,
+    onConfigure: onConfigure,
+    onCreate: onCreate,
+    onUpgrade: onUpgrade,
+    onDowngrade: onDowngrade,
+    onOpen: onOpen,
+    readOnly: readOnly,
+    singleInstance: singleInstance,
+  );
   return databaseFactory.openDatabase(path, options: options);
 }
 
 ///
 /// Open the database at a given path in read only mode
 ///
-Future<Database> openReadOnlyDatabase(String path,
-        {bool? singleInstance = true}) =>
-    openDatabase(path, readOnly: true, singleInstance: singleInstance);
+Future<Database> openReadOnlyDatabase(
+  String path, {
+  bool? singleInstance = true,
+}) => openDatabase(path, readOnly: true, singleInstance: singleInstance);
 
 ///
 /// Get the default databases location.

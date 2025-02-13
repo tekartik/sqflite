@@ -8,13 +8,9 @@ export 'package:sqflite_common/src/compat.dart'
         SqfliteOptions; // ignore: deprecated_member_use, deprecated_member_use_from_same_package
 /// Explicit list of needed private import
 export 'package:sqflite_common/src/database.dart' // ignore: implementation_imports
-    show
-        SqfliteDatabaseOpenHelper,
-        SqfliteDatabase;
+    show SqfliteDatabaseOpenHelper, SqfliteDatabase;
 export 'package:sqflite_common/src/database_mixin.dart' // ignore: implementation_imports
-    show
-        SqfliteDatabaseMixin,
-        SqfliteDatabaseBase;
+    show SqfliteDatabaseMixin, SqfliteDatabaseBase;
 
 //
 // Exception

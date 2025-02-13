@@ -19,24 +19,29 @@ void run(SqfliteTestContext context) {
     var db = await factory.openDatabase(path);
 
     var table = 'test';
-    await db
-        .execute('CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)');
+    await db.execute(
+      'CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)',
+    );
     // inserted in a wrong order to check ASC/DESC
-    await db
-        .execute('INSERT INTO $table (column_1, column_2) VALUES (11, 180)');
-    await db
-        .execute('INSERT INTO $table (column_1, column_2) VALUES (10, 180)');
-    await db
-        .execute('INSERT INTO $table (column_1, column_2) VALUES (10, 2000)');
+    await db.execute(
+      'INSERT INTO $table (column_1, column_2) VALUES (11, 180)',
+    );
+    await db.execute(
+      'INSERT INTO $table (column_1, column_2) VALUES (10, 180)',
+    );
+    await db.execute(
+      'INSERT INTO $table (column_1, column_2) VALUES (10, 2000)',
+    );
 
     var expectedResult = [
       {'column_1': 10, 'column_2': 2000},
       {'column_1': 10, 'column_2': 180},
-      {'column_1': 11, 'column_2': 180}
+      {'column_1': 11, 'column_2': 180},
     ];
 
-    var result = await db
-        .rawQuery('SELECT * FROM $table ORDER BY column_1 ASC, column_2 DESC');
+    var result = await db.rawQuery(
+      'SELECT * FROM $table ORDER BY column_1 ASC, column_2 DESC',
+    );
     //print(JSON.encode(result));
     expect(result, expectedResult);
     result = await db.query(table, orderBy: 'column_1 ASC, column_2 DESC');
@@ -51,34 +56,44 @@ void run(SqfliteTestContext context) {
     var db = await factory.openDatabase(path);
 
     var table = 'test';
-    await db
-        .execute('CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)');
-    await db
-        .execute('INSERT INTO $table (column_1, column_2) VALUES (1, 1001)');
-    await db
-        .execute('INSERT INTO $table (column_1, column_2) VALUES (2, 1002)');
-    await db
-        .execute('INSERT INTO $table (column_1, column_2) VALUES (2, 1012)');
-    await db
-        .execute('INSERT INTO $table (column_1, column_2) VALUES (3, 1003)');
+    await db.execute(
+      'CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)',
+    );
+    await db.execute(
+      'INSERT INTO $table (column_1, column_2) VALUES (1, 1001)',
+    );
+    await db.execute(
+      'INSERT INTO $table (column_1, column_2) VALUES (2, 1002)',
+    );
+    await db.execute(
+      'INSERT INTO $table (column_1, column_2) VALUES (2, 1012)',
+    );
+    await db.execute(
+      'INSERT INTO $table (column_1, column_2) VALUES (3, 1003)',
+    );
 
     var expectedResult = [
       {'column_1': 1, 'column_2': 1001},
       {'column_1': 2, 'column_2': 1002},
-      {'column_1': 2, 'column_2': 1012}
+      {'column_1': 2, 'column_2': 1012},
     ];
 
     // testing with value in the In clause
-    var result = await db.query(table,
-        where: 'column_1 IN (1, 2)', orderBy: 'column_1 ASC, column_2 ASC');
+    var result = await db.query(
+      table,
+      where: 'column_1 IN (1, 2)',
+      orderBy: 'column_1 ASC, column_2 ASC',
+    );
     //print(JSON.encode(result));
     expect(result, expectedResult);
 
     // testing with value as arguments
-    result = await db.query(table,
-        where: 'column_1 IN (?, ?)',
-        whereArgs: <Object>['1', '2'],
-        orderBy: 'column_1 ASC, column_2 ASC');
+    result = await db.query(
+      table,
+      where: 'column_1 IN (?, ?)',
+      whereArgs: <Object>['1', '2'],
+      orderBy: 'column_1 ASC, column_2 ASC',
+    );
     expect(result, expectedResult);
 
     await db.close();
@@ -95,11 +110,12 @@ void run(SqfliteTestContext context) {
     await db.execute('INSERT INTO "$table" ("group") VALUES (1)');
 
     var expectedResult = [
-      {'group': 1}
+      {'group': 1},
     ];
 
-    var result =
-        await db.rawQuery('SELECT "group" FROM "$table" ORDER BY "group" DESC');
+    var result = await db.rawQuery(
+      'SELECT "group" FROM "$table" ORDER BY "group" DESC',
+    );
     print(result);
     expect(result, expectedResult);
     result = await db.rawQuery("SELECT * FROM '$table' ORDER BY `group` DESC");
@@ -121,15 +137,19 @@ void run(SqfliteTestContext context) {
     // inserted in a wrong order to check ASC/DESC
 
     await db.insert(table, <String, Object?>{'group': 'group_value'});
-    await db.update(table, <String, Object?>{'group': 'group_new_value'},
-        where: "\"group\" = 'group_value'");
+    await db.update(table, <String, Object?>{
+      'group': 'group_new_value',
+    }, where: "\"group\" = 'group_value'");
 
     var expectedResult = [
-      {'group': 'group_new_value'}
+      {'group': 'group_new_value'},
     ];
 
-    var result =
-        await db.query(table, columns: ['group'], orderBy: '"group" DESC');
+    var result = await db.query(
+      table,
+      columns: ['group'],
+      orderBy: '"group" DESC',
+    );
     //print(JSON.encode(result));
     expect(result, expectedResult);
 
@@ -156,7 +176,7 @@ void run(SqfliteTestContext context) {
     //print('result :$result');
     expect(result, [
       {'one': '1', 'my_col': '2,3'},
-      {'one': '2', 'my_col': '2'}
+      {'one': '2', 'my_col': '2'},
     ]);
 
     result = await db.rawQuery('''
@@ -166,7 +186,7 @@ void run(SqfliteTestContext context) {
     // print('result :$result');
     expect(result, [
       {'one': '1', 'GROUP_CONCAT(another)': '2,3'},
-      {'one': '2', 'GROUP_CONCAT(another)': '2'}
+      {'one': '2', 'GROUP_CONCAT(another)': '2'},
     ]);
 
     // user alias
@@ -177,7 +197,7 @@ void run(SqfliteTestContext context) {
     //print('result :$result');
     expect(result, [
       {'one': '1', 'GROUP_CONCAT(t.another)': '2,3'},
-      {'one': '2', 'GROUP_CONCAT(t.another)': '2'}
+      {'one': '2', 'GROUP_CONCAT(t.another)': '2'},
     ]);
 
     await db.close();
@@ -190,8 +210,9 @@ void run(SqfliteTestContext context) {
 
     try {
       var table = 'alias';
-      await db
-          .execute('CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)');
+      await db.execute(
+        'CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)',
+      );
       await db.insert(table, <String, Object?>{'column_1': 1, 'column_2': 2});
 
       var result = await db.rawQuery('''
@@ -199,7 +220,7 @@ void run(SqfliteTestContext context) {
       from $table as t''');
       print('result :$result');
       expect(result, [
-        {'t.column1': 1, 'column_1': 1, 'column_alias_1': 1, 'column_2': 2}
+        {'t.column1': 1, 'column_1': 1, 'column_alias_1': 1, 'column_2': 2},
       ]);
     } finally {
       await db.close();
@@ -213,8 +234,9 @@ void run(SqfliteTestContext context) {
 
     try {
       var table = 'test';
-      await db
-          .execute('CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)');
+      await db.execute(
+        'CREATE TABLE $table (column_1 INTEGER, column_2 INTEGER)',
+      );
       await db.insert(table, <String, Object?>{'column_1': 1, 'column_2': 2});
 
       var result = await db.rawQuery('''
@@ -271,35 +293,43 @@ void run(SqfliteTestContext context) {
     // devPrint("issue #48");
     // Try to query on a non-indexed field
     var path = await context.initDeleteDb('exp_issue_48.db');
-    var db = await factory.openDatabase(path,
-        options: OpenDatabaseOptions(
-            version: 1,
-            onCreate: (Database db, int version) async {
-              await db.execute(
-                  'CREATE TABLE npa (id INT, title TEXT, identifier TEXT)');
-              await db.insert('npa', <String, Object?>{
-                'id': 128,
-                'title': 'title 1',
-                'identifier': '0001'
-              });
-              await db.insert('npa', <String, Object?>{
-                'id': 215,
-                'title': 'title 1',
-                'identifier': '0008120150514'
-              });
-            }));
-    var resultSet = await db.query('npa',
-        columns: ['id', 'title', 'identifier'],
-        where: '"identifier" = ?',
-        whereArgs: <Object>['0008120150514']);
+    var db = await factory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            'CREATE TABLE npa (id INT, title TEXT, identifier TEXT)',
+          );
+          await db.insert('npa', <String, Object?>{
+            'id': 128,
+            'title': 'title 1',
+            'identifier': '0001',
+          });
+          await db.insert('npa', <String, Object?>{
+            'id': 215,
+            'title': 'title 1',
+            'identifier': '0008120150514',
+          });
+        },
+      ),
+    );
+    var resultSet = await db.query(
+      'npa',
+      columns: ['id', 'title', 'identifier'],
+      where: '"identifier" = ?',
+      whereArgs: <Object>['0008120150514'],
+    );
     // print(resultSet);
     expect(resultSet.length, 1);
     // but the results is always - empty QueryResultSet[].
     // If i'm trying to do the same with the id field and integer value like
-    resultSet = await db.query('npa',
-        columns: ['id', 'title', 'identifier'],
-        where: '"id" = ?',
-        whereArgs: <Object>[215]);
+    resultSet = await db.query(
+      'npa',
+      columns: ['id', 'title', 'identifier'],
+      where: '"id" = ?',
+      whereArgs: <Object>[215],
+    );
     // print(resultSet);
     expect(resultSet.length, 1);
     await db.close();
@@ -309,23 +339,34 @@ void run(SqfliteTestContext context) {
     // Sqflite.devSetDebugModeOn(true);
     // Try to insert string with quote
     var path = await context.initDeleteDb('exp_issue_52.db');
-    var db = await factory.openDatabase(path,
-        options: OpenDatabaseOptions(
-            version: 1,
-            onCreate: (Database db, int version) async {
-              await db.execute('CREATE TABLE test (id INT, value TEXT)');
-              await db.insert(
-                  'test', <String, Object?>{'id': 1, 'value': 'without quote'});
-              await db.insert(
-                  'test', <String, Object?>{'id': 2, 'value': "with ' quote"});
-            }));
-    var resultSet = await db
-        .query('test', where: 'value = ?', whereArgs: <Object>["with ' quote"]);
+    var db = await factory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute('CREATE TABLE test (id INT, value TEXT)');
+          await db.insert('test', <String, Object?>{
+            'id': 1,
+            'value': 'without quote',
+          });
+          await db.insert('test', <String, Object?>{
+            'id': 2,
+            'value': "with ' quote",
+          });
+        },
+      ),
+    );
+    var resultSet = await db.query(
+      'test',
+      where: 'value = ?',
+      whereArgs: <Object>["with ' quote"],
+    );
     expect(resultSet.length, 1);
     expect(resultSet.first['id'], 2);
 
-    resultSet = await db
-        .rawQuery('SELECT * FROM test WHERE value = ?', ["with ' quote"]);
+    resultSet = await db.rawQuery('SELECT * FROM test WHERE value = ?', [
+      "with ' quote",
+    ]);
     expect(resultSet.length, 1);
     expect(resultSet.first['id'], 2);
     await db.close();
@@ -373,9 +414,7 @@ INSERT INTO test (value) VALUES (10);
       await db.execute(
         'CREATE TABLE `groups` (`id`	INTEGER NOT NULL UNIQUE, `service_id`	INTEGER, `official`	BOOLEAN, `type`	TEXT, `access`	TEXT, `ads`	BOOLEAN, `mute`	BOOLEAN, `read`	INTEGER, `background`	TEXT, `last_message_time`	INTEGER, `last_message_id`	INTEGER, `deleted_to`	INTEGER, `is_admin`	BOOLEAN, `is_owner`	BOOLEAN, `description`	TEXT, `pin`	BOOLEAN, `name`	TEXT, `opposite_id`	INTEGER, `badge`	INTEGER, `member_count`	INTEGER, `identifier`	TEXT, `join_link`	TEXT, `hash`	TEXT, `service_info`	TEXT, `seen`	INTEGER, `pinned_message`	INTEGER, `delivery`	INTEGER, PRIMARY KEY(`id`) ) WITHOUT ROWID;',
       );
-      await db.execute(
-        'CREATE INDEX groups_id ON groups ( service_id )',
-      );
+      await db.execute('CREATE INDEX groups_id ON groups ( service_id )');
     } finally {
       await db.close();
     }
@@ -390,9 +429,7 @@ INSERT INTO test (value) VALUES (10);
       await db.execute(
         'CREATE TABLE `groups` (`id` INTEGER PRIMARY KEY, `service_id`INTEGER, `official`	BOOLEAN, `type`	TEXT, `access`	TEXT, `ads`	BOOLEAN, `mute`	BOOLEAN, `read`	INTEGER, `background`	TEXT, `last_message_time`	INTEGER, `last_message_id`	INTEGER, `deleted_to`	INTEGER, `is_admin`	BOOLEAN, `is_owner`	BOOLEAN, `description`	TEXT, `pin`	BOOLEAN, `name`	TEXT, `opposite_id`	INTEGER, `badge`	INTEGER, `member_count`	INTEGER, `identifier`	TEXT, `join_link`	TEXT, `hash`	TEXT, `service_info`	TEXT, `seen`	INTEGER, `pinned_message`	INTEGER, `delivery`	INTEGER) WITHOUT ROWID',
       );
-      await db.execute(
-        'CREATE INDEX `groups_id` ON groups ( `id` ASC )',
-      );
+      await db.execute('CREATE INDEX `groups_id` ON groups ( `id` ASC )');
     } finally {
       await db.close();
     }
@@ -407,9 +444,7 @@ INSERT INTO test (value) VALUES (10);
       await db.execute(
         'CREATE TABLE `groups` (`id` INTEGER PRIMARY KEY, `service_id`INTEGER, `official`	BOOLEAN, `type`	TEXT, `access`	TEXT, `ads`	BOOLEAN, `mute`	BOOLEAN, `read`	INTEGER, `background`	TEXT, `last_message_time`	INTEGER, `last_message_id`	INTEGER, `deleted_to`	INTEGER, `is_admin`	BOOLEAN, `is_owner`	BOOLEAN, `description`	TEXT, `pin`	BOOLEAN, `name`	TEXT, `opposite_id`	INTEGER, `badge`	INTEGER, `member_count`	INTEGER, `identifier`	TEXT, `join_link`	TEXT, `hash`	TEXT, `service_info`	TEXT, `seen`	INTEGER, `pinned_message`	INTEGER, `delivery`	INTEGER) WITHOUT ROWID',
       );
-      await db.execute(
-        'CREATE INDEX `groups_id` ON groups ( `id` ASC )',
-      );
+      await db.execute('CREATE INDEX `groups_id` ON groups ( `id` ASC )');
     } finally {
       await db.close();
     }
@@ -427,7 +462,9 @@ INSERT INTO test (value) VALUES (10);
       await db.insert(table, map, conflictAlgorithm: ConflictAlgorithm.replace);
       await db.insert(table, map, conflictAlgorithm: ConflictAlgorithm.replace);
       expect(
-          utils.firstIntValue(await db.query(table, columns: ['COUNT(*)'])), 1);
+        utils.firstIntValue(await db.query(table, columns: ['COUNT(*)'])),
+        1,
+      );
     } finally {
       await db.close();
     }
@@ -436,7 +473,7 @@ INSERT INTO test (value) VALUES (10);
   test('Issue#272 indexed_param', () async {
     final db = await factory.openDatabase(':memory:');
     expect(await db.rawQuery('SELECT ?1 + ?2', [3, 4]), [
-      {'?1 + ?2': 7}
+      {'?1 + ?2': 7},
     ]);
     await db.close();
   });
@@ -466,12 +503,16 @@ INSERT INTO test (value) VALUES (10);
       db = await factory.openDatabase(path);
       await db.execute('PRAGMA user_version = 4');
       await db.close();
-      db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(readOnly: false));
+      db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(readOnly: false),
+      );
       await db.execute('PRAGMA user_version = 4');
       await db.close();
-      db = await factory.openDatabase(path,
-          options: OpenDatabaseOptions(readOnly: true));
+      db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(readOnly: true),
+      );
       try {
         await db.execute('PRAGMA user_version = 4');
         fail('should fail');
@@ -484,20 +525,27 @@ INSERT INTO test (value) VALUES (10);
 
   test('as', () async {
     var path = await context.initDeleteDb('exp_as.db');
-    var db = await factory.openDatabase(path,
-        options: OpenDatabaseOptions(
-            version: 1,
-            onCreate: (Database db, int version) async {
-              await db.execute('CREATE TABLE test (id INT, value TEXT)');
-              await db.insert(
-                  'test', <String, Object?>{'id': 1, 'value': 'without quote'});
-              await db.insert(
-                  'test', <String, Object?>{'id': 2, 'value': "with ' quote"});
-            }));
+    var db = await factory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute('CREATE TABLE test (id INT, value TEXT)');
+          await db.insert('test', <String, Object?>{
+            'id': 1,
+            'value': 'without quote',
+          });
+          await db.insert('test', <String, Object?>{
+            'id': 2,
+            'value': "with ' quote",
+          });
+        },
+      ),
+    );
     var resultSet = await db.rawQuery('SELECT r.id FROM test r');
     expect(resultSet, [
       {'id': 1},
-      {'id': 2}
+      {'id': 2},
     ]);
     var dbItem = resultSet.first;
     // ignore: unused_local_variable
@@ -508,7 +556,7 @@ INSERT INTO test (value) VALUES (10);
       resultSet = await db.rawQuery('SELECT r.id AS r_id FROM test r');
       expect(resultSet, [
         {'r_id': 1},
-        {'r_id': 2}
+        {'r_id': 2},
       ]);
       // print(resultSet.first.keys);
       dbItem = resultSet.first;
@@ -521,17 +569,20 @@ INSERT INTO test (value) VALUES (10);
   });
   test('wal', () async {
     var path = await context.initDeleteDb('exp_wal.db');
-    var db = await factory.openDatabase(path,
-        options: OpenDatabaseOptions(
-            version: 1,
-            onConfigure: (Database db) async {
-              await db.execute('PRAGMA journal_mode=WAL');
-              await db.rawQuery('PRAGMA journal_mode=WAL');
-            },
-            onCreate: (Database db, int version) async {
-              await db.execute('CREATE TABLE test (id INTEGER)');
-              await db.insert('test', <String, Object?>{'id': 1});
-            }));
+    var db = await factory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onConfigure: (Database db) async {
+          await db.execute('PRAGMA journal_mode=WAL');
+          await db.rawQuery('PRAGMA journal_mode=WAL');
+        },
+        onCreate: (Database db, int version) async {
+          await db.execute('CREATE TABLE test (id INTEGER)');
+          await db.insert('test', <String, Object?>{'id': 1});
+        },
+      ),
+    );
     try {
       var resultSet = await db.rawQuery('SELECT id FROM test');
       expect(resultSet, [

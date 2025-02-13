@@ -24,7 +24,7 @@ class SqfliteMethodCall {
   Map<String, Object?> toMap() {
     return <String, Object?>{
       'method': method,
-      if (arguments != null) 'arguments': arguments
+      if (arguments != null) 'arguments': arguments,
     };
   }
 

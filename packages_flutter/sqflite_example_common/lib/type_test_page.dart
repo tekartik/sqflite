@@ -20,11 +20,15 @@ class TypeTestPage extends TestPage {
     test('int', () async {
       //await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('type_int.db');
-      data.db = await openDatabase(path, version: 1,
-          onCreate: (Database db, int version) async {
-        await db.execute(
-            'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, value INTEGER)');
-      });
+      data.db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, value INTEGER)',
+          );
+        },
+      );
       var id = await insertValue(-1);
       expect(await getValue(id), -1);
 
@@ -45,20 +49,29 @@ class TypeTestPage extends TestPage {
         // Not for web
         id = await insertValue(pow(2, 62));
         //devPrint('2^62: ${pow(2, 62)} ${await getValue(id)}');
-        expect(await getValue(id), pow(2, 62),
-            reason: '2^62: ${pow(2, 62)} ${await getValue(id)}');
+        expect(
+          await getValue(id),
+          pow(2, 62),
+          reason: '2^62: ${pow(2, 62)} ${await getValue(id)}',
+        );
 
         var value = pow(2, 63).round() - 1;
         id = await insertValue(value);
         //devPrint('${value} ${await getValue(id)}');
-        expect(await getValue(id), value,
-            reason: '$value ${await getValue(id)}');
+        expect(
+          await getValue(id),
+          value,
+          reason: '$value ${await getValue(id)}',
+        );
 
         value = -(pow(2, 63)).round();
         id = await insertValue(value);
         //devPrint('${value} ${await getValue(id)}');
-        expect(await getValue(id), value,
-            reason: '$value ${await getValue(id)}');
+        expect(
+          await getValue(id),
+          value,
+          reason: '$value ${await getValue(id)}',
+        );
       }
       var bigValue = 1234567890123456;
       id = await insertValue(bigValue);
@@ -82,11 +95,15 @@ class TypeTestPage extends TestPage {
     test('real', () async {
       //await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('type_real.db');
-      data.db = await openDatabase(path, version: 1,
-          onCreate: (Database db, int version) async {
-        await db
-            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value REAL)');
-      });
+      data.db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value REAL)',
+          );
+        },
+      );
       var id = await insertValue(-1.1);
       expect(await getValue(id), -1.1);
       // big float
@@ -110,11 +127,15 @@ class TypeTestPage extends TestPage {
     test('text', () async {
       // await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('type_text.db');
-      data.db = await openDatabase(path, version: 1,
-          onCreate: (Database db, int version) async {
-        await db.execute(
-            'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT)');
-      });
+      data.db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT)',
+          );
+        },
+      );
       try {
         var id = await insertValue('simple text');
         expect(await getValue(id), 'simple text');
@@ -133,11 +154,15 @@ class TypeTestPage extends TestPage {
     test('blob', () async {
       // databaseFactory = databaseFactory.debugQuickLoggerWrapper();
       final path = await initDeleteDb('type_blob.db');
-      data.db = await openDatabase(path, version: 1,
-          onCreate: (Database db, int version) async {
-        await db
-            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value BLOB)');
-      });
+      data.db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value BLOB)',
+          );
+        },
+      );
       int id;
       try {
         // insert text in blob
@@ -172,18 +197,24 @@ class TypeTestPage extends TestPage {
         expect(value, blob1234, reason: '${await getValue(id)}');
 
         // test hex feature on sqlite
-        final hexResult = await data.db
-            .rawQuery('SELECT hex(value) FROM Test WHERE id = ?', [id]);
+        final hexResult = await data.db.rawQuery(
+          'SELECT hex(value) FROM Test WHERE id = ?',
+          [id],
+        );
         expect(hexResult[0].values.first, '01020304');
 
         // try blob lookup (works on Android since 2022-09-19)
-        var rows = await data.db
-            .rawQuery('SELECT * FROM Test WHERE value = ?', [blob1234]);
+        var rows = await data.db.rawQuery(
+          'SELECT * FROM Test WHERE value = ?',
+          [blob1234],
+        );
         expect(rows.length, 1);
 
         // try blob lookup using hex
         rows = await data.db.rawQuery(
-            'SELECT * FROM Test WHERE hex(value) = ?', [hex(blob1234)]);
+          'SELECT * FROM Test WHERE hex(value) = ?',
+          [hex(blob1234)],
+        );
         expect(rows.length, 1);
         expect(rows[0]['id'], 3);
 
@@ -201,11 +232,15 @@ class TypeTestPage extends TestPage {
     test('null', () async {
       // await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('type_null.db');
-      data.db = await openDatabase(path, version: 1,
-          onCreate: (Database db, int version) async {
-        await db
-            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
-      });
+      data.db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)',
+          );
+        },
+      );
       try {
         final id = await insertValue(null);
         expect(await getValue(id), null);
@@ -224,11 +259,15 @@ class TypeTestPage extends TestPage {
     test('date_time', () async {
       // await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('type_date_time.db');
-      data.db = await openDatabase(path, version: 1,
-          onCreate: (Database db, int version) async {
-        await db
-            .execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
-      });
+      data.db = await openDatabase(
+        path,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)',
+          );
+        },
+      );
       try {
         var failed = false;
         try {
@@ -247,11 +286,15 @@ class TypeTestPage extends TestPage {
 
     test('bool', () async {
       //await Sqflite.devSetDebugModeOn(true);
-      data.db = await openDatabase(inMemoryDatabasePath, version: 1,
-          onCreate: (Database db, int version) async {
-        await db.execute(
-            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value BOOLEAN)');
-      });
+      data.db = await openDatabase(
+        inMemoryDatabasePath,
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value BOOLEAN)',
+          );
+        },
+      );
       try {
         var failed = false;
         try {

@@ -47,8 +47,9 @@ class _BigIntAdapter extends _TypeAdapter<BigInt> {
 }
 
 var _adapters = [_BigIntAdapter()];
-var _adaptersByTag =
-    _adapters.asMap().map((key, value) => MapEntry(value.tag, value));
+var _adaptersByTag = _adapters.asMap().map(
+  (key, value) => MapEntry(value.tag, value),
+);
 
 // Look like custom?
 bool _looksLikeCustomType(Map map) {
@@ -105,7 +106,8 @@ Object? _dataToEncodable(Object? valueOrNull) {
     return clone ?? list;
   } else {
     throw UnsupportedError(
-        'Unsupported value type ${value.runtimeType} for $value');
+      'Unsupported value type ${value.runtimeType} for $value',
+    );
   }
 }
 
@@ -159,6 +161,7 @@ Object? _dataFromEncodable(Object? valueOrNull) {
     return clone ?? list;
   } else {
     throw UnsupportedError(
-        'Unsupported value type ${value.runtimeType} for $value');
+      'Unsupported value type ${value.runtimeType} for $value',
+    );
   }
 }

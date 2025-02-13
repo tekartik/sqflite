@@ -17,10 +17,13 @@ class MockMethodCall {
 class MockScenario {
   MockScenario(List<List> data) {
     methodsCalls = data
-        .map((list) => MockMethodCall()
-          ..expectedMethod = list[0]?.toString()
-          ..expectedArguments = list[1]
-          ..response = list[2])
+        .map(
+          (list) =>
+              MockMethodCall()
+                ..expectedMethod = list[0]?.toString()
+                ..expectedArguments = list[1]
+                ..response = list[2],
+        )
         .toList(growable: false);
   }
 
@@ -37,20 +40,19 @@ class MockScenario {
 MockScenario startScenario(List<List> data) {
   final scenario = MockScenario(data);
 
-  _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
-      .defaultBinaryMessenger
+  _ambiguate(TestDefaultBinaryMessengerBinding.instance)!.defaultBinaryMessenger
       .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-    final index = scenario.index++;
-    // devPrint('$index ${scenario.methodsCalls[index]}');
-    final item = scenario.methodsCalls[index];
-    try {
-      expect(methodCall.method, item.expectedMethod);
-      expect(methodCall.arguments, item.expectedArguments);
-    } catch (e) {
-      scenario.exception ??= '$e $index';
-    }
-    return item.response;
-  });
+        final index = scenario.index++;
+        // devPrint('$index ${scenario.methodsCalls[index]}');
+        final item = scenario.methodsCalls[index];
+        try {
+          expect(methodCall.method, item.expectedMethod);
+          expect(methodCall.arguments, item.expectedArguments);
+        } catch (e) {
+          scenario.exception ??= '$e $index';
+        }
+        return item.response;
+      });
   return scenario;
 }
 
@@ -64,12 +66,12 @@ void main() {
         [
           'openDatabase',
           {'path': ':memory:', 'singleInstance': false},
-          1
+          1,
         ],
         [
           'closeDatabase',
           {'id': 1},
-          null
+          null,
         ],
       ]);
       final db = await openDatabase(inMemoryDatabasePath);
@@ -81,13 +83,13 @@ void main() {
         [
           'openDatabase',
           {'path': ':memory:', 'singleInstance': false},
-          1
+          1,
         ],
         [
           'query',
           {'sql': 'PRAGMA user_version', 'id': 1},
           // ignore: inference_failure_on_collection_literal
-          {}
+          {},
         ],
         [
           'execute',
@@ -95,34 +97,37 @@ void main() {
             'sql': 'BEGIN EXCLUSIVE',
             'id': 1,
             'transactionId': null,
-            'inTransaction': true
+            'inTransaction': true,
           },
-          null
+          null,
         ],
         [
           'query',
           {'sql': 'PRAGMA user_version', 'id': 1},
           // ignore: inference_failure_on_collection_literal
-          {}
+          {},
         ],
         [
           'execute',
           {'sql': 'PRAGMA user_version = 1', 'id': 1},
-          null
+          null,
         ],
         [
           'execute',
           {'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
-          null
+          null,
         ],
         [
           'closeDatabase',
           {'id': 1},
-          null
+          null,
         ],
       ]);
-      final db = await openDatabase(inMemoryDatabasePath,
-          version: 1, onCreate: (db, version) {});
+      final db = await openDatabase(
+        inMemoryDatabasePath,
+        version: 1,
+        onCreate: (db, version) {},
+      );
       await db.close();
       scenario.end();
     });

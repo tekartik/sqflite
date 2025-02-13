@@ -8,8 +8,8 @@ import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
 var _factory = createDatabaseFactoryFfiWeb(
-    options:
-        SqfliteFfiWebOptions(sharedWorkerUri: Uri.parse('sqflite_sw_v1.js')));
+  options: SqfliteFfiWebOptions(sharedWorkerUri: Uri.parse('sqflite_sw_v1.js')),
+);
 
 class SqfliteFfiWebTestContext extends SqfliteLocalTestContext {
   SqfliteFfiWebTestContext() : super(databaseFactory: _factory);

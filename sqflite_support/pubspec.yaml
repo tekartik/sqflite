@@ -5,7 +5,7 @@ homepage: https://github.com/tekartik/sqflite
 publish_to: none
 
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.7.0
 
 dependencies:
   pub_semver: ">=2.0.0"

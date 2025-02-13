@@ -117,24 +117,32 @@ void main() {
       var exception = SqfliteDatabaseException(msg, null);
       expect(exception.getResultCode(), 2067);
       exception = SqfliteDatabaseException(
-          'UNIQUE constraint failed: Test.name (code 1555))', null);
+        'UNIQUE constraint failed: Test.name (code 1555))',
+        null,
+      );
       expect(exception.getResultCode(), 1555);
-      exception =
-          SqfliteDatabaseException('near "DUMMY": syntax error (code 1)', null);
+      exception = SqfliteDatabaseException(
+        'near "DUMMY": syntax error (code 1)',
+        null,
+      );
       expect(exception.getResultCode(), 1);
 
       exception = SqfliteDatabaseException(
-          'attempt to write a readonly database (code 8)) running Open read-only',
-          null);
+        'attempt to write a readonly database (code 8)) running Open read-only',
+        null,
+      );
       expect(exception.getResultCode(), 8);
 
       // iOS: Error Domain=FMDatabase Code=19 'UNIQUE constraint failed: Test.name' UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name}) s
       exception = SqfliteDatabaseException(
-          "Error Domain=FMDatabase Code=19 'UNIQUE constraint failed: Test.name' UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name})",
-          null);
+        "Error Domain=FMDatabase Code=19 'UNIQUE constraint failed: Test.name' UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name})",
+        null,
+      );
       expect(exception.getResultCode(), 19);
-      exception =
-          SqfliteDatabaseException('Error Domain=FMDatabase Code=19', null);
+      exception = SqfliteDatabaseException(
+        'Error Domain=FMDatabase Code=19',
+        null,
+      );
       expect(exception.getResultCode(), 19);
     });
 
@@ -146,11 +154,13 @@ void main() {
           1,
           'short',
           '123456789012345678901234567890123456789012345678901',
-          Uint8List.fromList([1, 2, 3])
-        ]
+          Uint8List.fromList([1, 2, 3]),
+        ],
       });
-      expect(exception.toString(),
-          'DatabaseException(test) sql \'statement\' args [null, 1, short, 12345678901234567890123456789012345678901234567890..., Blob(3)]');
+      expect(
+        exception.toString(),
+        'DatabaseException(test) sql \'statement\' args [null, 1, short, 12345678901234567890123456789012345678901234567890..., Blob(3)]',
+      );
     });
     test('Exception result', () async {
       DatabaseException exception = SqfliteDatabaseException('test', 1);

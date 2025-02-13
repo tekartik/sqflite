@@ -19,13 +19,17 @@ void main() {
     expect(await db.getVersion(), 0);
     await db.close();
 
-    db = await databaseFactory.openDatabase(inMemoryDatabasePath,
-        options: OpenDatabaseOptions(version: 1));
+    db = await databaseFactory.openDatabase(
+      inMemoryDatabasePath,
+      options: OpenDatabaseOptions(version: 1),
+    );
     expect(await db.getVersion(), 1);
     await db.close();
 
-    db = await databaseFactory.openDatabase('simple_version_1.db',
-        options: OpenDatabaseOptions(version: 1));
+    db = await databaseFactory.openDatabase(
+      'simple_version_1.db',
+      options: OpenDatabaseOptions(version: 1),
+    );
     expect(await db.getVersion(), 1);
     await db.close();
   });
@@ -38,7 +42,7 @@ void main() {
 
     try {
       await db.insert('test', <String, Object?>{
-        'blob': Uint8List.fromList([1, 2, 3])
+        'blob': Uint8List.fromList([1, 2, 3]),
       });
       fail('should fail');
     } catch (e) {
@@ -49,7 +53,7 @@ void main() {
     try {
       var batch = db.batch();
       batch.insert('test', <String, Object?>{
-        'blob': Uint8List.fromList([1, 2, 3])
+        'blob': Uint8List.fromList([1, 2, 3]),
       });
       await batch.commit();
       fail('should fail');
@@ -70,8 +74,9 @@ void main() {
     }
 
     Future<void> alterTable() async {
-      await db.update('sqlite_master', {'sql': 'CREATE TABLE Test(value BLOB)'},
-          where: 'name = \'Test\' and type = \'table\'');
+      await db.update('sqlite_master', {
+        'sql': 'CREATE TABLE Test(value BLOB)',
+      }, where: 'name = \'Test\' and type = \'table\'');
     }
 
     try {
@@ -91,7 +96,8 @@ void main() {
       await alterTable();
     } catch (e) {
       print(
-          'Error update sqflite_master (could happen without defensive mode): $e');
+        'Error update sqflite_master (could happen without defensive mode): $e',
+      );
     } finally {
       await db.close();
     }

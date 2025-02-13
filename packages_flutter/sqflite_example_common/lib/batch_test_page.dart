@@ -22,7 +22,7 @@ class BatchTestPage extends TestPage {
       final dbResult = await db.rawQuery('SELECT id, name FROM Test');
       // devPrint('dbResult $dbResult');
       expect(dbResult, [
-        {'id': 1, 'name': 'item1'}
+        {'id': 1, 'name': 'item1'},
       ]);
 
       // one query
@@ -33,11 +33,11 @@ class BatchTestPage extends TestPage {
       // devPrint('select $results ${results?.first}');
       expect(results, [
         [
-          {'id': 1, 'name': 'item1'}
+          {'id': 1, 'name': 'item1'},
         ],
         [
-          {'id': 1, 'name': 'item1'}
-        ]
+          {'id': 1, 'name': 'item1'},
+        ],
       ]);
       await db.close();
     });
@@ -74,11 +74,11 @@ class BatchTestPage extends TestPage {
       // devPrint('select $results ${results?.first}');
       expect(results, [
         [
-          {'id': 1, 'name': 'item1'}
+          {'id': 1, 'name': 'item1'},
         ],
         [
-          {'id': 1, 'name': 'item1'}
-        ]
+          {'id': 1, 'name': 'item1'},
+        ],
       ]);
 
       // two insert
@@ -90,26 +90,39 @@ class BatchTestPage extends TestPage {
 
       // update
       batch = db.batch();
-      batch.rawUpdate(
-          'UPDATE Test SET name = ? WHERE name = ?', ['new_item', 'item1']);
-      batch.update('Test', {'name': 'new_other_item'},
-          where: 'name != ?', whereArgs: <String>['new_item']);
+      batch.rawUpdate('UPDATE Test SET name = ? WHERE name = ?', [
+        'new_item',
+        'item1',
+      ]);
+      batch.update(
+        'Test',
+        {'name': 'new_other_item'},
+        where: 'name != ?',
+        whereArgs: <String>['new_item'],
+      );
       results = await batch.commit();
       expect(results, [1, 2]);
 
       // delete
       batch = db.batch();
       batch.rawDelete('DELETE FROM Test WHERE name = ?', ['new_item']);
-      batch.delete('Test',
-          where: 'name = ?', whereArgs: <String>['new_other_item']);
+      batch.delete(
+        'Test',
+        where: 'name = ?',
+        whereArgs: <String>['new_other_item'],
+      );
       results = await batch.commit();
       expect(results, [1, 2]);
 
       // No result
       batch = db.batch();
       batch.insert('Test', {'name': 'item'});
-      batch.update('Test', {'name': 'new_item'},
-          where: 'name = ?', whereArgs: <String>['item']);
+      batch.update(
+        'Test',
+        {'name': 'new_item'},
+        where: 'name = ?',
+        whereArgs: <String>['item'],
+      );
       batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
       results = await batch.commit(noResult: true);
       expect(results, isEmpty);
@@ -205,7 +218,7 @@ class BatchTestPage extends TestPage {
         expect(results[3], 1);
         // Fifth is a select
         expect(results[4], [
-          {'id': 1, 'name': 'item1'}
+          {'id': 1, 'name': 'item1'},
         ]);
       } finally {
         await db.close();

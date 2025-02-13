@@ -96,8 +96,9 @@ class MockDatabase extends SqfliteDatabaseBase {
           version = int.tryParse(sql!.split(' ').last);
         } else if (sql == 'PRAGMA user_version') {
           return <Map<String, Object?>>[
-            <String, Object?>{'user_version': version}
-          ] as T;
+                <String, Object?>{'user_version': version},
+              ]
+              as T;
         }
       }
     } else {
@@ -129,7 +130,9 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
 
   @override
   SqfliteDatabaseMixin newDatabase(
-      SqfliteDatabaseOpenHelper openHelper, String path) {
+    SqfliteDatabaseOpenHelper openHelper,
+    String path,
+  ) {
     final existing = databases[path];
     final db = MockDatabase(openHelper, path);
     // Copy version
@@ -209,59 +212,83 @@ void run() {
     group('open', () {
       test('read-only', () async {
         // var db = mockDatabaseFactory.newEmptyDatabase();
-        final db = await mockDatabaseFactory.openDatabase('test',
-                options: SqfliteOpenDatabaseOptions(readOnly: true))
-            as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase(
+                  'test',
+                  options: SqfliteOpenDatabaseOptions(readOnly: true),
+                )
+                as MockDatabase;
         await db.close();
         expect(db.methods, <String>['openDatabase', 'closeDatabase']);
         expect(db.argumentsLists.first, <String, Object?>{
           'path': absolute(
-              join(await mockDatabaseFactory.getDatabasesPath(), 'test')),
+            join(await mockDatabaseFactory.getDatabasesPath(), 'test'),
+          ),
           'readOnly': true,
-          'singleInstance': true
+          'singleInstance': true,
         });
       });
       test('not single_instance', () async {
         // var db = mockDatabaseFactory.newEmptyDatabase();
-        final db = await mockDatabaseFactory.openDatabase('single_instance.db',
-                options: SqfliteOpenDatabaseOptions(singleInstance: false))
-            as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase(
+                  'single_instance.db',
+                  options: SqfliteOpenDatabaseOptions(singleInstance: false),
+                )
+                as MockDatabase;
         await db.close();
         expect(db.methods, <String>['openDatabase', 'closeDatabase']);
         expect(db.argumentsLists.first, <String, Object?>{
-          'path': absolute(join(await mockDatabaseFactory.getDatabasesPath(),
-              'single_instance.db')),
-          'singleInstance': false
+          'path': absolute(
+            join(
+              await mockDatabaseFactory.getDatabasesPath(),
+              'single_instance.db',
+            ),
+          ),
+          'singleInstance': false,
         });
       });
 
       test('rollback transaction', () async {
         // var db = mockDatabaseFactory.newEmptyDatabase();
-        final db = await mockDatabaseFactory.openDatabase(
-                'rollback_transaction.db',
-                options: SqfliteOpenDatabaseOptions(singleInstance: false))
-            as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase(
+                  'rollback_transaction.db',
+                  options: SqfliteOpenDatabaseOptions(singleInstance: false),
+                )
+                as MockDatabase;
         await db.execute('BEGIN TRANSACTION');
         await db.close();
-        expect(db.methods,
-            <String>['openDatabase', 'execute', 'execute', 'closeDatabase']);
+        expect(db.methods, <String>[
+          'openDatabase',
+          'execute',
+          'execute',
+          'closeDatabase',
+        ]);
         expect(db.argumentsLists.first, <String, Object?>{
-          'path': absolute(join(await mockDatabaseFactory.getDatabasesPath(),
-              'rollback_transaction.db')),
-          'singleInstance': false
+          'path': absolute(
+            join(
+              await mockDatabaseFactory.getDatabasesPath(),
+              'rollback_transaction.db',
+            ),
+          ),
+          'singleInstance': false,
         });
         expect(db.argumentsLists[2], <String, Object?>{
           'sql': 'ROLLBACK',
           'id': 1,
           'transactionId': -1,
-          'inTransaction': false
+          'inTransaction': false,
         });
       });
       test('isOpen', () async {
         // var db = mockDatabaseFactory.newEmptyDatabase();
-        final db = await mockDatabaseFactory.openDatabase('is_open.db',
-                options: SqfliteOpenDatabaseOptions(readOnly: true))
-            as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase(
+                  'is_open.db',
+                  options: SqfliteOpenDatabaseOptions(readOnly: true),
+                )
+                as MockDatabase;
         expect(db.isOpen, true);
         final closeFuture = db.close();
         // it is not closed right away
@@ -271,10 +298,12 @@ void run() {
       });
 
       test('reOpenSameVersion', () async {
-        var db = await mockDatabaseFactory.openDatabase('on_reopen.db',
-            options: OpenDatabaseOptions(
-              version: 1,
-            )) as MockDatabase;
+        var db =
+            await mockDatabaseFactory.openDatabase(
+                  'on_reopen.db',
+                  options: OpenDatabaseOptions(version: 1),
+                )
+                as MockDatabase;
         await db.close();
 
         expect(db.sqls, <String?>[
@@ -284,13 +313,15 @@ void run() {
           'PRAGMA user_version',
           'PRAGMA user_version = 1',
           'COMMIT',
-          null
+          null,
         ]);
 
-        db = await mockDatabaseFactory.openDatabase('on_reopen.db',
-            options: OpenDatabaseOptions(
-              version: 1,
-            )) as MockDatabase;
+        db =
+            await mockDatabaseFactory.openDatabase(
+                  'on_reopen.db',
+                  options: OpenDatabaseOptions(version: 1),
+                )
+                as MockDatabase;
         await db.close();
 
         // Re-opening, no transaction is created
@@ -299,15 +330,20 @@ void run() {
     });
     group('openTransaction', () {
       test('onCreate', () async {
-        final db = await mockDatabaseFactory.openDatabase('on_create.db',
-            options: SqfliteOpenDatabaseOptions(
-                version: 1,
-                onCreate: (Database db, int version) async {
-                  await db.execute('test1');
-                  await db.transaction((Transaction txn) async {
-                    await txn.execute('test2');
-                  });
-                })) as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase(
+                  'on_create.db',
+                  options: SqfliteOpenDatabaseOptions(
+                    version: 1,
+                    onCreate: (Database db, int version) async {
+                      await db.execute('test1');
+                      await db.transaction((Transaction txn) async {
+                        await txn.execute('test2');
+                      });
+                    },
+                  ),
+                )
+                as MockDatabase;
 
         await db.close();
         expect(db.methods, <String>[
@@ -319,7 +355,7 @@ void run() {
           'execute',
           'execute',
           'execute',
-          'closeDatabase'
+          'closeDatabase',
         ]);
         expect(db.sqls, <String?>[
           null,
@@ -330,20 +366,25 @@ void run() {
           'test2',
           'PRAGMA user_version = 1',
           'COMMIT',
-          null
+          null,
         ]);
       });
 
       test('onConfigure', () async {
-        final db = await mockDatabaseFactory.openDatabase('on_configure.db',
-            options: OpenDatabaseOptions(
-                version: 1,
-                onConfigure: (Database db) async {
-                  await db.execute('test1');
-                  await db.transaction((Transaction txn) async {
-                    await txn.execute('test2');
-                  });
-                })) as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase(
+                  'on_configure.db',
+                  options: OpenDatabaseOptions(
+                    version: 1,
+                    onConfigure: (Database db) async {
+                      await db.execute('test1');
+                      await db.transaction((Transaction txn) async {
+                        await txn.execute('test2');
+                      });
+                    },
+                  ),
+                )
+                as MockDatabase;
 
         await db.close();
         expect(db.sqls, <String?>[
@@ -357,20 +398,25 @@ void run() {
           'PRAGMA user_version',
           'PRAGMA user_version = 1',
           'COMMIT',
-          null
+          null,
         ]);
       });
 
       test('onOpen', () async {
-        final db = await mockDatabaseFactory.openDatabase('on_open',
-            options: OpenDatabaseOptions(
-                version: 1,
-                onOpen: (Database db) async {
-                  await db.execute('test1');
-                  await db.transaction((Transaction txn) async {
-                    await txn.execute('test2');
-                  });
-                })) as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase(
+                  'on_open',
+                  options: OpenDatabaseOptions(
+                    version: 1,
+                    onOpen: (Database db) async {
+                      await db.execute('test1');
+                      await db.transaction((Transaction txn) async {
+                        await txn.execute('test2');
+                      });
+                    },
+                  ),
+                )
+                as MockDatabase;
 
         await db.close();
         expect(db.sqls, <String?>[
@@ -384,29 +430,34 @@ void run() {
           'BEGIN IMMEDIATE',
           'test2',
           'COMMIT',
-          null
+          null,
         ]);
       });
 
       test('batch', () async {
-        final db = await mockDatabaseFactory.openDatabase('test',
-            options: OpenDatabaseOptions(
-                version: 1,
-                onConfigure: (Database db) async {
-                  final batch = db.batch();
-                  batch.execute('test1');
-                  await batch.commit();
-                },
-                onCreate: (db, _) async {
-                  final batch = db.batch();
-                  batch.execute('test2');
-                  await batch.commit(noResult: true);
-                },
-                onOpen: (Database db) async {
-                  final batch = db.batch();
-                  batch.execute('test3');
-                  await batch.commit(continueOnError: true);
-                })) as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase(
+                  'test',
+                  options: OpenDatabaseOptions(
+                    version: 1,
+                    onConfigure: (Database db) async {
+                      final batch = db.batch();
+                      batch.execute('test1');
+                      await batch.commit();
+                    },
+                    onCreate: (db, _) async {
+                      final batch = db.batch();
+                      batch.execute('test2');
+                      await batch.commit(noResult: true);
+                    },
+                    onOpen: (Database db) async {
+                      final batch = db.batch();
+                      batch.execute('test3');
+                      await batch.commit(continueOnError: true);
+                    },
+                  ),
+                )
+                as MockDatabase;
 
         await db.close();
         expect(db.sqls, <String?>[
@@ -423,28 +474,26 @@ void run() {
           'BEGIN IMMEDIATE',
           'test3',
           'COMMIT',
-          null
+          null,
         ]);
         expect(db.argumentsLists, <dynamic>[
           <String, Object?>{
             'path': absolute(
-                join(await mockDatabaseFactory.getDatabasesPath(), 'test')),
-            'singleInstance': true
+              join(await mockDatabaseFactory.getDatabasesPath(), 'test'),
+            ),
+            'singleInstance': true,
           },
           <String, Object?>{
             'sql': 'BEGIN IMMEDIATE',
             'id': 1,
             'inTransaction': true,
-            'transactionId': null
+            'transactionId': null,
           },
           <String, Object?>{
             'operations': <dynamic>[
-              <String, Object?>{
-                'method': 'execute',
-                'sql': 'test1',
-              }
+              <String, Object?>{'method': 'execute', 'sql': 'test1'},
             ],
-            'id': 1
+            'id': 1,
           },
           <String, Object?>{'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
           {'sql': 'PRAGMA user_version', 'id': 1},
@@ -452,18 +501,15 @@ void run() {
             'sql': 'BEGIN EXCLUSIVE',
             'inTransaction': true,
             'id': 1,
-            'transactionId': null
+            'transactionId': null,
           },
           <String, Object?>{'sql': 'PRAGMA user_version', 'id': 1},
           <String, Object?>{
             'operations': <Map<String, Object?>>[
-              <String, Object?>{
-                'method': 'execute',
-                'sql': 'test2',
-              }
+              <String, Object?>{'method': 'execute', 'sql': 'test2'},
             ],
             'id': 1,
-            'noResult': true
+            'noResult': true,
           },
           <String, Object?>{'sql': 'PRAGMA user_version = 1', 'id': 1},
           <String, Object?>{'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
@@ -475,16 +521,13 @@ void run() {
           },
           <String, Object?>{
             'operations': <Map<String, Object?>>[
-              <String, Object?>{
-                'method': 'execute',
-                'sql': 'test3',
-              }
+              <String, Object?>{'method': 'execute', 'sql': 'test3'},
             ],
             'id': 1,
-            'continueOnError': true
+            'continueOnError': true,
           },
           <String, Object?>{'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
-          <String, Object?>{'id': 1}
+          <String, Object?>{'id': 1},
         ]);
       });
     });
@@ -669,8 +712,9 @@ void run() {
 
     group('batch', () {
       test('simple', () async {
-        final db = await mockDatabaseFactory.openDatabase('batch_simple.db')
-            as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase('batch_simple.db')
+                as MockDatabase;
 
         final batch = db.batch();
         batch.execute('test');
@@ -685,7 +729,7 @@ void run() {
           'execute',
           'batch',
           'execute',
-          'closeDatabase'
+          'closeDatabase',
         ]);
         expect(db.sqls, <String?>[
           null,
@@ -695,13 +739,14 @@ void run() {
           'BEGIN IMMEDIATE',
           'test',
           'COMMIT',
-          null
+          null,
         ]);
       });
 
       test('in_transaction', () async {
-        final db = await mockDatabaseFactory
-            .openDatabase('batch_in_transaction.db') as MockDatabase;
+        final db =
+            await mockDatabaseFactory.openDatabase('batch_in_transaction.db')
+                as MockDatabase;
 
         await db.transaction((Transaction txn) async {
           final batch = txn.batch();
@@ -717,32 +762,58 @@ void run() {
           'batch',
           'batch',
           'execute',
-          'closeDatabase'
+          'closeDatabase',
         ]);
-        expect(db.sqls,
-            <String?>[null, 'BEGIN IMMEDIATE', 'test', 'test', 'COMMIT', null]);
+        expect(db.sqls, <String?>[
+          null,
+          'BEGIN IMMEDIATE',
+          'test',
+          'test',
+          'COMMIT',
+          null,
+        ]);
       });
     });
 
     group('instances', () {
       test('singleInstance same', () async {
-        final futureDb1 = mockDatabaseFactory.openDatabase('test',
-            options: OpenDatabaseOptions(singleInstance: true));
-        final db2 = await mockDatabaseFactory.openDatabase('test',
-            options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
+        final futureDb1 = mockDatabaseFactory.openDatabase(
+          'test',
+          options: OpenDatabaseOptions(singleInstance: true),
+        );
+        final db2 =
+            await mockDatabaseFactory.openDatabase(
+                  'test',
+                  options: OpenDatabaseOptions(singleInstance: true),
+                )
+                as MockDatabase;
         final db1 = await futureDb1 as MockDatabase;
         expect(db1, db2);
       });
       test('singleInstance', () async {
-        final futureDb1 = mockDatabaseFactory.openDatabase('test',
-            options: OpenDatabaseOptions(singleInstance: true));
-        final db2 = await mockDatabaseFactory.openDatabase('test',
-            options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
+        final futureDb1 = mockDatabaseFactory.openDatabase(
+          'test',
+          options: OpenDatabaseOptions(singleInstance: true),
+        );
+        final db2 =
+            await mockDatabaseFactory.openDatabase(
+                  'test',
+                  options: OpenDatabaseOptions(singleInstance: true),
+                )
+                as MockDatabase;
         final db1 = await futureDb1 as MockDatabase;
-        final db3 = await mockDatabaseFactory.openDatabase('other',
-            options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
-        final db4 = await mockDatabaseFactory.openDatabase(join('.', 'other'),
-            options: OpenDatabaseOptions(singleInstance: true)) as MockDatabase;
+        final db3 =
+            await mockDatabaseFactory.openDatabase(
+                  'other',
+                  options: OpenDatabaseOptions(singleInstance: true),
+                )
+                as MockDatabase;
+        final db4 =
+            await mockDatabaseFactory.openDatabase(
+                  join('.', 'other'),
+                  options: OpenDatabaseOptions(singleInstance: true),
+                )
+                as MockDatabase;
         //expect(db1, db2);
         expect(db1, isNot(db3));
         expect(db3, db4);
@@ -752,11 +823,16 @@ void run() {
       });
 
       test('multiInstances', () async {
-        final futureDb1 = mockDatabaseFactory.openDatabase('multi_instances.db',
-            options: OpenDatabaseOptions(singleInstance: false));
-        final db2 = await mockDatabaseFactory.openDatabase('multi_instances.db',
-                options: OpenDatabaseOptions(singleInstance: false))
-            as MockDatabase;
+        final futureDb1 = mockDatabaseFactory.openDatabase(
+          'multi_instances.db',
+          options: OpenDatabaseOptions(singleInstance: false),
+        );
+        final db2 =
+            await mockDatabaseFactory.openDatabase(
+                  'multi_instances.db',
+                  options: OpenDatabaseOptions(singleInstance: false),
+                )
+                as MockDatabase;
         final db1 = await futureDb1 as MockDatabase;
         expect(db1, isNot(db2));
         await db1.close();
@@ -769,15 +845,18 @@ void run() {
       var hasTimedOut = false;
       var callbackCount = 0;
       setLockWarningInfo(
-          duration: const Duration(milliseconds: 200),
-          callback: () {
-            callbackCount++;
-          });
+        duration: const Duration(milliseconds: 200),
+        callback: () {
+          callbackCount++;
+        },
+      );
       try {
-        await db.transaction((Transaction txn) async {
-          await db.execute('test');
-          fail('should fail');
-        }).timeout(const Duration(milliseconds: 500));
+        await db
+            .transaction((Transaction txn) async {
+              await db.execute('test');
+              fail('should fail');
+            })
+            .timeout(const Duration(milliseconds: 500));
       } on TimeoutException catch (_) {
         hasTimedOut = true;
       }
@@ -791,13 +870,16 @@ void run() {
       await mockDatabaseFactory.deleteDatabase(path);
       final exists = await mockDatabaseFactory.databaseExists(path);
       expect(exists, isTrue);
-      final expectedPath =
-          absolute(join(await mockDatabaseFactory.getDatabasesPath(), path));
-      expect(mockDatabaseFactory.methods,
-          <String>['deleteDatabase', 'databaseExists']);
+      final expectedPath = absolute(
+        join(await mockDatabaseFactory.getDatabasesPath(), path),
+      );
+      expect(mockDatabaseFactory.methods, <String>[
+        'deleteDatabase',
+        'databaseExists',
+      ]);
       expect(mockDatabaseFactory.argumentsList, <Map<String, Object?>>[
         <String, Object?>{'path': expectedPath},
-        <String, Object?>{'path': expectedPath}
+        <String, Object?>{'path': expectedPath},
       ]);
     });
   });

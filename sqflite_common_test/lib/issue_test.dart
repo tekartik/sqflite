@@ -19,24 +19,22 @@ void run(SqfliteTestContext context) {
     final db = await factory.openDatabase(
       path,
       options: OpenDatabaseOptions(
-          version: 1,
-          onCreate: (db, _) async {
-            await db.execute(
-              'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
-            );
-          }),
+        version: 1,
+        onCreate: (db, _) async {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+          );
+        },
+      ),
     );
     Future<void> doInsert() async {
-      await db.transaction(
-        (txn) async {
-          // ignore: unused_local_variable
-          var id = await txn.rawInsert(
-            'INSERT INTO Test (name) VALUES (?)',
-            ['test'],
-          );
-          // print('inserted $id');
-        },
-      );
+      await db.transaction((txn) async {
+        // ignore: unused_local_variable
+        var id = await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', [
+          'test',
+        ]);
+        // print('inserted $id');
+      });
     }
 
     for (var i = 0; i < 200; i++) {

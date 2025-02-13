@@ -9,19 +9,23 @@ void main() {
   sqfliteFfiInit();
   test('Simple test', () async {
     var factory = databaseFactoryFfi;
-    var db = await factory.openDatabase(inMemoryDatabasePath,
-        options: OpenDatabaseOptions(
-            version: 1,
-            onCreate: (db, version) async {
-              await db.execute(
-                  'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)');
-            }));
+    var db = await factory.openDatabase(
+      inMemoryDatabasePath,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (db, version) async {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, value TEXT)',
+          );
+        },
+      ),
+    );
     // Insert some data
     await db.insert('Test', {'value': 'my_value'});
 
     // Check content
     expect(await db.query('Test'), [
-      {'id': 1, 'value': 'my_value'}
+      {'id': 1, 'value': 'my_value'},
     ]);
 
     await db.close();

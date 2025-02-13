@@ -14,7 +14,9 @@ abstract class SqfliteDatabaseFactory
 
   /// Create a new database object.
   SqfliteDatabase newDatabase(
-      SqfliteDatabaseOpenHelper openHelper, String path);
+    SqfliteDatabaseOpenHelper openHelper,
+    String path,
+  );
 
   /// Remove our internal open helper.
   void removeDatabaseOpenHelper(String path);

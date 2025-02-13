@@ -41,8 +41,10 @@ class Sqflite {
 
   /// Testing only
   @Deprecated('Dev only')
-  static Future<void> devInvokeMethod(String method,
-      [Object? arguments]) async {
+  static Future<void> devInvokeMethod(
+    String method, [
+    Object? arguments,
+  ]) async {
     await invokeMethod<dynamic>(method, arguments);
   }
 
@@ -57,8 +59,10 @@ class Sqflite {
 
   /// Sqlite has a dead lock warning feature that will print some text
   /// after 10s, you can override the default behavior
-  static void setLockWarningInfo(
-      {Duration? duration, void Function()? callback}) {
+  static void setLockWarningInfo({
+    Duration? duration,
+    void Function()? callback,
+  }) {
     utils.setLockWarningInfo(duration: duration!, callback: callback!);
   }
 }

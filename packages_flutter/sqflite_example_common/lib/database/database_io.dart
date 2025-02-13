@@ -31,8 +31,11 @@ class _PlatformHandlerIo extends PlatformHandler {
 
   /// Write the db file directly to the file system
   @override
-  Future<void> writeFileAsBytes(String path, List<int> bytes,
-      {bool flush = false}) async {
+  Future<void> writeFileAsBytes(
+    String path,
+    List<int> bytes, {
+    bool flush = false,
+  }) async {
     await File(path).writeAsBytes(bytes, flush: flush);
   }
 
@@ -44,8 +47,11 @@ class _PlatformHandlerIo extends PlatformHandler {
 
   /// Write a file as a string
   @override
-  Future<void> writeFileAsString(String path, String text,
-      {bool flush = false}) async {
+  Future<void> writeFileAsString(
+    String path,
+    String text, {
+    bool flush = false,
+  }) async {
     await File(path).writeAsString(text, flush: true);
   }
 

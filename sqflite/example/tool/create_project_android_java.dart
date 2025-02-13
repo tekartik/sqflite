@@ -6,6 +6,7 @@ Future<void> main() async {
 
 Future<void> createProjectAndroidJava() async {
   final shell = Shell();
-  await shell
-      .run('flutter create --platforms android --android-language java .');
+  await shell.run(
+    'flutter create --platforms android --android-language java .',
+  );
 }

@@ -7,7 +7,7 @@ void main() {
   test('dataToEncodable', () {
     expect(dataToEncodable(null), null);
     expect(dataToEncodable({'@': 1}), {
-      '@': {'@': 1}
+      '@': {'@': 1},
     });
     expect(dataToEncodable(BigInt.one), {'@BigInt': '1'});
     expect(() => dataToEncodable(DateTime.now()), throwsUnsupportedError);
@@ -45,8 +45,8 @@ void main() {
           [
             {'sub': 1},
             {'subCustom': BigInt.parse('123456789123456789123456789')},
-          ]
-        ]
+          ],
+        ],
       },
     ]) {
       loop(value);

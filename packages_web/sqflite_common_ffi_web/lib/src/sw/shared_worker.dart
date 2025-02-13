@@ -51,9 +51,11 @@ void _handleMessageEvent(web.Event event) async {
           var key = data['key'] as String;
           var value = swGlobals[key];
           _log('$_shw $command $key: $value');
-          port.postMessage({
-            'result': {'key': key, 'value': value}
-          }.jsifyValueStrict());
+          port.postMessage(
+            {
+              'result': {'key': key, 'value': value},
+            }.jsifyValueStrict(),
+          );
         } else {
           _log('$_shw $command unknown');
           port.postMessage(null);
@@ -67,15 +69,18 @@ void _handleMessageEvent(web.Event event) async {
         if (ffiMethodCall != null) {
           // Fix data
           ffiMethodCall = FfiMethodCall(
-              ffiMethodCall.method, dataFromEncodable(ffiMethodCall.arguments));
+            ffiMethodCall.method,
+            dataFromEncodable(ffiMethodCall.arguments),
+          );
           // Init context on first call
           if (_swContext == null) {
             if (_debug) {
               _log('$_shw loading wasm');
             }
             _swContext = await sqfliteFfiWebLoadSqlite3Wasm(
-                _swOptions ?? SqfliteFfiWebOptions(),
-                fromWebWorker: true);
+              _swOptions ?? SqfliteFfiWebOptions(),
+              fromWebWorker: true,
+            );
             sqfliteFfiHandler = SqfliteFfiHandlerWeb(_swContext!);
           }
           void postResponse(FfiMethodResponse response) {
@@ -128,21 +133,23 @@ void mainSharedWorker(List<String> args) {
       }
     }
 
-    scope.onconnect = (web.Event event) {
-      zone.run(() {
-        if (_debug) {
-          _log('$_shw onConnect()');
-        }
-        var connectEvent = event as web.MessageEvent;
-        var port = connectEvent.ports.toDart[0];
-
-        port.onmessage = (web.MessageEvent event) {
+    scope.onconnect =
+        (web.Event event) {
           zone.run(() {
-            _handleMessageEvent(event);
+            if (_debug) {
+              _log('$_shw onConnect()');
+            }
+            var connectEvent = event as web.MessageEvent;
+            var port = connectEvent.ports.toDart[0];
+
+            port.onmessage =
+                (web.MessageEvent event) {
+                  zone.run(() {
+                    _handleMessageEvent(event);
+                  });
+                }.toJS;
           });
         }.toJS;
-      });
-    }.toJS;
   } catch (e) {
     if (_debug) {
       _log('$_shw not in shared worker, trying basic worker');
@@ -157,11 +164,12 @@ void mainSharedWorker(List<String> args) {
   /// Handle basic web workers
   /// dirty hack
   try {
-    scope.onmessage = (web.MessageEvent event) {
-      zone.run(() {
-        _handleMessageEvent(event);
-      });
-    }.toJS;
+    scope.onmessage =
+        (web.MessageEvent event) {
+          zone.run(() {
+            _handleMessageEvent(event);
+          });
+        }.toJS;
   } catch (e) {
     if (_debug) {
       _log('$_shw not in shared worker error $e');

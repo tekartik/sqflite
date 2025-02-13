@@ -6,13 +6,14 @@ import 'package:test/test.dart';
 
 var logs = <SqfliteMethodCall>[];
 var databaseFactoryMock = buildDatabaseFactory(
-    tag: 'mock',
-    invokeMethod: (method, [arguments]) async {
-      logs.add(SqfliteMethodCall(method, arguments));
-      if (method == methodGetDatabasesPath) {
-        return 'mock_path';
-      }
-    });
+  tag: 'mock',
+  invokeMethod: (method, [arguments]) async {
+    logs.add(SqfliteMethodCall(method, arguments));
+    if (method == methodGetDatabasesPath) {
+      return 'mock_path';
+    }
+  },
+);
 
 void main() {
   test('simple sqflite example', () async {
@@ -22,8 +23,8 @@ void main() {
     expect(logs.map((log) => log.toMap()), [
       {
         'method': 'options',
-        'arguments': {'logLevel': 2}
-      }
+        'arguments': {'logLevel': 2},
+      },
     ]);
   });
   test('databasesPath', () async {

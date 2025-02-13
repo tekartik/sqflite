@@ -4,8 +4,9 @@ import 'package:sqflite_common_test/all_test.dart' as all;
 import 'package:sqflite_common_test/sqflite_test.dart';
 
 var _factory = SqfliteDatabaseFactoryLogger(
-    createDatabaseFactoryFfi(noIsolate: true),
-    options: SqfliteLoggerOptions(type: SqfliteDatabaseFactoryLoggerType.all));
+  createDatabaseFactoryFfi(noIsolate: true),
+  options: SqfliteLoggerOptions(type: SqfliteDatabaseFactoryLoggerType.all),
+);
 
 class SqfliteFfiNoIsolateTestContext extends SqfliteLocalTestContext {
   SqfliteFfiNoIsolateTestContext() : super(databaseFactory: _factory);

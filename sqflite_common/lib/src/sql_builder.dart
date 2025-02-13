@@ -46,7 +46,7 @@ final List<String> _conflictValues = <String>[
   'OR ABORT',
   'OR FAIL',
   'OR IGNORE',
-  'OR REPLACE'
+  'OR REPLACE',
 ];
 
 //final RegExp _sLimitPattern = new RegExp('\s*\d+\s*(,\s*\d+\s*)?');
@@ -94,19 +94,22 @@ class SqlBuilder {
   ///            default sort order, which may be unordered.
   /// @param limit Limits the number of rows returned by the query,
   ///            formatted as LIMIT clause. Passing null denotes no LIMIT clause.
-  SqlBuilder.query(String table,
-      {bool? distinct,
-      List<String>? columns,
-      String? where,
-      List<Object?>? whereArgs,
-      String? groupBy,
-      String? having,
-      String? orderBy,
-      int? limit,
-      int? offset}) {
+  SqlBuilder.query(
+    String table, {
+    bool? distinct,
+    List<String>? columns,
+    String? where,
+    List<Object?>? whereArgs,
+    String? groupBy,
+    String? having,
+    String? orderBy,
+    int? limit,
+    int? offset,
+  }) {
     if (groupBy == null && having != null) {
       throw ArgumentError(
-          'HAVING clauses are only permitted when using a groupBy clause');
+        'HAVING clauses are only permitted when using a groupBy clause',
+      );
     }
     checkWhereArgs(whereArgs);
 
@@ -147,8 +150,12 @@ class SqlBuilder {
   /// @nullColumnHack optional; may be null. SQL doesn't allow inserting a completely empty row without naming at least one column name. If your provided values is empty, no column names are known and an empty row can't be inserted. If not set to null, the nullColumnHack parameter provides the name of nullable column name to explicitly insert a NULL into in the case where your values is empty.
   /// @values this map contains the initial column values for the row. The keys should be the column names and the values the column values
 
-  SqlBuilder.insert(String table, Map<String, Object?> values,
-      {String? nullColumnHack, ConflictAlgorithm? conflictAlgorithm}) {
+  SqlBuilder.insert(
+    String table,
+    Map<String, Object?> values, {
+    String? nullColumnHack,
+    ConflictAlgorithm? conflictAlgorithm,
+  }) {
     final insert = StringBuffer();
     insert.write('INSERT');
     if (conflictAlgorithm != null) {
@@ -207,10 +214,13 @@ class SqlBuilder {
   ///            will be bound as Strings.
   /// @param conflictAlgorithm for update conflict resolver
 
-  SqlBuilder.update(String table, Map<String, Object?> values,
-      {String? where,
-      List<Object?>? whereArgs,
-      ConflictAlgorithm? conflictAlgorithm}) {
+  SqlBuilder.update(
+    String table,
+    Map<String, Object?> values, {
+    String? where,
+    List<Object?>? whereArgs,
+    ConflictAlgorithm? conflictAlgorithm,
+  }) {
     if (values.isEmpty) {
       throw ArgumentError('Empty values');
     }
@@ -290,8 +300,9 @@ bool isEscapedName(String name) {
   if (name.length >= 2) {
     final codeUnits = name.codeUnits;
     if (_areCodeUnitsEscaped(codeUnits)) {
-      return escapeNames
-          .contains(name.substring(1, name.length - 1).toLowerCase());
+      return escapeNames.contains(
+        name.substring(1, name.length - 1).toLowerCase(),
+      );
     }
   }
   return false;

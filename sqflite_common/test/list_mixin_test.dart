@@ -57,7 +57,7 @@ void main() {
     // This fails on beta 1, should work now
     test('ListMixin', () {
       final raw = <dynamic>[
-        <dynamic, dynamic>{'col': 1}
+        <dynamic, dynamic>{'col': 1},
       ];
       final rows = MyList1.from(raw);
       expect(rows, raw);
@@ -65,7 +65,7 @@ void main() {
 
     test('ListBase', () {
       final raw = <dynamic>[
-        <dynamic, dynamic>{'col': 1}
+        <dynamic, dynamic>{'col': 1},
       ];
       final rows = MyList2.from(raw);
       expect(rows, raw);

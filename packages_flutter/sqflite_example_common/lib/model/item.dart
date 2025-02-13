@@ -12,7 +12,7 @@ enum ItemState {
   success,
 
   /// test fails.
-  failure
+  failure,
 }
 
 /// Menu item.

@@ -41,15 +41,16 @@ abstract class RawMessageSender {
       _log('$_swc sending $message');
     }
     final zone = Zone.current;
-    messageChannel.port1.onmessage = (web.MessageEvent event) {
-      zone.run(() {
-        var data = event.data?.dartifyValueStrict();
-        if (_debug) {
-          _log('$_swc recv $data');
-        }
-        completer.complete(data);
-      });
-    }.toJS;
+    messageChannel.port1.onmessage =
+        (web.MessageEvent event) {
+          zone.run(() {
+            var data = event.data?.dartifyValueStrict();
+            if (_debug) {
+              _log('$_swc recv $data');
+            }
+            completer.complete(data);
+          });
+        }.toJS;
 
     // Let's handle initialization error on the first message.
     if (_firstMessage) {
@@ -88,8 +89,10 @@ class RawMessageSenderSharedWorker extends RawMessageSender {
 
   @override
   void postMessage(Object message, web.MessagePort responsePort) {
-    _port.postMessage(message.jsifyValueStrict(),
-        messagePortToPortMessageOption(responsePort));
+    _port.postMessage(
+      message.jsifyValueStrict(),
+      messagePortToPortMessageOption(responsePort),
+    );
   }
 
   StreamController<Object>? _errorController;
@@ -97,16 +100,20 @@ class RawMessageSenderSharedWorker extends RawMessageSender {
   Stream<Object> get onError {
     if (_errorController == null) {
       var zone = Zone.current;
-      _errorController = StreamController<Object>.broadcast(onListen: () {
-        _sharedWorker.onerror = (web.Event event) {
-          zone.run(() {
-            _errorController!.add(event);
-          });
-        }.toJS;
-      }, onCancel: () {
-        _errorController = null;
-        _sharedWorker.onerror = null;
-      });
+      _errorController = StreamController<Object>.broadcast(
+        onListen: () {
+          _sharedWorker.onerror =
+              (web.Event event) {
+                zone.run(() {
+                  _errorController!.add(event);
+                });
+              }.toJS;
+        },
+        onCancel: () {
+          _errorController = null;
+          _sharedWorker.onerror = null;
+        },
+      );
     }
     return _errorController!.stream;
   }
@@ -122,16 +129,20 @@ class RawMessageSenderToWorker extends RawMessageSender {
   Stream<Object> get onError {
     if (_errorController == null) {
       var zone = Zone.current;
-      _errorController = StreamController<Object>.broadcast(onListen: () {
-        _worker.onerror = (web.Event event) {
-          zone.run(() {
-            _errorController!.add(event);
-          });
-        }.toJS;
-      }, onCancel: () {
-        _errorController = null;
-        _worker.onerror = null;
-      });
+      _errorController = StreamController<Object>.broadcast(
+        onListen: () {
+          _worker.onerror =
+              (web.Event event) {
+                zone.run(() {
+                  _errorController!.add(event);
+                });
+              }.toJS;
+        },
+        onCancel: () {
+          _errorController = null;
+          _worker.onerror = null;
+        },
+      );
     }
     return _errorController!.stream;
   }
@@ -141,7 +152,9 @@ class RawMessageSenderToWorker extends RawMessageSender {
 
   @override
   void postMessage(Object message, web.MessagePort responsePort) {
-    _worker.postMessage(message.jsifyValueStrict(),
-        messagePortToPortMessageOption(responsePort));
+    _worker.postMessage(
+      message.jsifyValueStrict(),
+      messagePortToPortMessageOption(responsePort),
+    );
   }
 }

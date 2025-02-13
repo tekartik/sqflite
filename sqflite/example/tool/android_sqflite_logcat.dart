@@ -13,10 +13,10 @@ Future<void> main() async {
       .transform(utf8.decoder)
       .transform(const LineSplitter())
       .listen((line) {
-    if (line.contains('Sqflite')) {
-      print(line);
-    }
-  });
+        if (line.contains('Sqflite')) {
+          print(line);
+        }
+      });
 
   await shell.run('adb logcat');
 

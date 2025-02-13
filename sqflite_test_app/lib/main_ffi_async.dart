@@ -34,7 +34,8 @@ Future<void> initFfiAsync() async {
   // Use sqflite databases path provider (ffi implementation is lame))
   if (isSqfliteCompatible) {
     await databaseFactory.setDatabasesPath(
-        await databaseFactorySqflitePlugin.getDatabasesPath());
+      await databaseFactorySqflitePlugin.getDatabasesPath(),
+    );
   }
 }
 

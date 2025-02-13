@@ -18,8 +18,8 @@ var _log = print;
 /// dhttpd simple server (testing only
 var dhttpdReady = () async {
   // setup common alias
-  shellEnvironment = ShellEnvironment()
-    ..aliases['dhttpd'] = 'dart pub global run dhttpd';
+  shellEnvironment =
+      ShellEnvironment()..aliases['dhttpd'] = 'dart pub global run dhttpd';
   try {
     await run('dhttpd --help', verbose: false);
   } catch (e) {
@@ -31,8 +31,8 @@ var dhttpdReady = () async {
 var webdevReady = () async {
   await checkAndActivateWebdev();
   // setup common alias
-  shellEnvironment = ShellEnvironment()
-    ..aliases['webdev'] = 'dart pub global run webdev';
+  shellEnvironment =
+      ShellEnvironment()..aliases['webdev'] = 'dart pub global run webdev';
 }();
 
 /// Setup context
@@ -53,11 +53,12 @@ class SetupContext {
   final String? overridenSwJsFile;
 
   /// Setup Context.
-  SetupContext(
-      {required this.options,
-      required this.ffiWebPath,
-      required this.version,
-      required this.overridenSwJsFile});
+  SetupContext({
+    required this.options,
+    required this.ffiWebPath,
+    required this.version,
+    required this.overridenSwJsFile,
+  });
 }
 
 var _sourceBuild = 'web';
@@ -99,12 +100,14 @@ class SqfliteWebMetadata {
 
   /// From json map
   SqfliteWebMetadata.fromJsonMap(Map map)
-      : version = map['version'] != null
-            ? Version.parse(map['version'] as String)
-            : null,
-        sqlite3WasmUri = map['sqlite3WasmUri'] != null
-            ? Uri.parse(map['sqlite3WasmUri'] as String)
-            : null;
+    : version =
+          map['version'] != null
+              ? Version.parse(map['version'] as String)
+              : null,
+      sqlite3WasmUri =
+          map['sqlite3WasmUri'] != null
+              ? Uri.parse(map['sqlite3WasmUri'] as String)
+              : null;
 
   @override
   String toString() => '${toJsonMap()}';
@@ -113,9 +116,10 @@ class SqfliteWebMetadata {
 /// Easy path access
 extension SetupContextExt on SetupContext {
   /// Working path for setup
-  String get workPath => runningFromPackage
-      ? path
-      : join(path, '.dart_tool', packageName, 'setup', version.toString());
+  String get workPath =>
+      runningFromPackage
+          ? path
+          : join(path, '.dart_tool', packageName, 'setup', version.toString());
 
   /// Resulting shared worker file
   String get builtSwJsFilePath =>
@@ -135,7 +139,9 @@ extension SetupContextExt on SetupContext {
     var verbose = options.verbose;
 
     var metadata = SqfliteWebMetadata(
-        version: version, sqlite3WasmUri: options.sqlite3WasmUri);
+      version: version,
+      sqlite3WasmUri: options.sqlite3WasmUri,
+    );
     var needBuild = force;
     var metadataFile = File(metadataFilePath);
     if (!needBuild) {
@@ -144,7 +150,8 @@ extension SetupContextExt on SetupContext {
       try {
         if (metadataFile.existsSync()) {
           currentMetadata = SqfliteWebMetadata.fromJsonMap(
-              jsonDecode(await File(metadataFilePath).readAsString()) as Map);
+            jsonDecode(await File(metadataFilePath).readAsString()) as Map,
+          );
         }
       } catch (e) {
         _log('Failed to read $sqfliteWebMetadataFile: $e');
@@ -174,8 +181,8 @@ extension SetupContextExt on SetupContext {
       if (!runningFromPackage) {
         await Directory(workPath).create(recursive: true);
         await copySourcesPath(ffiWebPath, workPath);
-        shellEnvironment = ShellEnvironment()
-          ..aliases['webdev'] = 'dart run webdev:webdev';
+        shellEnvironment =
+            ShellEnvironment()..aliases['webdev'] = 'dart run webdev:webdev';
       }
       var shell = Shell(workingDirectory: workPath, verbose: options.verbose);
       _log(shell.path);
@@ -221,7 +228,8 @@ extension SetupContextExt on SetupContext {
       }
 
       _log(
-          'created: $sqfliteSwJsOutFile (${File(sqfliteSwJsOutFile).statSync().size} bytes)');
+        'created: $sqfliteSwJsOutFile (${File(sqfliteSwJsOutFile).statSync().size} bytes)',
+      );
       if (!options.noSqlite3Wasm) {
         _log('created: $wasmFile (${File(wasmFile).statSync().size} bytes)');
       }
@@ -257,10 +265,11 @@ Future<SetupContext> getSetupContext({SetupOptions? options}) async {
   var ffiWebPubspec = await pathGetPubspecYamlMap(ffiWebPath);
   var version = pubspecYamlGetVersion(ffiWebPubspec);
   return SetupContext(
-      options: options,
-      ffiWebPath: ffiWebPath,
-      version: version,
-      overridenSwJsFile: overridenSwJsFile);
+    options: options,
+    ffiWebPath: ffiWebPath,
+    version: version,
+    overridenSwJsFile: overridenSwJsFile,
+  );
 }
 
 Future<void> main() async {
@@ -285,7 +294,8 @@ Future<void> setupBinaries({SetupOptions? options}) async {
   var context = await getSetupContext(options: options);
   if (context.runningFromPackage) {
     _log(
-        'Running from package, use global webdev, this should only be printed when running from sqflite_common_ffi_web, i.e. during development');
+      'Running from package, use global webdev, this should only be printed when running from sqflite_common_ffi_web, i.e. during development',
+    );
     await webdevReady;
   }
   await context.build();
@@ -339,7 +349,9 @@ Future<void> copySourcesPath(String from, String to) async {
     if (file is Directory) {
       await Directory(copyTo).create(recursive: true);
       await copySourcesPath(
-          join(from, basename(file.path)), join(to, basename(file.path)));
+        join(from, basename(file.path)),
+        join(to, basename(file.path)),
+      );
     } else if (file is File) {
       await File(file.path).copy(copyTo);
     } else if (file is Link) {

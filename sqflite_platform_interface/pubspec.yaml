@@ -6,7 +6,7 @@ description: Flutter plugin interface for SQLite, a self-contained, high-reliabi
 version: 2.4.0
 
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.7.0
   flutter: ">=3.24.0"
 
 topics:

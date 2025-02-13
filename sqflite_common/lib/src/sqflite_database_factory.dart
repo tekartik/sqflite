@@ -13,7 +13,10 @@ set databaseFactoryOrNull(DatabaseFactory? databaseFactory) {
   if (databaseFactory != null) {
     if (databaseFactory is! SqfliteDatabaseFactory) {
       throw ArgumentError.value(
-          databaseFactory, 'databaseFactory', 'Unsupported sqflite factory');
+        databaseFactory,
+        'databaseFactory',
+        'Unsupported sqflite factory',
+      );
     }
     _databaseFactory = databaseFactory;
   } else {

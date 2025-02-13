@@ -25,14 +25,17 @@ void workflow({bool noBuild = false}) {
     setUpAll(() async {
       await buildInitFlutter();
     });
-    final dir = join('.dart_tool', 'sqflite_support', 'raw_flutter_test1',
-        'test', 'project');
+    final dir = join(
+      '.dart_tool',
+      'sqflite_support',
+      'raw_flutter_test1',
+      'test',
+      'project',
+    );
     var ensureCreated = false;
     var shell = Shell(workingDirectory: dir);
     Future<void> create() async {
-      await flutterCreateProject(
-        path: dir,
-      );
+      await flutterCreateProject(path: dir);
       await shell.run('flutter config');
     }
 
@@ -79,15 +82,19 @@ void workflow({bool noBuild = false}) {
       await iosBuild();
     }, timeout: const Timeout(Duration(minutes: 5)));
 
-    test('build android', () async {
-      await ensureCreate();
-      // if (!(runningOnGithubAction && Platform.isMacOS)) { // timeout on MacOS to fix
-      await androidBuild();
-      // }
-      await androidBuild();
-    },
-        timeout: Timeout(Duration(
-            minutes: (Platform.isWindows || Platform.isMacOS) ? 10 : 5)));
+    test(
+      'build android',
+      () async {
+        await ensureCreate();
+        // if (!(runningOnGithubAction && Platform.isMacOS)) { // timeout on MacOS to fix
+        await androidBuild();
+        // }
+        await androidBuild();
+      },
+      timeout: Timeout(
+        Duration(minutes: (Platform.isWindows || Platform.isMacOS) ? 10 : 5),
+      ),
+    );
     test('add sqflite', () async {
       await ensureCreate();
       if (await pathPubspecAddDependency(dir, 'sqflite')) {
@@ -98,8 +105,10 @@ void workflow({bool noBuild = false}) {
     }, timeout: const Timeout(Duration(minutes: 10)));
     test('add sqflite', () async {
       await ensureCreate();
-      var readDependencyLines =
-          await pathPubspecGetDependencyLines(dir, 'sqflite');
+      var readDependencyLines = await pathPubspecGetDependencyLines(
+        dir,
+        'sqflite',
+      );
       if (readDependencyLines == ['sqflite:']) {
         return;
       }
@@ -112,11 +121,13 @@ void workflow({bool noBuild = false}) {
     test('add sqflite relative', () async {
       await ensureCreate();
       var dependencyLines = [
-        'path: ${posix.join('..', '..', '..', '..', '..', '..', 'sqflite')}'
+        'path: ${posix.join('..', '..', '..', '..', '..', '..', 'sqflite')}',
       ];
 
-      var readDependencyLines =
-          await pathPubspecGetDependencyLines(dir, 'sqflite');
+      var readDependencyLines = await pathPubspecGetDependencyLines(
+        dir,
+        'sqflite',
+      );
       if (readDependencyLines == dependencyLines) {
         return;
       }
@@ -124,8 +135,11 @@ void workflow({bool noBuild = false}) {
         await shell.run('flutter pub get');
       }
 
-      if (await pathPubspecAddDependency(dir, 'sqflite',
-          dependencyLines: dependencyLines)) {
+      if (await pathPubspecAddDependency(
+        dir,
+        'sqflite',
+        dependencyLines: dependencyLines,
+      )) {
         await shell.run('flutter pub get');
         await runCi();
       }
@@ -133,54 +147,54 @@ void workflow({bool noBuild = false}) {
   }, skip: !isFlutterSupportedSync);
   // TODO @alex find a better to know the flutter build status
 
-  group(
-    'dart test',
-    () {
-      setUpAll(() async {
-        await buildInitDart();
-      });
-      var dir = join(
-          '.dart_tool', 'dev_test', 'sqflite_dart_test1', 'test', 'project');
-      var ensureCreated = false;
-      Future<void> create() async {
-        await dartCreateProject(
-          path: dir,
-        );
-      }
+  group('dart test', () {
+    setUpAll(() async {
+      await buildInitDart();
+    });
+    var dir = join(
+      '.dart_tool',
+      'dev_test',
+      'sqflite_dart_test1',
+      'test',
+      'project',
+    );
+    var ensureCreated = false;
+    Future<void> create() async {
+      await dartCreateProject(path: dir);
+    }
 
-      Future<void> ensureCreate() async {
-        if (!ensureCreated) {
-          if (!Directory(dir).existsSync()) {
-            await create();
-          }
-          ensureCreated = true;
+    Future<void> ensureCreate() async {
+      if (!ensureCreated) {
+        if (!Directory(dir).existsSync()) {
+          await create();
         }
+        ensureCreated = true;
       }
+    }
 
-      Future<void> runCi() async {
-        // Don't allow failure
-        try {
-          await packageRunCi(dir);
-        } catch (e) {
-          stderr.writeln('run_ci error $e');
-          rethrow;
-        }
+    Future<void> runCi() async {
+      // Don't allow failure
+      try {
+        await packageRunCi(dir);
+      } catch (e) {
+        stderr.writeln('run_ci error $e');
+        rethrow;
       }
+    }
 
-      test('create', () async {
-        await create();
-      }, timeout: const Timeout(Duration(minutes: 5)));
-      test('run_ci', () async {
-        await ensureCreate();
+    test('create', () async {
+      await create();
+    }, timeout: const Timeout(Duration(minutes: 5)));
+    test('run_ci', () async {
+      await ensureCreate();
+      await runCi();
+    }, timeout: const Timeout(Duration(minutes: 5)));
+
+    test('add sqflite_common_ffi', () async {
+      await ensureCreate();
+      if (await pathPubspecAddDependency(dir, 'sqflite_common_ffi')) {
         await runCi();
-      }, timeout: const Timeout(Duration(minutes: 5)));
-
-      test('add sqflite_common_ffi', () async {
-        await ensureCreate();
-        if (await pathPubspecAddDependency(dir, 'sqflite_common_ffi')) {
-          await runCi();
-        }
-      }, timeout: const Timeout(Duration(minutes: 10)));
-    },
-  );
+      }
+    }, timeout: const Timeout(Duration(minutes: 10)));
+  });
 }

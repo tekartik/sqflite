@@ -9,9 +9,13 @@ void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
   test('basic', () async {
-    var db = await openDatabase(inMemoryDatabasePath, onCreate: (db, version) {
-      return db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
-    }, version: 1);
+    var db = await openDatabase(
+      inMemoryDatabasePath,
+      onCreate: (db, version) {
+        return db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
+      },
+      version: 1,
+    );
     expect(await db.getVersion(), 1);
     await db.close();
   });

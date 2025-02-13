@@ -15,7 +15,9 @@ extension SqfliteDatabaseAndroidExtImpl on Database {
 
   /// Set the locale.
   Future<void> androidSetLocale(String languageTag) async {
-    await _mixin.safeInvokeMethod<void>(methodAndroidSetLocale,
-        <String, Object?>{paramId: _mixin.id, paramLocale: languageTag});
+    await _mixin.safeInvokeMethod<void>(
+      methodAndroidSetLocale,
+      <String, Object?>{paramId: _mixin.id, paramLocale: languageTag},
+    );
   }
 }

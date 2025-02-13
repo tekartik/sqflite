@@ -15,7 +15,7 @@ class _SqfliteDatabaseFactoryImpl
   }
 
   final Future<dynamic> Function(String method, [Object? arguments])
-      _invokeMethod;
+  _invokeMethod;
 
   @override
   Future<T> invokeMethod<T>(String method, [Object? arguments]) async =>
@@ -28,11 +28,14 @@ class _SqfliteDatabaseFactoryImpl
 /// To use to enable running without flutter plugins (unit test)
 ///
 /// [tag] is an optional debug
-DatabaseFactory buildDatabaseFactory(
-    {String? tag,
-    required Future<dynamic> Function(String method, [Object? arguments])
-        invokeMethod}) {
-  final DatabaseFactory impl =
-      _SqfliteDatabaseFactoryImpl(invokeMethod, tag: tag);
+DatabaseFactory buildDatabaseFactory({
+  String? tag,
+  required Future<dynamic> Function(String method, [Object? arguments])
+  invokeMethod,
+}) {
+  final DatabaseFactory impl = _SqfliteDatabaseFactoryImpl(
+    invokeMethod,
+    tag: tag,
+  );
   return impl;
 }

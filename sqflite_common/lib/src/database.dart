@@ -82,45 +82,73 @@ abstract class SqfliteDatabase extends SqfliteDatabaseExecutor
 
   /// Commit a batch.
   Future<List<Object?>> txnApplyBatch(
-      SqfliteTransaction? txn, SqfliteBatch batch,
-      {bool? noResult, bool? continueOnError});
+    SqfliteTransaction? txn,
+    SqfliteBatch batch, {
+    bool? noResult,
+    bool? continueOnError,
+  });
 
   /// Execute a command.
   Future<T> txnExecute<T>(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments,
-      {bool? beginTransaction});
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments, {
+    bool? beginTransaction,
+  });
 
   /// Execute a raw INSERT command.
   Future<int> txnRawInsert(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments);
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  );
 
   /// Execute a raw SELECT command.
   Future<List<Map<String, Object?>>> txnRawQuery(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments);
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  );
 
   /// Execute a raw SELECT command by page.
-  Future<SqfliteQueryCursor> txnRawQueryCursor(SqfliteTransaction? txn,
-      String sql, List<Object?>? arguments, int pageSize);
+  Future<SqfliteQueryCursor> txnRawQueryCursor(
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+    int pageSize,
+  );
 
   /// Cursor move next.
   Future<bool> txnQueryCursorMoveNext(
-      SqfliteTransaction? txn, SqfliteQueryCursor cursor);
+    SqfliteTransaction? txn,
+    SqfliteQueryCursor cursor,
+  );
 
   /// Cursor current row.
   Map<String, Object?> txnQueryCursorGetCurrent(
-      SqfliteTransaction? txn, SqfliteQueryCursor cursor);
+    SqfliteTransaction? txn,
+    SqfliteQueryCursor cursor,
+  );
 
   /// Close the cursor.
   Future<void> txnQueryCursorClose(
-      SqfliteTransaction? txn, SqfliteQueryCursor cursor);
+    SqfliteTransaction? txn,
+    SqfliteQueryCursor cursor,
+  );
 
   /// Execute a raw UPDATE command.
   Future<int> txnRawUpdate(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments);
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  );
 
   /// Execute a raw DELETE command.
   Future<int> txnRawDelete(
-      SqfliteTransaction? txn, String sql, List<Object?>? arguments);
+    SqfliteTransaction? txn,
+    String sql,
+    List<Object?>? arguments,
+  );
 
   /// Check if a database is not closed.
   ///

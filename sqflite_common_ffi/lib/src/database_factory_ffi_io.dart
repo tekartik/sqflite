@@ -9,28 +9,33 @@ import 'sqflite_ffi_impl.dart';
 var databaseFactoryFfiImpl = createDatabaseFactoryFfiImpl();
 
 /// The Ffi database factory.
-var databaseFactoryFfiNoIsolateImpl =
-    createDatabaseFactoryFfiImpl(noIsolate: true);
+var databaseFactoryFfiNoIsolateImpl = createDatabaseFactoryFfiImpl(
+  noIsolate: true,
+);
 
 /// Creates an FFI database factory
-DatabaseFactory createDatabaseFactoryFfiImpl(
-    {SqfliteFfiInit? ffiInit, bool noIsolate = false, String? tag = 'ffi'}) {
+DatabaseFactory createDatabaseFactoryFfiImpl({
+  SqfliteFfiInit? ffiInit,
+  bool noIsolate = false,
+  String? tag = 'ffi',
+}) {
   var noIsolateInitialized = false;
   return buildDatabaseFactory(
-      tag: tag,
-      invokeMethod: (String method, [Object? arguments]) {
-        final methodCall = FfiMethodCall(method, arguments);
-        if (noIsolate) {
-          if (!noIsolateInitialized) {
-            if (ffiInit != null) {
-              ffiInit();
-            }
+    tag: tag,
+    invokeMethod: (String method, [Object? arguments]) {
+      final methodCall = FfiMethodCall(method, arguments);
+      if (noIsolate) {
+        if (!noIsolateInitialized) {
+          if (ffiInit != null) {
+            ffiInit();
           }
-          return ffiMethodCallHandleNoIsolate(methodCall);
-        } else {
-          return ffiMethodCallhandleInIsolate(methodCall, ffiInit: ffiInit);
         }
-      });
+        return ffiMethodCallHandleNoIsolate(methodCall);
+      } else {
+        return ffiMethodCallhandleInIsolate(methodCall, ffiInit: ffiInit);
+      }
+    },
+  );
 }
 
 bool _debug = false; // devWarning(true); // false
@@ -43,8 +48,10 @@ void _log(Object? object) => print(object);
 
 /// Extension on MethodCall
 /// Handle a method call in a background isolate
-Future<dynamic> ffiMethodCallhandleInIsolate(FfiMethodCall methodCall,
-    {SqfliteFfiInit? ffiInit}) async {
+Future<dynamic> ffiMethodCallhandleInIsolate(
+  FfiMethodCall methodCall, {
+  SqfliteFfiInit? ffiInit,
+}) async {
   try {
     if (_debug) {
       _log('main_send: $methodCall');
@@ -88,7 +95,9 @@ Future<dynamic> ffiMethodCallHandleNoIsolate(FfiMethodCall methodCall) async {
 
 /// Create the isolate if needed
 Future<dynamic> _isolateHandle(
-    FfiMethodCall methodCall, SqfliteFfiInit? ffiInit) async {
+  FfiMethodCall methodCall,
+  SqfliteFfiInit? ffiInit,
+) async {
   if (_isolate == null) {
     await _isolateLock.synchronized(() async {
       _isolate ??= await createIsolate(ffiInit);

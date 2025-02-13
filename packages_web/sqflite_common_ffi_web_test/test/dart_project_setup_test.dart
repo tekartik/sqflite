@@ -21,8 +21,12 @@ void ensureEmptyDirSync(String path) {
 void main() {
   group('dart project', () {
     test('full dart setup', () async {
-      var path = join('.dart_tool', 'sqflite_common_ffi_web_test', 'test',
-          'dart_project_setup');
+      var path = join(
+        '.dart_tool',
+        'sqflite_common_ffi_web_test',
+        'test',
+        'dart_project_setup',
+      );
       ensureEmptyDirSync(path);
       var shell = Shell(workingDirectory: path);
       await shell.run('dart create . --force --no-pub');

@@ -16,10 +16,11 @@ void main() {
     test('buildDatabaseFactory', () async {
       final methods = <String>[];
       final factory = buildDatabaseFactory(
-          invokeMethod: (String method, [Object? arguments]) async {
-        methods.add(method);
-        return mockResult(method);
-      });
+        invokeMethod: (String method, [Object? arguments]) async {
+          methods.add(method);
+          return mockResult(method);
+        },
+      );
       expect(factory is SqfliteInvokeHandler, isTrue);
       await factory.openDatabase(inMemoryDatabasePath);
       expect(methods, <String>['openDatabase']);
