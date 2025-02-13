@@ -1,3 +1,7 @@
+## 2.3.5
+
+* Requires dart 3.7
+
 ## 2.3.4+4
 
 * Improve sqlite3.dll finder on windows
