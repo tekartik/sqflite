@@ -1,3 +1,7 @@
+## 0.1.4
+
+* Requires dart 3.7
+
 ## 0.1.3+1
 
 * Remove dependency on `dart:html`
