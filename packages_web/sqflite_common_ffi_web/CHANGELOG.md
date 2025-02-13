@@ -1,3 +1,8 @@
+## 1.0.0
+
+* Requires dart 3.7
+* Bump sqlite3 wasm build to 2.7.3
+
 ## 0.4.5+4
 
 * Setup for sqlite3 2.3.6
