@@ -11,7 +11,7 @@ void write(String message) {
   if (lines.length > countLineMax + 10) {
     lines = lines.sublist(lines.length - countLineMax);
   }
-  _output.text = lines.join('\n');
+  _output.textContent = lines.join('\n');
 }
 
 void addButton(String text, FutureOr<void> Function() action) {
