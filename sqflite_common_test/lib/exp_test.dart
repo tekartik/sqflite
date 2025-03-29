@@ -592,4 +592,38 @@ INSERT INTO test (value) VALUES (10);
       await db.close();
     }
   });
+
+  /// Open multiple database at once
+  test('stress test', () async {
+    // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
+    var count = 10;
+    var opCount = 10;
+    var path = List.generate(count, (i) => 'stress_${i + 1}.db');
+    for (var i = 0; i < count; i++) {
+      path[i] = await context.initDeleteDb(path[i]);
+    }
+    Future<void> doStuff(String path) async {
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, version) async {
+            await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
+          },
+        ),
+      );
+      for (var i = 0; i < opCount; i++) {
+        await db.insert('Test', <String, Object?>{'id': i});
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        await db.query('Test');
+      }
+      await db.close();
+    }
+
+    var futures = <Future>[];
+    for (var i = 0; i < count; i++) {
+      futures.add(doStuff(path[i]));
+    }
+    await Future.wait(futures);
+  });
 }
