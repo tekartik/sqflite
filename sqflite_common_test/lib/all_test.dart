@@ -1,5 +1,4 @@
 import 'package:sqflite_common_test/sqflite_test.dart';
-import 'package:test/test.dart';
 
 import 'batch_test.dart' as batch_test;
 import 'database_factory_test.dart' as database_factory_test;
@@ -21,23 +20,26 @@ import 'wal_test.dart';
 
 /// Run all common tests.
 void run(SqfliteTestContext context) {
-  group('all', () {
-    protocol_test.run(context);
-    service_impl_test.run(context);
-    batch_test.run(context);
-    log_test.run(context);
-    doc_test.run(context);
-    open_flutter_test.run(context);
-    slow_test.run(context);
-    type_test.run(context);
-    statement_test.run(context);
-    raw_test.run(context);
-    open_test.run(context);
-    exception_test.run(context);
-    exp_test.run(context);
-    database_factory_test.run(context);
-    transaction_test.run(context);
-    issue_test.run(context);
-    walTests(context);
-  });
+  sqfliteTestGroup(context);
+}
+
+/// Run all common tests.
+void sqfliteTestGroup(SqfliteTestContext context) {
+  protocol_test.run(context);
+  service_impl_test.run(context);
+  batch_test.run(context);
+  log_test.run(context);
+  doc_test.run(context);
+  open_flutter_test.run(context);
+  slow_test.run(context);
+  type_test.run(context);
+  statement_test.run(context);
+  raw_test.run(context);
+  open_test.run(context);
+  exception_test.run(context);
+  exp_test.run(context);
+  database_factory_test.run(context);
+  transaction_test.run(context);
+  issue_test.run(context);
+  walTests(context);
 }
