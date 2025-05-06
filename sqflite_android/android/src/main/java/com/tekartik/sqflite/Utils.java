@@ -13,6 +13,7 @@ import com.tekartik.sqflite.dev.Debug;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class Utils {
 
@@ -25,7 +26,11 @@ public class Utils {
                 String type = null;
                 if (value != null) {
                     if (value.getClass().isArray()) {
-                        type = "array(" + value.getClass().getComponentType().getName() + ")";
+                        try {
+                            type = "array(" + Objects.requireNonNull(value.getClass().getComponentType()).getName() + ")";
+                        } catch (Exception e) {
+                            type = "array";
+                        }
                     } else {
                         type = value.getClass().getName();
                     }
@@ -70,7 +75,7 @@ public class Utils {
      * Really basic implementation, hopefully not so many dev/apps with such requirements
      * should be impacted.
      *
-     * @param localeString
+     * @param localeString text such as fr-FR or fr
      * @return
      */
     static Locale localeForLanguageTagPre21(String localeString) {
