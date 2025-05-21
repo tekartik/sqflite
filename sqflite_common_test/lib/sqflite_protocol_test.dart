@@ -107,7 +107,7 @@ void run(SqfliteTestContext? context) {
       var dbName = await initDeleteDb('protocol_on_downgrade_delete.db');
       var db = await factory?.openDatabase(
         dbName,
-        options: OpenDatabaseOptions(onCreate: (_, __) {}, version: 2),
+        options: OpenDatabaseOptions(onCreate: (_, _) {}, version: 2),
       );
       await db?.close();
 
@@ -466,7 +466,7 @@ Future<void> runProtocolTransactionOnCreateSteps(
 ) async {
   final db = await factory.openDatabase(
     inMemoryDatabasePath,
-    options: OpenDatabaseOptions(onCreate: (_, __) {}, version: 1),
+    options: OpenDatabaseOptions(onCreate: (_, _) {}, version: 1),
   );
 
   await db.close();
