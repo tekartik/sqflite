@@ -1,3 +1,7 @@
+## 2.3.6
+
+* Bundle Windows sqlite3.dll 3.50.1
+
 ## 2.3.5
 
 * Requires dart 3.7
