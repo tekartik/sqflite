@@ -47,5 +47,15 @@ var sqlite3_42_0Info = Sqlite3DllInfo(
   '2425efa95556793a20761dfdab0d3b56a52e61716e8bb65e6a0a3590d41c97c0',
 );
 
+// sqlite-dll-win-x64-3500100.zip
+// (1.28 MiB)		64-bit DLL (x64) for SQLite version 3.50.1.
+// (SHA3-256: 2bf2afb9a6b94dffcc033f37ebdc50118d0ea9e5536729421efa8fb4eb2a5c5f)
+/// 3.50.1 info
+var sqlite3_50_1Info = Sqlite3DllInfo(
+  '3.51.1',
+  'https://www.sqlite.org/2025/sqlite-dll-win-x64-3500100.zip',
+  '2bf2afb9a6b94dffcc033f37ebdc50118d0ea9e5536729421efa8fb4eb2a5c5f',
+);
+
 /// Current info
-var sqlite3Info = sqlite3_42_0Info;
+var sqlite3Info = sqlite3_50_1Info;
