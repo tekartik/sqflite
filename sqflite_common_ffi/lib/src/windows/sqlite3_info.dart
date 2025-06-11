@@ -52,7 +52,7 @@ var sqlite3_42_0Info = Sqlite3DllInfo(
 // (SHA3-256: 2bf2afb9a6b94dffcc033f37ebdc50118d0ea9e5536729421efa8fb4eb2a5c5f)
 /// 3.50.1 info
 var sqlite3_50_1Info = Sqlite3DllInfo(
-  '3.51.1',
+  '3.50.1',
   'https://www.sqlite.org/2025/sqlite-dll-win-x64-3500100.zip',
   '2bf2afb9a6b94dffcc033f37ebdc50118d0ea9e5536729421efa8fb4eb2a5c5f',
 );
