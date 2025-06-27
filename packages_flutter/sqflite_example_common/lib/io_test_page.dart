@@ -20,12 +20,11 @@ class IoTestPage extends TestPage {
       // print(path);
       Future<List<String>> findDbRelatedFiles() async {
         var dir = io.Directory(dirname(path));
-        var files =
-            await dir
-                .list()
-                .map((e) => basename(e.path))
-                .where((e) => e.startsWith(basename(path)))
-                .toList();
+        var files = await dir
+            .list()
+            .map((e) => basename(e.path))
+            .where((e) => e.startsWith(basename(path)))
+            .toList();
         // print('files: $files');
         return files;
       }

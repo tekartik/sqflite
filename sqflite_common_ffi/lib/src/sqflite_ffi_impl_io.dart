@@ -42,8 +42,9 @@ class _SqfliteFfiHandlerIo with SqfliteFfiHandlerNonImplementedMixin {
           } catch (_) {}
         }
       }
-      final mode =
-          readOnly ? ffi.OpenMode.readOnly : ffi.OpenMode.readWriteCreate;
+      final mode = readOnly
+          ? ffi.OpenMode.readOnly
+          : ffi.OpenMode.readWriteCreate;
       ffiDb = ffi.sqlite3.open(path, mode: mode, uri: isUri);
 
       // Handle hot-restart for single instance

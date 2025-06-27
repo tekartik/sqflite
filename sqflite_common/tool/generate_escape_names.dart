@@ -153,11 +153,10 @@ WITH
 WITHOUT
 ''';
   var lines = LineSplitter.split(src);
-  var list =
-      lines
-          .map((line) => line.trim().toLowerCase())
-          .where((line) => line.isNotEmpty)
-          .toList();
+  var list = lines
+      .map((line) => line.trim().toLowerCase())
+      .where((line) => line.isNotEmpty)
+      .toList();
   for (var line in list) {
     stdout.writeln("'$line',");
   }

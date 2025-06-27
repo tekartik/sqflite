@@ -133,23 +133,21 @@ void mainSharedWorker(List<String> args) {
       }
     }
 
-    scope.onconnect =
-        (web.Event event) {
-          zone.run(() {
-            if (_debug) {
-              _log('$_shw onConnect()');
-            }
-            var connectEvent = event as web.MessageEvent;
-            var port = connectEvent.ports.toDart[0];
+    scope.onconnect = (web.Event event) {
+      zone.run(() {
+        if (_debug) {
+          _log('$_shw onConnect()');
+        }
+        var connectEvent = event as web.MessageEvent;
+        var port = connectEvent.ports.toDart[0];
 
-            port.onmessage =
-                (web.MessageEvent event) {
-                  zone.run(() {
-                    _handleMessageEvent(event);
-                  });
-                }.toJS;
+        port.onmessage = (web.MessageEvent event) {
+          zone.run(() {
+            _handleMessageEvent(event);
           });
         }.toJS;
+      });
+    }.toJS;
   } catch (e) {
     if (_debug) {
       _log('$_shw not in shared worker, trying basic worker');
@@ -164,12 +162,11 @@ void mainSharedWorker(List<String> args) {
   /// Handle basic web workers
   /// dirty hack
   try {
-    scope.onmessage =
-        (web.MessageEvent event) {
-          zone.run(() {
-            _handleMessageEvent(event);
-          });
-        }.toJS;
+    scope.onmessage = (web.MessageEvent event) {
+      zone.run(() {
+        _handleMessageEvent(event);
+      });
+    }.toJS;
   } catch (e) {
     if (_debug) {
       _log('$_shw not in shared worker error $e');

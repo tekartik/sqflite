@@ -15,10 +15,9 @@ DatabaseFactory get databaseFactoryFfi => databaseFactoryFfiImpl;
 /// This should only be used from a background isolate.
 ///
 /// Currently supports Win/Mac/Linux.
-DatabaseFactory get databaseFactoryFfiNoIsolate =>
-    throw UnimplementedError(
-      'databaseFactoryFfiNoIsolate only supported for io application',
-    );
+DatabaseFactory get databaseFactoryFfiNoIsolate => throw UnimplementedError(
+  'databaseFactoryFfiNoIsolate only supported for io application',
+);
 
 /// Creates an FFI database factory
 DatabaseFactory createDatabaseFactoryFfi({

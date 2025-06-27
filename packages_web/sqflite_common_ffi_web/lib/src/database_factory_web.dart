@@ -101,7 +101,8 @@ An error occurred while initializing the web worker.
 This is likely due to a failure to find the worker javascript file at ${context.options.sharedWorkerUri ?? defaultSharedWorkerUri}
 
 Please check the documentation at https://github.com/tekartik/sqflite/tree/master/packages_web/sqflite_common_ffi_web#setup-binaries to setup the needed binaries.
-'''.toJS,
+'''
+            .toJS,
       );
     }
     rethrow;

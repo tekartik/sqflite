@@ -111,9 +111,10 @@ mixin SqfliteTestContextMixin implements SqfliteTestContext {
   }
 
   @override
-  Future devSetDebugModeOn(bool on) => databaseFactory
-  // ignore: deprecated_member_use
-  .setLogLevel(on ? sqfliteLogLevelVerbose : sqfliteLogLevelNone);
+  Future devSetDebugModeOn(bool on) =>
+      databaseFactory
+      // ignore: deprecated_member_use
+      .setLogLevel(on ? sqfliteLogLevelVerbose : sqfliteLogLevelNone);
 
   @override
   bool get supportsRecoveredInTransaction => false;

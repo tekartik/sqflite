@@ -15,7 +15,6 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3Wasm(
 /// Web only
 Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
   SqfliteFfiWebOptions options,
-) =>
-    throw UnsupportedError(
-      'sqfliteFfiWebStartSharedWorker not supported on io',
-    );
+) => throw UnsupportedError(
+  'sqfliteFfiWebStartSharedWorker not supported on io',
+);

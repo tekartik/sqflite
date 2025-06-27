@@ -62,8 +62,9 @@ extension SqfliteWebDartifyExtension on JSAny {
       var object = <String, Object?>{};
       var keys = jsObjectKeys(jsObject).toDart;
       for (var key in keys) {
-        object[(key as JSString).toDart] =
-            jsObject.getProperty(key)?.dartifyValueStrict();
+        object[(key as JSString).toDart] = jsObject
+            .getProperty(key)
+            ?.dartifyValueStrict();
       }
       return object;
     } catch (e) {

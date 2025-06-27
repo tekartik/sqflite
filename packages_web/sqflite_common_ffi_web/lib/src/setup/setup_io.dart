@@ -18,8 +18,8 @@ var _log = print;
 /// dhttpd simple server (testing only
 var dhttpdReady = () async {
   // setup common alias
-  shellEnvironment =
-      ShellEnvironment()..aliases['dhttpd'] = 'dart pub global run dhttpd';
+  shellEnvironment = ShellEnvironment()
+    ..aliases['dhttpd'] = 'dart pub global run dhttpd';
   try {
     await run('dhttpd --help', verbose: false);
   } catch (e) {
@@ -31,8 +31,8 @@ var dhttpdReady = () async {
 var webdevReady = () async {
   await checkAndActivateWebdev();
   // setup common alias
-  shellEnvironment =
-      ShellEnvironment()..aliases['webdev'] = 'dart pub global run webdev';
+  shellEnvironment = ShellEnvironment()
+    ..aliases['webdev'] = 'dart pub global run webdev';
 }();
 
 /// Setup context
@@ -100,14 +100,12 @@ class SqfliteWebMetadata {
 
   /// From json map
   SqfliteWebMetadata.fromJsonMap(Map map)
-    : version =
-          map['version'] != null
-              ? Version.parse(map['version'] as String)
-              : null,
-      sqlite3WasmUri =
-          map['sqlite3WasmUri'] != null
-              ? Uri.parse(map['sqlite3WasmUri'] as String)
-              : null;
+    : version = map['version'] != null
+          ? Version.parse(map['version'] as String)
+          : null,
+      sqlite3WasmUri = map['sqlite3WasmUri'] != null
+          ? Uri.parse(map['sqlite3WasmUri'] as String)
+          : null;
 
   @override
   String toString() => '${toJsonMap()}';
@@ -116,10 +114,9 @@ class SqfliteWebMetadata {
 /// Easy path access
 extension SetupContextExt on SetupContext {
   /// Working path for setup
-  String get workPath =>
-      runningFromPackage
-          ? path
-          : join(path, '.dart_tool', packageName, 'setup', version.toString());
+  String get workPath => runningFromPackage
+      ? path
+      : join(path, '.dart_tool', packageName, 'setup', version.toString());
 
   /// Resulting shared worker file
   String get builtSwJsFilePath =>
@@ -181,8 +178,8 @@ extension SetupContextExt on SetupContext {
       if (!runningFromPackage) {
         await Directory(workPath).create(recursive: true);
         await copySourcesPath(ffiWebPath, workPath);
-        shellEnvironment =
-            ShellEnvironment()..aliases['webdev'] = 'dart run webdev:webdev';
+        shellEnvironment = ShellEnvironment()
+          ..aliases['webdev'] = 'dart run webdev:webdev';
       }
       var shell = Shell(workingDirectory: workPath, verbose: options.verbose);
       _log(shell.path);
@@ -258,8 +255,11 @@ Future<SetupContext> getSetupContext({SetupOptions? options}) async {
       ((pubspec['sqflite'] as Map?)?[packageName] as Map?)?['sw_js_file']
           ?.toString();
 
-  var ffiWebPath =
-      pathPackageConfigMapGetPackagePath(path, config, packageName)!;
+  var ffiWebPath = pathPackageConfigMapGetPackagePath(
+    path,
+    config,
+    packageName,
+  )!;
 
   ffiWebPath = absolute(normalize(ffiWebPath));
   var ffiWebPubspec = await pathGetPubspecYamlMap(ffiWebPath);
@@ -342,9 +342,10 @@ Future<void> copySourcesPath(String from, String to) async {
     return;
   }
   await Directory(to).create(recursive: true);
-  await for (final file in Directory(from)
-      .list(recursive: false)
-      .where((event) => !_topLevelFileShouldIgnore(event.path))) {
+  await for (final file
+      in Directory(from)
+          .list(recursive: false)
+          .where((event) => !_topLevelFileShouldIgnore(event.path))) {
     final copyTo = p.join(to, p.relative(file.path, from: from));
     if (file is Directory) {
       await Directory(copyTo).create(recursive: true);

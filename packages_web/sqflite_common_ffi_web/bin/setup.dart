@@ -8,23 +8,22 @@ var noSqlite3Wasm = 'no-sqlite3-wasm';
 var sqlite3WasmUrl = 'sqlite3-wasm-url';
 
 Future<void> main(List<String> args) async {
-  var parser =
-      ArgParser()
-        ..addFlag('force', abbr: 'f', help: 'Force build', defaultsTo: false)
-        ..addFlag('verbose', help: 'Verbose output', defaultsTo: false)
-        ..addFlag('help', help: 'Help')
-        ..addOption(
-          sqlite3WasmUrl,
-          help: 'sqlite3.wasm url',
-          defaultsTo: '$sqlite3WasmReleaseUri',
-        )
-        ..addFlag(
-          noSqlite3Wasm,
-          help: 'Don\'t fetch sqlite3.wasm',
-          negatable: false,
-          defaultsTo: false,
-        )
-        ..addOption('dir', help: 'output directory', defaultsTo: 'web');
+  var parser = ArgParser()
+    ..addFlag('force', abbr: 'f', help: 'Force build', defaultsTo: false)
+    ..addFlag('verbose', help: 'Verbose output', defaultsTo: false)
+    ..addFlag('help', help: 'Help')
+    ..addOption(
+      sqlite3WasmUrl,
+      help: 'sqlite3.wasm url',
+      defaultsTo: '$sqlite3WasmReleaseUri',
+    )
+    ..addFlag(
+      noSqlite3Wasm,
+      help: 'Don\'t fetch sqlite3.wasm',
+      negatable: false,
+      defaultsTo: false,
+    )
+    ..addOption('dir', help: 'output directory', defaultsTo: 'web');
   var result = parser.parse(args);
   var force = result['force'] as bool;
   var verbose = result['verbose'] as bool;

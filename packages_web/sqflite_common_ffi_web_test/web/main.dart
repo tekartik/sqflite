@@ -35,8 +35,9 @@ Future<void> main() async {
   }
 
   var db = await factory.openDatabase(inMemoryDatabasePath);
-  var sqliteVersion =
-      (await db.rawQuery('select sqlite_version()')).first.values.first;
+  var sqliteVersion = (await db.rawQuery(
+    'select sqlite_version()',
+  )).first.values.first;
   write(sqliteVersion.toString());
 
   await incrementSqfliteValueInDatabaseFactory(factory);

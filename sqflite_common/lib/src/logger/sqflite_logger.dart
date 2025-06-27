@@ -355,10 +355,9 @@ class _SqfliteLoggerBatchEvent extends _SqfliteLoggerDatabaseEvent
   @override
   Map<String, Object?> toMap() => {
     ..._databasePrefixMap,
-    'operations':
-        operations
-            .map((e) => (e as _SqfliteLoggerBatchOperation).toMap())
-            .toList(),
+    'operations': operations
+        .map((e) => (e as _SqfliteLoggerBatchOperation).toMap())
+        .toList(),
     ...super.toMap(),
   };
 }

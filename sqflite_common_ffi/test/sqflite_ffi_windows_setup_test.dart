@@ -13,10 +13,9 @@ import 'package:test/test.dart';
 import '../tool/windows_setup.dart';
 
 Future<String> computeSha3(String file, {String openssl = 'openssl'}) async {
-  var line =
-      (await run(
-        '${shellArgument(openssl)} dgst -sha3-256 ${shellArgument(file)}',
-      )).outLines.last;
+  var line = (await run(
+    '${shellArgument(openssl)} dgst -sha3-256 ${shellArgument(file)}',
+  )).outLines.last;
   // SHA3-256(.local/sqlite-dll-win64-x64-3380100.zip)= 0e014495eb829bc41ce48783b7a7db362f9cfd61c40a624683aba7868b712c4b
   var sha3 = line.trim().split(' ').last;
   return sha3;
@@ -69,8 +68,9 @@ void main() {
         final archive = ZipDecoder().decodeStream(inputStream);
         await extractArchiveToDisk(archive, dirname(localZip));
 
-        var downloadedDllContent =
-            await File(join(dirname(localZip), 'sqlite3.dll')).readAsBytes();
+        var downloadedDllContent = await File(
+          join(dirname(localZip), 'sqlite3.dll'),
+        ).readAsBytes();
         var existingDllContent = await File(dllPath).readAsBytes();
         expect(existingDllContent, downloadedDllContent);
       }

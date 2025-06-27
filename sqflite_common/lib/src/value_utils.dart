@@ -17,7 +17,8 @@ void _checkArg(dynamic arg) {
     }
     final type = arg.runtimeType.toString();
 
-    final text = '''
+    final text =
+        '''
 *** WARNING ***
 
 Invalid argument $arg with type $type.

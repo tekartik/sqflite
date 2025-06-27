@@ -42,8 +42,8 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
   @override
   Future<T> invokeMethod<T>(String method, [Object? arguments]) =>
       !_debugInternals
-          ? impl.invokeMethod(method, arguments)
-          : _invokeMethodWithLog(method, arguments);
+      ? impl.invokeMethod(method, arguments)
+      : _invokeMethodWithLog(method, arguments);
 
   Future<T> _invokeMethodWithLog<T>(String method, [Object? arguments]) async {
     // ignore: avoid_print

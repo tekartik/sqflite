@@ -1001,8 +1001,8 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
       operations.add(
         SqfliteFfiOperation()
           ..sql = operationArgument[paramSql] as String?
-          ..sqlArguments =
-              (operationArgument[paramSqlArguments] as List?)?.cast<Object?>()
+          ..sqlArguments = (operationArgument[paramSqlArguments] as List?)
+              ?.cast<Object?>()
           ..method = operationArgument[paramMethod] as String,
       );
     });

@@ -22,10 +22,9 @@ void run(SqfliteTestContext context) {
 
         Future testInsert(int i) async {
           await db.transaction((txn) async {
-            var count =
-                utils.firstIntValue(
-                  await txn.rawQuery('SELECT COUNT(*) FROM Test'),
-                )!;
+            var count = utils.firstIntValue(
+              await txn.rawQuery('SELECT COUNT(*) FROM Test'),
+            )!;
             await Future<dynamic>.delayed(const Duration(milliseconds: 40));
             await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', [
               'item $i',

@@ -563,7 +563,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       // Simple timeout warning if we cannot get the lock after XX seconds
       final handleTimeoutWarning =
           (utils.lockWarningDuration != null &&
-              utils.lockWarningCallback != null);
+          utils.lockWarningCallback != null);
       late Completer<dynamic> timeoutCompleter;
       if (handleTimeoutWarning) {
         timeoutCompleter = Completer<dynamic>();

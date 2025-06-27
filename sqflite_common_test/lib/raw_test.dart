@@ -156,10 +156,9 @@ void run(SqfliteTestContext context) {
       expect(list, expectedList);
 
       // Count the records
-      count =
-          utils.firstIntValue(
-            await database.rawQuery('SELECT COUNT(*) FROM Test'),
-          )!;
+      count = utils.firstIntValue(
+        await database.rawQuery('SELECT COUNT(*) FROM Test'),
+      )!;
       expect(count, 2);
 
       // Delete a record

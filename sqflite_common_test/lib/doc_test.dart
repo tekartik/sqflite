@@ -369,10 +369,9 @@ CREATE TABLE Product (
           });
         }
 
-        var product =
-            Product()
-              ..id = 'table'
-              ..title = 'Table';
+        var product = Product()
+          ..id = 'table'
+          ..title = 'Table';
         await upsertRecord(product);
         await upsertRecord(product);
 
@@ -449,10 +448,9 @@ CREATE TABLE Product (
           }
         }
 
-        var product =
-            Product()
-              ..id = 'table'
-              ..title = 'Table';
+        var product = Product()
+          ..id = 'table'
+          ..title = 'Table';
         await upsertRecord(product);
         await upsertRecord(product);
 

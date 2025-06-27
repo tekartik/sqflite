@@ -31,11 +31,10 @@ class MockScenario {
   MockScenario(this.factory, List<List> data) {
     methodsCalls = data
         .map(
-          (list) =>
-              MockMethodCall()
-                ..expectedMethod = list[0]?.toString()
-                ..expectedArguments = list[1]
-                ..response = list[2],
+          (list) => MockMethodCall()
+            ..expectedMethod = list[0]?.toString()
+            ..expectedArguments = list[1]
+            ..response = list[2],
         )
         .toList(growable: false);
   }

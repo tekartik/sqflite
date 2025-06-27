@@ -17,8 +17,9 @@ var platformIsMacOS = Platform.isMacOS;
 var isSupported = platformIsWindows || platformIsLinux || platformIsMacOS;
 
 /// Platform
-var platform =
-    platformIsWindows ? 'windows' : (platformIsMacOS ? 'macos' : 'linux');
+var platform = platformIsWindows
+    ? 'windows'
+    : (platformIsMacOS ? 'macos' : 'linux');
 
 var _linuxExeDir = join('build', 'linux', 'x64', 'release', 'bundle');
 var _windowsExeDir = join('build', 'windows', 'runner', 'Release');
@@ -39,10 +40,9 @@ Future<void> deleteFile(String path) async {
 }
 
 /// release exe dir (linux and windows for now)
-String get platformExeDir =>
-    Platform.isLinux
-        ? _linuxExeDir
-        : (Platform.isMacOS ? _macOSExeDir : _windowsExeDir);
+String get platformExeDir => Platform.isLinux
+    ? _linuxExeDir
+    : (Platform.isMacOS ? _macOSExeDir : _windowsExeDir);
 
 /// Windows platform
 var buildPlatformWindows = 'windows';
