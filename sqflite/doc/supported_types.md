@@ -28,7 +28,7 @@ CREATE TABLE Product (
 {"title": "Table", "width": 80, "height": 80}
 ```
 
-Another solution is to encoded nested maps and lists as json (or other format), declaring the column
+Another solution is to encode nested maps and lists as json (or other format), declaring the column
 as a String.
 
 
