@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.tekartik.sqflite.dev.Debug;
@@ -23,23 +24,29 @@ public class Utils {
         for (int i = 0; i < length; i++) {
             Object value = cursorValue(cursor, i);
             if (Debug.EXTRA_LOGV) {
-                String type = null;
-                if (value != null) {
-                    if (value.getClass().isArray()) {
-                        try {
-                            type = "array(" + Objects.requireNonNull(value.getClass().getComponentType()).getName() + ")";
-                        } catch (Exception e) {
-                            type = "array";
-                        }
-                    } else {
-                        type = value.getClass().getName();
-                    }
-                }
+                String type = getString(value);
                 Log.d(TAG, "column " + i + " " + cursor.getType(i) + ": " + value + (type == null ? "" : " (" + type + ")"));
             }
             list.add(value);
         }
         return list;
+    }
+
+    @Nullable
+    private static String getString(Object value) {
+        String type = null;
+        if (value != null) {
+            if (value.getClass().isArray()) {
+                try {
+                    type = "array(" + Objects.requireNonNull(value.getClass().getComponentType()).getName() + ")";
+                } catch (Exception e) {
+                    type = "array";
+                }
+            } else {
+                type = value.getClass().getName();
+            }
+        }
+        return type;
     }
 
     static public Object cursorValue(Cursor cursor, int index) {
@@ -58,7 +65,7 @@ public class Utils {
         return null;
     }
 
-    static Locale localeForLanguateTag(String localeString) {
+    static Locale localeForLanguageTag(String localeString) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             return localeForLanguageTag21(localeString);
         } else {
@@ -76,7 +83,7 @@ public class Utils {
      * should be impacted.
      *
      * @param localeString text such as fr-FR or fr
-     * @return
+     * @return a Locale object
      */
     static Locale localeForLanguageTagPre21(String localeString) {
         //Locale.Builder builder = new Locale().Builder();
@@ -94,6 +101,41 @@ public class Utils {
                 }
             }
         }
+        return localOf(language, country, variant);
+    }
+
+
+    static Locale localOf(String language, String country, String variant) {
+        /* Code to use once SDK 36 is the minimum supported version
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            // For Android versions before 36, we can use the standard Locale constructor
+            return Locale.of(language, country, variant);
+        } else {
+            // For Android versions before 36, we can use the standard Locale constructor
+            @SuppressWarnings("deprecation")
+            Locale locale = new Locale(language, country, variant);
+            return locale;
+        }
+        */
         return new Locale(language, country, variant);
     }
+
+    public static long getThreadId(Thread thread) {
+        /* Code to use once SDK 36 is the minimum supported version
+        // Build.VERSION_CODES.BAKLAVA is Android 36
+        // for when Thread.threadId() is definitely available and getId() is deprecated.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) { // Android 13 (API 33) and above
+            // Use the new, recommended method
+            return thread.threadId();
+        } else {
+            // For older Android versions where threadId() might not be available
+            // and getId() is still the primary way to get a thread ID.
+            // Suppress the deprecation warning for this specific line.
+            @SuppressWarnings("deprecation")
+            long id = thread.getId();
+            return id;
+        }*/
+        return thread.getId();
+    }
+
 }

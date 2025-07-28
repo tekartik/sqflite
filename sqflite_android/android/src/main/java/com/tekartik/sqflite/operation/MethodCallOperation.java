@@ -8,7 +8,7 @@ import io.flutter.plugin.common.MethodChannel;
  */
 
 public class MethodCallOperation extends BaseOperation {
-    public final Result result;
+    private final Result result;
     final MethodCall methodCall;
 
     public MethodCallOperation(MethodCall methodCall, MethodChannel.Result result) {
@@ -36,7 +36,7 @@ public class MethodCallOperation extends BaseOperation {
         return result;
     }
 
-    class Result implements OperationResult {
+    static class Result implements OperationResult {
 
         final MethodChannel.Result result;
 

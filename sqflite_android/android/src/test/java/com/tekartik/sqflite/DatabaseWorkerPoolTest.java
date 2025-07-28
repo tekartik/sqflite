@@ -18,7 +18,7 @@ public class DatabaseWorkerPoolTest {
 
     private FakeDatabaseWorkerPool pool;
     private FakeDatabaseWorker worker1;
-    private FakeDatabaseWorker worker2 ;
+    private FakeDatabaseWorker worker2;
     private FakeDatabase database1;
     private FakeDatabase database2;
 
@@ -40,9 +40,12 @@ public class DatabaseWorkerPoolTest {
     @Test
     public void tasksOfOneDBRunFIFO() {
         // Arrange.
-        DatabaseTask task1 = new DatabaseTask(database1, () -> {});
-        DatabaseTask task2 = new DatabaseTask(database1, () -> {});
-        DatabaseTask task3 = new DatabaseTask(database2, () -> {});
+        DatabaseTask task1 = new DatabaseTask(database1, () -> {
+        });
+        DatabaseTask task2 = new DatabaseTask(database1, () -> {
+        });
+        DatabaseTask task3 = new DatabaseTask(database2, () -> {
+        });
 
 
         // Act. Posting three tasks. The first two are belonging to the same database.
@@ -66,9 +69,11 @@ public class DatabaseWorkerPoolTest {
     @Test
     public void tasksOfOneTransactionRunByOneWorker() {
         // Arrange.
-        DatabaseTask task1 = new DatabaseTask(database1, () -> {});
+        DatabaseTask task1 = new DatabaseTask(database1, () -> {
+        });
         database2.inTransaction = true;
-        DatabaseTask task2 = new DatabaseTask(database2, () -> {});
+        DatabaseTask task2 = new DatabaseTask(database2, () -> {
+        });
 
 
         // Act. Posting two tasks.
@@ -82,7 +87,8 @@ public class DatabaseWorkerPoolTest {
         // Act. Worker1 and worker2 finished one task. Then post a new task in the same transaction.
         worker1.work();
         worker2.work();
-        DatabaseTask task3 = new DatabaseTask(database2, () -> {});
+        DatabaseTask task3 = new DatabaseTask(database2, () -> {
+        });
         pool.post(task3);
 
 
@@ -94,8 +100,10 @@ public class DatabaseWorkerPoolTest {
     @Test
     public void tasksOfDiffTransactionsRunByTwoWorker() {
         // Arrange.
-        DatabaseTask task1 = new DatabaseTask(database1, () -> {});
-        DatabaseTask task2 = new DatabaseTask(database2, () -> {});
+        DatabaseTask task1 = new DatabaseTask(database1, () -> {
+        });
+        DatabaseTask task2 = new DatabaseTask(database2, () -> {
+        });
 
         // Act. Posting two tasks.
         pool.post(task1);
@@ -108,7 +116,8 @@ public class DatabaseWorkerPoolTest {
         // Act. Worker1 and worker2 finished one task. Then post a new task.
         worker1.work();
         worker2.work();
-        DatabaseTask task3 = new DatabaseTask(database2, () -> {});
+        DatabaseTask task3 = new DatabaseTask(database2, () -> {
+        });
         pool.post(task3);
 
 
@@ -153,7 +162,8 @@ class FakeDatabaseWorker extends DatabaseWorker {
     }
 
     @Override
-    void quit() {}
+    void quit() {
+    }
 
     @Override
     void postTask(final DatabaseTask task) {
