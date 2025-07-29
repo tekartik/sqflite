@@ -817,17 +817,33 @@ CREATE TABLE test (
       }
       await db.close();
     });
+
+    Future<String> getJournalMode(Database db) async {
+      var result = await db.rawQuery('PRAGMA journal_mode');
+      var journalMode = result.first.values.first!.toString();
+      return journalMode;
+    }
+
     // Issue https://github.com/tekartik/sqflite_common/issues/929
     // Pragma has to use rawQuery...why, on sqflite Android
     test('wal', () async {
-      // await Sqflite.devSetDebugModeOn(true);
-      var db = await openDatabase(inMemoryDatabasePath);
+      var debug = false; // devWarning(true);
+      // ignore: dead_code
+      if (debug) {
+        // ignore: deprecated_member_use
+        await databaseFactory.setLogLevel(sqfliteLogLevelVerbose);
+      }
+      final path = await initDeleteDb('exp_wal.db');
+      var db = await openDatabase(path);
       try {
         await db.execute('PRAGMA journal_mode=WAL');
       } catch (e) {
-        print(e);
         await db.rawQuery('PRAGMA journal_mode=WAL');
       }
+      expect((await getJournalMode(db)).toLowerCase(), 'wal');
+      await db.setJournalMode('DELETE');
+      expect((await getJournalMode(db)).toLowerCase(), 'delete');
+      await db.setJournalMode('WAL');
       await db.execute('CREATE TABLE test (id INTEGER)');
       await db.insert('test', <String, Object?>{'id': 1});
       try {

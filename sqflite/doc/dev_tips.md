@@ -165,18 +165,33 @@ following in you app manifest (in the application object):
 </application>
 ```
 
-Alternatively a more conservative (multiplatform) way is to call during onConfigure:
-
-```db
-await db.rawQuery('PRAGMA journal_mode=WAL')
-```
-
-As reported [here](https://github.com/tekartik/sqflite/issues/929) on sqflite Android the following (which should be the correct statement fails requiring to use rawQuery instead)
+Alternatively, a more conservative (multiplatform) way is to call during onConfigure:
 
 ```db
 await db.execute('PRAGMA journal_mode=WAL')
 ```
 
+As reported [here](https://github.com/tekartik/sqflite/issues/929) on sqflite Android, if the metadata is not set
+in the manifest, the following should be used
+
+```db
+await db.rawQuery('PRAGMA journal_mode=WAL')
+```
+
+so something like that could be used, however, I do recommend setting the metadata in the manifest.
+
+```dart
+try {
+  await db.execute('PRAGMA journal_mode=WAL');
+} catch (e) {
+  await db.rawQuery('PRAGMA journal_mode=WAL');
+}
+```
+
+As of `sqflite_common` 2.5.6, you can simply use during `onConfigure`:
+```dart
+await db.setJournalMode('WAL');
+```
 ## setLocale on Android
 
 Android has a specific setLocale API that allows sorting localized field according to a locale using query like:
