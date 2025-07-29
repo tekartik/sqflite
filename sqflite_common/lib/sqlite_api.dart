@@ -23,6 +23,7 @@ export 'package:sqflite_common/src/constant.dart'
         sqfliteLogLevelNone,
         sqfliteLogLevelSql,
         sqfliteLogLevelVerbose;
+export 'package:sqflite_common/src/database_ext.dart' show SqfliteDatabaseExt;
 export 'package:sqflite_common/src/exception.dart' show DatabaseException;
 export 'package:sqflite_common/src/sqflite_debug.dart'
     show SqfliteDatabaseFactoryDebug, DatabaseFactoryLoggerDebugExt;
@@ -346,6 +347,7 @@ abstract class Database implements DatabaseExecutor {
 /// Helpers
 extension SqfliteDatabaseExecutorExt on DatabaseExecutor {
   SqfliteDatabase get _db => (this as SqfliteDatabaseExecutor).db;
+
   SqfliteTransaction? get _txn => (this as SqfliteDatabaseExecutor).txn;
 
   ///

@@ -201,7 +201,7 @@ class Database {
     String getThreadLogTag() {
         Thread thread = Thread.currentThread();
 
-        return id + "," + thread.getName() + "(" + thread.getId() + ")";
+        return id + "," + thread.getName() + "(" + Utils.getThreadId(thread) + ")";
     }
 
     String getThreadLogPrefix() {

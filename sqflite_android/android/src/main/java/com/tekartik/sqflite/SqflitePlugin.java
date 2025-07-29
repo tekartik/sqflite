@@ -126,7 +126,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     // 'id': xxx
     // 'recovered': true // if recovered only for single instance
     // }
-    static Map makeOpenResult(int databaseId, boolean recovered, boolean recoveredInTransaction) {
+    static Map<String, Object> makeOpenResult(int databaseId, boolean recovered, boolean recoveredInTransaction) {
         Map<String, Object> result = new HashMap<>();
         result.put(PARAM_ID, databaseId);
         if (recovered) {
@@ -257,7 +257,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         databaseWorkerPool.post(database, () -> {
             String localeString = call.argument(PARAM_LOCALE);
             try {
-                database.sqliteDatabase.setLocale(Utils.localeForLanguateTag(localeString));
+                database.sqliteDatabase.setLocale(Utils.localeForLanguageTag(localeString));
                 result.success(null);
             } catch (Exception exception) {
                 result.error(Constant.SQLITE_ERROR, "Error calling setLocale: " + exception.getMessage(), null);
