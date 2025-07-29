@@ -145,6 +145,9 @@ extension SetupContextExt on SetupContext {
       SqfliteWebMetadata? currentMetadata;
 
       try {
+        if (verbose) {
+          _log('Reading $metadataFilePath:');
+        }
         if (metadataFile.existsSync()) {
           currentMetadata = SqfliteWebMetadata.fromJsonMap(
             jsonDecode(await File(metadataFilePath).readAsString()) as Map,

@@ -1,5 +1,10 @@
 ## 1.0.0
 
+* Requires dart 3.8
+* Bump sqlite3 wasm build to 2.8.0
+
+## 1.0.0
+
 * Requires dart 3.7
 * Bump sqlite3 wasm build to 2.7.3
 
