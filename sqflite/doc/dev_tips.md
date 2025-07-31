@@ -149,7 +149,9 @@ In Android Studio (> 3.0.1)
   Location might depends how the path was specified (assuming here that are using `getDatabasesPath` to get its base location)
 * Right click on the database and select Save As.... Save it anywhere you want on your PC.
 
-## Enable WAL on Android
+## WAL
+
+### Enable WAL on Android
 
 WAL is disabled by default on Android. Since sqflite v2.0.4-dev.1 You can turn it on by declaring the 
 following in you app manifest (in the application object):
@@ -188,10 +190,35 @@ try {
 }
 ```
 
+### Generic way of enabling WAL mode
+
 As of `sqflite_common` 2.5.6, you can simply use during `onConfigure`:
 ```dart
-await db.setJournalMode('WAL');
+onConfigure: (db) async {
+  ...
+  // Set the journal mode
+  await db.setJournalMode('WAL');
+  ...
+}
 ```
+
+## AUTO_VACUUM
+
+`PRAGMA auto_vacuum = xxx` must be called before tables are created during `onConfigure` and before setting the WAL mode. In
+`onConfigure` you can check the database version and if it is 0, you can assume the database is new.
+
+```dart
+onConfigure: (db) async {
+  // Check the version to know if the database exists
+  // auto_vacuum mode must be set before tables are created
+  var version = await db.getVersion();
+  if (version == 0) {
+    await db.execute('PRAGMA auto_vacuum = 2');
+  }
+  ...
+}
+```
+
 ## setLocale on Android
 
 Android has a specific setLocale API that allows sorting localized field according to a locale using query like:

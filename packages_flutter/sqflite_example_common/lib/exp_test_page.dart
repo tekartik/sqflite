@@ -861,6 +861,8 @@ CREATE TABLE test (
       var options = OpenDatabaseOptions(
         version: 1,
         onConfigure: (db) async {
+          // Check the version to know if the database exists
+          // auto_vacuum mode must be set before tables are created
           var version = await db.getVersion();
           if (version == 0) {
             await db.execute('PRAGMA auto_vacuum = 2');
