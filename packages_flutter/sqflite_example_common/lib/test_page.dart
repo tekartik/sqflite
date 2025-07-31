@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
+import 'package:sqflite_common/sqflite.dart';
+import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_example_common/src/common_import.dart';
 import 'package:sqflite_example_common/src/expect.dart';
 
@@ -28,6 +31,13 @@ class TestPage extends StatefulWidget {
   /// define a test.
   void test(String name, FutureOr Function() fn) {
     tests.add(Test(name, fn));
+  }
+
+  @doNotSubmit
+  /// Enable extra debug when needed
+  Future<void> enableDebug() async {
+    // ignore: deprecated_member_use
+    await databaseFactory.setLogLevel(sqfliteLogLevelVerbose);
   }
 
   /// define a solo test.

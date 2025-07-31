@@ -13,10 +13,10 @@ extension SqfliteDatabaseExt on Database {
   /// * https://github.com/tekartik/sqflite/issues/1176
   Future<void> setJournalMode(String journalMode) async {
     try {
-      await execute('PRAGMA journal_mode=$journalMode');
+      await execute('PRAGMA journal_mode = $journalMode');
     } catch (e) {
       // handle android quirks if wal is not enabled in the manifest.
-      await rawQuery('PRAGMA journal_mode=$journalMode');
+      await rawQuery('PRAGMA journal_mode = $journalMode');
     }
   }
 }

@@ -11,7 +11,7 @@ dependencies:
   collection: any
   flutter:
     sdk: flutter
-  sqflite_common:
+  sqflite_common: ">=2.5.6"
   synchronized:
   matcher:
   meta:
