@@ -104,9 +104,8 @@ public class Utils {
         return localOf(language, country, variant);
     }
 
-
     static Locale localOf(String language, String country, String variant) {
-        /* Code to use once SDK 36 is the minimum supported version
+        // SDK 36 is the minimum supported version
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             // For Android versions before 36, we can use the standard Locale constructor
             return Locale.of(language, country, variant);
@@ -116,12 +115,10 @@ public class Utils {
             Locale locale = new Locale(language, country, variant);
             return locale;
         }
-        */
-        return new Locale(language, country, variant);
     }
 
     public static long getThreadId(Thread thread) {
-        /* Code to use once SDK 36 is the minimum supported version
+        // SDK 36 is the minimum supported version
         // Build.VERSION_CODES.BAKLAVA is Android 36
         // for when Thread.threadId() is definitely available and getId() is deprecated.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) { // Android 13 (API 33) and above
@@ -134,8 +131,7 @@ public class Utils {
             @SuppressWarnings("deprecation")
             long id = thread.getId();
             return id;
-        }*/
-        return thread.getId();
+        }
     }
 
 }

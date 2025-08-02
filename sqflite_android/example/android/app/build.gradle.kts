@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.sqflite_example"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36 // flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

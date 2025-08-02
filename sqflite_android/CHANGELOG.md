@@ -1,3 +1,7 @@
+## 2.4.2-1
+
+* Requires compile SDK 36
+
 ## 2.4.1
 
 * Requires dart 3.7
