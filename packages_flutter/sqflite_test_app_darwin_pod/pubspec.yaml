@@ -61,7 +61,8 @@ dependency_overrides:
 
 # The following section is specific to Flutter.
 flutter:
-  disable-swift-package-manager: true
+  config:
+    disable-swift-package-manager: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
