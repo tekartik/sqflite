@@ -4,24 +4,19 @@ import 'package:path/path.dart';
 import 'package:process_run/shell_run.dart';
 
 var appExp1Path = join('.dart_tool', 'sqflite_test', 'exp1');
-var appExp2Path = join('.dart_tool', 'sqflite_test', 'exp2');
 
 Future<void> main() async {
-  await createAndBuildIos(appPath: appExp1Path, lang: 'objc');
-  await createAndBuildIos(appPath: appExp2Path, lang: 'swift');
+  await createAndBuildIos(appPath: appExp1Path);
 }
 
-Future<void> createAndBuildIos({
-  required String appPath,
-  required String lang,
-}) async {
+Future<void> createAndBuildIos({required String appPath}) async {
   var shell = Shell();
 
   try {
     await Directory(appPath).delete(recursive: true);
   } catch (_) {}
   await shell.run(
-    'flutter create --template app --platforms ios --ios-language $lang ${shellArgument(appPath)}',
+    'flutter create --template app --platforms ios ${shellArgument(appPath)}',
   );
 
   shell = shell.cd(appPath);
