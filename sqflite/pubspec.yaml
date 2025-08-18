@@ -19,7 +19,7 @@ funding:
   - https://github.com/sponsors/alextekartik
 
 environment:
-  sdk: ^3.8.0
+  sdk: ^3.9.0
   # Flutter versions prior to 3.7 did not support the
   # sharedDarwinSource option.
   flutter: ">=3.7.0"

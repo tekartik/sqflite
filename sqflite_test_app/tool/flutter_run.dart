@@ -8,7 +8,7 @@ Future<void> main(List<String> arguments) async {
 
   await shell.run('''
 
-flutter run
+flutter run ${shellArguments(arguments)}
 
 ''');
 }
