@@ -1,4 +1,4 @@
-## 2.4.2+1
+## 2.4.2+2
 
 * Requires compile SDK 36
 * Requires dart 3.9
