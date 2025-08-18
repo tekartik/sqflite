@@ -3,7 +3,7 @@ repository: https://github.com/tekartik/sqflite/tree/master/sqflite_android
 issue_tracker: https://github.com/tekartik/sqflite/issues
 description: Android flutter plugin for SQLite, a self-contained, high-reliability,
   embedded, SQL database engine.
-version: 2.4.2-1
+version: 2.4.2
 
 # This package supports all platforms listed below.
 platforms:
@@ -33,9 +33,9 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  sqflite_common: '>=2.5.0-1 <4.0.0'
+  sqflite_common: '>=2.5.6 <4.0.0'
   path: '>=1.8.0 <3.0.0'
-  sqflite_platform_interface: '>=2.4.0-0 <4.0.0'
+  sqflite_platform_interface: '>=2.4.0 <4.0.0'
 
 dev_dependencies:
   flutter_lints: ">=5.0.0"
