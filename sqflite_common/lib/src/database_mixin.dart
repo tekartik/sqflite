@@ -943,7 +943,10 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     if (openResult is int) {
       return openResult;
     } else if (openResult is Map) {
-      final id = openResult[paramId] as int?;
+      final id = openResult[paramId];
+      if (id is! int) {
+        throw 'invalid open result $openResult';
+      }
       // Recover means we found an instance in the native world
       final recoveredInTransaction =
           openResult[paramRecoveredInTransaction] == true;
@@ -968,7 +971,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           }
         }
       }
-      return id!;
+      return id;
     } else {
       throw 'unsupported result $openResult (${openResult?.runtimeType})';
     }
