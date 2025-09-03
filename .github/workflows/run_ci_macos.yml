@@ -21,7 +21,7 @@ jobs:
             flutter: stable
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: subosito/flutter-action@v2
         with:
           channel: ${{ matrix.flutter }}
