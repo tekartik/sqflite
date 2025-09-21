@@ -12,6 +12,5 @@ dependencies:
   sqflite_example_common:
     git:
       url: https://github.com/tekartik/sqflite
-      ref: dart3a
       path: packages_flutter/sqflite_example_common
 ```
