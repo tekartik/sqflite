@@ -1,6 +1,7 @@
-## 2.3.6
+## 2.3.6+1
 
 * Bundle Windows sqlite3.dll 3.50.1
+* `sqflite3: >= 2.9.3` 
 
 ## 2.3.5
 

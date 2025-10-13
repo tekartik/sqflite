@@ -1,3 +1,8 @@
+## 1.0.1+2
+
+* Requires dart 3.9
+* Bump sqlite3 wasm build to 2.9.3
+
 ## 1.0.1+1
 
 * Requires dart 3.8
