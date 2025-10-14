@@ -41,6 +41,10 @@ class _ItemWidgetState extends State<ItemWidget> {
         icon = Icons.close;
         color = Colors.red;
         break;
+      case ItemState.warning:
+        icon = Icons.warning;
+        color = Colors.orange;
+        break;
     }
     return ListTile(
       dense: true,

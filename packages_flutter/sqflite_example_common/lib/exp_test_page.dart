@@ -899,6 +899,145 @@ CREATE TABLE test (
         await db.close();
       }
     });
+
+    Future<bool> supports(String exec) async {
+      final db = await databaseFactory.openDatabase(inMemoryDatabasePath);
+      print('supports: $exec');
+      try {
+        await db.execute(exec);
+        return true;
+      } catch (e) {
+        print('does not support $exec: $e');
+        return false;
+      } finally {
+        await db.close();
+      }
+    }
+
+    late final supportsFts3 = supports(
+      'CREATE VIRTUAL TABLE foo USING fts3(title, content)',
+    );
+    late final supportsFts4 = supports(
+      'CREATE VIRTUAL TABLE foo USING fts4(title, content)',
+    );
+    late final supportsFts5 = supports(
+      'CREATE VIRTUAL TABLE foo USING fts5(title, content)',
+    );
+
+    test('fts3', () async {
+      if (!await supportsFts3) {
+        print('fts3 not supported');
+        return false;
+      }
+
+      var path = await initDeleteDb('exp_fts3.db');
+
+      /// Simple fts3 test
+      var db = await databaseFactory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE VIRTUAL TABLE test USING fts3(title, body)',
+            );
+
+            await db.insert('test', <String, Object?>{
+              'title': 'Test1',
+              'body': 'without quote',
+            });
+            await db.insert('test', <String, Object?>{
+              'title': 'Test2',
+              'body': "with ' quote",
+            });
+          },
+        ),
+      );
+
+      var resultSet = await db.query(
+        'test',
+        where: 'body MATCH ?',
+        whereArgs: ['quote'],
+      );
+      expect(resultSet.length, 2);
+      await db.close();
+    });
+    test('fts4', () async {
+      if (!await supportsFts4) {
+        print('fts4 not supported');
+        return false;
+      }
+
+      var path = await initDeleteDb('exp_fts4.db');
+
+      /// Simple fts4 test
+      var db = await databaseFactory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE VIRTUAL TABLE test USING fts4(title, body)',
+            );
+
+            await db.insert('test', <String, Object?>{
+              'title': 'Test1',
+              'body': 'without quote',
+            });
+            await db.insert('test', <String, Object?>{
+              'title': 'Test2',
+              'body': "with ' quote",
+            });
+          },
+        ),
+      );
+
+      var resultSet = await db.query(
+        'test',
+        where: 'body MATCH ?',
+        whereArgs: ['quote'],
+      );
+      expect(resultSet.length, 2);
+      await db.close();
+    });
+    test('fts5', () async {
+      if (!await supportsFts5) {
+        print('fts5 not supported');
+        return false;
+      }
+
+      var path = await initDeleteDb('exp_fts5.db');
+
+      /// Simple fts5 test
+      var db = await databaseFactory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (Database db, int version) async {
+            await db.execute(
+              'CREATE VIRTUAL TABLE test USING fts5(title, body)',
+            );
+
+            await db.insert('test', <String, Object?>{
+              'title': 'Test1',
+              'body': 'without quote',
+            });
+            await db.insert('test', <String, Object?>{
+              'title': 'Test2',
+              'body': "with ' quote",
+            });
+          },
+        ),
+      );
+
+      var resultSet = await db.query(
+        'test',
+        where: 'body MATCH ?',
+        whereArgs: ['quote'],
+      );
+      expect(resultSet.length, 2);
+      await db.close();
+    });
   }
 }
 

@@ -132,9 +132,10 @@ class _TestPageState extends State<TestPage> with Group {
         items.add(item);
       });
       try {
-        await test.fn();
+        var result = await test.fn();
 
-        item = Item(test.name)..state = ItemState.success;
+        item = Item(test.name)
+          ..state = result == false ? ItemState.warning : ItemState.success;
       } catch (e, st) {
         print(e);
         print(st);
@@ -164,10 +165,11 @@ class _TestPageState extends State<TestPage> with Group {
     });
     try {
       print('TEST Running ${test.name}');
-      await test.fn();
+      var result = await test.fn();
       print('TEST Done ${test.name}');
 
-      item = Item(test.name)..state = ItemState.success;
+      item = Item(test.name)
+        ..state = (result == false) ? ItemState.warning : ItemState.success;
     } catch (e, st) {
       print('TEST Error $e running ${test.name}');
       try {

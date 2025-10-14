@@ -13,6 +13,9 @@ enum ItemState {
 
   /// test fails.
   failure,
+
+  /// test warning
+  warning, // when false is returned
 }
 
 /// Menu item.
@@ -42,8 +45,12 @@ class SqfMenuItem extends Item {
     state = ItemState.running;
     return Future<void>.delayed(const Duration()).then((_) async {
       try {
-        await body();
-        state = ItemState.success;
+        var result = await body();
+        if (result == false) {
+          state = ItemState.warning;
+        } else {
+          state = ItemState.success;
+        }
       } catch (e) {
         state = ItemState.failure;
         rethrow;
@@ -52,5 +59,5 @@ class SqfMenuItem extends Item {
   }
 
   /// Menu item body.
-  final FutureOr Function() body;
+  final FutureOr<dynamic> Function() body;
 }
