@@ -34,9 +34,7 @@ linter:
     - directives_ordering
     - implicit_reopen
     - invalid_case_patterns
-    - iterable_contains_unrelated_type
     - library_names
-    - list_remove_unrelated_type
     - no_adjacent_strings_in_list
     - no_literal_bool_comparisons
     - no_self_assignments
