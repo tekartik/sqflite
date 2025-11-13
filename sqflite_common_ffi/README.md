@@ -4,7 +4,7 @@
 on [`sqlite3`](https://pub.dev/packages/sqlite3). Thanks to [Simon Binder](https://github.com/simolus3)
 
 * Works on Linux, MacOS and Windows on both Flutter and Dart VM.
-* Works on iOS and Android (using [sqlite3_flutter_libs](https://pub.dev/packages/sqlite3_flutter_libs) - Thanks
+* Works on iOS and Android (using [sqlite3](https://pub.dev/packages/sqlite3) - Thanks
 to [Simon Binder](https://github.com/simolus3))
 
 It allows also mocking sqflite during regular flutter unit test (i.e. not using the emulator/simulator).
