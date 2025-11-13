@@ -66,3 +66,6 @@ GeneratedPluginRegistrant.java
 pubspec_overrides.yaml
 _pubspec_overrides.yaml
 *.tmp
+.*
+!.gitignore
+!/.github

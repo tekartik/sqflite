@@ -1,9 +1,7 @@
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/src/windows/setup_impl.dart';
-import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 /// Local info file name.
@@ -25,24 +23,9 @@ String packageGetSqlite3DllPath(String packagePath) {
 /// This code is only provided for reference. See package [`sqlite3`](https://pub.dev/packages/sqlite3)
 /// for more information.
 void windowsInit() {
-  // Look for the bundle sqlite3.dll while in development
-  // otherwise make sure to copy the dll along with the executable
-  var path = findWindowsDllPath();
-  if (path != null) {
-    open.overrideFor(OperatingSystem.windows, () {
-      // devPrint('loading $path');
-      try {
-        return DynamicLibrary.open(path);
-      } catch (e) {
-        stderr.writeln('Failed to load sqlite3.dll at $path');
-        rethrow;
-      }
-    });
-  }
-
   // Force an open in the main isolate
   // Loading from an isolate seems to break on windows
-  sqlite3.openInMemory().dispose();
+  sqlite3.openInMemory().close();
 }
 
 /// Find sqflite_common_ffi path from a repository path

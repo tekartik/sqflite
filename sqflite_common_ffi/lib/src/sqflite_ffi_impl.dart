@@ -168,7 +168,7 @@ class SqfliteFfiDatabase {
   void close() {
     _cancelQueuedHandlers();
     logResult(result: 'Closing database $this');
-    _ffiDb.dispose();
+    _ffiDb.close();
   }
 
   List<Object?> _ffiArguments(List? sqlArguments) {
@@ -207,7 +207,7 @@ class SqfliteFfiDatabase {
           preparedStatement.execute(_ffiArguments(sqlArguments));
           return;
         } finally {
-          preparedStatement.dispose();
+          preparedStatement.close();
         }
       } else {
         // devPrint('execute no args $sql');
@@ -379,7 +379,7 @@ class SqfliteFfiDatabase {
       logResult(result: 'Found ${result.length} rows');
       return packResult(result);
     } finally {
-      preparedStatement.dispose();
+      preparedStatement.close();
     }
   }
 
@@ -478,7 +478,7 @@ class SqfliteFfiDatabase {
       if (logLevel >= sqfliteLogLevelVerbose) {
         logResult(result: 'Closing cursor $cursorId');
       }
-      info.statement.dispose();
+      info.statement.close();
     }
   }
 

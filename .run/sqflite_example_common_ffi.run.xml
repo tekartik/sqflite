@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="sqflite_example_common_ffi" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="filePath" value="$PROJECT_DIR$/packages_flutter/sqflite_example_common/lib/main_ffi.dart" />
+    <method v="2" />
+  </configuration>
+</component>

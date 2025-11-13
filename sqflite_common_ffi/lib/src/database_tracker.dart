@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS $_tableName (
         for (final row in results) {
           final ptr = Pointer.fromAddress(row.columnAt(0) as int);
           try {
-            sqlite3.fromPointer(ptr).dispose();
+            sqlite3.fromPointer(ptr).close();
           } catch (e) {
             // ignore: avoid_print
             print('error $e disposing $ptr');

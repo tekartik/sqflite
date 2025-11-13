@@ -15,6 +15,6 @@ void main() {
     final database = sqlite3.openInMemory();
     var version = database.userVersion;
     expect(version, 0);
-    database.dispose();
+    database.close();
   });
 }
