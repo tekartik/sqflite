@@ -2,7 +2,9 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_test/all_test.dart' as all;
 import 'package:sqflite_common_test/sqflite_test.dart';
 
-var _factory = createDatabaseFactoryFfi(noIsolate: true);
+var _factory = createDatabaseFactoryFfi(
+  noIsolate: true,
+); // .debugQuickLoggerWrapper();
 
 class SqfliteFfiNoIsolateTestContext extends SqfliteLocalTestContext {
   SqfliteFfiNoIsolateTestContext() : super(databaseFactory: _factory);

@@ -28,6 +28,7 @@ linter:
   rules:
     - always_declare_return_types
     - avoid_dynamic_calls
+    # - avoid_print
     - avoid_slow_async_io
     - cancel_subscriptions
     - deprecated_member_use_from_same_package

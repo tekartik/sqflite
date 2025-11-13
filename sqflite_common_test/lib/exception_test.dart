@@ -327,9 +327,10 @@ void run(SqfliteTestContext context) {
       try {
         await db.update('Test', <String, Object?>{
           'name': 'test1',
-        }, where: 'name = "test2"');
+        }, where: 'name = \'test2\'');
         fail('should fail');
       } on DatabaseException catch (e) {
+        print(e);
         // iOS DatabaseException(Error Domain=FMDatabase Code=1555 "UNIQUE constraint failed: Test.name"
         expect(e.getResultCode(), 1555);
         expect(e.isUniqueConstraintError(), isTrue);
