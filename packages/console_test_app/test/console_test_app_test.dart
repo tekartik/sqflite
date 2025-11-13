@@ -18,10 +18,10 @@ void main() {
   test('compile exe and run', () async {
     var shell = Shell();
     await shell.run('''
-        dart compile exe bin/sqflite_ffi_simple_bin.dart --output .dart_tool/sqflite_ffi_simple_bin.exe  
+        dart build cli bin/sqflite_ffi_simple_bin.dart --output .local/sqflite_ffi_simple_bin  
         ''');
     await shell.run('''
-       .dart_tool/sqflite_ffi_simple_bin.exe
+       .local/sqflite_ffi_simple_bin/bundle/bin/sqflite_ffi_simple_bin
         ''');
   }, timeout: Timeout(Duration(seconds: 60)));
 }
