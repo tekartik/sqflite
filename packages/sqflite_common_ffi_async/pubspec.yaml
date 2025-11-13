@@ -17,7 +17,8 @@ environment:
 dependencies:
   path: '>=1.8.0 <3.0.0'
   sqflite_common: '>=2.5.4 <4.0.0'
-  sqflite_common_ffi: '>=2.3.3 <4.0.0'
+  sqflite_common_ffi: '>=2.3.3 <2.4.0'
+  sqlite3: '>=2.0.0 <3.0.0'
   sqlite_async: '>=0.6.0 <2.0.0'
 
 dev_dependencies:

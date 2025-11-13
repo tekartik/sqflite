@@ -27,5 +27,5 @@ dependency_overrides:
     path: ../sqflite_common_ffi_async
   sqflite_common:
     path: ../../sqflite_common
-  sqflite_common_ffi:
-    path: ../../sqflite_common_ffi
+  # sqflite_common_ffi: tmp disabled
+  #  path: ../../sqflite_common_ffi
