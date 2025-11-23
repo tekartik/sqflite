@@ -3,7 +3,7 @@
 import 'package:sqflite_common_ffi_web/src/import.dart';
 
 /// For testing.
-var _sqliteFfiWebDebugWebWorker = false; // devWarning(true);
+var _sqliteFfiWebDebugWebWorker = false;
 
 /// Testing only.
 bool get sqliteFfiWebDebugWebWorker => _sqliteFfiWebDebugWebWorker;

@@ -1,4 +1,4 @@
-## 1.0.2
+## 1.1.0
 
 * sqlite ^2.9.4 (deps and wasm build)
 
