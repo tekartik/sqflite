@@ -208,19 +208,22 @@ void run(SqfliteTestContext context) {
         path,
         options: OpenDatabaseOptions(readOnly: true),
       );
-      // Change the user version to test read-only mode
-      try {
-        // await db.setVersion(2);
-        await db.execute('PRAGMA user_version = 2');
-        fail('should fail');
-      } on DatabaseException catch (e) {
-        // ffo: SqfliteFfiException(sqlite_error8, , SqliteException(8): attempt to write a readonly database} DatabaseException(SqliteException(8): attempt to write a readonly database) sql 'PRAGMA user_version = 2
-        print(e);
-        expect(e.isReadOnlyError(), isTrue);
-        expect(e.getResultCode(), 8);
+      if (!context.isWeb) {
+        // Change the user version to test read-only mode
+        try {
+          // await db.setVersion(2);
+          await db.execute('PRAGMA user_version = 2');
+          fail('should fail');
+        } on DatabaseException catch (e) {
+          // ffo: SqfliteFfiException(sqlite_error8, , SqliteException(8): attempt to write a readonly database} DatabaseException(SqliteException(8): attempt to write a readonly database) sql 'PRAGMA user_version = 2
+          print(e);
+          expect(e.isReadOnlyError(), isTrue);
+          expect(e.getResultCode(), 8);
+        }
+        // Check that it has not changed
+        expect(await db.getVersion(), 1);
+        await db.close();
       }
-      // Check that it has not changed
-      expect(await db.getVersion(), 1);
     });
 
     test('Sqlite constraint Exception', () async {

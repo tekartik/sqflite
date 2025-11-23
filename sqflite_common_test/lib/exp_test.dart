@@ -513,11 +513,12 @@ INSERT INTO test (value) VALUES (10);
         path,
         options: OpenDatabaseOptions(readOnly: true),
       );
-      try {
-        await db.execute('PRAGMA user_version = 4');
-        fail('should fail');
-      } on DatabaseException catch (_) {}
-      db = await factory.openDatabase(path);
+      if (!context.isWeb) {
+        try {
+          await db.execute('PRAGMA user_version = 4');
+          fail('should fail');
+        } on DatabaseException catch (_) {}
+      }
     } finally {
       await db.close();
     }

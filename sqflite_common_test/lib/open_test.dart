@@ -152,20 +152,23 @@ void run(SqfliteTestContext context) {
     });
 
     test('Delete database while open', () async {
-      var path = await context.initDeleteDb('delete_open_database.db');
-      var db = await factory.openDatabase(path);
-      await db.getVersion();
-
-      await factory.deleteDatabase(path);
-      try {
+      if (!context.isWeb) {
+        var path = await context.initDeleteDb('delete_open_database.db');
+        var db = await factory.openDatabase(path);
         await db.getVersion();
-        fail('Should fail');
-      } catch (e) {
-        expect(e, isNot(const TypeMatcher<TestFailure>()));
-      }
 
-      db = await factory.openDatabase(path);
-      await db.getVersion();
+        await factory.deleteDatabase(path);
+        try {
+          await db.getVersion();
+          fail('Should fail');
+        } catch (e) {
+          expect(e, isNot(const TypeMatcher<TestFailure>()));
+        }
+
+        db = await factory.openDatabase(path);
+        await db.getVersion();
+        await db.close();
+      }
     });
 
     test('Open no version', () async {
@@ -202,9 +205,8 @@ void run(SqfliteTestContext context) {
       );
       var dbPath = join(path, 'open.db');
       var db = await factory.openDatabase(dbPath);
-      try {} finally {
-        await db.close();
-      }
+
+      await db.close();
     });
 
     test('open in sub sub directory', () async {
@@ -249,7 +251,9 @@ void run(SqfliteTestContext context) {
         );
         verify(false);
       } on ArgumentError catch (_) {}
-      verify(!File(path).existsSync());
+      if (!context.isWeb) {
+        verify(!File(path).existsSync());
+      }
       expect(db, null);
     });
 
@@ -380,7 +384,7 @@ void run(SqfliteTestContext context) {
 
     test('Open bad path', () async {
       // Don't test on windows as it creates the path...
-      if (!context.isWindows) {
+      if (!context.isWindows && !context.isWeb) {
         try {
           await factory.openDatabase('/invalid_path');
           fail('should fail');

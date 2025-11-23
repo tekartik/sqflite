@@ -2,10 +2,21 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart' as utils;
 import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
+
+extension SqfliteDatabaseTextExt on Database {
+  Future<Version> testGetSqliteVersion() async {
+    var sqliteVersionText = (await rawQuery(
+      'select sqlite_version()',
+    )).first.values.first!.toString();
+    var sqliteVersion = Version.parse(sqliteVersionText);
+    return sqliteVersion;
+  }
+}
 
 /// Raw tests.
 void run(SqfliteTestContext context) {
@@ -83,6 +94,7 @@ void run(SqfliteTestContext context) {
       print('expected $expectedList');
       expect(list, expectedList);
 
+      print('sqflite_version: ${await database.testGetSqliteVersion()}');
       await database.close();
     });
 

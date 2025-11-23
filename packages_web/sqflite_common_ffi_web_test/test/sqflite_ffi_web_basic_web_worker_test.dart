@@ -25,6 +25,7 @@ Future<void> main() async {
   // sqliteFfiWebDebugWebWorker = true;
   sqfliteFfiInit();
   try {
+    // _factory = _factory.debugQuickLoggerWrapper();
     var dbsPath = await _factory.getDatabasesPath();
     await _factory.setDatabasesPath('${dbsPath}_web_basic_worker');
 

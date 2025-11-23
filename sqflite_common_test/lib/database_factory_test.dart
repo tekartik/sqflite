@@ -40,9 +40,11 @@ void run(SqfliteTestContext context) {
     test('setDatabasesPath', () async {
       var originalDatabasesPath = await factory.getDatabasesPath();
       try {
-        var path = context.pathContext.normalize(
-          context.pathContext.absolute(context.pathContext.current),
-        );
+        var path = context.isWeb
+            ? '/some_top_path'
+            : context.pathContext.normalize(
+                context.pathContext.absolute(context.pathContext.current),
+              );
         await factory.setDatabasesPath(path);
         expect(await factory.getDatabasesPath(), path);
       } finally {

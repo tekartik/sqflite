@@ -1,3 +1,13 @@
+## sqlite3 Troubleshooting
+
+sqlite3 v3 (imported since sqflite_common_ffi 2.2.3) depends on hooks which can cause some issues (iOS validation, dynamic lib not found).
+Until these issues are resolved, you can simply add the following constraint to continue using sqlite3 v2
+
+```yaml
+dependencives:
+  sqlite3: ^2.9.4
+```
+
 ## Linux
 
 ### Missing `libsqlite3.so`

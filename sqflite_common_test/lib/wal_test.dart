@@ -13,7 +13,7 @@ void walTests(SqfliteTestContext context) {
   var factory = context.databaseFactory;
   group('wal', () {
     test('wal files path', () async {
-      if (io.Platform.isLinux) {
+      if (!context.isWeb && io.Platform.isLinux) {
         // await utils.devSetDebugModeOn(false);
         var databasesPath = await factory.getDatabasesPath();
         // Use a specific folder.
