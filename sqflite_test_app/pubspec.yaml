@@ -36,7 +36,7 @@ dependencies:
   dev_build:
   process_run: '>=0.13.3-1'
   path:
-  sqflite_common_ffi_web:
+  sqflite_common_ffi_web: '^1.0.2'
   sqlite3: '>=2.4.6'
   sqflite_example_common:
     git:
