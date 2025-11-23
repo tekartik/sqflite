@@ -1,5 +1,10 @@
 ## 1.1.0
 
+* sqlite ^3.1.0 (deps and wasm build)
+* Requires dart 3.9
+
+## 1.0.2
+
 * sqlite ^2.9.4 (deps and wasm build)
 
 ## 1.0.1+2
