@@ -35,10 +35,9 @@ allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    // Conditional for compatibility with AGP <4.2.
-    if (project.android.hasProperty("namespace")) {
-        namespace 'com.tekartik.sqflite'
-    }
+    // Namespace
+    namespace 'com.tekartik.sqflite'
+
     compileSdk = 36 // flutter.compileSdkVersion
 
     compileOptions {
