@@ -1,7 +1,13 @@
+## 2.4.0+1
+
+* Requires dart 3.10
+* `sqflite3: >=3.0.0`
+* Support build hooks and remove bundled dll
+
 ## 2.3.6+1
 
 * Bundle Windows sqlite3.dll 3.50.1
-* `sqflite3: >= 2.9.3` 
+* `sqflite3: >=2.9.3` 
 
 ## 2.3.5
 
