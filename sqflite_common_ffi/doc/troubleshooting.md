@@ -1,5 +1,7 @@
 ## sqlite3 Troubleshooting
 
+### sqlite3 v2 support
+
 sqlite3 v3 (imported since sqflite_common_ffi 2.4.0+) depends on hooks which can cause some issues (iOS validation, dynamic lib not found).
 Until these issues are resolved, you can simply add the following constraint to continue using sqlite3 v2
 
@@ -8,9 +10,45 @@ dependencives:
   sqlite3: ^2.9.4
 ```
 
+Make sure to run `flutter clean` if you switch from sqlite3 v3 to v2.
+
+### sqlite3 v3 support
+
+Follow the following issue regarding sqlite3 v3 current issues:
+https://github.com/simolus3/sqlite3.dart/issues/336
+
+Make sure to use at least sqflite_common_ffi 2.4.0+ and sqlite3 3.0.0+:
+
+```yaml
+dependencies:
+  sqlite3: ^3.0.0
+  sqflite_common_ffi: ^2.4.0
+```
+
+Make sure to run `flutter clean` if you switch from sqlite3 v2 to v3.
+
+Since sqlite3 v3 uses build hooks, make sure that these hooks can run.
+For dart (not flutter), you have to run at least once:
+```shell
+dart run xxxx.dart
+```
+instead of
+```shell
+dart xxxx.dart
+```
+
+so that build hooks can run.
+
+In my experiments, since IDE like intellij do not run build hooks properly, I had to run once from command line so that 
+the build hooks can run and setup the dynamic library. after that, IDE runs (that uses `dart xxx.dart`) work fine.
+
+Build hooks are still a new feature so hopefully these issues will be resolved soon.
+
 ## Linux
 
-### Missing `libsqlite3.so`
+### Missing `libsqlite3.so` (sqlite3 v2)
+
+This is for sqlite_common_ffi before 2.4.0 that depends on sqlite3 v2.
 
 if you get
 
@@ -44,3 +82,5 @@ Or if you know that you are on linux you can simply add:
 ```
      - run: sudo apt-get -y install libsqlite3-dev
 ```
+
+For sqflite_common_ffi 2.4.0+ (sqlite3 v3), this should not be required anymore.
