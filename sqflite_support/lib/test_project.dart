@@ -57,7 +57,11 @@ Future<String> findFirstIOSDeviceId() async {
 }
 
 /// Run iOS
-Future<void> runIOS() async {
+Future<void> runIOS({bool? release}) async {
+  release ??= false;
   var iosDeviceId = await findFirstIOSDeviceId();
-  await run('flutter run -d $iosDeviceId');
+  await run(
+    'flutter run -d $iosDeviceId'
+    '${release ? ' --release' : ''}',
+  );
 }
