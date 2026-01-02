@@ -1,3 +1,8 @@
+## 1.1.1
+
+* Update sqlite3 wasm build to 3.1.2
+* Fix wasm and indexed db name overriding in shared worker mode
+
 ## 1.1.0
 
 * sqlite ^3.1.0 (deps and wasm build)
