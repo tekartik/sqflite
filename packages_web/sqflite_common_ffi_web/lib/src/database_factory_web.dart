@@ -4,6 +4,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'
     show SqfliteFfiHandlerWeb;
+import 'package:sqflite_common_ffi_web/src/sw/constants.dart';
 import 'package:sqflite_common_ffi_web/src/utils.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
     show
@@ -60,6 +61,19 @@ DatabaseFactory createDatabaseFactoryFfiWeb({
           await _initLock.synchronized(() async {
             context ??= await sqfliteFfiWebStartSharedWorker(webOptions);
             sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
+
+            /// Send options before any other call
+            if (webOptions.indexedDbName != null ||
+                webOptions.sqlite3WasmUri != null ||
+                webOptions.sharedWorkerUri != null ||
+                webOptions.forceAsBasicWorker != null ||
+                webOptions.inMemory != null) {
+              var optionsMethodCall = FfiMethodCall(
+                methodSetWebOptions,
+                webOptions.toMap(),
+              );
+              await ffiMethodCallSendToWebWorker(optionsMethodCall, context!);
+            }
           });
         }
 
@@ -117,6 +131,12 @@ Future<dynamic> ffiMethodCallHandleNoWebWorker(
   try {
     if (_debug) {
       _log('handle $methodCall');
+    }
+
+    /// Handle web options (get only)
+    var method = methodCall.method;
+    if (method == methodGetWebOptions) {
+      return context.options.toMap();
     }
     dynamic result = await methodCall.rawHandle();
 

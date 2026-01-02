@@ -54,7 +54,6 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   pub_semver:
-  sqlite3_flutter_libs:
   sqflite_support:
     path: ../sqflite_support
 dependency_overrides:

@@ -215,11 +215,14 @@ extension SetupContextExt on SetupContext {
     if (File(join(out, 'sqflite_sw.dart')).existsSync()) {
       _log('no files created here, we are the generator');
     } else {
-      var swJsFile = overridenSwJsFile ?? sqfliteSharedWorkerJsFile;
+      var swJsFile =
+          options.sqfliteWebWorkerFilename ??
+          overridenSwJsFile ??
+          sqfliteSharedWorkerJsFile;
       var sqfliteSwJsOutFile = join(out, swJsFile);
       await File(builtSwJsFilePath).copy(sqfliteSwJsOutFile);
 
-      var wasmFile = join(out, sqlite3WasmFile);
+      var wasmFile = join(out, options.sqlite3WasmFilename ?? sqlite3WasmFile);
       if (!options.noSqlite3Wasm) {
         var uri = sqlite3WasmReleaseUri;
         _log('Fetching: $uri');
