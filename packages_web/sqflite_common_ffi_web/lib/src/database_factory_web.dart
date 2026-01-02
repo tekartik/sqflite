@@ -61,19 +61,6 @@ DatabaseFactory createDatabaseFactoryFfiWeb({
           await _initLock.synchronized(() async {
             context ??= await sqfliteFfiWebStartSharedWorker(webOptions);
             sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
-
-            /// Send options before any other call
-            if (webOptions.indexedDbName != null ||
-                webOptions.sqlite3WasmUri != null ||
-                webOptions.sharedWorkerUri != null ||
-                webOptions.forceAsBasicWorker != null ||
-                webOptions.inMemory != null) {
-              var optionsMethodCall = FfiMethodCall(
-                methodSetWebOptions,
-                webOptions.toMap(),
-              );
-              await ffiMethodCallSendToWebWorker(optionsMethodCall, context!);
-            }
           });
         }
 

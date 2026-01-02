@@ -2,6 +2,9 @@ import 'dart:js_interop';
 
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:sqflite_common_ffi_web/src/constant.dart';
+import 'package:sqflite_common_ffi_web/src/database_factory_web.dart';
+import 'package:sqflite_common_ffi_web/src/import.dart';
+import 'package:sqflite_common_ffi_web/src/sw/constants.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart' as web;
 
@@ -82,11 +85,29 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
       }
       worker = web.Worker(sharedWorkerUri.toString().toJS);
     }
-    return SqfliteFfiWebContextImpl(
+
+    var context = SqfliteFfiWebContextImpl(
       options: options,
       sharedWorker: sharedWorker,
       worker: worker,
     );
+
+    /// Send options before any other call
+    if (options.indexedDbName != null ||
+        options.sqlite3WasmUri != null ||
+        options.sharedWorkerUri != null ||
+        options.forceAsBasicWorker != null ||
+        options.inMemory != null) {
+      if (_debug) {
+        _log('$_swc setting options ${options.toMap()}');
+      }
+      var optionsMethodCall = FfiMethodCall(
+        methodSetWebOptions,
+        options.toMap(),
+      );
+      await ffiMethodCallSendToWebWorker(optionsMethodCall, context);
+    }
+    return context;
   } catch (e, st) {
     if (_debug) {
       _log('sqfliteFfiWebLoadSqlite3Wasm failed: $e');

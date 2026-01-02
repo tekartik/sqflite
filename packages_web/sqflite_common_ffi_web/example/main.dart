@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi_web/src/database_factory.dart';
 import 'package:sqflite_common_ffi_web/src/sw/constants.dart';
 import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
     show SqfliteFfiWebContextExt;
@@ -250,7 +252,7 @@ Future<void> incrementSqfliteValueInDatabaseFactory(
   }
 }
 
-Future<void> readWiteDatabase(DatabaseFactory factory, int size) async {
+Future<void> readWriteDatabase(DatabaseFactory factory, int size) async {
   try {
     var path = 'read_write.db';
     var bytes = Uint8List.fromList(List.generate(size, (index) => index % 256));
@@ -288,9 +290,36 @@ void initUi() {
       databaseFactoryWebPrebuilt,
       databaseFactoryWebLocal,
     ]) {
-      write('factory: $factory');
-      await readWiteDatabase(factory, 3);
-      await readWiteDatabase(factory, 1024 * 1024);
+      try {
+        write('factory: ${_tags[factory]}');
+        await readWriteDatabase(factory, 3);
+        await readWriteDatabase(factory, 1024 * 1024);
+      } catch (e) {
+        write('exception $e');
+      }
+    }
+  });
+  addButton('get web options', () async {
+    for (var factory in [
+      databaseFactoryWebNoWebWorkerLocal,
+      databaseFactoryWebPrebuilt,
+      databaseFactoryWebLocal,
+      databaseFactoryWebBasicWorkerLocal,
+    ]) {
+      try {
+        write('factory: ${_tags[factory]}');
+        var options = await factory.getWebOptions();
+        write(const JsonEncoder.withIndent('  ').convert(options.toMap()));
+      } catch (e) {
+        write('exception $e');
+      }
     }
   });
 }
+
+var _tags = {
+  databaseFactoryWebNoWebWorkerLocal: 'no_web_worker',
+  databaseFactoryWebPrebuilt: 'prebuilt',
+  databaseFactoryWebLocal: 'local',
+  databaseFactoryWebBasicWorkerLocal: 'basic_worker',
+};
