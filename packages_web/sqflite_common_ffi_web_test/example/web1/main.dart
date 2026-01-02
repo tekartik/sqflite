@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi_web_test/src/import.dart';
 import 'package:sqflite_common_ffi_web_test/src/ui.dart';
 
 Future<void> main() async {
@@ -8,35 +11,20 @@ Future<void> main() async {
   // Use the ffi web factory in web apps (flutter or dart) with an overriden file name for testing
   var factory = createDatabaseFactoryFfiWeb(
     options: SqfliteFfiWebOptions(
-      sharedWorkerUri: Uri.parse('sqflite_sw_v1.js'),
+      sharedWorkerUri: Uri.parse('sqflite_sw_example_web1.js'),
+      indexedDbName: 'sqflite_databases_example_web1',
+      sqlite3WasmUri: Uri.parse('sqlite3_example_web1.wasm'),
     ),
   );
 
-  // test: custom uri dummy
-  // ignore: dead_code
-  if (false) {
-    // devWarning(true)) {
-    factory = createDatabaseFactoryFfiWeb(
-      options: SqfliteFfiWebOptions(
-        sharedWorkerUri: Uri.parse('sqflite_sw_v2.js'),
-      ),
-    );
-  }
-  if (true) {
-    // devWarning(true)) {
-    factory = createDatabaseFactoryFfiWeb(
-      options: SqfliteFfiWebOptions(
-        // ignore: invalid_use_of_visible_for_testing_member
-        forceAsBasicWorker: true,
-        sharedWorkerUri: Uri.parse('sqflite_sw_v1.js'),
-      ),
-    );
-  }
-
+  var options = await factory.getWebOptions();
+  write('Web options:');
+  write(const JsonEncoder.withIndent('  ').convert(options.toMap()));
   var db = await factory.openDatabase(inMemoryDatabasePath);
   var sqliteVersion = (await db.rawQuery(
     'select sqlite_version()',
   )).first.values.first;
+  write('SQLite version:');
   write(sqliteVersion.toString());
 
   await incrementSqfliteValueInDatabaseFactory(factory);
