@@ -8,6 +8,7 @@ Until these issues are resolved, you can simply add the following constraint to 
 ```yaml
 dependencives:
   sqlite3: ^2.9.4
+  sqflite_common_ffi: ^2.3.7
 ```
 
 Make sure to run `flutter clean` if you switch from sqlite3 v3 to v2.

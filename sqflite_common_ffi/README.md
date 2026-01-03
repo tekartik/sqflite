@@ -20,6 +20,28 @@ dev_dependencies:
   sqflite_common_ffi:
 ```
 
+### sqlite3 v2 support
+
+See [here](https://github.com/tekartik/sqflite/blob/master/sqflite_common_ffi/doc/troubleshooting.md#sqlite3-v2-support)
+
+Use the following constraint
+```yaml
+dependencives:
+  sqlite3: ^2.9.4
+  sqflite_common_ffi: ^2.3.7
+```
+
+### sqlite3 v3 support
+
+See [here](https://github.com/tekartik/sqflite/blob/master/sqflite_common_ffi/doc/troubleshooting.md#sqlite3-v3-support)
+
+Use the following constraint
+```yaml
+dependencives:
+  sqlite3: ^3.0.0
+  sqflite_common_ffi: ^2.4.0
+```
+
 ### Linux
 
 `libsqlite3` and `libsqlite3-dev` linux packages are required.
@@ -48,11 +70,11 @@ Should work as is. sqlite3 v3 uses build_hooks to build and setup sqlite3.dll.
 at [sqlite3](https://pub.dev/packages/sqlite3)
 if you want to override the behavior.
 
-#### Note for sqlite3 < 3, sqflite_common_ffi < 2.4
+#### Note for sqlite3 < 3.0.0, sqflite_common_ffi < 2.4
 
 Should work as is in debug mode (`sqlite3.dll` is bundled).
 
-In release mode, add `sqlite3.dllo` [last version updated](https://github.com/tekartik/sqflite/blob/1dd13926ec92015640068fca1601b4d1fadfa2ee/sqflite_common_ffi/lib/src/windows/sqlite3.dll) in same
+In release mode, add `sqlite3.dll` [last version updated](https://github.com/tekartik/sqflite/blob/1dd13926ec92015640068fca1601b4d1fadfa2ee/sqflite_common_ffi/lib/src/windows/sqlite3.dll) in same
 folder as your executable.
 
 

@@ -1,8 +1,22 @@
-## 2.4.0+1
+## 2.4.0+2
 
 * Requires dart 3.10
 * `sqflite3: >=3.0.0`
 * Support build hooks and remove bundled dll
+* To support sqlite3 v2 use version 2.3.7
+
+## 2.3.7+1
+
+* fix sqlite3 dependency to `^2.9.4`
+* Last version supporting sqlite3 v2 to use with this explicit constraint as earlier version allow sqlite3 up to `<4.0.0`:
+```yaml
+  sqflite_common_ffi: ">=2.3.7 <2.4.0"
+```
+or
+```yaml
+  sqflite_common_ffi: ^2.3.7
+  sqlite3: ^2.9.4
+```
 
 ## 2.3.6+1
 
