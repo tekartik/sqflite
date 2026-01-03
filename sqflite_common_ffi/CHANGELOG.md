@@ -1,3 +1,11 @@
+## 2.3.7
+
+* fix sqlite3 dependency to `^2.9.4`
+* Last version supporting sqlite3 v2 to use with this explicit constraint as earlier version allow sqlite3 up to `<4.0.0`:
+```yaml
+  sqflite_common_ffi: ^2.3.7
+```
+
 ## 2.3.6+1
 
 * Bundle Windows sqlite3.dll 3.50.1
