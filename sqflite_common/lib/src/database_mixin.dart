@@ -345,7 +345,7 @@ extension SqfliteDatabaseMixinExt on SqfliteDatabase {
   ) {
     var methodArguments = <String, Object?>{
       paramSql: sql,
-      if (sqlArguments != null) paramSqlArguments: sqlArguments,
+      paramSqlArguments: ?sqlArguments,
     }..addAll(getBaseDatabaseMethodArguments(txn));
     return methodArguments;
   }

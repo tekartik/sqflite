@@ -3,60 +3,93 @@
 version: 2
 
 enable-beta-ecosystems: true
+
 updates:
   - package-ecosystem: "pub"
     directory: "packages/console_test_app"
     schedule:
       interval: "monthly"
-
+  - package-ecosystem: "pub"
+    directory: "packages/sqflite_common_ffi_async"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "pub"
+    directory: "packages/sqflite_common_ffi_async_test"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "pub"
+    directory: "packages_flutter/sqflite_example_common"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "pub"
+    directory: "packages_flutter/sqflite_test_app_darwin_pod"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "pub"
+    directory: "packages_flutter/sqflite_test_app_darwin_spm"
+    schedule:
+      interval: "monthly"
   - package-ecosystem: "pub"
     directory: "packages_web/sqflite_common_ffi_web"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "packages_web/sqflite_common_ffi_web_test"
     schedule:
       interval: "monthly"
-
+  - package-ecosystem: "pub"
+    directory: "packages_web/sqflite_test_app_web"
+    schedule:
+      interval: "monthly"
   - package-ecosystem: "pub"
     directory: "sqflite"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "sqflite/example"
     schedule:
       interval: "monthly"
-
+  - package-ecosystem: "pub"
+    directory: "sqflite_android"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "pub"
+    directory: "sqflite_android/example"
+    schedule:
+      interval: "monthly"
   - package-ecosystem: "pub"
     directory: "sqflite_common"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "sqflite_common_ffi"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "sqflite_common_test"
     schedule:
       interval: "monthly"
-
+  - package-ecosystem: "pub"
+    directory: "sqflite_darwin"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "pub"
+    directory: "sqflite_darwin/example"
+    schedule:
+      interval: "monthly"
+  - package-ecosystem: "pub"
+    directory: "sqflite_platform_interface"
+    schedule:
+      interval: "monthly"
   - package-ecosystem: "pub"
     directory: "sqflite_support"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "sqflite_test_app"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
-    labels:
-      - autosubmit
