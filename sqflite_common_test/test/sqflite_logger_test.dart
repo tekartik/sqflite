@@ -1,3 +1,5 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/logger/sqflite_logger.dart';
 import 'package:sqflite_common_test/sqflite_protocol_test.dart';

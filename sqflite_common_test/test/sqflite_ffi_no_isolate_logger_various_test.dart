@@ -6,6 +6,7 @@ import 'package:test/test.dart';
 import 'sqflite_logger_test.dart';
 
 var _events = <SqfliteLoggerEvent>[];
+// ignore: experimental_member_use
 var _factory = SqfliteDatabaseFactoryLogger(
   createDatabaseFactoryFfi(noIsolate: true),
   options: SqfliteLoggerOptions(
@@ -16,6 +17,7 @@ var _factory = SqfliteDatabaseFactoryLogger(
     },
   ),
 );
+// ignore: experimental_member_use
 var _invokeFactory = SqfliteDatabaseFactoryLogger(
   createDatabaseFactoryFfi(noIsolate: false),
   options: SqfliteLoggerOptions(

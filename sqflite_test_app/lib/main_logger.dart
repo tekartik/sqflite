@@ -12,6 +12,7 @@ void main() {
     initFfi();
   }
   // Wrap with logger
+  // ignore: experimental_member_use
   databaseFactory = SqfliteDatabaseFactoryLogger(databaseFactory);
   mainExampleApp();
 }
