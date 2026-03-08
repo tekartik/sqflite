@@ -1,3 +1,8 @@
+## 2.4.2+3
+
+* Use compile statement for insert/update and delete to avoid invalid result in wal mode
+* Requires dart 3.10
+
 ## 2.4.2+2
 
 * Requires compile SDK 36
