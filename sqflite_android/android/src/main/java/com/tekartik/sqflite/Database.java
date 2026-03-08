@@ -26,6 +26,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
 import android.util.Log;
 
@@ -431,6 +432,28 @@ class Database {
         }
     }
 
+    private void bindArgs(SQLiteStatement stmt, Object[] args) {
+        for (int i = 0; i < args.length; i++) {
+            Object arg = args[i];
+            int index = i + 1; // SQLite parameters are 1-based
+
+            if (arg == null) {
+                stmt.bindNull(index);
+            } else if (arg instanceof byte[]) {
+                stmt.bindBlob(index, (byte[]) arg);
+            } else if (arg instanceof Double || arg instanceof Float) {
+                stmt.bindDouble(index, ((Number) arg).doubleValue());
+            } else if (arg instanceof Number) {
+                stmt.bindLong(index, ((Number) arg).longValue());
+            } else if (arg instanceof Boolean) {
+                stmt.bindLong(index, ((Boolean) arg) ? 1 : 0);
+            } else {
+                stmt.bindString(index, arg.toString());
+            }
+        }
+    }
+
+
     /**
      * Handle inTransactionChange
      *
@@ -481,59 +504,28 @@ class Database {
 
     // Return true on success
     private boolean doInsert(final Operation operation) {
-        if (!executeOrError(operation)) {
-            return false;
-        }
-        // don't get last id if not expected
-        if (operation.getNoResult()) {
-            operation.success(null);
-            return true;
+        SqlCommand command = operation.getSqlCommand();
+        if (LogLevel.hasSqlLevel(logLevel)) {
+            Log.d(TAG, getThreadLogPrefix() + command);
         }
 
-        Cursor cursor = null;
-        // Read both the changes and last insert row id in on sql call
-        String sql = "SELECT changes(), last_insert_rowid()";
-
-        // Handle ON CONFLICT but ignore error, issue #164
-        // Read the number of changes before getting the inserted id
         try {
             SQLiteDatabase db = getWritableDatabase();
-
-            cursor = db.rawQuery(sql, null);
-            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                final int changed = cursor.getInt(0);
-
-                // If the change count is 0, assume the insert failed
-                // and return null
-                if (changed == 0) {
-                    if (LogLevel.hasSqlLevel(logLevel)) {
-                        Log.d(TAG, getThreadLogPrefix() + "no changes (id was " + cursor.getLong(1) + ")");
-                    }
-                    operation.success(null);
-                    return true;
-                } else {
-                    final long id = cursor.getLong(1);
-                    if (LogLevel.hasSqlLevel(logLevel)) {
-                        Log.d(TAG, getThreadLogPrefix() + "inserted " + id);
-                    }
-                    operation.success(id);
-                    return true;
-                }
+            ///  create statement
+            SQLiteStatement statement = db.compileStatement(command.getSql());
+            bindArgs(statement, command.getSqlArguments());
+            long id = statement.executeInsert();
+            if (operation.getNoResult()) {
+                operation.success(null);
             } else {
-                Log.e(TAG, getThreadLogPrefix() + "fail to read changes for Insert");
+                operation.success(id);
             }
-            operation.success(null);
             return true;
         } catch (Exception exception) {
             handleException(exception, operation);
             return false;
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
-
 
     public void update(final @NonNull Operation operation) {
         wrapSqlOperationHandler(operation, () -> doUpdate(operation));
@@ -541,38 +533,26 @@ class Database {
 
     // Return true on success
     private boolean doUpdate(final Operation operation) {
-        if (!executeOrError(operation)) {
-            return false;
+        SqlCommand command = operation.getSqlCommand();
+        if (LogLevel.hasSqlLevel(logLevel)) {
+            Log.d(TAG, getThreadLogPrefix() + command);
         }
-        // don't get last id if not expected
-        if (operation.getNoResult()) {
-            operation.success(null);
-            return true;
-        }
-        Cursor cursor = null;
+
         try {
             SQLiteDatabase db = getWritableDatabase();
-
-            cursor = db.rawQuery("SELECT changes()", null);
-            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                final int changed = cursor.getInt(0);
-                if (LogLevel.hasSqlLevel(logLevel)) {
-                    Log.d(TAG, getThreadLogPrefix() + "changed " + changed);
-                }
-                operation.success(changed);
-                return true;
+            ///  create statement
+            SQLiteStatement statement = db.compileStatement(command.getSql());
+            bindArgs(statement, command.getSqlArguments());
+            int count = statement.executeUpdateDelete();
+            if (operation.getNoResult()) {
+                operation.success(null);
             } else {
-                Log.e(TAG, getThreadLogPrefix() + "fail to read changes for Update/Delete");
+                operation.success(count);
             }
-            operation.success(null);
             return true;
-        } catch (Exception e) {
-            handleException(e, operation);
+        } catch (Exception exception) {
+            handleException(exception, operation);
             return false;
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
 
@@ -627,6 +607,7 @@ class Database {
                         return;
                     }
                     break;
+                ///  Handle both UPDATE and DELETE
                 case METHOD_UPDATE:
                     if (doUpdate(operation)) {
                         //devLog(TAG, "results: " + operation.getBatchResults());
