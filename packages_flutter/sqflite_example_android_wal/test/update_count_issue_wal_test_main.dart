@@ -27,25 +27,31 @@ void main() async {
     expect(count, 1, reason: 'Deleting existing row should return 1');
   });
 
-  test('Inserting a new record with int PK should return the PK as row id in WAL mode', () async {
+  test('Inserting a new record with int PK should return the PK as row id in '
+      'WAL mode', () async {
     final int id = 5;
     final book = {'id': id, 'description': 'Test insert $id'};
     final result = await bookRepository.insertBook(book);
-    expect(result, id, reason: 'Inserting a new record with int PK should return the PK as row id');
+    expect(
+      result,
+      id,
+      reason:
+          'Inserting a new record with int PK should return the PK as row id',
+    );
   });
 
-  test(
-    'Inserting a new record with non-int PK should return internal non-zero row id in WAL mode',
-    () async {
-      final data = {'id': 'EUR', 'description': 'Test insert EUR'};
-      final result = await bookRepository.insertCurrency(data);
-      expect(
-        result,
-        greaterThan(0),
-        reason: 'Inserting a new record with non-int PK should return internal non-zero row id',
-      );
-    },
-  );
+  test('Inserting a new record with non-int PK should return internal non-zero '
+      'row id in WAL mode', () async {
+    final data = {'id': 'EUR', 'description': 'Test insert EUR'};
+    final result = await bookRepository.insertCurrency(data);
+    expect(
+      result,
+      greaterThan(0),
+      reason:
+          'Inserting a new record with non-int PK should return internal '
+          'non-zero row id',
+    );
+  });
 }
 
 class LocalDatabaseService {
