@@ -3,6 +3,7 @@ import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqflite.dart';
+import 'package:sqflite_common/sqflite_dev.dart';
 import 'package:sqflite_common/utils/utils.dart';
 import 'package:sqflite_example_common/utils.dart';
 
@@ -16,7 +17,7 @@ class RawTestPage extends TestPage {
   /// Raw test page.
   RawTestPage({Key? key}) : super('Raw tests', key: key) {
     test('Simple', () async {
-      // await Sqflite.devSetDebugModeOn(true);
+      // await databaseFactory.setLogLevel(sqfliteLogLevelVerbose);
 
       final path = await initDeleteDb('raw_simple.db');
       final db = await openDatabase(path);
