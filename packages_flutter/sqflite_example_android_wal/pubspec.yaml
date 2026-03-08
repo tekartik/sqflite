@@ -39,6 +39,8 @@ dependencies:
       url: https://github.com/tekartik/sqflite
       path: packages_flutter/sqflite_example_common
   sqflite:
+  sqflite_android:
+  path:
 dev_dependencies:
   flutter_test:
     sdk: flutter
