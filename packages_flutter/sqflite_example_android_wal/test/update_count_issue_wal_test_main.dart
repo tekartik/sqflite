@@ -26,6 +26,26 @@ void main() async {
     final count = await bookRepository.deleteBook(book!['id']);
     expect(count, 1, reason: 'Deleting existing row should return 1');
   });
+
+  test('Inserting a new record with int PK should return the PK as row id in WAL mode', () async {
+    final int id = 5;
+    final book = {'id': id, 'description': 'Test insert $id'};
+    final result = await bookRepository.insertBook(book);
+    expect(result, id, reason: 'Inserting a new record with int PK should return the PK as row id');
+  });
+
+  test(
+    'Inserting a new record with non-int PK should return internal non-zero row id in WAL mode',
+    () async {
+      final data = {'id': 'EUR', 'description': 'Test insert EUR'};
+      final result = await bookRepository.insertCurrency(data);
+      expect(
+        result,
+        greaterThan(0),
+        reason: 'Inserting a new record with non-int PK should return internal non-zero row id',
+      );
+    },
+  );
 }
 
 class LocalDatabaseService {
@@ -61,11 +81,18 @@ class LocalDatabaseService {
 }
 
 const booksTableName = 'books';
+const _currenciesTableName = 'currency';
 
 void _createTables(Batch batch) {
   batch.execute('DROP TABLE IF EXISTS $booksTableName');
   batch.execute('''CREATE TABLE $booksTableName (
   "id" INTEGER PRIMARY KEY,
+  "description" TEXT
+)''');
+
+  batch.execute('DROP TABLE IF EXISTS $_currenciesTableName');
+  batch.execute('''CREATE TABLE $_currenciesTableName (
+  "id" TEXT PRIMARY KEY,
   "description" TEXT
 )''');
 
@@ -165,5 +192,19 @@ class BookRepository {
     savedData = await getBook(id);
     print('Rows deleted: $count. But record is actually deleted: $savedData');
     return count;
+  }
+
+  Future<int> insertBook(Map<String, dynamic> book) async {
+    final db = (await LocalDatabaseService.instance()).database!;
+    final result = await db.insert(booksTableName, book);
+    print('Row inserted, row id: $result');
+    return result;
+  }
+
+  Future<int> insertCurrency(Map<String, dynamic> data) async {
+    final db = (await LocalDatabaseService.instance()).database!;
+    final result = await db.insert(_currenciesTableName, data);
+    print('Row inserted, row id: $result');
+    return result;
   }
 }
