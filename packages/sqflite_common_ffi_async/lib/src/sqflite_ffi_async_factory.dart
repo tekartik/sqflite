@@ -21,6 +21,9 @@ var databaseFactoryFfiAsyncTestImpl = SqfliteDatabaseFactoryFfiAsync(
 
 /// The Ffi async database factory.
 class SqfliteDatabaseFactoryFfiAsync with SqfliteDatabaseFactoryMixin {
+  /// Allow overriding, use regular ffi otherwise
+  String? _databasesPath;
+
   /// The Ffi async database factory.
   SqfliteDatabaseFactoryFfiAsync({String? tag}) {
     this.tag = tag;
@@ -35,9 +38,15 @@ class SqfliteDatabaseFactoryFfiAsync with SqfliteDatabaseFactoryMixin {
     }
   }
 
+  /// Set the databases path.
   @override
-  Future<String> getDatabasesPath() {
-    return factoryFfi.getDatabasesPath();
+  void setDatabasesPathOrNull(String? path) {
+    _databasesPath = path;
+  }
+
+  @override
+  Future<String> getDatabasesPath() async {
+    return _databasesPath ?? await factoryFfi.getDatabasesPath();
   }
 
   /*

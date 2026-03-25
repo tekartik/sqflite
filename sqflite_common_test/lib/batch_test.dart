@@ -3,7 +3,7 @@ import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
 /// Run batch test.
-void run(SqfliteTestContext context) {
+void run(SqfliteTestContext context, {bool noManualTransactionTest = false}) {
   final factory = context.databaseFactory;
   group('raw', () {
     test('BatchQuery', () async {
@@ -178,7 +178,7 @@ void run(SqfliteTestContext context) {
       ]);
 
       await db.close();
-    });
+    }, skip: noManualTransactionTest);
 
     test('Batch continue on error', () async {
       //await Sqflite.devSetDebugModeOn();

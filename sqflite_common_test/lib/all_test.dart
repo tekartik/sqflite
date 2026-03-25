@@ -9,7 +9,6 @@ import 'issue_test.dart' as issue_test;
 import 'open_flutter_test.dart' as open_flutter_test;
 import 'open_test.dart' as open_test;
 import 'raw_test.dart' as raw_test;
-import 'service_impl_test.dart' as log_test;
 import 'service_impl_test.dart' as service_impl_test;
 import 'slow_test.dart' as slow_test;
 import 'sqflite_protocol_test.dart' as protocol_test;
@@ -28,7 +27,6 @@ void sqfliteTestGroup(SqfliteTestContext context) {
   protocol_test.run(context);
   service_impl_test.run(context);
   batch_test.run(context);
-  log_test.run(context);
   doc_test.run(context);
   open_flutter_test.run(context);
   slow_test.run(context);

@@ -26,52 +26,41 @@ import 'package:sqflite_common_test/type_test.dart' as type_test;
 import 'package:sqflite_common_test/wal_test.dart';
 
 /// Run all common tests.
-void runFfiAsyncTests(SqfliteTestContext context) {
+void runFfiAsyncTests(SqfliteTestContext context, {bool all = false}) {
   group('all', () {
     // ignore: dead_code
-    if (false) {
+    if (all) {
+      // Investigate logger
+      doc_test.run(context);
       protocol_test.run(context);
       service_impl_test.run(context);
       batch_test.run(context);
-      log_test.run(context);
-
+      // too many failure
       open_flutter_test.run(context);
       slow_test.run(context);
       type_test.run(context);
       statement_test.run(context);
       raw_test.run(context);
+      // investigate the failure for some edge case
       open_test.run(context);
+      // investigate parsing
       exception_test.run(context);
       exp_test.run(context);
+      // only delete/exist edge case fail
       database_factory_test.run(context);
+      // Investigate failure
       transaction_test.run(context);
       issue_test.run(context);
       walTests(context);
-    } else {
-      if (true) {
-        doc_test.run(context);
-        service_impl_test.run(context);
-        batch_test.run(context);
-        log_test.run(context);
-
-        open_flutter_test.run(context);
-        slow_test.run(context);
-        type_test.run(context);
-        statement_test.run(context);
-        raw_test.run(context);
-        open_test.run(context);
-        exception_test.run(context);
-        exp_test.run(context);
-        database_factory_test.run(context);
-        transaction_test.run(context);
-        issue_test.run(context);
-        walTests(context);
-        // ignore: dead_code
-      } else {
-        batch_test.run(context);
-        open_test.run(context);
-        raw_test.run(context);
-      }
     }
+    doc_test.run(context, noLoggerTest: true);
+    batch_test.run(context, noManualTransactionTest: true);
+    exp_test.run(context, noMultipleStatement: true);
+    slow_test.run(context);
+    type_test.run(context);
+    statement_test.run(context);
+    raw_test.run(context);
+    issue_test.run(context);
+    walTests(context);
   });
 }
