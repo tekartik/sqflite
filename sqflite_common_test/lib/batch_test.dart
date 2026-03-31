@@ -236,7 +236,16 @@ void run(SqfliteTestContext context, {bool noManualTransactionTest = false}) {
           await batch.commit(continueOnError: true);
           fail('should fail');
         } on DatabaseException catch (e) {
-          expect(e.isUniqueConstraintError(), isTrue);
+          try {
+            expect(e.isUniqueConstraintError(), isTrue, reason: e.toString());
+          } catch (_) {
+            /// On sqlite async we only get something like SqliteException(0): Transaction rolled back by earlier statement}) DatabaseException(SqliteException(0): Transaction rolled back by earlier statement)
+            expect(
+              e.toString().toLowerCase(),
+              contains('transaction rolled back'),
+              reason: e.toString(),
+            );
+          }
         }
 
         expect(await db.query('Test'), isEmpty);

@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_async/src/sqflite_ffi_async_factory.dart';
 import 'package:sqflite_common_ffi_async/src/sqflite_ffi_async_transaction.dart';
-import 'package:sqlite_async/sqlite3.dart' as sqlite3;
+import 'package:sqlite3/common.dart' as sqlite3;
 import 'package:sqlite_async/sqlite_async.dart' as sqlite_async;
 
 import 'import.dart';
@@ -59,7 +59,6 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
   @override
   Future<int> openDatabase() async {
     sqlite_async.SqliteOptions sqliteOptions;
-    var maxReaders = sqlite_async.SqliteDatabase.defaultMaxReaders;
     var path = this.path;
     if (path == inMemoryDatabasePath) {
       var dir = await Directory.systemTemp.createTemp();
@@ -88,18 +87,10 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
         // ignore: avoid_print
         print('error checking directory $dir: $e');
       }
-      sqliteOptions = const sqlite_async.SqliteOptions.defaults();
+      sqliteOptions = const sqlite_async.SqliteOptions();
     }
-    final factory = sqlite_async.DefaultSqliteOpenFactory(
-      path: path,
-      sqliteOptions: sqliteOptions,
-    );
 
-    _database = sqlite_async.SqliteDatabase.withFactory(
-      factory,
-      maxReaders: maxReaders,
-    );
-    //_database = sqlite_async.SqliteDatabase(path: path);
+    _database = sqlite_async.SqliteDatabase(path: path, options: sqliteOptions);
     return _asyncId;
   }
 
