@@ -13,7 +13,7 @@ import 'package:sqflite_common_test/sqflite_test.dart';
 import 'package:test/test.dart';
 
 /// Documentation test.
-void run(SqfliteTestContext context) {
+void run(SqfliteTestContext context, {bool noLoggerTest = false}) {
   var factory = context.databaseFactory;
   var databaseFactory = factory;
 
@@ -496,7 +496,7 @@ CREATE TABLE Product (
         );
         await db.close();
       }
-    });
+    }, skip: noLoggerTest);
 
     test('BLOB lookup', () async {
       final db = await openDatabase(

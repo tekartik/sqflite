@@ -12,6 +12,8 @@ Future main() async {
     'sqflite_android',
     'sqflite_platform_interface',
     join('packages', 'console_test_app'),
+    join('packages', 'sqflite_common_ffi_async'),
+    join('packages', 'sqflite_common_ffi_async_test'),
     join('packages_flutter', 'sqflite_example_common'),
   ]) {
     await packageRunCi(join('..', dir));

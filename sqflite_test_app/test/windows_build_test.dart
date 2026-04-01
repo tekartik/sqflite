@@ -5,7 +5,6 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
-import 'package:sqflite_common_ffi/src/windows/setup.dart';
 import 'package:test/test.dart';
 
 Future<void> main() async {
@@ -58,8 +57,6 @@ Future<void> main() async {
       try {
         await File(dbFile).delete();
       } catch (_) {}
-
-      await File(findWindowsDllPath()!).copy(join(exeDir, 'sqlite3.dll'));
 
       expect(File(dbFile).existsSync(), isFalse);
       await runAppShell.run(shellArgument(absoluteExePath));

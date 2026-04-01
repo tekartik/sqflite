@@ -4,7 +4,7 @@ version: 1.0.0
 publish_to: none
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.11.0
 
 # Add regular dependencies here.
 dependencies:
@@ -18,7 +18,7 @@ dependencies:
   test: '>=1.21.0'
 
 dev_dependencies:
-  lints: '>=2.0.0'
+  lints: '>=6.1.0'
 
 dependency_overrides:
   sqflite_common_test:
@@ -27,5 +27,5 @@ dependency_overrides:
     path: ../sqflite_common_ffi_async
   sqflite_common:
     path: ../../sqflite_common
-  # sqflite_common_ffi: tmp disabled
-  #  path: ../../sqflite_common_ffi
+  sqflite_common_ffi:
+    path: ../../sqflite_common_ffi
