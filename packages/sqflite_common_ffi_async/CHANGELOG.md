@@ -1,3 +1,8 @@
+## 0.1.4+1
+
+* Requires dart 3.10
+* sqflite_async "<0.14.0"
+
 ## 0.1.4
 
 * Requires dart 3.7
