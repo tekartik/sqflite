@@ -25,9 +25,6 @@ Future<void> main() async {
           await Directory('windows').delete(recursive: true);
         } catch (_) {}
         await shell.run('''
-    # needed only once
-    flutter config --enable-windows-desktop
-    
     # Create windows project
     flutter create --platforms windows .
     flutter build windows --target test/ffi_create_and_exit_main.dart

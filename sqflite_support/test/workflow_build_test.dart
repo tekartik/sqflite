@@ -16,11 +16,6 @@ void main() {
 }
 
 void workflow({bool noBuild = false}) {
-  test('flutter config', () async {
-    if (isFlutterSupportedSync) {
-      await run('flutter config');
-    }
-  });
   group('flutter test', () {
     setUpAll(() async {
       await buildInitFlutter();
@@ -36,7 +31,6 @@ void workflow({bool noBuild = false}) {
     var shell = Shell(workingDirectory: dir);
     Future<void> create() async {
       await flutterCreateProject(path: dir);
-      await shell.run('flutter config');
     }
 
     Future<void> ensureCreate() async {

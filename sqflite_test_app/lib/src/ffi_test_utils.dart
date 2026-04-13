@@ -76,7 +76,6 @@ Future<void> createProject(String path, {String? platform}) async {
   await deleteDir(join(path, platform));
   // Create directory
   await Directory(path).create(recursive: true);
-  await shell.run('flutter config --enable-$platform-desktop');
   await shell.run('flutter create --platforms $platform .');
 }
 
