@@ -72,9 +72,6 @@ Build and run in release mode
 # Build
 flutter build windows
 
-# Copy sqlite3.dll
-cp ..\sqflite_common_ffi\lib\src\windows\sqlite3.dll .\build\windows\runner\Release
-
 # Run it
 .\build\windows\runner\Release\sqflite_test_app.exe
 ```

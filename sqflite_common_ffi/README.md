@@ -74,8 +74,7 @@ if you want to override the behavior.
 
 Should work as is in debug mode (`sqlite3.dll` is bundled).
 
-In release mode, add `sqlite3.dll` [last version updated](https://github.com/tekartik/sqflite/blob/1dd13926ec92015640068fca1601b4d1fadfa2ee/sqflite_common_ffi/lib/src/windows/sqlite3.dll) in same
-folder as your executable.
+Should work as is in release mode (`sqlite3.dll` is bundled).
 
 
 ### Web
