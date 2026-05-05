@@ -40,7 +40,7 @@ dependencies:
     sdk: flutter
   sqflite_platform_interface: '>=2.4.0-0 <4.0.0'
   meta: '>=1.7.0 <3.0.0'
-  sqflite_common: '>=2.5.4+5 <4.0.0'
+  sqflite_common: '>=2.5.7-3 <4.0.0'
   path: '>=1.8.0 <3.0.0'
 
 dev_dependencies:

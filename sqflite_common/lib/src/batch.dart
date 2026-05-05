@@ -82,6 +82,15 @@ mixin SqfliteBatchMixin implements Batch {
 
 /// Internal batch operation.
 class SqfliteBatchOperation {
+  /// The command type. compat
+  SqliteSqlCommandType get type => command.type;
+
+  /// The sql statement. compat
+  String get sql => command.sql;
+
+  /// The sql arguments. compat
+  List<Object?>? get arguments => command.arguments;
+
   /// The command.
   final SqfliteSqlCommand command;
 

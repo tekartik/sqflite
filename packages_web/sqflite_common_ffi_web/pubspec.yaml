@@ -19,7 +19,7 @@ environment:
 dependencies:
   path: '>=1.7.0 <3.0.0'
   sqflite_common_ffi: '>=2.4.0 <4.0.0'
-  sqflite_common: '>=2.5.4+6 <4.0.0'
+  sqflite_common: '>=2.5.7-3 <4.0.0'
   sqlite3: '>=3.1.2 <5.0.0'
   http: '>=0.13.4 <2.0.0'
   web: '>=1.0.0 <3.0.0'
