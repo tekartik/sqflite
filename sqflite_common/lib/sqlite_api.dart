@@ -29,6 +29,8 @@ export 'package:sqflite_common/src/database_ext.dart' show SqfliteDatabaseExt;
 export 'package:sqflite_common/src/exception.dart' show DatabaseException;
 export 'package:sqflite_common/src/sqflite_debug.dart'
     show SqfliteDatabaseFactoryDebug, DatabaseFactoryLoggerDebugExt;
+export 'package:sqflite_common/src/sql_command.dart'
+    show SqfliteSqlCommand, SqliteSqlCommandType;
 export 'package:sqflite_common/src/sql_command_executor_ext.dart'
     show SqfliteSqlCommandExecutorExt;
 

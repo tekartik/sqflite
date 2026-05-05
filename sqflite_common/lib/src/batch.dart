@@ -2,7 +2,6 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/constant.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/sql_builder.dart';
-import 'package:sqflite_common/src/sql_command.dart';
 import 'package:sqflite_common/src/transaction.dart';
 import 'package:sqflite_common/src/utils.dart';
 
@@ -127,7 +126,7 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
     operations.add(
       SqfliteBatchOperation(
         methodInsert,
-        SqfliteSqlCommand.rawInsert(sql, arguments: arguments),
+        SqfliteSqlCommand.rawInsert(sql, arguments),
       ),
     );
   }
@@ -137,7 +136,7 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
     operations.add(
       SqfliteBatchOperation(
         methodQuery,
-        SqfliteSqlCommand.rawQuery(sql, arguments: arguments),
+        SqfliteSqlCommand.rawQuery(sql, arguments),
       ),
     );
   }
@@ -147,7 +146,7 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
     operations.add(
       SqfliteBatchOperation(
         methodUpdate,
-        SqfliteSqlCommand.rawUpdate(sql, arguments: arguments),
+        SqfliteSqlCommand.rawUpdate(sql, arguments),
       ),
     );
   }
@@ -157,7 +156,7 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
     operations.add(
       SqfliteBatchOperation(
         methodUpdate,
-        SqfliteSqlCommand.rawDelete(sql, arguments: arguments),
+        SqfliteSqlCommand.rawDelete(sql, arguments),
       ),
     );
   }
@@ -167,7 +166,7 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
     operations.add(
       SqfliteBatchOperation(
         methodExecute,
-        SqfliteSqlCommand.execute(sql, arguments: arguments),
+        SqfliteSqlCommand.execute(sql, arguments),
       ),
     );
   }

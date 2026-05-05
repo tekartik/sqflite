@@ -13,6 +13,7 @@ import 'raw_test.dart' as raw_test;
 import 'service_impl_test.dart' as service_impl_test;
 import 'slow_test.dart' as slow_test;
 import 'sqflite_protocol_test.dart' as protocol_test;
+import 'sql_command_test.dart' as sql_command_test;
 import 'statement_test.dart' as statement_test;
 import 'transaction_test.dart' as transaction_test;
 import 'type_test.dart' as type_test;
@@ -32,6 +33,7 @@ void sqfliteTestGroup(SqfliteTestContext context) {
   open_flutter_test.run(context);
   slow_test.run(context);
   type_test.run(context);
+  sql_command_test.run(context);
   statement_test.run(context);
   raw_test.run(context);
   open_test.run(context);

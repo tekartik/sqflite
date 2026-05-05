@@ -32,34 +32,34 @@ abstract class SqfliteSqlCommand {
   /// Sql command.
   factory SqfliteSqlCommand.raw(
     SqliteSqlCommandType type,
-    String sql, {
+    String sql, [
     List<Object?>? arguments,
-  }) {
+  ]) {
     return _SqfliteSqlCommand(type, sql, arguments);
   }
 
   /// Query command.
-  factory SqfliteSqlCommand.rawQuery(String sql, {List<Object?>? arguments}) {
+  factory SqfliteSqlCommand.rawQuery(String sql, [List<Object?>? arguments]) {
     return _SqfliteSqlCommand(SqliteSqlCommandType.query, sql, arguments);
   }
 
   /// Insert command.
-  factory SqfliteSqlCommand.rawInsert(String sql, {List<Object?>? arguments}) {
+  factory SqfliteSqlCommand.rawInsert(String sql, [List<Object?>? arguments]) {
     return _SqfliteSqlCommand(SqliteSqlCommandType.insert, sql, arguments);
   }
 
   /// Update command.
-  factory SqfliteSqlCommand.rawUpdate(String sql, {List<Object?>? arguments}) {
+  factory SqfliteSqlCommand.rawUpdate(String sql, [List<Object?>? arguments]) {
     return _SqfliteSqlCommand(SqliteSqlCommandType.update, sql, arguments);
   }
 
   /// Delete command.
-  factory SqfliteSqlCommand.rawDelete(String sql, {List<Object?>? arguments}) {
+  factory SqfliteSqlCommand.rawDelete(String sql, [List<Object?>? arguments]) {
     return _SqfliteSqlCommand(SqliteSqlCommandType.delete, sql, arguments);
   }
 
   /// Execute command.
-  factory SqfliteSqlCommand.execute(String sql, {List<Object?>? arguments}) {
+  factory SqfliteSqlCommand.execute(String sql, [List<Object?>? arguments]) {
     return _SqfliteSqlCommand(SqliteSqlCommandType.execute, sql, arguments);
   }
 

@@ -1,5 +1,4 @@
 import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common/src/sql_command.dart';
 
 /// Extension on [SqfliteSqlCommand] to execute on a [DatabaseExecutor].
 extension SqfliteSqlCommandExecutorExt on SqfliteSqlCommand {
@@ -10,6 +9,15 @@ extension SqfliteSqlCommandExecutorExt on SqfliteSqlCommand {
 
   /// Execute the command as an iterative query.
   Future<void> iterate(
+    DatabaseExecutor executor, {
+    int? bufferSize,
+    required SqfliteCursorRowCallback onRow,
+  }) {
+    return queryIterate(executor, bufferSize: bufferSize, onRow: onRow);
+  }
+
+  /// Execute the command as an iterative query.
+  Future<void> queryIterate(
     DatabaseExecutor executor, {
     int? bufferSize,
     required SqfliteCursorRowCallback onRow,

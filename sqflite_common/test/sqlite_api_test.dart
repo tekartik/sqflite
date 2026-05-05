@@ -1,5 +1,4 @@
 import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common/src/sql_command.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -29,6 +28,7 @@ void main() {
         (null as DatabaseExecutor?)?.queryIterate,
         SqfliteSqlCommand.raw(SqliteSqlCommandType.execute, 'PRAGMA'),
         (null as SqfliteSqlCommand?)?.query,
+        SqliteSqlCommandType.query,
       ]) {
         expect(value, isNotNull);
       }
