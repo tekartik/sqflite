@@ -703,9 +703,9 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
           }
           logOperations.add(
             _SqfliteLoggerBatchOperation.fromDynamic(
-              operation.type,
-              operation.sql,
-              operation.arguments,
+              operation.command.type,
+              operation.command.sql,
+              operation.command.arguments,
               result,
               error,
             ),

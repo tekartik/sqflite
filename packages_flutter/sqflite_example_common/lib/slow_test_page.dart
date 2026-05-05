@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:sqflite_common/sqflite.dart';
 import 'package:sqflite_common/sqflite_dev.dart';
@@ -79,6 +81,41 @@ class SlowTestPage extends TestPage {
     test('Perf $count item', () async {
       //Sqflite.devSetDebugModeOn(true);
       await perfDo(count);
+    });
+    test('Concurrent lengthy', () async {
+      databaseFactory = databaseFactory.debugQuickLoggerWrapper();
+      // create a simple database and a length insert and delete (add paused)
+      // in a transaction that is ran simulatenously
+      final path = await initDeleteDb('slow_concurrent_lenghty.db');
+      final db = await openDatabase(path);
+      try {
+        await db.execute(
+          'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+        );
+
+        Future<void> txn(Transaction txn) async {
+          for (var i = 0; i < 5; i++) {
+            await txn.rawInsert('INSERT INTO Test (name) VALUES (?)', [
+              'item $i',
+            ]);
+            await Future<void>.delayed(
+              Duration(milliseconds: 10 + Random().nextInt(100)),
+            );
+          }
+          await txn.rawDelete('DELETE FROM Test');
+        }
+
+        for (var i = 0; i < 10; i++) {
+          unawaited(db.transaction(txn));
+          await Future<void>.delayed(
+            Duration(milliseconds: 20 + Random().nextInt(100)),
+          );
+        }
+
+        await db.transaction((_) async {});
+      } finally {
+        await db.close();
+      }
     });
 
     if (platform.isAndroid) {
