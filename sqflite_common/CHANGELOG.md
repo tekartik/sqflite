@@ -1,3 +1,7 @@
+## 2.5.7-1
+
+* Add `iterate` method and export `SqfliteSqlCommand` and extension helpers
+
 ## 2.5.6+1
 
 * Requires dart 3.10
