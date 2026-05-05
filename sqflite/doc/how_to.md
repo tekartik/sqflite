@@ -3,6 +3,8 @@
 * How to [Open a database](opening_db.md)
 * How to [Open an asset database](opening_asset_db.md)
 * Basic [SQL information](sql.md)
+* How to [Iterate through results](https://github.com/tekartik/sqflite/blob/master/sqflite_common/doc/sqflite_iterate.md) using a cursor
+* How to use [SqfliteSqlCommand](https://github.com/tekartik/sqflite/blob/master/sqflite_common/doc/sqflite_sql_command.md) to prepare commands
 * How to [Delete a database](deleting_db.md)
 * Solve you [build and runtime issues](troubleshooting.md)
 * Some personal [usage recommendations](usage_recommendations.md)

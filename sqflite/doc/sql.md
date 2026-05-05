@@ -89,6 +89,8 @@ try {
 }
 ```
 
+See [iterate](https://github.com/tekartik/sqflite/blob/master/sqflite_common/doc/sqflite_iterate.md) for a more convenient way to iterate through results.
+
 ### delete
 
 `delete` is for deleting content in a table. It returns the number of rows deleted.
