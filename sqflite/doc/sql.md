@@ -15,9 +15,12 @@ and common pitfalls.
 
 ## Basic usage
 
+All methods run a single SQL statement. Statements separated by `;` are not supported.
+
 ### execute
 
-`execute` is for commands without return values.
+`execute` is for command without return values. You can only run a single SQL statement (i.e. you cannot create
+2 tables for example)
 
 ```dart
 // Create a table
