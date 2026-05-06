@@ -1,4 +1,4 @@
-## 2.5.7-3
+## 2.5.7
 
 * Add `iterate` method and export `SqfliteSqlCommand` and extension helpers
 
