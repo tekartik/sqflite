@@ -82,7 +82,11 @@ abstract class DatabaseFactory {
 /// Common API for [Database] and [Transaction] to execute SQL commands
 ///
 abstract class DatabaseExecutor {
-  /// Execute an SQL query with no return value.
+  /// Executes a single SQL statement with no return value.
+  ///
+  /// You cannot have multiple statements (separated by `;` or by line), as this
+  /// is not supported.
+  /// i.e. you cannot create 2 tables for example.
   ///
   /// ```
   ///   await db.execute(
