@@ -331,6 +331,100 @@ void run(SqfliteTestContext? context) {
       scenario.end();
     });
 
+    test('recovered_in_transaction_rollback_on_open', () async {
+      var supportsRecoveredInTransaction =
+          context?.supportsRecoveredInTransaction ?? false;
+      var dbName = await initDeleteDb(
+        'protocol_recovered_in_transaction_rollback_on_open.db',
+      );
+      final scenario = wrapStartScenario(factory, [
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          {'id': 1},
+        ],
+        [
+          'execute',
+          {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
+          null,
+        ],
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          if (supportsRecoveredInTransaction)
+            {'recovered': true, 'recoveredInTransaction': true, 'id': 1}
+          else
+            {'id': 1},
+        ],
+        if (supportsRecoveredInTransaction)
+          [
+            'execute',
+            {
+              'sql': 'ROLLBACK',
+              'id': 1,
+              'transactionId': -1,
+              'inTransaction': false,
+            },
+            null,
+          ],
+        protocolCloseStep,
+      ]);
+
+      var db = await scenario.factory.openDatabase(dbName);
+      await db.execute('BEGIN TRANSACTION');
+      // Internal trick
+      (scenario.factory as SqfliteDatabaseFactoryMixin).databaseOpenHelpers
+          .remove(dbName);
+      db = await scenario.factory.openDatabase(
+        dbName,
+        options: OpenDatabaseOptions(rollbackOnOpen: true),
+      );
+
+      await db.close();
+      scenario.end();
+    });
+
+    test('recovered_in_transaction_no_rollback_on_open', () async {
+      var dbName = await initDeleteDb(
+        'protocol_recovered_in_transaction_no_rollback_on_open.db',
+      );
+      final scenario = wrapStartScenario(factory, [
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          {'id': 1},
+        ],
+        [
+          'execute',
+          {'sql': 'BEGIN TRANSACTION', 'id': 1, 'inTransaction': true},
+          null,
+        ],
+        [
+          'openDatabase',
+          {'path': dbName, 'singleInstance': true},
+          if (context?.supportsRecoveredInTransaction ?? false)
+            {'recovered': true, 'recoveredInTransaction': true, 'id': 1}
+          else
+            {'id': 1},
+        ],
+
+        protocolCloseStep,
+      ]);
+
+      var db = await scenario.factory.openDatabase(dbName);
+      await db.execute('BEGIN TRANSACTION');
+      // Internal trick
+      (scenario.factory as SqfliteDatabaseFactoryMixin).databaseOpenHelpers
+          .remove(dbName);
+      db = await scenario.factory.openDatabase(
+        dbName,
+        options: OpenDatabaseOptions(rollbackOnOpen: false),
+      );
+
+      await db.close();
+      scenario.end();
+    });
+
     test('recovered_in_transaction_2', () async {
       var dbName = await initDeleteDb('protocol_recovered_in_transaction_2.db');
       final scenario = wrapStartScenario(factory, [
@@ -379,7 +473,7 @@ void run(SqfliteTestContext? context) {
       await db.close();
       scenario.end();
     });
-  });
+  }, solo: true);
 }
 
 /// Scenario test data.

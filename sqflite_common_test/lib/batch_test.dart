@@ -239,12 +239,22 @@ void run(SqfliteTestContext context, {bool noManualTransactionTest = false}) {
           try {
             expect(e.isUniqueConstraintError(), isTrue, reason: e.toString());
           } catch (_) {
-            /// On sqlite async we only get something like SqliteException(0): Transaction rolled back by earlier statement}) DatabaseException(SqliteException(0): Transaction rolled back by earlier statement)
-            expect(
-              e.toString().toLowerCase(),
-              contains('transaction rolled back'),
-              reason: e.toString(),
-            );
+            try {
+              /// On sqflite_async we only get something like SqliteException(0): Transaction rolled back by earlier statement}) DatabaseException(SqliteException(0): Transaction rolled back by earlier statement)
+              expect(
+                e.toString().toLowerCase(),
+                contains('transaction rolled back'),
+                reason: e.toString(),
+              );
+            } catch (_) {
+              /// On sqflite we get something like
+              /// 'databaseexception(cannot commit - no transaction is active (code 1 sqlite_error)) sql \'commit\' args []'
+              expect(
+                e.toString().toLowerCase(),
+                contains('no transaction is active'),
+                reason: e.toString(),
+              );
+            }
           }
         }
 

@@ -6,6 +6,7 @@ import 'package:sqflite_common/src/cursor.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/exception.dart';
 import 'package:sqflite_common/src/factory.dart';
+import 'package:sqflite_common/src/open_options.dart';
 import 'package:sqflite_common/src/path_utils.dart';
 import 'package:sqflite_common/src/sql_builder.dart';
 import 'package:sqflite_common/src/transaction.dart';
@@ -953,8 +954,10 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       // in this case, we are going to rollback any changes in case a transaction
       // was in progress. This catches hot-restart scenario
       if (recoveredInTransaction) {
+        var rollbackOnOpen =
+            (options as SqfliteOpenDatabaseOptions).rollbackOnOpen;
         // Don't do it for read-only
-        if (!readOnly) {
+        if (!readOnly && rollbackOnOpen) {
           // We are not yet open so invoke the plugin directly
           try {
             await safeInvokeMethod<Object?>(methodExecute, <String, Object?>{
@@ -1110,7 +1113,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           }
         }
 
-        options.onDowngrade = onDatabaseDowngradeDoDelete;
+        (options as SqfliteOpenDatabaseOptions).onDowngrade =
+            onDatabaseDowngradeDoDelete;
       }
 
       id = databaseId;

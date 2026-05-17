@@ -485,6 +485,17 @@ abstract class OpenDatabaseOptions {
   /// false for in memory database (it is forced to false for `:memory:` path)
   /// but not for uri.
   ///
+  /// Experimental: when [rollbackOnOpen] (for singleInstance only) is set to true
+  /// a rollback is performed if a current transaction is in progress which can
+  /// typically happen during hot restart.
+  ///
+  /// It allows setting singleInstance to true when using multiple isolates.
+  /// Just make sure no background isolate closes the
+  /// database. In debug this default to false, in release, this defaults to true
+  /// Previous behavior before this flag, was always set to true
+  /// With this is setting to false, you might encounter issues during hot restart
+  /// if a database actions is in progress. Force this setting to false
+  /// if you are indeed using multiple isolate
   factory OpenDatabaseOptions({
     int? version,
     OnDatabaseConfigureFn? onConfigure,
@@ -494,6 +505,7 @@ abstract class OpenDatabaseOptions {
     OnDatabaseOpenFn? onOpen,
     bool? readOnly = false,
     bool? singleInstance = true,
+    bool? rollbackOnOpen,
   }) {
     return impl.SqfliteOpenDatabaseOptions(
       version: version,
@@ -504,34 +516,35 @@ abstract class OpenDatabaseOptions {
       onOpen: onOpen,
       readOnly: readOnly,
       singleInstance: singleInstance,
+      rollbackOnOpen: rollbackOnOpen,
     );
   }
 
   /// Specify the expected version.
-  int? version;
+  int? get version;
 
   /// called right after opening the database.
-  OnDatabaseConfigureFn? onConfigure;
+  OnDatabaseConfigureFn? get onConfigure;
 
   /// Called when the database is created.
-  OnDatabaseCreateFn? onCreate;
+  OnDatabaseCreateFn? get onCreate;
 
   /// Called when the database is upgraded.
-  OnDatabaseVersionChangeFn? onUpgrade;
+  OnDatabaseVersionChangeFn? get onUpgrade;
 
   /// Called when the database is downgraded.
   ///
   /// Use [onDatabaseDowngradeDelete] for re-creating the database
-  OnDatabaseVersionChangeFn? onDowngrade;
+  OnDatabaseVersionChangeFn? get onDowngrade;
 
   /// Called after all other callbacks have been called.
-  OnDatabaseOpenFn? onOpen;
+  OnDatabaseOpenFn? get onOpen;
 
   /// Open the database in read-only mode (no callback called).
-  late bool readOnly;
+  bool get readOnly;
 
   /// The existing single-instance (hot-restart)
-  late bool singleInstance;
+  bool get singleInstance;
 }
 
 ///

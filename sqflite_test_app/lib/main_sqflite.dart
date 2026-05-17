@@ -8,5 +8,6 @@ void main() {
   extraRoutes = <String, WidgetBuilder>{
     '/test/plugin': (_) => PluginTestPage(),
   };
+  // debugAutoStartRouteName = '/test/plugin';
   mainExampleApp();
 }

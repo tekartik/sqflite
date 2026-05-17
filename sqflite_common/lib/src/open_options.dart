@@ -1,4 +1,5 @@
 import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common/src/env_utils.dart';
 
 ///
 /// Options to open a database
@@ -15,25 +16,30 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     this.onOpen,
     bool? readOnly = false,
     bool? singleInstance = true,
+    bool? rollbackOnOpen,
   }) : readOnly = readOnly ?? false,
-       singleInstance = singleInstance ?? true;
+       singleInstance = singleInstance ?? true,
+       rollbackOnOpen = rollbackOnOpen ?? (isDebug ? true : false);
 
   @override
-  int? version;
+  final int? version;
   @override
-  OnDatabaseConfigureFn? onConfigure;
+  final OnDatabaseConfigureFn? onConfigure;
   @override
-  OnDatabaseCreateFn? onCreate;
+  final OnDatabaseCreateFn? onCreate;
   @override
-  OnDatabaseVersionChangeFn? onUpgrade;
+  final OnDatabaseVersionChangeFn? onUpgrade;
   @override
   OnDatabaseVersionChangeFn? onDowngrade;
   @override
-  OnDatabaseOpenFn? onOpen;
+  final OnDatabaseOpenFn? onOpen;
   @override
-  bool readOnly;
+  final bool readOnly;
   @override
-  bool singleInstance;
+  final bool singleInstance;
+
+  /// Experimental
+  final bool rollbackOnOpen;
 
   @override
   String toString() {

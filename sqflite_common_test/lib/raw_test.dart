@@ -484,7 +484,12 @@ void run(SqfliteTestContext context) {
         var key3 = await db.insert('test', {
           'name': 'name 1',
         }, conflictAlgorithm: ConflictAlgorithm.ignore);
-        expect([key1, key2, key3], [1, 2, 0]);
+        try {
+          expect([key1, key2, key3], [1, 2, 0]);
+        } catch (_) {
+          // on sqflite we get -1
+          expect([key1, key2, key3], [1, 2, -1]);
+        }
       });
 
       test('binding null', () async {

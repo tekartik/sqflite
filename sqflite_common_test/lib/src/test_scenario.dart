@@ -95,7 +95,7 @@ MockScenario wrapStartScenario(DatabaseFactory? factory, List<List> data) {
         expect(arguments, item.expectedArguments);
       } catch (e) {
         // devPrint(e);
-        scenario.exception ??= '$e $index';
+        scenario.exception ??= '$index: $e';
       }
 
       Object? response;
