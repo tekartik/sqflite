@@ -1,3 +1,7 @@
+## 2.5.8-1
+
+* Add `rollbackOnOpen` open options for native implementation when using singleInstance
+
 ## 2.5.7
 
 * Add `iterate` method and export `SqfliteSqlCommand` and extension helpers

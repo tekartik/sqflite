@@ -473,7 +473,7 @@ void run(SqfliteTestContext? context) {
       await db.close();
       scenario.end();
     });
-  }, solo: true);
+  });
 }
 
 /// Scenario test data.
