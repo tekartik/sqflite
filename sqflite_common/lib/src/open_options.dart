@@ -16,10 +16,11 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
     this.onOpen,
     bool? readOnly = false,
     bool? singleInstance = true,
-    bool? rollbackOnOpen,
+    bool? rollbackActiveTransactionOnOpen,
   }) : readOnly = readOnly ?? false,
        singleInstance = singleInstance ?? true,
-       rollbackOnOpen = rollbackOnOpen ?? (isDebug ? true : false);
+       rollbackActiveTransactionOnOpen =
+           rollbackActiveTransactionOnOpen ?? (isDebug ? true : false);
 
   @override
   final int? version;
@@ -39,7 +40,7 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
   final bool singleInstance;
 
   /// Experimental
-  final bool rollbackOnOpen;
+  final bool rollbackActiveTransactionOnOpen;
 
   @override
   String toString() {

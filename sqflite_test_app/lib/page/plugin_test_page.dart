@@ -80,7 +80,7 @@ class PluginTestPage extends TestPage {
           singleInstance: true,
           // Set to allow multiple isolate
           // to use the same instance, forcing here to false even in debug mode
-          rollbackOnOpen: false,
+          rollbackActiveTransactionOnOpen: false,
         ),
       );
       try {
@@ -119,7 +119,7 @@ class PluginTestPage extends TestPage {
             );
           },
           singleInstance: true,
-          rollbackOnOpen: false,
+          rollbackActiveTransactionOnOpen: false,
         ),
       );
       try {
@@ -165,7 +165,7 @@ Future<void> _simpleInsertCompute(_InsertComputeParams params) async {
     params.path,
     options: OpenDatabaseOptions(
       // Force false even in debug mode
-      rollbackOnOpen: false,
+      rollbackActiveTransactionOnOpen: false,
     ),
   );
   await db.transaction((txn) async {

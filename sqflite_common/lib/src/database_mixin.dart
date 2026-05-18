@@ -954,10 +954,11 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       // in this case, we are going to rollback any changes in case a transaction
       // was in progress. This catches hot-restart scenario
       if (recoveredInTransaction) {
-        var rollbackOnOpen =
-            (options as SqfliteOpenDatabaseOptions).rollbackOnOpen;
+        var rollbackActiveTransactionOnOpen =
+            (options as SqfliteOpenDatabaseOptions)
+                .rollbackActiveTransactionOnOpen;
         // Don't do it for read-only
-        if (!readOnly && rollbackOnOpen) {
+        if (!readOnly && rollbackActiveTransactionOnOpen) {
           // We are not yet open so invoke the plugin directly
           try {
             await safeInvokeMethod<Object?>(methodExecute, <String, Object?>{

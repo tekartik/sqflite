@@ -377,7 +377,7 @@ void run(SqfliteTestContext? context) {
           .remove(dbName);
       db = await scenario.factory.openDatabase(
         dbName,
-        options: OpenDatabaseOptions(rollbackOnOpen: true),
+        options: OpenDatabaseOptions(rollbackActiveTransactionOnOpen: true),
       );
 
       await db.close();
@@ -418,7 +418,7 @@ void run(SqfliteTestContext? context) {
           .remove(dbName);
       db = await scenario.factory.openDatabase(
         dbName,
-        options: OpenDatabaseOptions(rollbackOnOpen: false),
+        options: OpenDatabaseOptions(rollbackActiveTransactionOnOpen: false),
       );
 
       await db.close();

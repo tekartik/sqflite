@@ -485,17 +485,26 @@ abstract class OpenDatabaseOptions {
   /// false for in memory database (it is forced to false for `:memory:` path)
   /// but not for uri.
   ///
-  /// Experimental: when [rollbackOnOpen] (for singleInstance only) is set to true
-  /// a rollback is performed if a current transaction is in progress which can
-  /// typically happen during hot restart.
+  /// Experimental for sqflite plugin. When [rollbackActiveTransactionOnOpen] is
+  /// true and [singleInstance] is true, any active transaction from another
+  /// isolate is rolled back when opening the database.
   ///
-  /// It allows setting singleInstance to true when using multiple isolates.
-  /// Just make sure no background isolate closes the
-  /// database. In debug this default to false, in release, this defaults to true
-  /// Previous behavior before this flag, was always set to true
-  /// With this is setting to false, you might encounter issues during hot restart
-  /// if a database actions is in progress. Force this setting to false
-  /// if you are indeed using multiple isolate
+  /// This is useful when using the same database from multiple isolates.
+  /// During hot restart, a transaction may still be active in another isolate,
+  /// and rollback may be needed to reopen the database safely.
+  ///
+  /// By default, this is true in debug mode and false in release mode.
+  /// Before this option was added, rollback on open was always enabled and
+  /// could not be disabled. This could cause unexpected transaction rollbacks
+  /// in release mode.
+  ///
+  /// If [singleInstance] is true when using multiple isolates, make sure no
+  /// background isolate closes the database, since that might close the
+  /// database for all isolates.
+  ///
+  /// Set [rollbackActiveTransactionOnOpen] to false if you do not want an
+  /// active transaction to be rolled back when the database is opened,
+  /// typically if you explicitly create multiple isolate
   factory OpenDatabaseOptions({
     int? version,
     OnDatabaseConfigureFn? onConfigure,
@@ -505,7 +514,7 @@ abstract class OpenDatabaseOptions {
     OnDatabaseOpenFn? onOpen,
     bool? readOnly = false,
     bool? singleInstance = true,
-    bool? rollbackOnOpen,
+    bool? rollbackActiveTransactionOnOpen,
   }) {
     return impl.SqfliteOpenDatabaseOptions(
       version: version,
@@ -516,7 +525,7 @@ abstract class OpenDatabaseOptions {
       onOpen: onOpen,
       readOnly: readOnly,
       singleInstance: singleInstance,
-      rollbackOnOpen: rollbackOnOpen,
+      rollbackActiveTransactionOnOpen: rollbackActiveTransactionOnOpen,
     );
   }
 
