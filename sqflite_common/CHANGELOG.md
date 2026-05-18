@@ -1,6 +1,6 @@
-## 2.5.8-1
+## 2.5.8
 
-* Add `rollbackOnOpen` open options for native implementation when using singleInstance.
+* Add `rollbackActiveTransactionOnOpen` open options for native implementation when using singleInstance.
   in release mode by default it will no more rollback active transactions on opening the DB
 
 ## 2.5.7
