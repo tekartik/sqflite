@@ -15,11 +15,11 @@ import 'web/worker_message_utils.dart';
 
 /// Database file system on sqlite virtual file system.
 class SqfliteDatabaseFileSystemFfiWeb implements DatabaseFileSystem {
-  ///  sqlite virtual file system.
-  final VirtualFileSystem fs;
-
   /// Database file system on sqlite virtual file system.
   SqfliteDatabaseFileSystemFfiWeb(this.fs);
+
+  ///  sqlite virtual file system.
+  final VirtualFileSystem fs;
 
   @override
   Future<bool> databaseExists(String path) async {
@@ -97,14 +97,14 @@ class SqfliteDatabaseFileSystemFfiWeb implements DatabaseFileSystem {
 /// Ffi web handler for custom open/delete operation
 class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
     with SqfliteFfiHandlerNonImplementedMixin {
+  /// Web handler for common sqlite3 web env
+  SqfliteFfiHandlerWeb(this.context);
+
   /// Global context
   final SqfliteFfiWebContext context;
 
   WasmSqlite3? _sqlite3;
   VirtualFileSystem? _fs;
-
-  /// Web handler for common sqlite3 web env
-  SqfliteFfiHandlerWeb(this.context);
 
   /// Init file system.
   Future<VirtualFileSystem> initFs() async {
@@ -179,10 +179,9 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
 
 /// Post message sender to worker.
 class RawMessageSenderToWorker extends RawMessageSender {
-  final web.Worker _worker;
-
   /// Post message sender to worker.
   RawMessageSenderToWorker(this._worker);
+  final web.Worker _worker;
 
   @override
   void postMessage(Object message, web.MessagePort responsePort) {
@@ -192,6 +191,7 @@ class RawMessageSenderToWorker extends RawMessageSender {
     );
   }
 
+  // ignore: close_sinks
   StreamController<Object>? _errorController;
 
   @override

@@ -30,29 +30,47 @@ analyzer:
 linter:
   rules:
     - always_declare_return_types
+    - avoid_bool_literals_in_conditional_expressions
     - avoid_dynamic_calls
     - avoid_print
     - avoid_slow_async_io
+    - avoid_unnecessary_containers
+    - avoid_unused_constructor_parameters
+    - avoid_void_async
+    - avoid_web_libraries_in_flutter
     - cancel_subscriptions
+    - close_sinks
+    - conditional_uri_does_not_exist
     - deprecated_member_use_from_same_package
     - directives_ordering
+    - eol_at_end_of_file
     - implicit_reopen
     - invalid_case_patterns
     - library_names
     - no_adjacent_strings_in_list
     - no_literal_bool_comparisons
+    - no_logic_in_create_state
     - no_self_assignments
     - omit_local_variable_types
+    - only_throw_errors
     - package_prefixed_library_names
     - prefer_const_constructors
+    - prefer_const_constructors_in_immutables
+    - prefer_const_declarations
     - prefer_const_literals_to_create_immutables
     - prefer_if_elements_to_conditional_expressions
     - prefer_single_quotes
     - prefer_void_to_null
     - public_member_api_docs
+    - simple_directive_paths
+    - sized_box_for_whitespace
     - sort_child_properties_last
+    - sort_constructors_first
+    - sort_unnamed_constructors_first
     - test_types_in_equals
     - throw_in_finally
     - unawaited_futures
     - unnecessary_statements
+    - use_build_context_synchronously
     - use_full_hex_values_for_flutter_colors
+    - use_key_in_widget_constructors

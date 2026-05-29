@@ -544,7 +544,7 @@ void run() {
           await step2.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -587,7 +587,7 @@ void run() {
           await step2.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -629,7 +629,7 @@ void run() {
           await step2.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -669,7 +669,7 @@ void run() {
           await step1.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -677,7 +677,7 @@ void run() {
           await step2.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }

@@ -79,12 +79,11 @@ abstract class RawMessageSender {
 
 /// Post message sender to shared worker.
 class RawMessageSenderSharedWorker extends RawMessageSender {
+  /// Post message sender to shared worker.
+  RawMessageSenderSharedWorker(this._sharedWorker);
   final web.SharedWorker _sharedWorker;
 
   web.MessagePort get _port => _sharedWorker.port;
-
-  /// Post message sender to shared worker.
-  RawMessageSenderSharedWorker(this._sharedWorker);
 
   @override
   void postMessage(Object message, web.MessagePort responsePort) {
@@ -94,6 +93,7 @@ class RawMessageSenderSharedWorker extends RawMessageSender {
     );
   }
 
+  // ignore: close_sinks
   StreamController<Object>? _errorController;
   @override
   Stream<Object> get onError {
@@ -119,8 +119,11 @@ class RawMessageSenderSharedWorker extends RawMessageSender {
 
 /// Post message sender to worker.
 class RawMessageSenderToWorker extends RawMessageSender {
+  /// Post message sender to worker.
+  RawMessageSenderToWorker(this._worker);
   final web.Worker _worker;
 
+  // ignore: close_sinks
   StreamController<Object>? _errorController;
 
   @override
@@ -143,9 +146,6 @@ class RawMessageSenderToWorker extends RawMessageSender {
     }
     return _errorController!.stream;
   }
-
-  /// Post message sender to worker.
-  RawMessageSenderToWorker(this._worker);
 
   @override
   void postMessage(Object message, web.MessagePort responsePort) {

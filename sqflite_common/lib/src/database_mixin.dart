@@ -30,6 +30,7 @@ class SqfliteDatabaseBase
   }) {
     this.openHelper = openHelper;
     this.path = path;
+    this.options = options;
   }
 }
 
@@ -946,7 +947,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     } else if (openResult is Map) {
       final id = openResult[paramId];
       if (id is! int) {
-        throw 'invalid open result $openResult';
+        throw StateError('invalid open result $openResult');
       }
       // Recover means we found an instance in the native world
       final recoveredInTransaction =
@@ -977,7 +978,9 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       }
       return id;
     } else {
-      throw 'unsupported result $openResult (${openResult?.runtimeType})';
+      throw UnsupportedError(
+        'unsupported result $openResult (${openResult?.runtimeType})',
+      );
     }
   }
 

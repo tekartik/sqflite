@@ -23,7 +23,7 @@ var _debugVersion = 2;
 
 var _shw = '/shw$_debugVersion';
 
-void _handleMessageEvent(web.Event event) async {
+Future<void> _handleMessageEvent(web.Event event) async {
   var messageEvent = event as web.MessageEvent;
   var rawData = messageEvent.data?.dartifyValueStrict();
   var port = messageEvent.ports.toDart.first;
