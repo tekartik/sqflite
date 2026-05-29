@@ -119,21 +119,6 @@ Future<SqfliteFfiWebContext> sqfliteFfiWebStartSharedWorker(
 
 /// Web implementation with shared worker
 class SqfliteFfiWebContextImpl extends SqfliteFfiWebContext {
-  /// Null when using shared worker
-  final VirtualFileSystem? fs;
-
-  /// Null when using shared worker
-  final WasmSqlite3? wasmSqlite3;
-
-  /// Optional Client shared worker
-  final web.SharedWorker? sharedWorker;
-
-  /// Optional Client basic worker (if sharedWorker not working)
-  final web.Worker? worker;
-
-  /// Raw message sender to either shared worker or basic worker
-  late final RawMessageSender rawMessageSender;
-
   /// Web implementation with shared worker
   SqfliteFfiWebContextImpl({
     required super.options,
@@ -149,6 +134,21 @@ class SqfliteFfiWebContextImpl extends SqfliteFfiWebContext {
       rawMessageSender = RawMessageSenderToWorker(worker!);
     }
   }
+
+  /// Null when using shared worker
+  final VirtualFileSystem? fs;
+
+  /// Null when using shared worker
+  final WasmSqlite3? wasmSqlite3;
+
+  /// Optional Client shared worker
+  final web.SharedWorker? sharedWorker;
+
+  /// Optional Client basic worker (if sharedWorker not working)
+  final web.Worker? worker;
+
+  /// Raw message sender to either shared worker or basic worker
+  late final RawMessageSender rawMessageSender;
 }
 
 /// Web context extension for web only

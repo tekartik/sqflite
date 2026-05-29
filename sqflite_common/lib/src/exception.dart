@@ -209,10 +209,10 @@ class SqfliteDatabaseException extends DatabaseException {
 
 /// Special exception to throw during a transaction to force a rollback.
 /// However the transaction is still considered successful.
-class SqfliteTransactionRollbackSuccess<T> {
-  /// Result of the transaction.
-  final T result;
-
+class SqfliteTransactionRollbackSuccess<T> implements Exception {
   /// Special exception to throw during a transaction to force a rollback.
   SqfliteTransactionRollbackSuccess(this.result);
+
+  /// Result of the transaction.
+  final T result;
 }

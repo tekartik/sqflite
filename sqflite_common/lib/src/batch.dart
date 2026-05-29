@@ -82,6 +82,9 @@ mixin SqfliteBatchMixin implements Batch {
 
 /// Internal batch operation.
 class SqfliteBatchOperation {
+  /// Internal batch operation.
+  SqfliteBatchOperation(this.method, this.command);
+
   /// The command type. compat
   SqliteSqlCommandType get type => command.type;
 
@@ -116,9 +119,6 @@ class SqfliteBatchOperation {
     }
     return map;
   }
-
-  /// Internal batch operation.
-  SqfliteBatchOperation(this.method, this.command);
 }
 
 /// Batch implementation

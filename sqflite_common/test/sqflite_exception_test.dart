@@ -53,7 +53,7 @@ void main() {
 
     test('isSyntaxError', () async {
       // Android
-      final msg = 'near "DUMMY": syntax error (code 1)';
+      const msg = 'near "DUMMY": syntax error (code 1)';
       final exception = SqfliteDatabaseException(msg, null);
       expect(exception.isDatabaseClosedError(), isFalse);
       expect(exception.isReadOnlyError(), isFalse);
@@ -66,7 +66,7 @@ void main() {
 
     test('isSyntaxError with symbolic names', () {
       // Android
-      final msg = 'near "DUMMY": syntax error (code 1 SQLITE_ERROR)';
+      const msg = 'near "DUMMY": syntax error (code 1 SQLITE_ERROR)';
       final exception = SqfliteDatabaseException(msg, null);
       expect(exception.isDatabaseClosedError(), isFalse);
       expect(exception.isReadOnlyError(), isFalse);
@@ -79,7 +79,7 @@ void main() {
 
     test('isNoSuchTable', () async {
       // Android
-      final msg = 'no such table: Test (code 1)';
+      const msg = 'no such table: Test (code 1)';
       final exception = SqfliteDatabaseException(msg, null);
       expect(exception.isDatabaseClosedError(), isFalse);
       expect(exception.isReadOnlyError(), isFalse);
@@ -96,7 +96,7 @@ void main() {
 
     test('isDuplicateColumn', () {
       // Android
-      final msg = 'duplicate column name: tableName (code 1 SQLITE_ERROR)';
+      const msg = 'duplicate column name: tableName (code 1 SQLITE_ERROR)';
       final exception = SqfliteDatabaseException(msg, null);
       expect(exception.isDatabaseClosedError(), isFalse);
       expect(exception.isReadOnlyError(), isFalse);
@@ -113,7 +113,7 @@ void main() {
     });
     test('getResultCode', () async {
       // Android
-      final msg = 'UNIQUE constraint failed: Test.name (code 2067))';
+      const msg = 'UNIQUE constraint failed: Test.name (code 2067))';
       var exception = SqfliteDatabaseException(msg, null);
       expect(exception.getResultCode(), 2067);
       exception = SqfliteDatabaseException(

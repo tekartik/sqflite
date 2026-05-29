@@ -15,12 +15,12 @@ class MyList1 extends Object with ListMixin<Map<String, Object?>> {
 
   @override
   void operator []=(int index, Map<String, Object?> value) {
-    throw 'read-only';
+    throw UnsupportedError('read-only');
   }
 
   @override
   set length(int newLength) {
-    throw 'read-only';
+    throw UnsupportedError('read-only');
   }
 
   @override
@@ -40,12 +40,12 @@ class MyList2 extends ListBase<Map<String, Object?>> {
 
   @override
   void operator []=(int index, Map<String, Object?> value) {
-    throw 'read-only';
+    throw UnsupportedError('read-only');
   }
 
   @override
   set length(int newLength) {
-    throw 'read-only';
+    throw UnsupportedError('read-only');
   }
 
   @override

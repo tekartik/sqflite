@@ -15,9 +15,8 @@ bool _isBasicTypeOrNull(dynamic value) {
 }
 
 abstract class _TypeAdapter<T> {
-  final String tag;
-
   _TypeAdapter(this.tag);
+  final String tag;
 
   /// True if the value is the proper type.
   bool isType(Object value) {

@@ -4,6 +4,8 @@ import 'package:sqflite_common/src/transaction.dart';
 
 /// Sqflite query cursor wrapper.
 class SqfliteQueryCursor implements QueryCursor {
+  /// Sqflite query cursor wrapper.
+  SqfliteQueryCursor(this._database, this.txn, this.cursorId, this.resultList);
   final SqfliteDatabase _database;
 
   /// Current transaction if any
@@ -20,9 +22,6 @@ class SqfliteQueryCursor implements QueryCursor {
 
   /// The current index
   int currentIndex = -1;
-
-  /// Sqflite query cursor wrapper.
-  SqfliteQueryCursor(this._database, this.txn, this.cursorId, this.resultList);
 
   @override
   Map<String, Object?> get current =>

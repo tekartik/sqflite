@@ -177,13 +177,13 @@ const Duration lockWarningDurationDefault = Duration(seconds: 10);
 // Log levels
 //
 /// No logs
-final sqfliteLogLevelNone = 0;
+const sqfliteLogLevelNone = 0;
 
 /// Log native sql commands
-final sqfliteLogLevelSql = 1;
+const sqfliteLogLevelSql = 1;
 
 /// Log native verbose
-final sqfliteLogLevelVerbose = 2;
+const sqfliteLogLevelVerbose = 2;
 
 // deprecated since 1.1.6
 // @deprecated

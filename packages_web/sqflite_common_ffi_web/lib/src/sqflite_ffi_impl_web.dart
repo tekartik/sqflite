@@ -11,6 +11,9 @@ import 'import.dart';
 /// Ffi web handler for custom open/delete operation
 class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
     with SqfliteFfiHandlerNonImplementedMixin {
+  /// Web handler for common sqlite3 web env
+  SqfliteFfiHandlerWeb(this.context);
+
   /// Global context
   final SqfliteFfiWebContext context;
 
@@ -18,9 +21,6 @@ class SqfliteFfiHandlerWeb extends SqfliteFfiHandler
       SqfliteDatabaseFileSystemFfiWeb(initFs());
   WasmSqlite3? _sqlite3;
   VirtualFileSystem? _fs;
-
-  /// Web handler for common sqlite3 web env
-  SqfliteFfiHandlerWeb(this.context);
 
   /// Init file system.
   VirtualFileSystem initFs() {

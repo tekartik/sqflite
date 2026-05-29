@@ -37,6 +37,14 @@ var webdevReady = () async {
 
 /// Setup context
 class SetupContext {
+  /// Setup Context.
+  SetupContext({
+    required this.options,
+    required this.ffiWebPath,
+    required this.version,
+    required this.overridenSwJsFile,
+  });
+
   /// The options.
   final SetupOptions options;
 
@@ -51,14 +59,6 @@ class SetupContext {
 
   /// If overriden in pubspec
   final String? overridenSwJsFile;
-
-  /// Setup Context.
-  SetupContext({
-    required this.options,
-    required this.ffiWebPath,
-    required this.version,
-    required this.overridenSwJsFile,
-  });
 }
 
 var _sourceBuild = 'web';
@@ -69,14 +69,23 @@ var sqfliteWebMetadataFile = 'sqflite_web_meta.json';
 
 /// Sqflite web metadata
 class SqfliteWebMetadata {
+  /// Sqflite web metadata
+  SqfliteWebMetadata({this.version, this.sqlite3WasmUri});
+
+  /// From json map
+  SqfliteWebMetadata.fromJsonMap(Map map)
+    : version = map['version'] != null
+          ? Version.parse(map['version'] as String)
+          : null,
+      sqlite3WasmUri = map['sqlite3WasmUri'] != null
+          ? Uri.parse(map['sqlite3WasmUri'] as String)
+          : null;
+
   /// Version
   final Version? version;
 
   /// sqlite3.wasm uri
   final Uri? sqlite3WasmUri;
-
-  /// Sqflite web metadata
-  SqfliteWebMetadata({this.version, this.sqlite3WasmUri});
 
   /// To json map
   Map<String, Object?> toJsonMap() {
@@ -97,15 +106,6 @@ class SqfliteWebMetadata {
     }
     return false;
   }
-
-  /// From json map
-  SqfliteWebMetadata.fromJsonMap(Map map)
-    : version = map['version'] != null
-          ? Version.parse(map['version'] as String)
-          : null,
-      sqlite3WasmUri = map['sqlite3WasmUri'] != null
-          ? Uri.parse(map['sqlite3WasmUri'] as String)
-          : null;
 
   @override
   String toString() => '${toJsonMap()}';

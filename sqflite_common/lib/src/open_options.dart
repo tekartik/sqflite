@@ -20,7 +20,7 @@ class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
   }) : readOnly = readOnly ?? false,
        singleInstance = singleInstance ?? true,
        rollbackActiveTransactionOnOpen =
-           rollbackActiveTransactionOnOpen ?? (isDebug ? true : false);
+           rollbackActiveTransactionOnOpen ?? (isDebug);
 
   @override
   final int? version;

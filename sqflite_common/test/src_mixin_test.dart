@@ -122,7 +122,7 @@ class MockDatabaseFactory extends SqfliteDatabaseFactoryBase {
   }
 
   SqfliteDatabase newEmptyDatabase() {
-    final path = 'empty';
+    const path = 'empty';
     final helper = SqfliteDatabaseOpenHelper(this, path, OpenDatabaseOptions());
     final db = helper.newDatabase(path)..id = 1;
     return db;
@@ -546,7 +546,7 @@ void run() {
           await step2.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -589,7 +589,7 @@ void run() {
           await step2.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -631,7 +631,7 @@ void run() {
           await step2.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -671,7 +671,7 @@ void run() {
           await step1.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -679,7 +679,7 @@ void run() {
           await step2.future;
           try {
             await db.execute('test').timeout(const Duration(milliseconds: 100));
-            throw 'should fail';
+            throw StateError('should fail');
           } catch (e) {
             expect(e is TimeoutException, true);
           }
@@ -866,7 +866,7 @@ void run() {
     });
 
     test('deleted/exists', () async {
-      final path = 'test_exists.db';
+      const path = 'test_exists.db';
       await mockDatabaseFactory.deleteDatabase(path);
       final exists = await mockDatabaseFactory.databaseExists(path);
       expect(exists, isTrue);

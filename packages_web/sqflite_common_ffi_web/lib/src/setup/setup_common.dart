@@ -10,6 +10,26 @@ var sqlite3WasmReleaseUri = Uri.parse(
 
 /// Setup options.
 class SqfliteWebSetupOptions {
+  /// Setup options.
+  SqfliteWebSetupOptions({
+    String? path,
+    String? dir,
+    bool? force,
+    bool? verbose,
+    Uri? sqlite3WasmUri,
+    bool? noSqlite3Wasm,
+    this.sqlite3WasmFilename,
+    this.sqfliteWebWorkerFilename,
+  }) {
+    this.dir = dir ?? 'web';
+    this.path = normalize(absolute(path ?? '.'));
+    this.force = force ?? false;
+    this.verbose = verbose ?? false;
+    this.noSqlite3Wasm = noSqlite3Wasm ?? false;
+    this.sqlite3WasmUri = sqlite3WasmUri ?? sqlite3WasmReleaseUri;
+    assert(isRelative(this.dir));
+  }
+
   /// Project path (current directory by default). absolute
   late final String path;
 
@@ -33,26 +53,6 @@ class SqfliteWebSetupOptions {
 
   /// Web worker local file (default to sqflite_sw.js or read from pubspec)
   final String? sqfliteWebWorkerFilename;
-
-  /// Setup options.
-  SqfliteWebSetupOptions({
-    String? path,
-    String? dir,
-    bool? force,
-    bool? verbose,
-    Uri? sqlite3WasmUri,
-    bool? noSqlite3Wasm,
-    this.sqlite3WasmFilename,
-    this.sqfliteWebWorkerFilename,
-  }) {
-    this.dir = dir ?? 'web';
-    this.path = normalize(absolute(path ?? '.'));
-    this.force = force ?? false;
-    this.verbose = verbose ?? false;
-    this.noSqlite3Wasm = noSqlite3Wasm ?? false;
-    this.sqlite3WasmUri = sqlite3WasmUri ?? sqlite3WasmReleaseUri;
-    assert(isRelative(this.dir));
-  }
 }
 
 /// Exported for setup, compat

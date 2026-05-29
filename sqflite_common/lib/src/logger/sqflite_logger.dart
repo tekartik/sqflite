@@ -63,16 +63,15 @@ abstract class SqfliteLoggerEventView implements SqfliteLoggerEvent {
 
 abstract class _SqfliteLoggerEvent
     implements SqfliteLoggerEvent, SqfliteLoggerEventView {
+  _SqfliteLoggerEvent(this.sw, this.error);
+
+  /// Allow late init.
+  _SqfliteLoggerEvent._();
   @override
   late final Object? error;
 
   @override
   late final Stopwatch? sw;
-
-  _SqfliteLoggerEvent(this.sw, this.error);
-
-  /// Allow late init.
-  _SqfliteLoggerEvent._();
 
   @override
   Map<String, Object?> toMap() => {
@@ -188,6 +187,12 @@ mixin _SqfliteLoggerSqlCommandMixin<T> implements SqfliteLoggerSqlCommand<T> {
 
 abstract class _SqfliteLoggerDatabaseEvent extends _SqfliteLoggerEvent
     implements SqfliteLoggerDatabaseEvent {
+  _SqfliteLoggerDatabaseEvent(super.sw, DatabaseExecutor client, super.error) {
+    this.client = client;
+  }
+
+  /// Allow late init.
+  _SqfliteLoggerDatabaseEvent._() : super._();
   late final DatabaseExecutor _client;
 
   @override
@@ -213,13 +218,6 @@ abstract class _SqfliteLoggerDatabaseEvent extends _SqfliteLoggerEvent
 
   @override
   Map<String, Object?> toMap() => {..._databasePrefixMap, ...super.toMap()};
-
-  _SqfliteLoggerDatabaseEvent(super.sw, DatabaseExecutor client, super.error) {
-    this.client = client;
-  }
-
-  /// Allow late init.
-  _SqfliteLoggerDatabaseEvent._() : super._();
 }
 
 /// Event or batch operation execute command return a count.
@@ -340,17 +338,16 @@ abstract class _SqfliteLoggerSqlEvent<T> extends _SqfliteLoggerDatabaseEvent
 /// Open db event
 class _SqfliteLoggerBatchEvent extends _SqfliteLoggerDatabaseEvent
     implements SqfliteLoggerBatchEvent {
-  @override
-  String get name => 'batch';
-  @override
-  final List<SqfliteLoggerBatchOperation> operations;
-
   _SqfliteLoggerBatchEvent(
     super.sw,
     super.client,
     this.operations,
     super.error,
   );
+  @override
+  String get name => 'batch';
+  @override
+  final List<SqfliteLoggerBatchOperation> operations;
 
   @override
   Map<String, Object?> toMap() => {
@@ -444,13 +441,12 @@ abstract class _SqfliteLoggerBatchOperation<T>
 
 class _SqfliteLoggerDatabaseDeleteEvent extends _SqfliteLoggerEvent
     implements SqfliteLoggerDatabaseDeleteEvent {
+  _SqfliteLoggerDatabaseDeleteEvent(super.sw, this.path, super.error);
   @override
   final String path;
 
   @override
   Map<String, Object?> toMap() => {'path': path};
-
-  _SqfliteLoggerDatabaseDeleteEvent(super.sw, this.path, super.error);
 
   @override
   String get name => 'deleteDatabase';
@@ -458,6 +454,13 @@ class _SqfliteLoggerDatabaseDeleteEvent extends _SqfliteLoggerEvent
 
 class _SqfliteLoggerDatabaseOpenEvent extends _SqfliteLoggerEvent
     implements SqfliteLoggerDatabaseOpenEvent {
+  _SqfliteLoggerDatabaseOpenEvent(
+    super.sw,
+    this.path,
+    this.options,
+    this.db,
+    super.error,
+  );
   @override
   int? get databaseId => db?.id;
 
@@ -478,24 +481,15 @@ class _SqfliteLoggerDatabaseOpenEvent extends _SqfliteLoggerEvent
     ...super.toMap(),
   };
 
-  _SqfliteLoggerDatabaseOpenEvent(
-    super.sw,
-    this.path,
-    this.options,
-    this.db,
-    super.error,
-  );
-
   @override
   String get name => 'openDatabase';
 }
 
 class _SqfliteLoggerDatabaseCloseEvent extends _SqfliteLoggerDatabaseEvent
     implements SqfliteLoggerDatabaseCloseEvent {
+  _SqfliteLoggerDatabaseCloseEvent(super.sw, super.db, super.error);
   @override
   Map<String, Object?> toMap() => {..._databasePrefixMap, ...super.toMap()};
-
-  _SqfliteLoggerDatabaseCloseEvent(super.sw, super.db, super.error);
   @override
   String get name => 'closeDatabase';
 
@@ -505,6 +499,13 @@ class _SqfliteLoggerDatabaseCloseEvent extends _SqfliteLoggerDatabaseEvent
 
 class _SqfliteLoggerInvokeEvent extends _SqfliteLoggerEvent
     implements SqfliteLoggerInvokeEvent {
+  _SqfliteLoggerInvokeEvent(
+    super.sw,
+    this.method,
+    this.arguments,
+    this.result,
+    super.error,
+  );
   @override
   final Object? result;
 
@@ -522,14 +523,6 @@ class _SqfliteLoggerInvokeEvent extends _SqfliteLoggerEvent
     ...super.toMap(),
   };
 
-  _SqfliteLoggerInvokeEvent(
-    super.sw,
-    this.method,
-    this.arguments,
-    this.result,
-    super.error,
-  );
-
   @override
   String get name => 'invoke';
 }
@@ -546,6 +539,7 @@ class _EventInfo<T> {
         // ignore: avoid_print
         print(stackTrace);
       }
+      // ignore: only_throw_errors
       throw error!;
     }
     return result as T;
@@ -565,12 +559,6 @@ var _typeDefault = SqfliteDatabaseFactoryLoggerType.all;
 /// [type] default to [SqfliteDatabaseFactoryLoggerType.all]
 /// [log] default to print.
 class SqfliteLoggerOptions {
-  /// True if write should be logged
-  late final void Function(SqfliteLoggerEvent event) log;
-
-  /// The logger type (filtering)
-  late final SqfliteDatabaseFactoryLoggerType type;
-
   /// Sqflite logger option.
   SqfliteLoggerOptions({
     SqfliteLoggerEventFunction? log,
@@ -579,6 +567,12 @@ class SqfliteLoggerOptions {
     this.log = log ?? _logDefault;
     this.type = type ?? _typeDefault;
   }
+
+  /// True if write should be logged
+  late final void Function(SqfliteLoggerEvent event) log;
+
+  /// The logger type (filtering)
+  late final SqfliteDatabaseFactoryLoggerType type;
 }
 
 /// Special wrapper that allows easily wrapping each API calls.
@@ -608,13 +602,6 @@ mixin _SqfliteDatabaseExecutorLoggerMixin implements SqfliteDatabaseExecutor {
 class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
     with _SqfliteDatabaseExecutorLoggerMixin
     implements SqfliteDatabase {
-  late final _SqfliteDatabaseFactoryLogger _factory;
-
-  SqfliteLoggerOptions get _options => _factory._options;
-
-  @override
-  _SqfliteDatabaseFactoryLogger get factory => _factory;
-
   _SqfliteDatabaseLogger(
     SqfliteDatabaseOpenHelper openHelper,
     String path, {
@@ -622,6 +609,12 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
   }) : super(openHelper, path, options: options) {
     _factory = openHelper.factory as _SqfliteDatabaseFactoryLogger;
   }
+  late final _SqfliteDatabaseFactoryLogger _factory;
+
+  SqfliteLoggerOptions get _options => _factory._options;
+
+  @override
+  _SqfliteDatabaseFactoryLogger get factory => _factory;
 
   void _log(SqfliteLoggerEvent event) => _options.log(event);
 
@@ -856,10 +849,9 @@ class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
 class _SqfliteDatabaseFactoryLogger
     with SqfliteDatabaseFactoryMixin
     implements SqfliteDatabaseFactoryLogger {
+  _SqfliteDatabaseFactoryLogger(this._delegate, this._options);
   final SqfliteDatabaseFactory _delegate;
   final SqfliteLoggerOptions _options;
-
-  _SqfliteDatabaseFactoryLogger(this._delegate, this._options);
 
   // Needed for proper exception conversion.
   @override

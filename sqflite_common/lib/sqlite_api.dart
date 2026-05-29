@@ -423,7 +423,7 @@ Future<void> __onDatabaseDowngradeDelete(
 /// Downgrading will delete the database and open it again.
 ///
 /// To set in [OpenDatabaseOptions.onDowngrade] if you want to delete everything on downgrade.
-final OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
+const OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
     __onDatabaseDowngradeDelete;
 
 ///

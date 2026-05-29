@@ -19,7 +19,7 @@ import 'sqflite_ffi_impl_io.dart'
 export 'sqflite_ffi_handler.dart'
     show SqfliteFfiHandler; // compatibility, was defined here before
 
-final _debug = false; // devWarning(true); // false
+const _debug = false; // devWarning(true); // false
 
 // ignore: avoid_print
 void _log(Object? object) => print(object);
@@ -58,6 +58,7 @@ class SqfliteFfiOperation {
 }
 
 class _SqfliteFfiCursorInfo {
+  _SqfliteFfiCursorInfo(this.id, this.statement, this.pageSize, this.cursor);
   final int id;
   final common.CommonPreparedStatement statement;
   final int pageSize;
@@ -65,16 +66,13 @@ class _SqfliteFfiCursorInfo {
 
   /// mutable
   var atEnd = false;
-
-  _SqfliteFfiCursorInfo(this.id, this.statement, this.pageSize, this.cursor);
 }
 
 /// Queued handler when a transaction is in progress
 class _QueuedHandler {
+  _QueuedHandler(this.handler);
   final Future Function() handler;
   final _completer = Completer<void>();
-
-  _QueuedHandler(this.handler);
 
   Future get future => _completer.future;
 
@@ -633,7 +631,9 @@ class SqfliteFfiDatabase {
             break;
           }
         default:
-          throw 'batch operation ${operation.method} not supported';
+          throw UnsupportedError(
+            'batch operation ${operation.method} not supported',
+          );
       }
     }
     return results;

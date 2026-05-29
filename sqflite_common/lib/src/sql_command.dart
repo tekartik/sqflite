@@ -20,15 +20,6 @@ enum SqliteSqlCommandType {
 
 /// Sql command. internal only.
 abstract class SqfliteSqlCommand {
-  /// The command type.
-  SqliteSqlCommandType get type;
-
-  /// The sql statement.
-  String get sql;
-
-  /// The sql arguments.
-  List<Object?>? get arguments;
-
   /// Sql command.
   factory SqfliteSqlCommand.raw(
     SqliteSqlCommandType type,
@@ -154,10 +145,20 @@ abstract class SqfliteSqlCommand {
       builder.arguments,
     );
   }
+
+  /// The command type.
+  SqliteSqlCommandType get type;
+
+  /// The sql statement.
+  String get sql;
+
+  /// The sql arguments.
+  List<Object?>? get arguments;
 }
 
 /// Private implementation.
 class _SqfliteSqlCommand implements SqfliteSqlCommand {
+  _SqfliteSqlCommand(this.type, this.sql, this.arguments);
   @override
   final SqliteSqlCommandType type;
 
@@ -166,6 +167,4 @@ class _SqfliteSqlCommand implements SqfliteSqlCommand {
 
   @override
   final List<Object?>? arguments;
-
-  _SqfliteSqlCommand(this.type, this.sql, this.arguments);
 }
