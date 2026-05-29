@@ -21,13 +21,13 @@ var databaseFactoryFfiAsyncTestImpl = SqfliteDatabaseFactoryFfiAsync(
 
 /// The Ffi async database factory.
 class SqfliteDatabaseFactoryFfiAsync with SqfliteDatabaseFactoryMixin {
-  /// Allow overriding, use regular ffi otherwise
-  String? _databasesPath;
-
   /// The Ffi async database factory.
   SqfliteDatabaseFactoryFfiAsync({String? tag}) {
     this.tag = tag;
   }
+
+  /// Allow overriding, use regular ffi otherwise
+  String? _databasesPath;
 
   @override
   Future<T> wrapDatabaseException<T>(Future<T> Function() action) async {

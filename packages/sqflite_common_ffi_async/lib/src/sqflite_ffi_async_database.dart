@@ -12,12 +12,11 @@ import 'import.dart';
 
 /// Ffi async database implementation.
 class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
+  /// Ffi async database implementation.
+  SqfliteDatabaseFfiAsync(super.openHelper, super.path);
   static int _id = 0;
   late final _asyncId = ++_id;
   late sqlite_async.SqliteDatabase _database;
-
-  /// Ffi async database implementation.
-  SqfliteDatabaseFfiAsync(super.openHelper, super.path);
 
   @override
   Future<T> transaction<T>(
@@ -334,14 +333,14 @@ class SqfliteDatabaseFfiAsync extends SqfliteDatabaseBase {
 
 /// Result set implementation.
 class SqfliteResultSet extends ListBase<Map<String, Object?>> {
+  /// Result set implementation.
+  SqfliteResultSet(this.resultSet);
+
   /// Result set data.
   final sqlite3.ResultSet resultSet;
 
   @override
   int get length => resultSet.length;
-
-  /// Result set implementation.
-  SqfliteResultSet(this.resultSet);
 
   @override
   Map<String, Object?> operator [](int index) {

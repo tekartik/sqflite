@@ -49,12 +49,6 @@ class FfiMethodCall
 ///
 /// TODO make it to sqflite_common to be reused in sqflite
 class FfiMethodResponse {
-  /// The result dartified.
-  late final Object? result;
-
-  /// The result mappified.
-  late final Object? error;
-
   /// Ffi method response.
   FfiMethodResponse({this.result, this.error});
 
@@ -77,6 +71,12 @@ class FfiMethodResponse {
     this.error = error;
     result = null;
   }
+
+  /// The result dartified.
+  late final Object? result;
+
+  /// The result mappified.
+  late final Object? error;
 
   /// Data map for invocation.
   Map<String, Object?> toDataMap() {
