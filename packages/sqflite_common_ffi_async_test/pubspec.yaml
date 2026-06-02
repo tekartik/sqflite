@@ -14,11 +14,11 @@ dependencies:
     git:
       url: https://github.com/tekartik/sqflite
       path: sqflite_common_test
-    version: '>=0.3.0'
-  test: '>=1.21.0'
+    version: ">=0.3.0"
+  test: ">=1.21.0"
 
 dev_dependencies:
-  lints: '>=6.1.0'
+  lints: ">=6.1.0"
 
 dependency_overrides:
   sqflite_common_test:

@@ -9,9 +9,9 @@ environment:
 
 dependencies:
   pub_semver: ">=2.0.0"
-  lints: '>=5.0.0'
-  process_run: '>=1.2.0'
-  dev_build: '>=1.0.0+14'
+  lints: ">=5.0.0"
+  process_run: ">=1.2.0"
+  dev_build: ">=1.0.0+14"
   test:
   path:
 

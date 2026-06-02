@@ -1,7 +1,7 @@
 name: sqflite_example_common
 description: Demonstrates how to use the sqflite plugin and perform some tests.
 publish_to: none
-version: '0.4.0'
+version: "0.4.0"
 
 environment:
   sdk: ^3.12.0
@@ -22,7 +22,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   test:
-  process_run: '>=0.11.0+2'
+  process_run: ">=0.11.0+2"
   pub_semver:
   sqflite_common_ffi:
 

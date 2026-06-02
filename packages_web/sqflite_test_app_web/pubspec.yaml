@@ -19,28 +19,28 @@ environment:
   flutter: ">=3.38.0"
 
 dependencies:
-  # analyzer: '>=5.2.0'
+  # analyzer: ">=5.2.0"
   flutter:
     sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: '>=0.1.3'
+  cupertino_icons: ">=0.1.3"
   sqflite_common_ffi:
   flutter_web_plugins:
     sdk: flutter
   path_provider:
   sqflite_common:
   dev_build:
-  process_run: '>=0.13.3-1'
+  process_run: ">=0.13.3-1"
   path:
   sqflite_common_ffi_web:
-  sqlite3: '>=2.4.6'
+  sqlite3: ">=2.4.6"
   sqflite_example_common:
     git:
       url: https://github.com/tekartik/sqflite
       path: packages_flutter/sqflite_example_common
-  test: '>=1.16.0-nullsafety.10'
+  test: ">=1.16.0-nullsafety.10"
 dev_dependencies:
   flutter_lints: ">=5.0.0"
   flutter_test:

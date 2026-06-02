@@ -25,5 +25,5 @@ dev_dependencies:
   flutter_lints: ">=5.0.0"
   flutter_test:
     sdk: flutter
-  test_api: '>=0.2.19'
-  pub_semver: '>=2.0.0'
+  test_api: ">=0.2.19"
+  pub_semver: ">=2.0.0"
