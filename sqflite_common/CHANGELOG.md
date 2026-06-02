@@ -1,3 +1,7 @@
+## 2.5.9
+
+* Requires dart 3.12
+
 ## 2.5.8
 
 * Add `rollbackActiveTransactionOnOpen` open options for native implementation when using singleInstance.
