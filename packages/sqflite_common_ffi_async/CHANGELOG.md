@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Requires dart 3.12
+
 ## 0.2.0
 
 * Requires `sqlite_async: ^0.14.0`
