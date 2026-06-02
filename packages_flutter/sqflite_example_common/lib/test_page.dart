@@ -15,6 +15,7 @@ export 'package:matcher/matcher.dart';
 export 'package:sqflite_example_common/database/database.dart';
 
 export 'src/expect.dart' show expect, fail;
+
 // ignore_for_file: avoid_print
 
 /// Base test page.
