@@ -1,3 +1,7 @@
+## 1.1.2
+
+* Requires dart 3.12
+
 ## 1.1.1
 
 * Update sqlite3 wasm build to 3.1.2
