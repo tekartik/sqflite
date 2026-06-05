@@ -18,9 +18,8 @@ funding:
 
 environment:
   sdk: ^3.12.0
-  # Flutter versions prior to 3.7 did not support the
-  # sharedDarwinSource option.
-  flutter: ">=3.38.0"
+  # requires AGP 9.0
+  flutter: ">=3.44.0"
 
 flutter:
   plugin:
