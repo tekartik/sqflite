@@ -53,6 +53,105 @@ void run(SqfliteTestContext context) {
         } catch (_) {}
       }
     });
+    group('sandbox', () {
+      test('open/exists/delete', () async {
+        var sandboxPath = await context.createDirectory('sandbox_test');
+        var sandboxed = factory.sandbox(path: sandboxPath);
+        expect(await sandboxed.getDatabasesPath(), sandboxPath);
+
+        var dbName = 'sandbox_demo.db';
+        var delegatePath = context.pathContext.join(sandboxPath, dbName);
+        await sandboxed.deleteDatabase(dbName);
+        expect(await sandboxed.databaseExists(dbName), isFalse);
+
+        var db = await sandboxed.openDatabase(
+          dbName,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              await db.execute(
+                'CREATE TABLE Test(id INTEGER PRIMARY KEY, value TEXT)',
+              );
+            },
+          ),
+        );
+        await db.insert('Test', {'id': 1, 'value': 'sandboxed'});
+        await db.close();
+
+        // The database is visible in the delegate factory under the sandbox
+        // root.
+        expect(await sandboxed.databaseExists(dbName), isTrue);
+        expect(await factory.databaseExists(delegatePath), isTrue);
+
+        // Open through the delegate factory.
+        db = await factory.openDatabase(delegatePath);
+        expect(await db.query('Test'), [
+          {'id': 1, 'value': 'sandboxed'},
+        ]);
+        await db.close();
+
+        await sandboxed.deleteDatabase(dbName);
+        expect(await sandboxed.databaseExists(dbName), isFalse);
+        expect(await factory.databaseExists(delegatePath), isFalse);
+      });
+
+      test('default path', () async {
+        var sandboxed = factory.sandbox();
+        expect(
+          await sandboxed.getDatabasesPath(),
+          await factory.getDatabasesPath(),
+        );
+      });
+
+      test('in memory', () async {
+        var sandboxed = factory.sandbox(path: 'sandbox_test');
+        var db = await sandboxed.openDatabase(inMemoryDatabasePath);
+        await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+        await db.close();
+      });
+
+      test('escape attempt', () async {
+        var sandboxPath = await context.createDirectory('sandbox_test');
+        var sandboxed = factory.sandbox(path: sandboxPath);
+        var p = context.pathContext;
+        await expectLater(
+          () => sandboxed.openDatabase(p.join('..', 'escape.db')),
+          throwsArgumentError,
+        );
+        await expectLater(
+          () =>
+              sandboxed.databaseExists(p.join(sandboxPath, '..', 'escape.db')),
+          throwsArgumentError,
+        );
+        await expectLater(
+          () => sandboxed.deleteDatabase('.'),
+          throwsArgumentError,
+        );
+      });
+
+      test('setDatabasesPath', () async {
+        var sandboxPath = await context.createDirectory('sandbox_test');
+        var sandboxed = factory.sandbox(path: sandboxPath);
+        var p = context.pathContext;
+        var subPath = p.join(sandboxPath, 'sub');
+        await sandboxed.setDatabasesPath(subPath);
+        expect(await sandboxed.getDatabasesPath(), subPath);
+        await context.createDirectory(subPath);
+        var dbName = 'sandbox_sub_demo.db';
+        await sandboxed.deleteDatabase(dbName);
+        var db = await sandboxed.openDatabase(dbName);
+        await db.close();
+        expect(await factory.databaseExists(p.join(subPath, dbName)), isTrue);
+        await sandboxed.deleteDatabase(dbName);
+
+        // Cannot escape the sandbox root.
+        var factoryDatabasesPath = await factory.getDatabasesPath();
+        await expectLater(
+          () => sandboxed.setDatabasesPath(factoryDatabasesPath),
+          throwsArgumentError,
+        );
+      });
+    });
     test('read/write', () async {
       var path = await context.initDeleteDb('database_read_bytes.db');
       var writtenPath = await context.initDeleteDb('database_written_bytes.db');

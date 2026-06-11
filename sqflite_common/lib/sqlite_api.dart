@@ -26,6 +26,8 @@ export 'package:sqflite_common/src/constant.dart'
 export 'package:sqflite_common/src/database_executor_iterate_ext.dart'
     show SqfliteDatabaseExecutorIterateExt, SqfliteCursorRowCallback;
 export 'package:sqflite_common/src/database_ext.dart' show SqfliteDatabaseExt;
+export 'package:sqflite_common/src/database_factory_sandbox.dart'
+    show SqfliteDatabaseFactorySandboxExtension;
 export 'package:sqflite_common/src/exception.dart' show DatabaseException;
 export 'package:sqflite_common/src/sqflite_debug.dart'
     show SqfliteDatabaseFactoryDebug, DatabaseFactoryLoggerDebugExt;
