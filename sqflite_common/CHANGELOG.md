@@ -1,3 +1,8 @@
+## 2.5.11
+
+* Add `sandbox()` extension method on `DatabaseFactory` to create a factory
+  where every database is located below a root path
+
 ## 2.5.10+1
 
 * Add `options` to `openDatabase`
