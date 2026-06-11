@@ -4,7 +4,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi/src/windows/setup.dart';
 
 import 'database_factory_ffi_io.dart';
-import 'isolate.dart';
 
 /// The database factory to use for ffi.
 ///

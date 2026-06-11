@@ -1,6 +1,7 @@
 import 'package:sqflite_common/sqlite_api.dart';
 
 import 'database_factory_ffi_web.dart';
+import 'isolate.dart';
 import 'sqflite_ffi.dart';
 
 /// The database factory to use for ffi.
@@ -23,6 +24,7 @@ DatabaseFactory get databaseFactoryFfiNoIsolate => throw UnimplementedError(
 DatabaseFactory createDatabaseFactoryFfi({
   SqfliteFfiInit? ffiInit,
   bool noIsolate = false,
+  SqfliteFfiIsolatePortServer? isolatePortServer,
 }) {
   throw UnimplementedError(
     'createDatabaseFactoryFfi only supported for io application',
