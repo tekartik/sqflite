@@ -31,8 +31,10 @@ Future<void> main() async {
 The factory can also be used explicitly:
 
 ```dart
-var factory = sqfliteDatabaseFactoryFfi;
-var db = await factory.openDatabase(inMemoryDatabasePath);
+Future<Database> openMyDatabase() async {
+  var factory = sqfliteDatabaseFactoryFfi;
+  return await factory.openDatabase(inMemoryDatabasePath);
+}
 ```
 
 In background isolates not started by the flutter engine, plugin registration
@@ -40,5 +42,4 @@ does not happen automatically; either call
 `DartPluginRegistrant.ensureInitialized()` or use `sqfliteDatabaseFactoryFfi`
 directly.
 
-On the web, it falls back to the default `sqflite_common_ffi` web factory
-(no isolate sharing).
+On the web, no op.

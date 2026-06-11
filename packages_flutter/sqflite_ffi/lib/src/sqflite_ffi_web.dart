@@ -16,8 +16,6 @@ ffi.DatabaseFactory createSqfliteDatabaseFactoryFfi({
 
 /// sqflite_ffi plugin registration (io platforms only).
 ///
-/// On the web the registration goes through `SqfliteFfiWeb` (see
-/// `sqflite_ffi_web_plugin.dart`).
 class SqfliteFfiPlugin {
   /// Main entry point called by the flutter platform, noop on the web.
   static void registerWith() {}

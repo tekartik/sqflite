@@ -42,10 +42,6 @@ dependencies:
     git:
       url: https://github.com/tekartik/sqflite
       path: packages_flutter/sqflite_example_common
-  sqflite_ffi:
-    git:
-      url: https://github.com/tekartik/sqflite
-      path: packages_flutter/sqflite_ffi
   sqflite_common_test:
     path: ../sqflite_common_test
   test: ">=1.16.0-nullsafety.10"
@@ -79,8 +75,6 @@ dependency_overrides:
     path: ../packages/sqflite_common_ffi_async
   sqflite_example_common:
     path: ../packages_flutter/sqflite_example_common
-  sqflite_ffi:
-    path: ../packages_flutter/sqflite_ffi
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

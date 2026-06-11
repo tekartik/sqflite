@@ -17,8 +17,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_web_plugins:
-    sdk: flutter
   sqflite_common_ffi: ">=2.4.2"
 
 dev_dependencies:
@@ -46,6 +44,4 @@ flutter:
         dartPluginClass: SqfliteFfiPlugin
       windows:
         dartPluginClass: SqfliteFfiPlugin
-      web:
-        pluginClass: SqfliteFfiWeb
-        fileName: sqflite_ffi_web_plugin.dart
+
