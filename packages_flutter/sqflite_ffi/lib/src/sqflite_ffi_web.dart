@@ -7,8 +7,18 @@ const sqfliteFfiIsolatePortName = 'com.tekartik.sqflite_ffi.isolate';
 ///
 /// There is no isolate sharing on the web, this is the default
 /// sqflite_common_ffi web factory.
-ffi.DatabaseFactory get databaseFactoryFfi => ffi.databaseFactoryFfi;
+ffi.DatabaseFactory get sqfliteDatabaseFactoryFfi => ffi.databaseFactoryFfi;
 
 /// Creates an FFI database factory (no isolate sharing on the web).
-ffi.DatabaseFactory createDatabaseFactoryFfi({ffi.SqfliteFfiInit? ffiInit}) =>
-    ffi.createDatabaseFactoryFfi(ffiInit: ffiInit);
+ffi.DatabaseFactory createSqfliteDatabaseFactoryFfi({
+  ffi.SqfliteFfiInit? ffiInit,
+}) => ffi.createDatabaseFactoryFfi(ffiInit: ffiInit);
+
+/// sqflite_ffi plugin registration (io platforms only).
+///
+/// On the web the registration goes through `SqfliteFfiWeb` (see
+/// `sqflite_ffi_web_plugin.dart`).
+class SqfliteFfiPlugin {
+  /// Main entry point called by the flutter platform, noop on the web.
+  static void registerWith() {}
+}

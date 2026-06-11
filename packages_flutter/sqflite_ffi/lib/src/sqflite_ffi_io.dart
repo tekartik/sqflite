@@ -36,7 +36,8 @@ final _portServer = _IsolateNameServerPortServer();
 /// (`compute`, `Isolate.run`...) reuse it.
 ///
 /// Check support documentation. Currently supports Win/Mac/Linux.
-final ffi.DatabaseFactory databaseFactoryFfi = createDatabaseFactoryFfi();
+final ffi.DatabaseFactory sqfliteDatabaseFactoryFfi =
+    createSqfliteDatabaseFactoryFfi();
 
 /// Creates an FFI database factory sharing the sqflite isolate between
 /// flutter isolates using [IsolateNameServer].
@@ -45,10 +46,24 @@ final ffi.DatabaseFactory databaseFactoryFfi = createDatabaseFactoryFfi();
 /// some behavior with the sqlite3 dynamic library opening. This function
 /// should be either a top level function or a static function.
 ///
-/// Prefer the use of the [databaseFactoryFfi] getter if you don't need this
-/// functionality.
-ffi.DatabaseFactory createDatabaseFactoryFfi({ffi.SqfliteFfiInit? ffiInit}) =>
-    ffi.createDatabaseFactoryFfi(
-      ffiInit: ffiInit,
-      isolatePortServer: _portServer,
-    );
+/// Prefer the use of the [sqfliteDatabaseFactoryFfi] getter if you don't
+/// need this functionality.
+ffi.DatabaseFactory createSqfliteDatabaseFactoryFfi({
+  ffi.SqfliteFfiInit? ffiInit,
+}) => ffi.createDatabaseFactoryFfi(
+  ffiInit: ffiInit,
+  isolatePortServer: _portServer,
+);
+
+/// sqflite_ffi plugin registration.
+class SqfliteFfiPlugin {
+  /// Main entry point called by the flutter platform.
+  ///
+  /// Initializes ffi (Windows specific setup) and registers
+  /// [sqfliteDatabaseFactoryFfi] as the default database factory (if not
+  /// already set).
+  static void registerWith() {
+    ffi.sqfliteFfiInit();
+    ffi.databaseFactoryOrNull ??= sqfliteDatabaseFactoryFfi;
+  }
+}

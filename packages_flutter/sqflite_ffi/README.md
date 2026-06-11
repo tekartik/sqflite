@@ -11,19 +11,34 @@ instances (`singleInstance` works across isolates).
 
 ## Getting Started
 
+`sqflite_ffi` is a (dart only) flutter plugin: at startup
+`SqfliteFfiPlugin.registerWith()` is called automatically, initializes ffi
+(Windows specific setup) and sets `sqfliteDatabaseFactoryFfi` as the default
+database factory (unless another factory - for example the native `sqflite`
+plugin - is already registered). So the global sqflite API works directly:
+
 ```dart
 import 'package:sqflite_ffi/sqflite_ffi.dart';
 
 Future<void> main() async {
-  // Optional (Windows setup).
-  sqfliteFfiInit();
-
-  var factory = databaseFactoryFfi;
-  var db = await factory.openDatabase(inMemoryDatabasePath);
+  WidgetsFlutterBinding.ensureInitialized();
+  var db = await databaseFactory.openDatabase(inMemoryDatabasePath);
   // ...
   await db.close();
 }
 ```
+
+The factory can also be used explicitly:
+
+```dart
+var factory = sqfliteDatabaseFactoryFfi;
+var db = await factory.openDatabase(inMemoryDatabasePath);
+```
+
+In background isolates not started by the flutter engine, plugin registration
+does not happen automatically; either call
+`DartPluginRegistrant.ensureInitialized()` or use `sqfliteDatabaseFactoryFfi`
+directly.
 
 On the web, it falls back to the default `sqflite_common_ffi` web factory
 (no isolate sharing).

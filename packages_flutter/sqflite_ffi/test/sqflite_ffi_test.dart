@@ -9,7 +9,7 @@ import 'package:sqflite_ffi/sqflite_ffi.dart';
 /// Insert two rows from another isolate, sharing the sqflite isolate
 /// through [IsolateNameServer].
 Future<void> _insertInIsolate(String path) async {
-  final db = await databaseFactoryFfi.openDatabase(
+  final db = await sqfliteDatabaseFactoryFfi.openDatabase(
     path,
     options: OpenDatabaseOptions(rollbackActiveTransactionOnOpen: false),
   );
@@ -23,7 +23,7 @@ Future<void> _insertInIsolate(String path) async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   sqfliteFfiInit();
-  final factory = databaseFactoryFfi;
+  final factory = sqfliteDatabaseFactoryFfi;
 
   // Run first, before the sqflite isolate is created in this isolate.
   test('stale registered port replaced', () async {
@@ -51,6 +51,22 @@ void main() {
     );
     expect(registeredPort, isNotNull);
     expect(registeredPort, isNot(deadSendPort));
+  });
+
+  test('plugin registration sets the default factory', () async {
+    expect(databaseFactoryOrNull, isNull);
+    try {
+      // Normally called automatically at startup through the generated
+      // plugin registrant.
+      SqfliteFfiPlugin.registerWith();
+      expect(databaseFactoryOrNull, sqfliteDatabaseFactoryFfi);
+
+      // Already set, should not override.
+      SqfliteFfiPlugin.registerWith();
+      expect(databaseFactoryOrNull, sqfliteDatabaseFactoryFfi);
+    } finally {
+      databaseFactoryOrNull = null;
+    }
   });
 
   test('open insert query', () async {

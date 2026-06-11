@@ -17,6 +17,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   sqflite_common_ffi: ">=2.4.2"
 
 dev_dependencies:
@@ -30,3 +32,20 @@ dependency_overrides:
     path: ../../sqflite_common
   sqflite_common_ffi:
     path: ../../sqflite_common_ffi
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        dartPluginClass: SqfliteFfiPlugin
+      ios:
+        dartPluginClass: SqfliteFfiPlugin
+      linux:
+        dartPluginClass: SqfliteFfiPlugin
+      macos:
+        dartPluginClass: SqfliteFfiPlugin
+      windows:
+        dartPluginClass: SqfliteFfiPlugin
+      web:
+        pluginClass: SqfliteFfiWeb
+        fileName: sqflite_ffi_web_plugin.dart

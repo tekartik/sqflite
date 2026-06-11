@@ -13,7 +13,7 @@ class SqfliteFfiTestPage extends TestPage {
   /// Sqflite ffi test page.
   SqfliteFfiTestPage({Key? key}) : super('Sqflite ffi tests', key: key) {
     sqfliteFfiInit();
-    final factory = databaseFactoryFfi;
+    final factory = sqfliteDatabaseFactoryFfi;
 
     Future<String> initDeleteDb(String name) async {
       final path = join(await factory.getDatabasesPath(), name);
@@ -120,10 +120,10 @@ class SqfliteFfiTestPage extends TestPage {
 
 /// Simple insert for compute testing.
 ///
-/// `databaseFactoryFfi` here looks up the sqflite isolate send port
+/// `sqfliteDatabaseFactoryFfi` here looks up the sqflite isolate send port
 /// registered by the main isolate using `IsolateNameServer` and reuses it.
 Future<void> _simpleInsertCompute(String path) async {
-  final db = await databaseFactoryFfi.openDatabase(
+  final db = await sqfliteDatabaseFactoryFfi.openDatabase(
     path,
     options: OpenDatabaseOptions(
       // Force false even in debug mode
