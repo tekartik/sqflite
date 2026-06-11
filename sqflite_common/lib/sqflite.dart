@@ -62,6 +62,7 @@ export 'sqlite_api.dart';
 /// same path will return the same instance, and will discard all other
 /// parameters such as callbacks for that invocation.
 ///
+/// If [options] is provided, all other parameters are ignored.
 Future<Database> openDatabase(
   String path, {
   int? version,
@@ -72,8 +73,9 @@ Future<Database> openDatabase(
   OnDatabaseOpenFn? onOpen,
   bool? readOnly = false,
   bool? singleInstance = true,
+  OpenDatabaseOptions? options,
 }) {
-  final options = OpenDatabaseOptions(
+  options ??= OpenDatabaseOptions(
     version: version,
     onConfigure: onConfigure,
     onCreate: onCreate,

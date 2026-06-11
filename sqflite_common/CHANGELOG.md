@@ -1,5 +1,6 @@
-## 2.5.9
+## 2.5.9+1
 
+* Add `options` to `openDatabase`
 * Requires dart 3.12
 
 ## 2.5.8
