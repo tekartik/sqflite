@@ -1,11 +1,9 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_async/src/sqflite_ffi_async_factory_web.dart';
 
 /// The Ffi database factory.
-DatabaseFactory get databaseFactoryFfiAsync => throw UnsupportedError(
-  'Unsupported on the web, use sqflite_common_ffi_web',
-);
+DatabaseFactory get databaseFactoryFfiAsync => databaseFactoryFfiAsyncWebImpl;
 
-/// The Ffi database factory.
-DatabaseFactory get databaseFactoryFfiAsyncTest => throw UnsupportedError(
-  'Unsupported on the web, use sqflite_common_ffi_web',
-);
+/// The Ffi database factory for tests.
+DatabaseFactory get databaseFactoryFfiAsyncTest =>
+    databaseFactoryFfiAsyncWebTestImpl;

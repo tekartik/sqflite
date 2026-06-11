@@ -24,10 +24,10 @@ dev_dependencies:
 dependency_overrides:
   sqflite_common_ffi_web:
     path: ../sqflite_common_ffi_web
-  # sqflite_common_ffi:
-  #  path: ../../sqflite_common_ffi
-  # sqflite_common:
-  #  path: ../../sqflite_common
+  sqflite_common_ffi:
+    path: ../../sqflite_common_ffi
+  sqflite_common:
+    path: ../../sqflite_common
   sqflite_common_test:
     path: ../../sqflite_common_test
 
