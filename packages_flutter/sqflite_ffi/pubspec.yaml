@@ -1,0 +1,32 @@
+name: sqflite_ffi
+homepage: https://github.com/tekartik/sqflite/tree/master/packages_flutter/sqflite_ffi
+description: sqflite ffi based implementation for flutter, sharing the sqflite isolate between isolates using IsolateNameServer.
+version: 0.1.0
+publish_to: none
+funding:
+  - https://github.com/sponsors/alextekartik
+
+topics:
+  - sql
+  - database
+
+environment:
+  sdk: ^3.12.0
+  flutter: ">=3.25.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  sqflite_common_ffi: ">=2.4.2"
+
+dev_dependencies:
+  flutter_lints: ">=5.0.0"
+  flutter_test:
+    sdk: flutter
+  path:
+
+dependency_overrides:
+  sqflite_common:
+    path: ../../sqflite_common
+  sqflite_common_ffi:
+    path: ../../sqflite_common_ffi

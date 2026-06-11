@@ -18,6 +18,7 @@ DatabaseFactory createDatabaseFactoryFfiImpl({
   SqfliteFfiInit? ffiInit,
   bool noIsolate = false,
   String? tag = 'ffi',
+  SqfliteFfiIsolatePortServer? isolatePortServer,
 }) {
   var noIsolateInitialized = false;
   return buildDatabaseFactory(
@@ -32,7 +33,11 @@ DatabaseFactory createDatabaseFactoryFfiImpl({
         }
         return ffiMethodCallHandleNoIsolate(methodCall);
       } else {
-        return ffiMethodCallhandleInIsolate(methodCall, ffiInit: ffiInit);
+        return ffiMethodCallhandleInIsolate(
+          methodCall,
+          ffiInit: ffiInit,
+          isolatePortServer: isolatePortServer,
+        );
       }
     },
   );
@@ -51,12 +56,13 @@ void _log(Object? object) => print(object);
 Future<dynamic> ffiMethodCallhandleInIsolate(
   FfiMethodCall methodCall, {
   SqfliteFfiInit? ffiInit,
+  SqfliteFfiIsolatePortServer? isolatePortServer,
 }) async {
   try {
     if (_debug) {
       _log('main_send: $methodCall');
     }
-    var result = await _isolateHandle(methodCall, ffiInit);
+    var result = await _isolateHandle(methodCall, ffiInit, isolatePortServer);
     if (_debug) {
       _log('main_recv: $result');
     }
@@ -97,10 +103,11 @@ Future<dynamic> ffiMethodCallHandleNoIsolate(FfiMethodCall methodCall) async {
 Future<dynamic> _isolateHandle(
   FfiMethodCall methodCall,
   SqfliteFfiInit? ffiInit,
+  SqfliteFfiIsolatePortServer? isolatePortServer,
 ) async {
   if (_isolate == null) {
     await _isolateLock.synchronized(() async {
-      _isolate ??= await createIsolate(ffiInit);
+      _isolate ??= await createIsolate(ffiInit, portServer: isolatePortServer);
     });
   }
   return await _isolate!.handle(methodCall);

@@ -1,3 +1,10 @@
+## 2.4.2
+
+* Add `SqfliteFfiIsolatePortServer` (exported by `sqflite_ffi_io.dart`) and the
+  `isolatePortServer` parameter of `createDatabaseFactoryFfi` to allow sharing
+  the sqflite isolate between isolates (used by the `sqflite_ffi` flutter
+  package with `IsolateNameServer`).
+
 ## 2.4.1
 
 * Requires dart 3.12
