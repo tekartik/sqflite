@@ -12,17 +12,14 @@ import 'package:sqflite_ffi/sqflite_ffi.dart';
 class SqfliteFfiTestPage extends TestPage {
   /// Sqflite ffi test page.
   SqfliteFfiTestPage({Key? key}) : super('Sqflite ffi tests', key: key) {
-    sqfliteFfiInit();
-    final factory = sqfliteDatabaseFactoryFfi;
-
     Future<String> initDeleteDb(String name) async {
-      final path = join(await factory.getDatabasesPath(), name);
-      await factory.deleteDatabase(path);
+      final path = join(await getDatabasesPath(), name);
+      await deleteDatabase(path);
       return path;
     }
 
     Future<Database> openTestDb(String path) {
-      return factory.openDatabase(
+      return openDatabase(
         path,
         options: OpenDatabaseOptions(
           version: 1,
@@ -41,7 +38,7 @@ class SqfliteFfiTestPage extends TestPage {
 
     test('isolate port registered', () async {
       // Any call goes through the sqflite isolate.
-      await factory.getDatabasesPath();
+      await getDatabasesPath();
       expect(
         IsolateNameServer.lookupPortByName(sqfliteFfiIsolatePortName),
         isNotNull,
@@ -49,7 +46,7 @@ class SqfliteFfiTestPage extends TestPage {
     });
 
     test('open insert query', () async {
-      final db = await factory.openDatabase(inMemoryDatabasePath);
+      final db = await openDatabase(inMemoryDatabasePath);
       try {
         await db.execute(
           'CREATE TABLE Test (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)',
@@ -123,7 +120,8 @@ class SqfliteFfiTestPage extends TestPage {
 /// `sqfliteDatabaseFactoryFfi` here looks up the sqflite isolate send port
 /// registered by the main isolate using `IsolateNameServer` and reuses it.
 Future<void> _simpleInsertCompute(String path) async {
-  final db = await sqfliteDatabaseFactoryFfi.openDatabase(
+  DartPluginRegistrant.ensureInitialized();
+  final db = await openDatabase(
     path,
     options: OpenDatabaseOptions(
       // Force false even in debug mode

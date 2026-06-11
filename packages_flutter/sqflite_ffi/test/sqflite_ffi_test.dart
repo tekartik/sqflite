@@ -1,3 +1,6 @@
+@TestOn('vm')
+library;
+
 import 'dart:isolate';
 import 'dart:ui';
 

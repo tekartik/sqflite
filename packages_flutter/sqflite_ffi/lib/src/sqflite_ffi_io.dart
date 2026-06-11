@@ -1,7 +1,7 @@
 import 'dart:isolate';
 import 'dart:ui';
 
-import 'package:sqflite_common_ffi/sqflite_ffi_io.dart' as ffi;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
 
 /// The name used to register the sqflite isolate send port with
 /// [IsolateNameServer].

@@ -22,7 +22,7 @@ import 'package:sqflite_ffi/sqflite_ffi.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  var db = await databaseFactory.openDatabase(inMemoryDatabasePath);
+  var db = await openDatabase(inMemoryDatabasePath);
   // ...
   await db.close();
 }
