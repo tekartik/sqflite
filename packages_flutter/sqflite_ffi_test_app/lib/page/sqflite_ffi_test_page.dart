@@ -120,7 +120,8 @@ class SqfliteFfiTestPage extends TestPage {
 /// `sqfliteDatabaseFactoryFfi` here looks up the sqflite isolate send port
 /// registered by the main isolate using `IsolateNameServer` and reuses it.
 Future<void> _simpleInsertCompute(String path) async {
-  DartPluginRegistrant.ensureInitialized();
+  // DartPluginRegistrant.ensureInitialized(); - not sufficient in unit test
+  databaseFactoryOrNull = sqfliteDatabaseFactoryFfi;
   final db = await openDatabase(
     path,
     options: OpenDatabaseOptions(
