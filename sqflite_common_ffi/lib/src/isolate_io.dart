@@ -108,7 +108,7 @@ Future<SqfliteIsolate> createIsolate(
   var spawnedIsolate = await Isolate.spawn(_isolate, [
     ourFirstReceivePort.sendPort,
     ffiInit,
-  ], debugName: "SqfliteIsolate");
+  ], debugName: 'SqfliteIsolate');
 
   // the isolate sends us its SendPort as its first message.
   // this lets us communicate with it. we’ll always use this port to
