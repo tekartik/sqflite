@@ -10,15 +10,18 @@ let package = Package(
         .macOS("10.14")
     ],
     products: [
-        // TODO: Update your library and target names.
         // If the plugin name contains "_", replace with "-" for the library name
         .library(name: "sqflite-darwin", targets: ["sqflite_darwin"])
     ],
-    dependencies: [],
+    dependencies: [
+        .package(name: "FlutterFramework", path: "../FlutterFramework")
+    ],
     targets: [
         .target(
             name: "sqflite_darwin",
-            dependencies: [],
+            dependencies: [
+                .product(name: "FlutterFramework", package: "FlutterFramework")
+            ],
             resources: [
                 .process("Resources"),
 
