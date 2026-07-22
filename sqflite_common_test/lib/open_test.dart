@@ -210,15 +210,21 @@ void run(SqfliteTestContext context) {
     });
 
     test('open in sub sub directory', () async {
+      var options = OpenDatabaseOptions(
+        version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
+        },
+      );
+      await context.deleteDirectory(join('sub2_that_should_not_exists'));
       // await context.devSetDebugModeOn(true);
       var path = await context.deleteDirectory(
         join('sub2_that_should_not_exists', 'sub_sub'),
       );
+      print('path: $path');
       var dbPath = join(path, 'open.db');
-      var db = await factory.openDatabase(dbPath);
-      try {} finally {
-        await db.close();
-      }
+      var db = await factory.openDatabase(dbPath, options: options);
+      await db.close();
     });
 
     test('isOpen', () async {

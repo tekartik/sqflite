@@ -17,11 +17,20 @@ dependencies:
     git:
       url: https://github.com/tekartik/sqflite
       path: packages_flutter/sqflite_example_common
-
+  sqflite_common_test:
+    git:
+      url: https://github.com/tekartik/sqflite
+      path: sqflite_common_test
+  dev_build: ">=1.1.8+2"
+  path_provider: ">=2.1.6"
 dev_dependencies:
   flutter_lints: ">=6.0.0"
   flutter_test:
     sdk: flutter
+  tekartik_app_dev_menu:
+    git:
+      url: https://github.com/tekartik/app_common_utils.dart
+      path: app_dev_menu
 
 dependency_overrides:
   sqflite_common:
