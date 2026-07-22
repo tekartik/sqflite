@@ -42,12 +42,14 @@ final ffi.DatabaseFactory sqfliteDatabaseFactoryFfi =
 /// Creates an FFI database factory sharing the sqflite isolate between
 /// flutter isolates using [IsolateNameServer].
 ///
-/// Optionally an [ffiInit] function can be provided if you want to override
-/// some behavior with the sqlite3 dynamic library opening. This function
-/// should be either a top level function or a static function.
+/// [ffiInit] is an optional initialization function to override sqlite3 dynamic
+/// library opening behavior. If provided, it must be a top-level or static function.
 ///
-/// Prefer the use of the [sqfliteDatabaseFactoryFfi] getter if you don't
-/// need this functionality.
+/// Returns a new [ffi.DatabaseFactory] configured to share the sqflite isolate
+/// port across Flutter isolates.
+///
+/// Prefer using the [sqfliteDatabaseFactoryFfi] getter if you don't need
+/// custom [ffiInit] behavior.
 ffi.DatabaseFactory createSqfliteDatabaseFactoryFfi({
   ffi.SqfliteFfiInit? ffiInit,
 }) => ffi.createDatabaseFactoryFfi(
@@ -57,6 +59,8 @@ ffi.DatabaseFactory createSqfliteDatabaseFactoryFfi({
 
 /// sqflite_ffi plugin registration.
 class SqfliteFfiPlugin {
+  SqfliteFfiPlugin._();
+
   /// Main entry point called by the flutter platform.
   ///
   /// Initializes ffi (Windows specific setup) and registers
