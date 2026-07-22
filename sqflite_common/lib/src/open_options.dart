@@ -1,10 +1,8 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/env_utils.dart';
 
-///
 /// Options to open a database
 /// See [openDatabase] for details
-///
 class SqfliteOpenDatabaseOptions implements OpenDatabaseOptions {
   /// See [openDatabase] for details
   SqfliteOpenDatabaseOptions({

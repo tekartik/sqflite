@@ -1,6 +1,4 @@
-///
 /// Export for implementation: sqflite, sqflite_common_ffi
-///
 library;
 
 export 'package:sqflite_common/src/compat.dart'

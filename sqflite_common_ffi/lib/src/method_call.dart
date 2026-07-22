@@ -7,6 +7,7 @@ import 'mixin/handler_mixin.dart';
 
 /// An command object representing the invocation of a named method.
 @immutable
+/// Class representing [FfiMethodCall].
 class FfiMethodCall
 //
 //    implements

@@ -12,7 +12,6 @@ class SqfliteTransactionParam {
   SqfliteTransactionParam(this.transactionId);
 
   /// null for no transaction
-  ///
   final int? transactionId;
 }
 

@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 
 /// An command object representing the invocation of a named method.
 @immutable
+/// Class representing [SqfliteMethodCall].
 class SqfliteMethodCall {
   /// Creates a [MethodCall] representing the invocation of [method] with the
   /// specified [arguments].

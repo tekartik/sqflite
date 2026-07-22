@@ -9,7 +9,6 @@ export 'package:sqflite_common/src/sqflite_database_factory.dart'
 
 export 'sqlite_api.dart';
 
-///
 /// Open the database at a given path
 ///
 /// [version] (optional) specifies the schema version of the database being
@@ -88,15 +87,12 @@ Future<Database> openDatabase(
   return databaseFactory.openDatabase(path, options: options);
 }
 
-///
 /// Open the database at a given path in read only mode
-///
 Future<Database> openReadOnlyDatabase(
   String path, {
   bool? singleInstance = true,
 }) => openDatabase(path, readOnly: true, singleInstance: singleInstance);
 
-///
 /// Get the default databases location.
 ///
 /// On Android, `it is typically data/data/<package_name>/databases`
@@ -107,17 +103,12 @@ Future<Database> openReadOnlyDatabase(
 /// databases directory. The most appropriate location on iOS would be
 /// the Library directory that you could get from the `path_provider` package
 /// (https://pub.dev/documentation/path_provider/latest/path_provider/getLibraryDirectory.html).
-///
 Future<String> getDatabasesPath() => databaseFactory.getDatabasesPath();
 
-///
 /// Delete the database at the given path.
-///
 Future<void> deleteDatabase(String path) =>
     databaseFactory.deleteDatabase(path);
 
-///
 /// Check if a database exists at a given path.
-///
 Future<bool> databaseExists(String path) =>
     databaseFactory.databaseExists(path);

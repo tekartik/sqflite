@@ -80,9 +80,7 @@ abstract class DatabaseFactory {
   Future<Uint8List> readDatabaseBytes(String path);
 }
 
-///
 /// Common API for [Database] and [Transaction] to execute SQL commands
-///
 abstract class DatabaseExecutor {
   /// Executes a single SQL statement with no return value.
   ///
@@ -309,9 +307,7 @@ abstract class DatabaseExecutor {
 /// to use during a transaction
 abstract class Transaction implements DatabaseExecutor {}
 
-///
 /// Database to send sql commands, created during [openDatabase]
-///
 abstract class Database implements DatabaseExecutor {
   /// The path of the database
   String get path;
@@ -362,18 +358,14 @@ extension SqfliteDatabaseExecutorExt on DatabaseExecutor {
 
   SqfliteTransaction? get _txn => (this as SqfliteDatabaseExecutor).txn;
 
-  ///
   /// Set the database inner version
   /// Used internally for open helpers and automatic versioning
-  ///
   Future<void> setVersion(int version) {
     _db.checkNotClosed();
     return _db.txnSetVersion(_txn, version);
   }
 
-  ///
   /// Get the database inner version
-  ///
   Future<int> getVersion() {
     _db.checkNotClosed();
     return _db.txnGetVersion(_txn);
@@ -428,10 +420,8 @@ Future<void> __onDatabaseDowngradeDelete(
 const OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
     __onDatabaseDowngradeDelete;
 
-///
 /// Options for opening the database
 /// see [openDatabase] for details
-///
 abstract class OpenDatabaseOptions {
   /// Open the database at a given path
   ///
@@ -558,12 +548,10 @@ abstract class OpenDatabaseOptions {
   bool get singleInstance;
 }
 
-///
 /// A batch is used to perform multiple operation as a single atomic unit.
 /// A Batch object can be acquired by calling [Database.batch]. It provides
 /// methods for adding operation. None of the operation will be
 /// executed (or visible locally) until commit() is called.
-///
 ///
 /// ```
 /// batch = db.batch();

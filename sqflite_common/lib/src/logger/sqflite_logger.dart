@@ -56,6 +56,7 @@ abstract class SqfliteLoggerEvent implements SqfliteLoggerCommand {
 
 /// View helper
 @visibleForTesting
+/// Class representing [SqfliteLoggerEventView].
 abstract class SqfliteLoggerEventView implements SqfliteLoggerEvent {
   /// Map view.
   Map<String, Object?> toMap();
@@ -933,6 +934,7 @@ class _SqfliteDatabaseFactoryLogger
 
 /// internal extension.
 @visibleForTesting
+/// Extension representing [OpenDatabaseOptionsLogger].
 extension OpenDatabaseOptionsLogger on OpenDatabaseOptions {
   /// To map view
   Map<String, Object?> toMap() => <String, Object?>{

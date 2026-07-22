@@ -1,13 +1,12 @@
 import 'factory_mixin.dart';
 
-///
 /// internal options.
 ///
 /// Used internally.
 ///
 /// deprecated since 1.1.1
-///
 @Deprecated('Dev only')
+/// Class representing [SqfliteOptions].
 class SqfliteOptions {
   /// deprecated
   SqfliteOptions({this.logLevel});
