@@ -53,7 +53,7 @@ void main() {
   test('compile exe and run', () async {
     var shell = Shell();
     await shell.run('''
-        dart build cli bin/sqflite_ffi_simple_bin.dart --output .local/sqflite_ffi_simple_bin  
+        dart build cli --target bin/sqflite_ffi_simple_bin.dart --output .local/sqflite_ffi_simple_bin  
         ''');
     await shell.run('''
        .local/sqflite_ffi_simple_bin/bundle/bin/sqflite_ffi_simple_bin
