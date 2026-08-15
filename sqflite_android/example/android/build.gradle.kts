@@ -1,5 +1,3 @@
-import org.gradle.api.tasks.compile.JavaCompile
-
 allprojects {
     repositories {
         google()
@@ -7,7 +5,10 @@ allprojects {
     }
 }
 
-val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
+val newBuildDir: Directory =
+    rootProject.layout.buildDirectory
+        .dir("../../build")
+        .get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
