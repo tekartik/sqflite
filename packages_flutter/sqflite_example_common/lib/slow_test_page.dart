@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:sqflite_common/sqflite.dart';
 import 'package:sqflite_common/sqflite_dev.dart';
 
@@ -12,7 +11,7 @@ import 'test_page.dart';
 /// Slow test page.
 class SlowTestPage extends TestPage {
   /// Slow test page.
-  SlowTestPage({Key? key}) : super('Slow tests', key: key) {
+  SlowTestPage({super.key}) : super('Slow tests') {
     test('Perf 100 insert', () async {
       final path = await initDeleteDb('slow_txn_100_insert.db');
       final db = await openDatabase(path);

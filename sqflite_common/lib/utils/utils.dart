@@ -4,13 +4,16 @@ import 'package:sqflite_common/src/utils.dart' as impl;
 /// helper to get the first int value in a query
 /// Useful for COUNT(*) queries
 int? firstIntValue(List<Map<String, Object?>> list) {
-  if (list.isNotEmpty) {
-    final firstRow = list.first;
-    if (firstRow.isNotEmpty) {
-      return parseInt(firstRow.values.first);
-    }
-  }
-  return null;
+  return parseInt(_firstValue(list));
+}
+
+Object? _firstValue(List<Map<String, Object?>> list) {
+  return list.firstOrNull?.values.firstOrNull?.toString();
+}
+
+/// First string value in a query result.
+String? firstStringValue(List<Map<String, Object?>> list) {
+  return _firstValue(list)?.toString();
 }
 
 /// Utility to encode a blob to allow blob query using

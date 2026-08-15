@@ -23,6 +23,14 @@ analyzer:
     # Ignore errors like
     # 'super_goes_last' is a deprecated lint rule and should not be used • included_file_warning
     included_file_warning: ignore
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 linter:
   rules:

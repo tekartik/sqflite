@@ -11,7 +11,7 @@ import 'package:sqflite_example_common/test_page.dart';
 /// Raw test page.
 class PluginTestPage extends TestPage {
   /// Raw test page.
-  PluginTestPage({Key? key}) : super('Plugin tests', key: key) {
+  PluginTestPage({super.key}) : super('Plugin tests') {
     final factory = databaseFactory;
 
     if (Platform.isIOS) {

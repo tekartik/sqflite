@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:sqflite_common/sqflite.dart';
 
 import 'test_page.dart';
@@ -6,7 +5,7 @@ import 'test_page.dart';
 /// Batch test page.
 class BatchTestPage extends TestPage {
   /// Batch test page.
-  BatchTestPage({Key? key}) : super('Batch tests', key: key) {
+  BatchTestPage({super.key}) : super('Batch tests') {
     test('BatchQuery', () async {
       // await Sqflite.devSetDebugModeOn();
       final path = await initDeleteDb('batch_query.db');

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
@@ -137,7 +136,7 @@ Future<bool> isDatabase(String path) async {
 /// Open test page.
 class OpenTestPage extends TestPage {
   /// Open test page.
-  OpenTestPage({Key? key}) : super('Open tests', key: key) {
+  OpenTestPage({super.key}) : super('Open tests') {
     final factory = databaseFactory;
 
     test('Databases path', () async {

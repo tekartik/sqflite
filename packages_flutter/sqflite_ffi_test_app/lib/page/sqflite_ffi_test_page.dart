@@ -11,7 +11,7 @@ import 'package:sqflite_ffi/sqflite_ffi.dart';
 /// flutter isolates using `IsolateNameServer`.
 class SqfliteFfiTestPage extends TestPage {
   /// Sqflite ffi test page.
-  SqfliteFfiTestPage({Key? key}) : super('Sqflite ffi tests', key: key) {
+  SqfliteFfiTestPage({super.key}) : super('Sqflite ffi tests') {
     Future<String> initDeleteDb(String name) async {
       final path = join(await getDatabasesPath(), name);
       await deleteDatabase(path);

@@ -841,34 +841,30 @@ void run(SqfliteTestContext context) {
           );
         });
 
-        test(
-          'uri int shared cache',
-          () async {
-            var dbFactory = factory; // .debugQuickLoggerWrapper();
-            var path = 'file:memdb2?mode=memory&cache=shared';
-            await dbFactory.deleteDatabase(path);
-            var db1 = await dbFactory.openDatabase(
-              path,
-              options: OpenDatabaseOptions(singleInstance: false),
-            );
-            var db2 = await dbFactory.openDatabase(
-              path,
-              options: OpenDatabaseOptions(singleInstance: false),
-            );
+        test('uri int shared cache', () async {
+          var dbFactory = factory; // .debugQuickLoggerWrapper();
+          var path = 'file:memdb2?mode=memory&cache=shared';
+          await dbFactory.deleteDatabase(path);
+          var db1 = await dbFactory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(singleInstance: false),
+          );
+          var db2 = await dbFactory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(singleInstance: false),
+          );
 
-            verify(db1 != db2);
-            await db1.execute(
-              'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)',
-            );
-            await db1.insert('Test', <String, Object?>{'id': 1});
-            expect(await db2.query('Test'), [
-              {'id': 1},
-            ]);
-            await db1.close();
-            await db2.close();
-          },
-          skip: 'uri mode not consistently working with shared cache',
-        );
+          verify(db1 != db2);
+          await db1.execute(
+            'CREATE TABLE IF NOT EXISTS Test(id INTEGER PRIMARY KEY)',
+          );
+          await db1.insert('Test', <String, Object?>{'id': 1});
+          expect(await db2.query('Test'), [
+            {'id': 1},
+          ]);
+          await db1.close();
+          await db2.close();
+        }, skip: 'uri mode not consistently working with shared cache');
 
         test('uri absolute', () async {
           var path = await context.initDeleteDb('uri_absolute.db');

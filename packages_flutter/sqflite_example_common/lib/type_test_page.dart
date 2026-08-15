@@ -16,7 +16,7 @@ class _Data {
 /// Type test page.
 class TypeTestPage extends TestPage {
   /// Type test page.
-  TypeTestPage({Key? key}) : super('Type tests', key: key) {
+  TypeTestPage({super.key}) : super('Type tests') {
     test('int', () async {
       //await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('type_int.db');

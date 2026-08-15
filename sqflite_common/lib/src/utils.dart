@@ -6,7 +6,7 @@ int? parseInt(Object? object) {
     return object;
   } else if (object is String) {
     try {
-      return int.parse(object);
+      return int.tryParse(object);
     } catch (_) {}
   }
   return null;

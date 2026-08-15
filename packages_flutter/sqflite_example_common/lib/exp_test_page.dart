@@ -1,7 +1,6 @@
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqflite.dart';
@@ -29,7 +28,7 @@ const String columnDone = 'done';
 /// Experiment test page.
 class ExpTestPage extends TestPage {
   /// Experiment test page.
-  ExpTestPage({Key? key}) : super('Exp Tests', key: key) {
+  ExpTestPage({super.key}) : super('Exp Tests') {
     test('order_by', () async {
       //await Sqflite.setDebugModeOn(true);
       final path = await initDeleteDb('order_by_exp.db');

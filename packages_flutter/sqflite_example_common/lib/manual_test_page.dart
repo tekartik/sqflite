@@ -48,7 +48,7 @@ class _ManualTestPageState extends State<ManualTestPage> {
       options: OpenDatabaseOptions(
         onConfigure: (db) async {
           if (wal) {
-            await db.execute('PRAGMA journal_mode = WAL');
+            await db.setJournalMode('WAL');
           }
         },
       ),
@@ -122,19 +122,26 @@ class _ManualTestPageState extends State<ManualTestPage> {
       SqfMenuItem('openDatabase', () async {
         await _openDatabase();
       }, summary: 'Open the database'),
+      SqfMenuItem('database information', () async {
+        var db = await _openDatabase();
+        var version = await db.getVersion();
+        var sb = StringBuffer();
+        sb.writeln('version: $version');
+        var walMode = (await db.rawQuery(
+          'PRAGMA journal_mode',
+        )).firstOrNull?.values.firstOrNull?.toString();
+        sb.writeln('walMode: $walMode');
+        unawaited(showToast(sb.toString()));
+      }, summary: 'Get version and wal mode'),
       SqfMenuItem('openDatabase WAL', () async {
         await _openDatabase(wal: true);
       }, summary: 'Open the database on set WAL mode'),
       SqfMenuItem('transaction add and query', () async {
         await _addAndQuery();
       }, summary: 'open/create table/add/query'),
-      SqfMenuItem(
-        'transaction add and query and pause',
-        () async {
-          await _addAndQuery(msDelay: 5000);
-        },
-        summary: 'open/create table/add/query/pause',
-      ),
+      SqfMenuItem('transaction add and query and pause', () async {
+        await _addAndQuery(msDelay: 5000);
+      }, summary: 'open/create table/add/query/pause'),
       SqfMenuItem(
         'transaction add and query and pause no synchronized',
         () async {
@@ -391,13 +398,9 @@ class _SimpleDbTestPageState extends State<SimpleDbTestPage> {
               await db.insert('test', {'value': 'some_value'});
               await countRecord();
             }, summary: 'Add one record. Open the database if needed'),
-            menuItem(
-              'Count record',
-              () async {
-                await countRecord();
-              },
-              summary: 'Count records. Open the database if needed',
-            ),
+            menuItem('Count record', () async {
+              await countRecord();
+            }, summary: 'Count records. Open the database if needed'),
             menuItem('Close Database', () async {
               await _closeDatabase();
             }),

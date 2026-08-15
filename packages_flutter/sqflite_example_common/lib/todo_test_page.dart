@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:sqflite_common/sqflite.dart';
 
 import 'test_page.dart';
@@ -114,7 +113,7 @@ create table $tableTodo (
 /// Todo test page.
 class TodoTestPage extends TestPage {
   /// Todo test page.
-  TodoTestPage({Key? key}) : super('Todo example', key: key) {
+  TodoTestPage({super.key}) : super('Todo example') {
     test('open', () async {
       // await Sqflite.devSetDebugModeOn(true);
       final path = await initDeleteDb('simple_todo_open.db');

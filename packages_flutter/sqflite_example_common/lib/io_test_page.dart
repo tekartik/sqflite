@@ -10,7 +10,7 @@ import 'test_page.dart';
 /// Open test page.
 class IoTestPage extends TestPage {
   /// Open test page.
-  IoTestPage({Key? key}) : super('IO tests', key: key) {
+  IoTestPage({super.key}) : super('IO tests') {
     // ignore: unused_local_variable
     final factory = databaseFactory;
 

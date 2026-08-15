@@ -603,11 +603,8 @@ mixin _SqfliteDatabaseExecutorLoggerMixin implements SqfliteDatabaseExecutor {
 class _SqfliteDatabaseLogger extends SqfliteDatabaseBase
     with _SqfliteDatabaseExecutorLoggerMixin
     implements SqfliteDatabase {
-  _SqfliteDatabaseLogger(
-    SqfliteDatabaseOpenHelper openHelper,
-    String path, {
-    OpenDatabaseOptions? options,
-  }) : super(openHelper, path, options: options) {
+  _SqfliteDatabaseLogger(SqfliteDatabaseOpenHelper openHelper, String path)
+    : super(openHelper, path) {
     _factory = openHelper.factory as _SqfliteDatabaseFactoryLogger;
   }
   late final _SqfliteDatabaseFactoryLogger _factory;
