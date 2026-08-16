@@ -1,4 +1,4 @@
-## 2.4.2
+## 2.4.2+1
 
 * Add `SqfliteFfiIsolatePortServer` and the `isolatePortServer` parameter of
   `createDatabaseFactoryFfi` to allow sharing the sqflite isolate between
