@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Fix hang when accessing a database after `close()` (database now properly reports `database_closed` error)
+
 ## 1.0.0
 
 * Requires dart 3.12

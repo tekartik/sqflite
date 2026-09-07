@@ -30,6 +30,7 @@ abstract class SqfliteDatabaseFfiAsyncBase extends SqfliteDatabaseBase {
     Future<T> Function(Transaction txn) action, {
     bool? exclusive,
   }) async {
+    checkNotClosed();
     return _wrapFfiAsyncCall(() async {
       if (openTransaction is SqfliteFfiAsyncTransaction) {
         var sqfliteTxn = openTransaction as SqfliteFfiAsyncTransaction;
@@ -48,6 +49,7 @@ abstract class SqfliteDatabaseFfiAsyncBase extends SqfliteDatabaseBase {
   Future<T> readTransaction<T>(
     Future<T> Function(Transaction txn) action,
   ) async {
+    checkNotClosed();
     return _wrapFfiAsyncCall(() async {
       if (openTransaction is SqfliteFfiAsyncTransaction) {
         var sqfliteTxn = openTransaction as SqfliteFfiAsyncTransaction;
@@ -286,18 +288,13 @@ abstract class SqfliteDatabaseFfiAsyncBase extends SqfliteDatabaseBase {
     return result['count'] as int;
   }
 
+  /// Called by the base close implementation (which marks the database as
+  /// closed first so that any later access fails with a database_closed error
+  /// instead of reaching the underlying sqlite_async database while it is
+  /// shutting down).
   @override
-  Future<void> close() async {
-    await super.close();
-  }
-
-  Future<void> _closeSqfliteAsyncDatabase() {
+  Future<void> invokeCloseDatabase(int databaseId) {
     return ffiAsyncDatabase.close();
-  }
-
-  @override
-  Future<void> closeDatabase() {
-    return _closeSqfliteAsyncDatabase();
   }
 }
 
