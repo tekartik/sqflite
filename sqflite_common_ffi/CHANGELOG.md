@@ -1,3 +1,7 @@
+## 2.4.3
+
+* Add `sqflite-common-ffi-desktop` and `sqflite-common-ffi-testing` agent skills in `skills/`, installable with `dart run skills@ get`
+
 ## 2.4.2+1
 
 * Add `SqfliteFfiIsolatePortServer` and the `isolatePortServer` parameter of
