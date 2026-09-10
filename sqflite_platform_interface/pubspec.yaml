@@ -3,7 +3,7 @@ repository: https://github.com/tekartik/sqflite/tree/master/sqflite_platform_int
 issue_tracker: https://github.com/tekartik/sqflite/issues
 description: Flutter plugin interface for SQLite, a self-contained, high-reliability,
   embedded, SQL database engine.
-version: 2.4.1
+version: 2.4.2
 
 environment:
   sdk: ^3.12.0
