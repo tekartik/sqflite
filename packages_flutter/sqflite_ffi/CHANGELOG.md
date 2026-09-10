@@ -1,3 +1,7 @@
+## 0.1.1
+
+* Add `sqflite-ffi-flutter` agent skill in `skills/`, installable with `dart run skills@ get`
+
 ## 0.1.0+1
 
 * Improve documentation

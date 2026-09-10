@@ -1,7 +1,7 @@
 name: sqflite_ffi
 homepage: https://github.com/tekartik/sqflite/tree/master/packages_flutter/sqflite_ffi
 description: sqflite ffi based implementation for flutter, sharing the sqflite isolate between isolates using IsolateNameServer.
-version: 0.1.0+1
+version: 0.1.1
 funding:
   - https://github.com/sponsors/alextekartik
 
