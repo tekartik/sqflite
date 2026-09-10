@@ -1,3 +1,7 @@
+## 2.4.4
+
+* Add `sqflite-android-setup` agent skill in `skills/`, installable with `dart run skills@ get`
+
 ## 2.4.3
 
 * Updates minimum supported SDK version to Flutter 3.44 / Dart 3.12.
