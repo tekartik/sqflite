@@ -1,3 +1,7 @@
+## 2.5.12
+
+* Add `sqflite-common-api` agent skill in `skills/`, installable with `dart run skills@ get`
+
 ## 2.5.11
 
 * Add `sandbox()` extension method on `DatabaseFactory` to create a factory
