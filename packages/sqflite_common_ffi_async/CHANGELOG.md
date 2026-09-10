@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Add `sqflite-common-ffi-async-factory` agent skill in `skills/`, installable with `dart run skills@ get`
+
 ## 1.0.1
 
 * Fix hang when accessing a database after `close()` (database now properly reports `database_closed` error)
