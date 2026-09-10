@@ -1,3 +1,7 @@
+## 1.1.3
+
+* Add `sqflite-common-ffi-web-options` and `sqflite-common-ffi-web-setup` agent skills in `skills/`, installable with `dart run skills@ get`
+
 ## 1.1.2
 
 * Requires dart 3.12
