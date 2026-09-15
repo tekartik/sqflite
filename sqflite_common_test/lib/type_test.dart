@@ -31,12 +31,17 @@ Future<int> _updateValue(int id, dynamic value) async {
   }, where: '_id = $id');
 }
 
+/// Special runtime trick to known whether we are in the javascript world
+const _isRunningAsJavascript = identical(1, 1.0);
+
 /// Run type tests.
 void run(SqfliteTestContext context) {
   var factory = context.databaseFactory;
   group('type', () {
     test('int', () async {
-      print('kSqfliteIsWeb: ${context.isWeb}');
+      print(
+        'kSqfliteIsWeb: ${context.isWeb}, isRunningAsJavascript: $_isRunningAsJavascript',
+      );
       var path = await context.initDeleteDb('type_int.db');
       var db = _data.db = await factory.openDatabase(
         path,
@@ -83,7 +88,7 @@ void run(SqfliteTestContext context) {
 
       var maxValue = pow(2, 63).round() - 1;
       var maxValueBigInt = BigInt.parse('9223372036854775807');
-      if (!context.isWeb) {
+      if (!_isRunningAsJavascript) {
         expect(maxValueBigInt.isValidInt, true);
         expect(maxValueBigInt.toInt(), maxValue);
       } else {
