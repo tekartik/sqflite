@@ -5,6 +5,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/constant.dart';
 import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/database_mixin.dart';
+import 'package:sqflite_common/src/env_utils.dart';
 import 'package:sqflite_common/src/exception.dart';
 import 'package:sqflite_common/src/factory.dart';
 import 'package:sqflite_common/src/mixin/factory.dart';
@@ -218,15 +219,13 @@ mixin SqfliteDatabaseFactoryMixin
   static bool isInMemoryDatabasePath(String path) =>
       pu.isInMemoryDatabasePath(path);
 
-  final bool _kIsWeb = identical(0, 0.0);
-
   /// path must be non null
   Future<String> fixPath(String path) async {
     /// Transform file::memory: to :memory as current implementation
     /// relies on this feature.
     if (pu.isInMemoryDatabasePath(path)) {
       return inMemoryDatabasePath;
-    } else if (_kIsWeb || pu.isFileUriDatabasePath(path)) {
+    } else if (kSqfliteIsWeb || pu.isFileUriDatabasePath(path)) {
       // nothing
     } else {
       if (isRelative(path)) {

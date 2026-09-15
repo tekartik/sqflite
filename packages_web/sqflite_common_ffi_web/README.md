@@ -102,4 +102,3 @@ This is still experimental:
 - slow
 - not fully tested
 - bugs
-- Wasm support issue: Currently deleteDatabase is not supported on wasm (investigating)

@@ -1,3 +1,9 @@
+## 2.5.13
+
+* Fix web detection (`kSqfliteIsWeb`) when compiled with dart2wasm: database paths were
+  rewritten as absolute urls, which broke `databaseExists`, `deleteDatabase`,
+  `readDatabaseBytes` and `writeDatabaseBytes` in `sqflite_common_ffi_web`
+
 ## 2.5.12
 
 * Add `sqflite-common-api` agent skill in `skills/`, installable with `dart run skills@ get`

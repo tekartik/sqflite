@@ -3,3 +3,6 @@ concurrency: 1
 platforms:
   - chrome
   - vm
+compiler:
+  - dart2js
+  - dart2wasm

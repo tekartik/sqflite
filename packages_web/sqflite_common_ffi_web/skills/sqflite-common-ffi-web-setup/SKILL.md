@@ -119,8 +119,9 @@ Future<void> main() async {
 
 * Experimental: slower than native, larger message overhead (each call goes
   through `postMessage`), not fully tested.
-* `deleteDatabase` is reported as not working when the app itself is
-  compiled with dart2wasm (`--wasm`); the JS build is the tested path.
+* dart2wasm (`flutter build web --wasm`) is supported since 1.2.0 with
+  `sqflite_common` 2.5.13 or later; with older versions `deleteDatabase` and
+  `databaseExists` silently fail when the app is compiled with dart2wasm.
 * Basic `Worker` fallback (Android Chrome) is not cross-tab safe.
 * One connection per database: `OpenDatabaseOptions(singleInstance: false)`
   throws an `ArgumentError` for a persistent database. Every connection of a

@@ -19,5 +19,8 @@ bool get isRelease {
 /// Check whether running in debug mode
 bool get isDebug => !isRelease;
 
-/// Special runtime trick to known whether we are in the javascript world
-const kSqfliteIsWeb = identical(1, 1.0);
+/// True when running on the web (compiled with dart2js or dart2wasm).
+///
+/// Same detection as flutter `kIsWeb`. The `identical(1, 1.0)` trick must not
+/// be used here: it only detects JavaScript and is false with dart2wasm.
+const bool kSqfliteIsWeb = bool.fromEnvironment('dart.library.js_interop');
