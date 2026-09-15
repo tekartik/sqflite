@@ -1,7 +1,10 @@
 import 'dart:js_interop';
 
 import 'package:sqflite_common/sqlite_api.dart';
+// ignore: implementation_imports
+import 'package:sqflite_common/src/constant.dart' show methodOpenDatabase;
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi_web/src/open_options_check.dart';
 import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'
     show SqfliteFfiHandlerWeb;
 import 'package:sqflite_common_ffi_web/src/sw/constants.dart';
@@ -47,6 +50,10 @@ DatabaseFactory createDatabaseFactoryFfiWeb({
   return buildDatabaseFactory(
     tag: tag ?? 'ffi_web',
     invokeMethod: (String method, [Object? arguments]) async {
+      if (method == methodOpenDatabase) {
+        // singleInstance: false is not supported on the web
+        checkOpenDatabaseArgumentsWeb(arguments);
+      }
       final methodCall = FfiMethodCall(method, arguments);
       if (noWebWorker) {
         if (context == null) {

@@ -172,6 +172,10 @@ will give you the same database.
 If you open the same database multiple times using `singleInstance: false`, you might encounter (at least on Android):
 
     android.database.sqlite.SQLiteDatabaseLockedException: database is locked (code 5)
+
+On the web (`sqflite_common_ffi_web`), opening the same database multiple times using `singleInstance: false`
+is not supported and throws an `ArgumentError`: the web virtual file system has no locking between
+connections and a second connection could corrupt the database.
     
 Let's consider the following helper class
 

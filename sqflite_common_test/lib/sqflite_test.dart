@@ -72,6 +72,10 @@ abstract class SqfliteTestContext {
 
   /// Only sqlite_async supports it for now
   bool get supportsConcurrentRead;
+
+  /// True if the same database can be opened multiple times
+  /// (`singleInstance: false`). Not supported on the web.
+  bool get supportsMultipleInstances;
 }
 
 /// sqflite test context mixin.
@@ -85,6 +89,10 @@ mixin SqfliteTestContextMixin implements SqfliteTestContext {
 
   @override
   bool get supportsConcurrentRead => false;
+
+  /// Multiple connections to the same database are not supported on the web.
+  @override
+  bool get supportsMultipleInstances => !isWeb;
 
   /// FFI implementation is strict
   @override

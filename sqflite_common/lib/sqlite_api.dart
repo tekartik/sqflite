@@ -477,6 +477,10 @@ abstract class OpenDatabaseOptions {
   /// false for in memory database (it is forced to false for `:memory:` path)
   /// but not for uri.
   ///
+  /// On the web (`sqflite_common_ffi_web`), [singleInstance] must be true
+  /// for a persistent database, multiple connections to the same database
+  /// file are not supported and an `ArgumentError` is thrown.
+  ///
   /// Experimental for sqflite plugin. When [rollbackActiveTransactionOnOpen] is
   /// true and [singleInstance] is true, any active transaction from another
   /// isolate is rolled back when opening the database.

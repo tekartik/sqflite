@@ -125,6 +125,10 @@ void run(SqfliteTestContext context) {
     });
 
     Future<bool> checkFileExists(String path) async {
+      if (!context.supportsMultipleInstances) {
+        // A second connection cannot be opened (web), check the file only.
+        return factory.databaseExists(path);
+      }
       var exists = false;
       try {
         var db = await factory.openDatabase(
@@ -767,7 +771,7 @@ void run(SqfliteTestContext context) {
       await db1.close();
       await db2.close();
       await db3.close(); // safe to close the same instance
-    });
+    }, skip: !context.supportsMultipleInstances);
 
     test('single/multi instance', () async {
       // await utils.devSetDebugModeOn(true);
@@ -789,7 +793,35 @@ void run(SqfliteTestContext context) {
       await db1.close();
       await db2.close();
       await db3.close(); // safe to close the same instance
-    });
+    }, skip: !context.supportsMultipleInstances);
+
+    test('multi instance not supported', () async {
+      // Web: a persistent database cannot be opened more than once.
+      var path = await context.initDeleteDb('multi_instance_not_supported.db');
+      await expectLater(
+        factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(singleInstance: false),
+        ),
+        throwsArgumentError,
+      );
+      // The database can still be opened normally.
+      var db = await factory.openDatabase(path);
+      await db.close();
+
+      // In memory databases are private so they can be opened multiple times.
+      var db1 = await factory.openDatabase(
+        inMemoryDatabasePath,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
+      var db2 = await factory.openDatabase(
+        inMemoryDatabasePath,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
+      verify(db1 != db2);
+      await db1.close();
+      await db2.close();
+    }, skip: context.supportsMultipleInstances);
 
     /// Use single instance to force its value (which default to true).
     Future<void> testInMemoryDatabase(

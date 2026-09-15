@@ -190,6 +190,9 @@ void enableSqfliteWebLogs() {
 
 * Creating a new factory per call: each one spins up its own worker
   connection; keep one instance.
+* Opening the same database with `singleInstance: false`: not supported on
+  the web (`ArgumentError`), the virtual file system has no locking between
+  connections (see the setup skill, Limitations).
 * Changing `indexedDbName` after users have data: the old store is
   orphaned, data appears lost.
 * Two factories with different `indexedDbName` but the same worker script:

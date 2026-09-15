@@ -83,6 +83,19 @@ When debugging, you should use the same port to keep the same indexeddb database
 When shared worker are not supported - for example in Android Chrome as of 2022-10-20 -, a basic web worker is used.
 In this case it is not cross-tab safe.
 
+### One connection per database (`singleInstance: false` not supported)
+
+All the databases of a factory are opened in a single sqlite3 (wasm) instance using a single
+virtual file system (an in-memory image persisted in IndexedDB). This virtual file system has no
+locking between connections, so two connections to the same database file could each write their
+own version of the pages and corrupt the database.
+
+For this reason `OpenDatabaseOptions(singleInstance: false)` is not supported for a persistent
+database and `openDatabase` throws an `ArgumentError`. Open the database once (default
+`singleInstance: true`): subsequent calls to `openDatabase` with the same path return the same
+instance. Only in-memory databases (`inMemoryDatabasePath`) can be opened multiple times, each
+connection being a private database.
+
 ## Status
 
 This is still experimental:

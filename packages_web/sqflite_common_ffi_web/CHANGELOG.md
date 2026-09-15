@@ -1,3 +1,9 @@
+## 1.2.0
+
+* `openDatabase` throws an `ArgumentError` when `singleInstance` is false for a persistent database:
+  multiple connections to the same database file are not supported on the web (no locking between
+  connections in the virtual file system, which could corrupt the database).
+
 ## 1.1.3
 
 * Add `sqflite-common-ffi-web-options` and `sqflite-common-ffi-web-setup` agent skills in `skills/`, installable with `dart run skills@ get`

@@ -122,6 +122,13 @@ Future<void> main() async {
 * `deleteDatabase` is reported as not working when the app itself is
   compiled with dart2wasm (`--wasm`); the JS build is the tested path.
 * Basic `Worker` fallback (Android Chrome) is not cross-tab safe.
+* One connection per database: `OpenDatabaseOptions(singleInstance: false)`
+  throws an `ArgumentError` for a persistent database. Every connection of a
+  factory runs in the same wasm instance on the same virtual file system,
+  which has no locking between connections, so a second connection to the
+  same file could corrupt it. Keep the default `singleInstance: true` (the
+  same `Database` is returned for the same path); only `inMemoryDatabasePath`
+  can be opened several times.
 * Only one worker script name per site: the shared worker is keyed by its
   URL, so after upgrading the package all tabs must reload. To force a
   reload change the worker file name (see options skill, `sw_js_file`).
@@ -232,6 +239,9 @@ Future<String> sqliteVersion() async {
 * Using `getDatabasesPath()` + `join` or `path_provider` on the web; use a
   plain name.
 * Debugging on changing ports and "losing" the database.
+* Passing `singleInstance: false` in shared code (for example for a
+  background task or a second controller): it throws on the web; share the
+  single instance instead.
 * Setting `databaseFactory = databaseFactoryFfiWeb` on io (throws
   `UnsupportedError`): guard with `kIsWeb`.
 * Importing only `sqflite_ffi_web.dart` and expecting `Database` or

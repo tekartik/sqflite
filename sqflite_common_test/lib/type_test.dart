@@ -479,14 +479,32 @@ void run(SqfliteTestContext context) {
           }
         }
 
+        Future<void> testIntValue(int value) async {
+          id = await _insertValue(value);
+          expect(await _getValue(id), value, reason: 'int: $value');
+        }
+
+        Future<void> testBigIntValue(int value) async {
+          id = await _insertValue(value);
+          expect(
+            await _getValue(id),
+            BigInt.from(value),
+            reason: 'int: $value',
+          );
+        }
+
+        Future<void> testPow(int powValue) async {
+          await testIntValue(pow(2, powValue).toInt());
+        }
+
+        await testPow(10);
+        await testIntValue(9007199254740991); // 2⁶53 -1
         if (!context.isWeb) {
           // integer?
           id = await _insertValue(pow(2, 62));
           expect(await _getValue(id), pow(2, 62));
         } else {
-          // integer?
-          id = await _insertValue(pow(2, 53));
-          expect(await _getValue(id), pow(2, 53));
+          await testBigIntValue(9007199254740992);
         }
 
         // text
