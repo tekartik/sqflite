@@ -4,7 +4,7 @@ publish_to: none
 version: "0.4.0"
 
 environment:
-  sdk: ^3.12.0
+  sdk: ^3.13.0
 
 dependencies:
   path: any
@@ -34,6 +34,7 @@ dev_dependencies:
 # following page: https://www.dartlang.org/tools/pub/pubspec
 
 # The following section is specific to Flutter.
+  material_ui: ">=1.5.0"
 flutter:
 
   # The following line ensures that the Material Icons font is

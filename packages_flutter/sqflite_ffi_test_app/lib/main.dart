@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sqflite_example_common/main.dart';
 import 'package:sqflite_ffi_test_app/page/sqflite_ffi_test_page.dart';
 

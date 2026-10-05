@@ -22,14 +22,13 @@ class TestFailure {
 /// upon failures in [expect].
 @Deprecated('Will be removed in 0.13.0.')
 /// Typedef representing [ErrorFormatter].
-typedef ErrorFormatter =
-    String Function(
-      dynamic actual,
-      Matcher matcher,
-      String? reason,
-      Map matchState,
-      bool verbose,
-    );
+typedef ErrorFormatter = String Function(
+  dynamic actual,
+  Matcher matcher,
+  String? reason,
+  Map matchState,
+  bool verbose,
+);
 
 /// Assert that [actual] matches [matcher].
 ///

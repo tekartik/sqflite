@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:sqflite_example_common/main.dart';
 import 'package:sqflite_test_app/page/plugin_test_page.dart';
 

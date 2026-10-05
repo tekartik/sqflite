@@ -768,8 +768,7 @@ class OpenTestPage extends TestPage {
     });
 
     test('In memory database', () async {
-      const inMemoryPath =
-          inMemoryDatabasePath; // tried null without success, as it crashes on Android
+      const inMemoryPath = inMemoryDatabasePath; // tried null without success, as it crashes on Android
       const path = inMemoryPath;
 
       var db = await openDatabase(path);

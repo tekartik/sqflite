@@ -1,11 +1,12 @@
 // ignore_for_file: avoid_print
 
-import 'dart:io';
 import 'dart:collection';
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
+
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 /// Test from issues #1204 (wal mode on android), thanks to absar
 /// To run using

@@ -153,15 +153,10 @@ Future<ReleaseAsset> findReleaseAsset(
     );
     releases = [release];
   } else {
-    releases =
-        (await _githubApiGetJson(
-                  Uri.parse(
-                    'https://api.github.com/repos/$repo/releases?per_page=50',
-                  ),
-                  verbose: verbose,
-                )
-                as List)
-            .cast<Object?>();
+    releases = (await _githubApiGetJson(
+      Uri.parse('https://api.github.com/repos/$repo/releases?per_page=50'),
+      verbose: verbose,
+    ) as List).cast<Object?>();
   }
   for (var release in releases.cast<Map>()) {
     if (release['draft'] == true) {

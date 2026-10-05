@@ -3,12 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:io' as io;
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart' hide test;
+import 'package:material_ui/material_ui.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:test/test.dart' show test;
@@ -23,9 +23,8 @@ void main() {
         //await devVerbose();
         final path = join('test_missing_sub_dir', 'simple.db');
         try {
-          await Directory(
-            join(await getDatabasesPath(), dirname(path)),
-          ).delete(recursive: true);
+          await Directory(join(await getDatabasesPath(), dirname(path)))
+              .delete(recursive: true);
         } catch (_) {}
         final db = await openDatabase(
           path,
