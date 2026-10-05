@@ -1,3 +1,7 @@
+## 2.4.4+1
+
+* Remove `flutter/material` import, adapt example to `material_ui`
+
 ## 2.4.4
 
 * Add `sqflite-crud-and-transactions`, `sqflite-open-database` and `sqflite-testing-and-platforms` agent skills in `skills/`, installable with `dart run skills@ get`
