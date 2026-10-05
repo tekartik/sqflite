@@ -1,11 +1,12 @@
-import 'package:meta/meta.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common/src/factory.dart';
 
 SqfliteDatabaseFactory? _databaseFactory;
 
 /// Default database factory.
-@visibleForTesting
+///
+/// Initialized by plugins (sqflite, sqflite_ffi) or null
+/// by default in vm and web apps.
 DatabaseFactory? get databaseFactoryOrNull => _databaseFactory;
 
 /// Change the default factory.

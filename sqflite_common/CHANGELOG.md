@@ -1,8 +1,9 @@
-## 2.5.13
+## 2.5.13+1
 
 * Fix web detection (`kSqfliteIsWeb`) when compiled with dart2wasm: database paths were
   rewritten as absolute urls, which broke `databaseExists`, `deleteDatabase`,
   `readDatabaseBytes` and `writeDatabaseBytes` in `sqflite_common_ffi_web`
+* Allow general read access to `databaseFactoryOrNull`.
 
 ## 2.5.12
 
