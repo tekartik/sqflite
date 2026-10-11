@@ -15,10 +15,6 @@ dependencies:
   synchronized:
   matcher:
   meta:
-  sqflite_common_ffi:
-    git:
-      url: https://github.com/tekartik/sqflite
-      path: sqflite_common_ffi
   material_ui: ">=1.5.0"
 dev_dependencies:
   flutter_lints: ">=5.0.0"
@@ -29,7 +25,7 @@ dev_dependencies:
   test:
   process_run: ">=0.11.0+2"
   pub_semver:
-
+  sqflite_common_ffi:
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 
