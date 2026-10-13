@@ -1,4 +1,4 @@
-## 2.4.4+1
+## 2.4.4+2
 
 * Remove `flutter/material` import, adapt example to `material_ui`
 
