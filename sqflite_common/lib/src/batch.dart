@@ -4,6 +4,7 @@ import 'package:sqflite_common/src/database.dart';
 import 'package:sqflite_common/src/sql_builder.dart';
 import 'package:sqflite_common/src/transaction.dart';
 import 'package:sqflite_common/src/utils.dart';
+import 'package:sqflite_common/src/value_utils.dart';
 
 /// Batch mixin.
 mixin SqfliteBatchMixin implements Batch {
@@ -132,6 +133,7 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
 
   @override
   void rawInsert(String sql, [List<Object?>? arguments]) {
+    checkRawArgs(arguments);
     operations.add(
       SqfliteBatchOperation(
         methodInsert,
@@ -142,6 +144,7 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
 
   @override
   void rawQuery(String sql, [List<Object?>? arguments]) {
+    checkRawArgs(arguments);
     operations.add(
       SqfliteBatchOperation(
         methodQuery,
@@ -152,6 +155,7 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
 
   @override
   void rawUpdate(String sql, [List<Object?>? arguments]) {
+    checkRawArgs(arguments);
     operations.add(
       SqfliteBatchOperation(
         methodUpdate,
@@ -162,6 +166,7 @@ abstract class SqfliteBatch with SqfliteBatchMixin implements Batch {
 
   @override
   void rawDelete(String sql, [List<Object?>? arguments]) {
+    checkRawArgs(arguments);
     operations.add(
       SqfliteBatchOperation(
         methodUpdate,
@@ -214,6 +219,8 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
 
   @override
   Future<List<Object?>> apply({bool? noResult, bool? continueOnError}) {
+    database.checkNotClosed();
+
     return database.txnApplyBatch(
       null,
       this,

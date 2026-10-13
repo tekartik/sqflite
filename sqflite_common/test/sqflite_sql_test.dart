@@ -285,5 +285,60 @@ void main() {
       await db.close();
       scenario.end();
     });
+
+    test('queryCursor closed early in transaction', () async {
+      final scenario = startScenario([
+        protocolOpenStep,
+        [
+          'execute',
+          {
+            'sql': 'BEGIN IMMEDIATE',
+            'id': 1,
+            'inTransaction': true,
+            'transactionId': null,
+          },
+          {'transactionId': 1},
+        ],
+        [
+          'query',
+          {'sql': '_', 'id': 1, 'transactionId': 1, 'cursorPageSize': 2},
+          {
+            'cursorId': 1,
+            'rows': [
+              // ignore: inference_failure_on_collection_literal
+              [{}],
+            ],
+            // ignore: inference_failure_on_collection_literal
+            'columns': [],
+          },
+        ],
+        // The cancel is sent in the transaction, otherwise the native side
+        // waits for the transaction end (that waits for the cancel).
+        [
+          'queryCursorNext',
+          {'cursorId': 1, 'cancel': true, 'id': 1, 'transactionId': 1},
+          null,
+        ],
+        [
+          'execute',
+          {
+            'sql': 'COMMIT',
+            'id': 1,
+            'transactionId': 1,
+            'inTransaction': false,
+          },
+          null,
+        ],
+        protocolCloseStep,
+      ]);
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+      await db.transaction((txn) async {
+        var cursor = await txn.rawQueryCursor('_', null, bufferSize: 2);
+        expect(await cursor.moveNext(), isTrue);
+        await cursor.close();
+      });
+      await db.close();
+      scenario.end();
+    });
   });
 }

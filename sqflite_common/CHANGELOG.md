@@ -1,3 +1,12 @@
+## 2.5.14
+
+* Fix hang when closing a query cursor before its end inside a transaction
+  (`sqflite_common_ffi`, Android)
+* `Batch.apply()` on a closed database fails with a `database_closed` error, like
+  `Batch.commit()`
+* Debug argument check (once per type warning) also done for `rawInsert` (and `insert`)
+  and the batch raw methods, like `rawQuery`, `rawUpdate` and `rawDelete`
+
 ## 2.5.13+1
 
 * Fix web detection (`kSqfliteIsWeb`) when compiled with dart2wasm: database paths were

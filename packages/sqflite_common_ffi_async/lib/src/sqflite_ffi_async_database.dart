@@ -92,9 +92,12 @@ abstract class SqfliteDatabaseFfiAsyncBase extends SqfliteDatabaseBase {
     String sql,
     List<Object?>? arguments,
     int pageSize,
-  ) async {
-    var results = await _select(_readContext(txn), sql, arguments);
-    return SqfliteQueryCursor(this, txn, null, results);
+  ) {
+    // Errors wrapped like txnRawQuery.
+    return _wrapFfiAsyncCall(() async {
+      var results = await _select(_readContext(txn), sql, arguments);
+      return SqfliteQueryCursor(this, txn, null, results);
+    });
   }
 
   List<Object?> _fixArguments(List<Object?>? arguments) {

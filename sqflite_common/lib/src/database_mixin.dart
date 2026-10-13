@@ -54,6 +54,7 @@ mixin SqfliteDatabaseExecutorMixin implements SqfliteDatabaseExecutor {
   /// Returns the last inserted record id
   @override
   Future<int> rawInsert(String sql, [List<Object?>? arguments]) {
+    checkRawArgs(arguments);
     db.checkNotClosed();
     return db.txnRawInsert(txn, sql, arguments);
   }
@@ -730,10 +731,12 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       var cursorId = cursor.cursorId;
       if (cursorId != null) {
         cursor.cursorId = null;
+        // The cursor transaction (not the database one), so that the native
+        // side does not wait for the transaction end (that would hang).
         await safeInvokeMethod<dynamic>(
           methodQueryCursorNext,
           <String, Object?>{paramCursorId: cursorId, paramCursorCancel: true}
-            ..addAll(getBaseDatabaseMethodArguments(txn)),
+            ..addAll(getBaseDatabaseMethodArguments(cursor.txn)),
         );
       }
     }

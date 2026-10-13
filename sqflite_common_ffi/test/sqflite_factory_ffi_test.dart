@@ -45,9 +45,10 @@ void main() {
         'blob': Uint8List.fromList([1, 2, 3]),
       });
       fail('should fail');
-    } catch (e) {
+    } on DatabaseException catch (e) {
+      // The blob is shown by its size, not its content.
       expect(e.toString(), contains('Blob(3)'));
-      expect(e.toString(), isNot(contains([1, 2, 3])));
+      expect(e.toString(), isNot(contains('[1, 2, 3]')));
       // print(e);
     }
     try {
@@ -57,8 +58,8 @@ void main() {
       });
       await batch.commit();
       fail('should fail');
-    } catch (e) {
-      expect(e.toString(), isNot(contains([1, 2, 3])));
+    } on DatabaseException catch (e) {
+      expect(e.toString(), isNot(contains('[1, 2, 3]')));
       // print(e);
     }
 

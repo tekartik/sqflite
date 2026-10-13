@@ -105,7 +105,7 @@ void run(SqfliteTestContext context) {
 
     test('Concurrency 2', () async {
       // utils.devSetDebugModeOn(true);
-      var path = await context.initDeleteDb('simple_concurrency_1.db');
+      var path = await context.initDeleteDb('simple_concurrency_2.db');
       var db = await factory.openDatabase(path);
       var step1 = Completer<dynamic>();
       var step2 = Completer<dynamic>();
@@ -349,6 +349,36 @@ void run(SqfliteTestContext context) {
       await db.close();
       await db2.close();
     });
+    test('Transaction query cursor closed early', () async {
+      var path = await context.initDeleteDb('transaction_cursor_close.db');
+      var db = await factory.openDatabase(path);
+      try {
+        await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
+        var batch = db.batch();
+        for (var i = 1; i <= 3; i++) {
+          batch.insert('Test', <String, Object?>{'id': i});
+        }
+        await batch.commit(noResult: true);
+        // Closing a cursor before its end in a transaction used to hang.
+        var id = await db
+            .transaction((txn) async {
+              var cursor = await txn.queryCursor(
+                'Test',
+                orderBy: 'id',
+                bufferSize: 1,
+              );
+              expect(await cursor.moveNext(), isTrue);
+              var id = cursor.current['id'];
+              await cursor.close();
+              return id;
+            })
+            .timeout(const Duration(seconds: 10));
+        expect(id, 1);
+      } finally {
+        await db.close();
+      }
+    });
+
     test('Transaction and concurrent call without synchronized', () async {
       // await factory.debugSetLogLevel(sqfliteLogLevelVerbose);
       var db = await factory.openDatabase(inMemoryDatabasePath);

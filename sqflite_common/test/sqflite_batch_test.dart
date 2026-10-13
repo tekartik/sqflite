@@ -1,4 +1,5 @@
 import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common/src/value_utils.dart';
 import 'package:test/test.dart';
 
 import 'test_scenario.dart';
@@ -7,6 +8,25 @@ void main() {
   group('sqflite', () {
     var startCommands = [protocolOpenStep];
     var endCommands = [protocolCloseStep];
+    test('raw arguments check', () async {
+      final scenario = startScenario([...startCommands, ...endCommands]);
+      final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+      // Debug check, like rawQuery, rawUpdate and rawDelete.
+      checkThrowException = true;
+      try {
+        expect(() => db.rawInsert('_', [true]), throwsArgumentError);
+        var batch = db.batch();
+        expect(() => batch.rawInsert('_', [true]), throwsArgumentError);
+        expect(() => batch.rawQuery('_', [true]), throwsArgumentError);
+        expect(() => batch.rawUpdate('_', [true]), throwsArgumentError);
+        expect(() => batch.rawDelete('_', [true]), throwsArgumentError);
+        expect(batch.length, 0);
+      } finally {
+        checkThrowException = false;
+      }
+      await db.close();
+      scenario.end();
+    });
     test('batch commit', () async {
       final scenario = startScenario([
         ...startCommands,

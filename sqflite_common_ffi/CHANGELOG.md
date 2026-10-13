@@ -1,3 +1,10 @@
+## 2.4.4
+
+* Release closed and deleted databases (they were kept in memory forever), an operation
+  on a closed database still fails with a database closed error
+* Deleting an open single instance database marks it closed like closing it (hot restart
+  cleanup)
+
 ## 2.4.3
 
 * Add `sqflite-common-ffi-desktop` and `sqflite-common-ffi-testing` agent skills in `skills/`, installable with `dart run skills@ get`

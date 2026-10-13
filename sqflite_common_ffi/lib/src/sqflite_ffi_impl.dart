@@ -34,6 +34,10 @@ var ffiSingleInstanceDbs = <String?, SqfliteFfiDatabase>{};
 
 var _lastFfiId = 0;
 
+/// True for the id of a database opened then closed (ids are never reused).
+bool _isClosedFfiDatabaseId(int? id) =>
+    id != null && id > 0 && id <= _lastFfiId && !ffiDbs.containsKey(id);
+
 /// Ffi log level.
 int logLevel = sqfliteLogLevelNone;
 
@@ -167,6 +171,10 @@ class SqfliteFfiDatabase {
     _cancelQueuedHandlers();
     logResult(result: 'Closing database $this');
     _ffiDb.close();
+    // Forget it, an operation on its id then gives a closed database error.
+    if (identical(ffiDbs[id], this)) {
+      ffiDbs.remove(id);
+    }
   }
 
   List<Object?> _ffiArguments(List? sqlArguments) {
@@ -870,6 +878,10 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
   /// Handle close database.
   Future handleCloseDatabase() async {
+    if (_isClosedFfiDatabaseId(getDatabaseId())) {
+      // Already closed (i.e. a single instance database deleted while open).
+      return;
+    }
     var database = getDatabaseOrThrow();
     if (database.singleInstance) {
       ffiSingleInstanceDbs.remove(database.path);
@@ -888,7 +900,12 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
   SqfliteFfiDatabase getDatabaseOrThrow() {
     var database = getDatabase();
     if (database == null) {
-      throw StateError('Database ${getDatabaseId()} not found');
+      var id = getDatabaseId();
+      if (_isClosedFfiDatabaseId(id)) {
+        // Same error as an operation on a closed sqlite3 database.
+        throw StateError('This database has already been closed');
+      }
+      throw StateError('Database $id not found');
     }
     return database;
   }
@@ -1142,8 +1159,10 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
 
     var singleInstanceDatabase = ffiSingleInstanceDbs[path];
     if (singleInstanceDatabase != null) {
-      singleInstanceDatabase.close();
       ffiSingleInstanceDbs.remove(path);
+      // Like handleCloseDatabase.
+      tracker.markClosed(singleInstanceDatabase._ffiDb);
+      singleInstanceDatabase.close();
     }
 
     // Ignore failure

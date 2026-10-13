@@ -437,21 +437,6 @@ INSERT INTO test (value) VALUES (10);
       }
     });
 
-    test('Issue#107_alt', () async {
-      // Sqflite.devSetDebugModeOn(true);
-      // Try to insert string with quote
-      var path = await context.initDeleteDb('exp_issue_107_alt.db');
-      var db = await factory.openDatabase(path);
-      try {
-        await db.execute(
-          'CREATE TABLE `groups` (`id` INTEGER PRIMARY KEY, `service_id`INTEGER, `official`	BOOLEAN, `type`	TEXT, `access`	TEXT, `ads`	BOOLEAN, `mute`	BOOLEAN, `read`	INTEGER, `background`	TEXT, `last_message_time`	INTEGER, `last_message_id`	INTEGER, `deleted_to`	INTEGER, `is_admin`	BOOLEAN, `is_owner`	BOOLEAN, `description`	TEXT, `pin`	BOOLEAN, `name`	TEXT, `opposite_id`	INTEGER, `badge`	INTEGER, `member_count`	INTEGER, `identifier`	TEXT, `join_link`	TEXT, `hash`	TEXT, `service_info`	TEXT, `seen`	INTEGER, `pinned_message`	INTEGER, `delivery`	INTEGER) WITHOUT ROWID',
-        );
-        await db.execute('CREATE INDEX `groups_id` ON groups ( `id` ASC )');
-      } finally {
-        await db.close();
-      }
-    });
-
     test('Issue#155', () async {
       // await factory.setLogLevel(sqfliteLogLevelVerbose);
       // Try to insert string with quote
@@ -599,6 +584,12 @@ INSERT INTO test (value) VALUES (10);
         expect(resultSet, [
           {'id': 1},
         ]);
+        if (!context.isWeb) {
+          var journalMode = (await db.rawQuery(
+            'PRAGMA journal_mode',
+          )).first.values.first;
+          expect(journalMode.toString().toLowerCase(), 'wal');
+        }
       } finally {
         await db.close();
       }

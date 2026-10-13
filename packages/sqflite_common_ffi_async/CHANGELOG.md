@@ -1,3 +1,8 @@
+## 1.0.4
+
+* `queryCursor`/`rawQueryCursor` errors are `DatabaseException` like `rawQuery` ones (a raw
+  `SqliteException` was thrown)
+
 ## 1.0.3
 
 * Fix `sqflite-common-ffi-async-factory` agent skill: correct the `SqfliteDatabaseFactoryLogger` class name
