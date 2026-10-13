@@ -1,4 +1,4 @@
-## 2.4.4
+## 2.4.4+1
 
 * Add `sqflite-android-setup` agent skill in `skills/`, installable with `dart run skills@ get`
 
