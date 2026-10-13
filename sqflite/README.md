@@ -401,10 +401,3 @@ thread is blocked while in a transaction...
 * [Notes about Encryption support](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/encryption_support.md)
 * [Notes about Web support](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/web_support.md)
 * [Notes about SQLite versions](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/version.md) as some features may not be available depending on the SQLite version.
-
-## Sponsor or hire
-
-sqflite is maintained by Alexandre Roux ([Tekartik](https://tekartik.com/)).
-
-* [Sponsor its maintenance](https://github.com/sponsors/alextekartik) on GitHub Sponsors.
-* [Hire me](https://tekartik.com/work-with-me/) for help on your app: local databases, offline-first apps and sync, Flutter and Dart apps and backends.
