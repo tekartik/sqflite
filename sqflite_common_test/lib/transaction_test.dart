@@ -560,6 +560,56 @@ void run(SqfliteTestContext context) {
         await db.close();
       }
     });
+
+    test('failed commit (deferred foreign key)', () async {
+      var path = await context.initDeleteDb('failed_commit_deferred_fk.db');
+      var db = await factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onConfigure: (db) async {
+            await db.execute('PRAGMA foreign_keys = ON');
+          },
+          onCreate: (db, version) async {
+            await db.execute('CREATE TABLE Parent (id INTEGER PRIMARY KEY)');
+            await db.execute(
+              'CREATE TABLE Child (id INTEGER PRIMARY KEY, parent_id INTEGER'
+              ' REFERENCES Parent(id) DEFERRABLE INITIALLY DEFERRED)',
+            );
+          },
+        ),
+      );
+      try {
+        try {
+          await db.transaction((txn) async {
+            // Missing parent, only checked on COMMIT.
+            await txn.insert('Child', {'id': 1, 'parent_id': 1});
+          });
+          fail('COMMIT should fail');
+        } on DatabaseException catch (_) {
+          // FOREIGN KEY constraint failed
+        }
+        // The failed transaction must not block the next calls...
+        expect(
+          await db.query('Child').timeout(const Duration(seconds: 10)),
+          isEmpty,
+        );
+        // ...nor the next transaction.
+        await db
+            .transaction((txn) async {
+              await txn.insert('Parent', {'id': 1});
+              await txn.insert('Child', {'id': 1, 'parent_id': 1});
+            })
+            .timeout(const Duration(seconds: 10));
+        expect(await db.query('Child'), [
+          {'id': 1, 'parent_id': 1},
+        ]);
+      } finally {
+        await db.close();
+      }
+      // Only fixed in the Android plugin so far, ffi and darwin still block.
+    }, skip: !(context.isPlugin && context.isAndroid));
+
     test('throw in transaction', () async {
       var path = await context.initDeleteDb('throw_in_transaction.db');
 

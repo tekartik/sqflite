@@ -1064,6 +1064,33 @@ void run(SqfliteTestContext context) {
         await db1?.close();
       }
     });
+
+    test('close without await then open another database', () async {
+      var path1 = await context.initDeleteDb('close_then_open_1.db');
+      var path2 = await context.initDeleteDb('close_then_open_2.db');
+
+      var db1 = await factory.openDatabase(path1);
+      // Keep the native side busy so that the close is still pending when the
+      // second open arrives.
+      var queryFuture = db1.rawQuery(
+        'WITH RECURSIVE cnt(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt'
+        ' LIMIT 1000000) SELECT COUNT(*) AS count FROM cnt',
+      );
+      // Don't wait for close
+      var closeFuture = db1.close();
+      // Let the close call reach the native side first.
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      var db2 = await factory
+          .openDatabase(path2)
+          .timeout(const Duration(seconds: 10));
+      try {
+        expect(await db2.getVersion(), 0);
+        await closeFuture.timeout(const Duration(seconds: 10));
+        expect(utils.firstIntValue(await queryFuture), 1000000);
+      } finally {
+        await db2.close();
+      }
+    });
   });
 }
 

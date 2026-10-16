@@ -69,6 +69,10 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
     static private int databaseId = 0; // incremental database id
     // Database worker pool execution
     static private DatabaseWorkerPool databaseWorkerPool;
+    // Open, close and delete tasks posted to the worker pool and not done yet (guarded by
+    // databaseMapLocker). The pool is only stopped when no database is opened and none of these
+    // is pending, stopping it drops the queued tasks.
+    static private int pendingOpenCloseTaskCount = 0;
     private Context context;
     private MethodChannel methodChannel;
 
@@ -383,14 +387,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
         synchronized (databaseMapLocker) {
             // Create worker pool if necessary
-            if (databaseWorkerPool == null) {
-                databaseWorkerPool = DatabaseWorkerPool.create(
-                        "Sqflite", THREAD_COUNT, SqflitePlugin.THREAD_PRIORITY);
-                databaseWorkerPool.start();
-                if (LogLevel.hasSqlLevel(database.logLevel)) {
-                    Log.d(TAG, database.getThreadLogPrefix() + "starting worker pool with priority " + SqflitePlugin.THREAD_PRIORITY);
-                }
-            }
+            startWorkerPoolIfNeeded(database);
             database.databaseWorkerPool = databaseWorkerPool;
             if (LogLevel.hasSqlLevel(database.logLevel)) {
                 Log.d(TAG, database.getThreadLogPrefix() + "opened " + databaseId + " " + path);
@@ -398,7 +395,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
 
             // Open in background thread
-            databaseWorkerPool.post(
+            postOpenCloseTask(
                     database,
                     () -> {
 
@@ -472,7 +469,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
             }
         }
 
-        databaseWorkerPool.post(database, new Runnable() {
+        postOpenCloseTask(database, new Runnable() {
             @Override
             public void run() {
                 synchronized (openCloseLocker) {
@@ -538,7 +535,7 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
 
         // worker pool might not exist yet
         if (databaseWorkerPool != null) {
-            databaseWorkerPool.post(openedDatabase, deleteRunnable);
+            postOpenCloseTask(openedDatabase, deleteRunnable);
         } else {
             // Otherwise run in the UI thread
             deleteRunnable.run();
@@ -561,15 +558,52 @@ public class SqflitePlugin implements FlutterPlugin, MethodCallHandler {
         } catch (Exception e) {
             Log.e(TAG, "error " + e + " while closing database " + databaseId);
         }
-        synchronized (databaseMapLocker) {
+        // The worker pool is stopped once the close task is done, see postOpenCloseTask
+    }
 
-            if (databaseMap.isEmpty() && databaseWorkerPool != null) {
-                if (LogLevel.hasSqlLevel(database.logLevel)) {
-                    Log.d(TAG, database.getThreadLogPrefix() + "stopping thread");
-                }
-                databaseWorkerPool.quit();
-                databaseWorkerPool = null;
+    // Must be called while holding databaseMapLocker
+    static private void startWorkerPoolIfNeeded(Database database) {
+        if (databaseWorkerPool == null) {
+            databaseWorkerPool = DatabaseWorkerPool.create(
+                    "Sqflite", THREAD_COUNT, SqflitePlugin.THREAD_PRIORITY);
+            databaseWorkerPool.start();
+            if (database != null && LogLevel.hasSqlLevel(database.logLevel)) {
+                Log.d(TAG, database.getThreadLogPrefix() + "starting worker pool with priority " + SqflitePlugin.THREAD_PRIORITY);
             }
+        }
+    }
+
+    // Must be called while holding databaseMapLocker
+    static private void stopWorkerPoolIfUnused(Database database) {
+        if (databaseMap.isEmpty() && pendingOpenCloseTaskCount == 0 && databaseWorkerPool != null) {
+            if (database != null && LogLevel.hasSqlLevel(database.logLevel)) {
+                Log.d(TAG, database.getThreadLogPrefix() + "stopping thread");
+            }
+            databaseWorkerPool.quit();
+            databaseWorkerPool = null;
+        }
+    }
+
+    /**
+     * Post an open, close or delete task, starting the worker pool if needed.
+     * <p>
+     * The pool is not stopped before the task is done, even if no database is opened when
+     * it is queued (i.e. close(A) not awaited then open(B)).
+     */
+    static private void postOpenCloseTask(final Database database, final Runnable runnable) {
+        synchronized (databaseMapLocker) {
+            startWorkerPoolIfNeeded(database);
+            pendingOpenCloseTaskCount++;
+            databaseWorkerPool.post(database, () -> {
+                try {
+                    runnable.run();
+                } finally {
+                    synchronized (databaseMapLocker) {
+                        pendingOpenCloseTaskCount--;
+                        stopWorkerPoolIfUnused(database);
+                    }
+                }
+            });
         }
     }
 

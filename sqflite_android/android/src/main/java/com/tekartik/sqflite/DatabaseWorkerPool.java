@@ -102,6 +102,9 @@ class DatabaseWorkerPoolImpl implements DatabaseWorkerPool {
     // corresponding worker. Otherwise, any worker is eligible.
     private final Map<Integer, DatabaseWorker> onlyEligibleWorkers = new HashMap<>();
 
+    // Set by quit(), the workers cannot accept tasks anymore.
+    private boolean stopped;
+
     DatabaseWorkerPoolImpl(String name, int numberOfWorkers, int priority) {
         this.name = name;
         this.numberOfWorkers = numberOfWorkers;
@@ -126,6 +129,7 @@ class DatabaseWorkerPoolImpl implements DatabaseWorkerPool {
 
     @Override
     public synchronized void quit() {
+        stopped = true;
         for (DatabaseWorker worker : idleWorkers) {
             worker.quit();
         }
@@ -180,6 +184,10 @@ class DatabaseWorkerPoolImpl implements DatabaseWorkerPool {
     }
 
     private synchronized void onWorkerIdle(DatabaseWorker worker) {
+        // The pool was stopped while the worker was busy, the workers have no handler anymore.
+        if (stopped) {
+            return;
+        }
         // Clone idleWorkers before it get modified.
         Set<DatabaseWorker> others = new HashSet<>(idleWorkers);
 

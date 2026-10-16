@@ -126,6 +126,26 @@ public class DatabaseWorkerPoolTest {
         assertEquals(Arrays.asList(task3), new ArrayList<>(worker1.tasks));
         assertEquals(Collections.emptyList(), new ArrayList<>(worker2.tasks));
     }
+
+    @Test
+    public void workerIdleAfterQuitDoesNotPostTasks() {
+        // Arrange. Two tasks of the same database, task2 waits for task1.
+        DatabaseTask task1 = new DatabaseTask(database1, () -> {
+        });
+        DatabaseTask task2 = new DatabaseTask(database1, () -> {
+        });
+        pool.post(task1);
+        pool.post(task2);
+        assertEquals(Arrays.asList(task1), new ArrayList<>(worker1.tasks));
+
+        // Act. The pool is stopped while worker1 runs task1.
+        pool.quit();
+        worker1.work();
+
+        // Assert. Task2 was not posted to a stopped worker (no handler, NPE).
+        assertEquals(Collections.emptyList(), new ArrayList<>(worker1.tasks));
+        assertEquals(Collections.emptyList(), new ArrayList<>(worker2.tasks));
+    }
 }
 
 class FakeDatabase implements DatabaseDelegate {
@@ -151,6 +171,7 @@ class FakeDatabase implements DatabaseDelegate {
 class FakeDatabaseWorker extends DatabaseWorker {
 
     Queue<DatabaseTask> tasks = new ArrayDeque<>();
+    boolean quit;
 
     FakeDatabaseWorker(String name, int priority) {
         super(name, priority);
@@ -163,10 +184,15 @@ class FakeDatabaseWorker extends DatabaseWorker {
 
     @Override
     void quit() {
+        quit = true;
     }
 
     @Override
     void postTask(final DatabaseTask task) {
+        if (quit) {
+            // Like DatabaseWorker which has no handler anymore
+            throw new NullPointerException("worker quit");
+        }
         tasks.add(task);
     }
 

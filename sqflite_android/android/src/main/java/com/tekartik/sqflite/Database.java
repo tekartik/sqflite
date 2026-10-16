@@ -22,6 +22,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteCursor;
@@ -427,8 +428,55 @@ class Database {
             enterOrLeaveInTransaction(operationInTransaction);
             return true;
         } catch (Exception exception) {
+            if (Boolean.FALSE.equals(operationInTransaction)) {
+                leaveTransactionOnError(command.getSql(), exception);
+            }
             handleException(exception, operation);
             return false;
+        }
+    }
+
+    /**
+     * Called when COMMIT or ROLLBACK failed, the client considers the transaction ended anyway.
+     * <p>
+     * Android SQLiteSession forgets its transaction before running COMMIT/ROLLBACK on SQLite.
+     * When SQLite fails (deferred foreign key violation, busy...) it can stay in a transaction
+     * that no one can end anymore, roll it back.
+     */
+    private void leaveTransactionOnError(@NonNull String sql, @NonNull Exception exception) {
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            if (db.inTransaction()) {
+                // Still in an Android (nested) transaction, nothing to recover
+                return;
+            }
+        } catch (Exception ignore) {
+            // Closed database
+        }
+        synchronized (this) {
+            transactionDepth = 0;
+        }
+        // Only when SQLite rejected a statement that SQLiteSession handled as a transaction end.
+        // Not for ROLLBACK TO, nor when Android had no transaction (IllegalStateException),
+        // SQLite was not called then.
+        int statementType = DatabaseUtils.getSqlStatementType(sql);
+        boolean transactionEnd = statementType == DatabaseUtils.STATEMENT_COMMIT
+                || statementType == DatabaseUtils.STATEMENT_ABORT;
+        if (!transactionEnd || !(exception instanceof SQLException)) {
+            return;
+        }
+        try {
+            // The leading ';' prevents SQLiteSession from handling it (it would throw as it has
+            // no transaction anymore) so that it reaches SQLite.
+            db.execSQL(";ROLLBACK");
+            if (LogLevel.hasSqlLevel(logLevel)) {
+                Log.d(TAG, getThreadLogPrefix() + "rolled back the transaction left by the failed " + sql);
+            }
+        } catch (Exception e) {
+            // SQLite is not in a transaction anymore
+            if (LogLevel.hasVerboseLevel(logLevel)) {
+                Log.d(TAG, getThreadLogPrefix() + "no transaction to roll back: " + e.getMessage());
+            }
         }
     }
 
@@ -471,6 +519,10 @@ class Database {
             if (!executeOrError(operation)) {
                 // Revert if needed
                 if (enteringTransaction) {
+                    currentTransactionId = null;
+                } else if (Boolean.FALSE.equals(inTransactionChange)) {
+                    // A failed COMMIT/ROLLBACK ends the transaction too, the client won't use
+                    // it anymore. Otherwise the queued operations would wait forever.
                     currentTransactionId = null;
                 }
 

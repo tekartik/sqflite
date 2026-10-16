@@ -1,3 +1,10 @@
+## 2.4.5
+
+* Fix every later call hanging after a failed COMMIT or ROLLBACK (e.g. a deferred foreign key
+  violation at commit): the transaction is ended, and rolled back if SQLite left it open.
+* Fix an open lost (hang, or crash with several worker threads) when it follows a close that
+  was not awaited.
+
 ## 2.4.4+1
 
 * Add `sqflite-android-setup` agent skill in `skills/`, installable with `dart run skills@ get`
