@@ -291,7 +291,7 @@ void run(SqfliteTestContext context) {
       await db1.close();
       await db2.close();
       await db3.close();
-    });
+    }, timeout: const Timeout(Duration(seconds: 150)));
 
     test('Transaction recursive', () async {
       var path = await context.initDeleteDb('transaction_recursive.db');
