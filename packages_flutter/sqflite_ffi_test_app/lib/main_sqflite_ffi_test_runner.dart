@@ -16,9 +16,6 @@ class SqfliteRunnerTestContext extends SqfliteLocalTestContext {
     return false;
   }
 
-  @override
-  bool get supportsRecoveredInTransaction => true;
-
   /// Only tested on ffi linux for now.
   @override
   bool get supportsUri => true;

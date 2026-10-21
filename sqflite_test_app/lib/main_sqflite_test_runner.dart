@@ -22,7 +22,7 @@ class SqfliteRunnerTestContext extends SqfliteLocalTestContext {
   }
 
   @override
-  bool get supportsRecoveredInTransaction => true;
+  bool get supportsRecoveredInTransaction => !useFfi;
 
   /// Only tested on ffi linux for now.
   @override
