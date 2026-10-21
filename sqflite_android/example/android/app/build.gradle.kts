@@ -27,6 +27,7 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -46,4 +47,15 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Native tests in src/androidTest, run by tool/run_android_native_test.dart.
+    // The integration_test plugin puts androidx.test 1.3.0 in the debug app and
+    // the androidTest classpath must resolve the same versions, but core 1.3.0
+    // fails the manifest merge for target SDK 31+ (no android:exported), so
+    // newer versions are lifted in the debug app too.
+    debugImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test:core:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
 }

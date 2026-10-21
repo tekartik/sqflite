@@ -26,7 +26,7 @@ public class LocaleUtilsTest {
         runnable.run(locale);
         locale = Utils.localeForLanguageTagPre21(languageTag);
         runnable.run(locale);
-        locale = Utils.localeForLanguateTag(languageTag);
+        locale = Utils.localeForLanguageTag(languageTag);
         runnable.run(locale);
     }
 
