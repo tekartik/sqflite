@@ -29,6 +29,8 @@ public class Constant {
     public static final String PARAM_TRANSACTION_ID = "transactionId";
     // Special transaction id used for recovering a locked database.
     public static final int TRANSACTION_ID_FORCE = -1;
+    // Set in the error data when SQLite rolled back the current transaction (same as ffi)
+    public static final String PARAM_TRANSACTION_CLOSED = "transactionClosed";
     // Result when opening a database
     public static final String PARAM_RECOVERED = "recovered";
     // Result when opening a database

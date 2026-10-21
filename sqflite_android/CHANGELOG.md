@@ -6,6 +6,10 @@
   was not awaited.
 * Use `propName = value` assignments in `android/build.gradle` (the space syntax is deprecated
   in Gradle 9 and removed in Gradle 10, #1217).
+* Fix statements committed outside of any transaction after SQLite rolled back the transaction
+  by itself (`ConflictAlgorithm.rollback`, `RAISE(ROLLBACK)`...): the transaction is now ended
+  and the client marks it closed (requires sqflite_platform_interface 2.4.3).
+* `execute` supports a `PRAGMA` returning a row (e.g. `PRAGMA journal_mode=WAL`, #929, #1176).
 
 ## 2.4.4+1
 

@@ -6,6 +6,7 @@ import static com.tekartik.sqflite.Constant.PARAM_ERROR_DATA;
 import static com.tekartik.sqflite.Constant.PARAM_ERROR_MESSAGE;
 import static com.tekartik.sqflite.Constant.PARAM_METHOD;
 import static com.tekartik.sqflite.Constant.PARAM_RESULT;
+import static com.tekartik.sqflite.Constant.PARAM_TRANSACTION_CLOSED;
 
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +63,14 @@ public class BatchOperation extends BaseOperation {
         errorDetail.put(PARAM_ERROR_DATA, operationResult.errorData);
         error.put(PARAM_ERROR, errorDetail);
         return error;
+    }
+
+    /**
+     * True if the error ended the transaction (rolled back by SQLite), the batch must stop.
+     */
+    public boolean isTransactionClosed() {
+        Object data = operationResult.errorData;
+        return data instanceof Map && Boolean.TRUE.equals(((Map<?, ?>) data).get(PARAM_TRANSACTION_CLOSED));
     }
 
     public void handleError(MethodChannel.Result result) {

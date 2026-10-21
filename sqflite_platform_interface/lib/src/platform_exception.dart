@@ -9,7 +9,16 @@ Future<T> wrapDatabaseException<T>(Future<T> Function() action) async {
     return result;
   } on PlatformException catch (e) {
     if (e.code == sqliteErrorCode) {
-      throw SqfliteDatabaseException(e.message!, e.details);
+      final details = e.details;
+      throw SqfliteDatabaseException(
+        e.message!,
+        details,
+        // Set when the native side found the transaction rolled back by SQLite
+        transactionClosed:
+            details is Map && details['transactionClosed'] == true
+            ? true
+            : null,
+      );
       //rethrow;
     } else {
       rethrow;

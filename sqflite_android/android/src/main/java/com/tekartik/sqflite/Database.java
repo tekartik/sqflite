@@ -12,6 +12,7 @@ import static com.tekartik.sqflite.Constant.PARAM_CURSOR_ID;
 import static com.tekartik.sqflite.Constant.PARAM_CURSOR_PAGE_SIZE;
 import static com.tekartik.sqflite.Constant.PARAM_OPERATIONS;
 import static com.tekartik.sqflite.Constant.PARAM_ROWS;
+import static com.tekartik.sqflite.Constant.PARAM_TRANSACTION_CLOSED;
 import static com.tekartik.sqflite.Constant.PARAM_TRANSACTION_ID;
 import static com.tekartik.sqflite.Constant.TAG;
 import static com.tekartik.sqflite.Constant.TRANSACTION_ID_FORCE;
@@ -27,6 +28,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
 import android.util.Log;
@@ -251,6 +253,13 @@ class Database {
         }
     }
 
+    // run queued action asynchronously once the transaction is over
+    private void postQueuedOperationsIfNotInTransaction() {
+        if (currentTransactionId == null && !noTransactionOperationQueue.isEmpty()) {
+            databaseWorkerPool.post(this, this::runQueuedOperations);
+        }
+    }
+
     private void wrapSqlOperationHandler(final @NonNull Operation operation, Runnable r) {
         Integer transactionId = operation.getTransactionId();
         if (currentTransactionId == null) {
@@ -258,10 +267,7 @@ class Database {
             r.run();
         } else if (transactionId != null && (transactionId.equals(currentTransactionId) || transactionId == TRANSACTION_ID_FORCE)) {
             r.run();
-            // run queued action asynchronously
-            if (currentTransactionId == null && !noTransactionOperationQueue.isEmpty()) {
-                databaseWorkerPool.post(this, this::runQueuedOperations);
-            }
+            postQueuedOperationsIfNotInTransaction();
 
         } else {
             // Queue for later
@@ -314,7 +320,7 @@ class Database {
             return true;
 
         } catch (Exception exception) {
-            handleException(exception, operation);
+            handleStatementException(exception, operation);
             // Cleanup
             if (sqfliteCursor != null) {
                 closeCursor(sqfliteCursor);
@@ -416,6 +422,73 @@ class Database {
         operation.error(Constant.SQLITE_ERROR, exception.getMessage(), SqlErrorInfo.getMap(operation));
     }
 
+    /**
+     * Handle the exception of a statement that does not begin or end a transaction.
+     * <p>
+     * If SQLite rolled back the transaction, the transaction is ended and the error data
+     * has transactionClosed set so that the client does not use it anymore.
+     */
+    private void handleStatementException(Exception exception, Operation operation) {
+        if (exception instanceof SQLException && !(exception instanceof SQLiteCantOpenDatabaseException)
+                && leaveTransactionIfRolledBack()) {
+            Map<String, Object> data = SqlErrorInfo.getMap(operation);
+            if (data == null) {
+                data = new HashMap<>();
+            }
+            data.put(PARAM_TRANSACTION_CLOSED, true);
+            operation.error(Constant.SQLITE_ERROR, exception.getMessage(), data);
+            return;
+        }
+        handleException(exception, operation);
+    }
+
+    /**
+     * Called after a failed statement in a transaction.
+     * <p>
+     * SQLite rolls back the whole transaction by itself on some errors (ON CONFLICT ROLLBACK,
+     * RAISE(ROLLBACK), SQLITE_FULL...) without Android SQLiteSession noticing it, the next
+     * statements would then run (and be committed) outside of any transaction.
+     *
+     * @return true if SQLite had rolled back the transaction, it is then ended here too
+     */
+    private boolean leaveTransactionIfRolledBack() {
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            if (currentTransactionId == null && !isInTransaction() && !db.inTransaction()) {
+                return false;
+            }
+            // The leading ';' prevents SQLiteSession from handling it so that it reaches SQLite,
+            // it fails if SQLite is still in a transaction.
+            db.execSQL(";BEGIN");
+        } catch (Exception e) {
+            return false;
+        }
+        // SQLite is in the transaction we just began, ending the Android one rolls it back.
+        try {
+            if (db.inTransaction()) {
+                while (db.inTransaction()) {
+                    try {
+                        db.endTransaction();
+                    } catch (Exception ignore) {
+                        // The stack is popped before running SQL
+                    }
+                }
+            } else {
+                db.execSQL(";ROLLBACK");
+            }
+        } catch (Exception ignore) {
+            // Closed database
+        }
+        synchronized (this) {
+            transactionDepth = 0;
+        }
+        currentTransactionId = null;
+        if (LogLevel.hasSqlLevel(logLevel)) {
+            Log.d(TAG, getThreadLogPrefix() + "transaction rolled back by SQLite");
+        }
+        return true;
+    }
+
     // Called during batch, warning duplicated code!
     private boolean executeOrError(Operation operation) {
         SqlCommand command = operation.getSqlCommand();
@@ -424,15 +497,41 @@ class Database {
         }
         Boolean operationInTransaction = operation.getInTransactionChange();
         try {
-            getWritableDatabase().execSQL(command.getSql(), command.getSqlArguments());
+            execSQL(command);
             enterOrLeaveInTransaction(operationInTransaction);
             return true;
         } catch (Exception exception) {
             if (Boolean.FALSE.equals(operationInTransaction)) {
                 leaveTransactionOnError(command.getSql(), exception);
             }
-            handleException(exception, operation);
+            if (operationInTransaction == null) {
+                handleStatementException(exception, operation);
+            } else {
+                handleException(exception, operation);
+            }
             return false;
+        }
+    }
+
+    private void execSQL(@NonNull SqlCommand command) {
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            db.execSQL(command.getSql(), command.getSqlArguments());
+        } catch (SQLiteException e) {
+            // execSQL fails when a PRAGMA returns a row (journal_mode, locking_mode...):
+            // "Queries can be performed using SQLiteDatabase query or rawQuery methods only."
+            // Run it as a query then.
+            if (DatabaseUtils.getSqlStatementType(command.getSql()) != DatabaseUtils.STATEMENT_PRAGMA) {
+                throw e;
+            }
+            try (Cursor cursor = db.rawQueryWithFactory(
+                    (sqLiteDatabase, sqLiteCursorDriver, editTable, sqLiteQuery) -> {
+                        command.bindTo(sqLiteQuery);
+                        return new SQLiteCursor(sqLiteCursorDriver, editTable, sqLiteQuery);
+                    }, command.getSql(), EMPTY_STRING_ARRAY, null)) {
+                // Runs the statement
+                cursor.getCount();
+            }
         }
     }
 
@@ -574,7 +673,7 @@ class Database {
             }
             return true;
         } catch (Exception exception) {
-            handleException(exception, operation);
+            handleStatementException(exception, operation);
             return false;
         }
     }
@@ -603,7 +702,7 @@ class Database {
             }
             return true;
         } catch (Exception exception) {
-            handleException(exception, operation);
+            handleStatementException(exception, operation);
             return false;
         }
     }
@@ -627,11 +726,13 @@ class Database {
                     if (doExecute(operation)) {
                         //devLog(TAG, "results: " + operation.getBatchResults());
                         operation.handleSuccess(results);
-                    } else if (continueOnError) {
+                    } else if (continueOnError && !operation.isTransactionClosed()) {
                         operation.handleErrorContinue(results);
                     } else {
                         // we stop at the first error
                         operation.handleError(result);
+                        // The transaction might have been rolled back by SQLite
+                        postQueuedOperationsIfNotInTransaction();
                         return;
                     }
                     break;
@@ -639,11 +740,13 @@ class Database {
                     if (doInsert(operation)) {
                         //devLog(TAG, "results: " + operation.getBatchResults());
                         operation.handleSuccess(results);
-                    } else if (continueOnError) {
+                    } else if (continueOnError && !operation.isTransactionClosed()) {
                         operation.handleErrorContinue(results);
                     } else {
                         // we stop at the first error
                         operation.handleError(result);
+                        // The transaction might have been rolled back by SQLite
+                        postQueuedOperationsIfNotInTransaction();
                         return;
                     }
                     break;
@@ -651,11 +754,13 @@ class Database {
                     if (doQuery(operation)) {
                         //devLog(TAG, "results: " + operation.getBatchResults());
                         operation.handleSuccess(results);
-                    } else if (continueOnError) {
+                    } else if (continueOnError && !operation.isTransactionClosed()) {
                         operation.handleErrorContinue(results);
                     } else {
                         // we stop at the first error
                         operation.handleError(result);
+                        // The transaction might have been rolled back by SQLite
+                        postQueuedOperationsIfNotInTransaction();
                         return;
                     }
                     break;
@@ -664,11 +769,13 @@ class Database {
                     if (doUpdate(operation)) {
                         //devLog(TAG, "results: " + operation.getBatchResults());
                         operation.handleSuccess(results);
-                    } else if (continueOnError) {
+                    } else if (continueOnError && !operation.isTransactionClosed()) {
                         operation.handleErrorContinue(results);
                     } else {
                         // we stop at the first error
                         operation.handleError(result);
+                        // The transaction might have been rolled back by SQLite
+                        postQueuedOperationsIfNotInTransaction();
                         return;
                     }
                     break;
