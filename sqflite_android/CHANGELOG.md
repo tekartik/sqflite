@@ -4,6 +4,8 @@
   violation at commit): the transaction is ended, and rolled back if SQLite left it open.
 * Fix an open lost (hang, or crash with several worker threads) when it follows a close that
   was not awaited.
+* Use `propName = value` assignments in `android/build.gradle` (the space syntax is deprecated
+  in Gradle 9 and removed in Gradle 10, #1217).
 
 ## 2.4.4+1
 

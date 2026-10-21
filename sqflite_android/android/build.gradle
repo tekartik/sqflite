@@ -1,5 +1,5 @@
-group 'com.tekartik.sqflite'
-version '1.0-SNAPSHOT'
+group = 'com.tekartik.sqflite'
+version = '1.0-SNAPSHOT'
 
 buildscript {
     repositories {
@@ -36,18 +36,18 @@ apply plugin: 'com.android.library'
 
 android {
     // Namespace
-    namespace 'com.tekartik.sqflite'
+    namespace = 'com.tekartik.sqflite'
 
     compileSdk = flutter.compileSdkVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     defaultConfig {
         minSdk = 19
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
         disable 'InvalidPackage'
