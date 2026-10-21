@@ -1,7 +1,16 @@
 name: MacOS/iOS build
 on:
   push:
+    # Not on tags
+    branches:
+      - '**'
+    paths-ignore:
+      - '**.md'
+      - '**/doc/**'
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - '**/doc/**'
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0'  # every sunday at midnight
