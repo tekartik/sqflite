@@ -37,7 +37,7 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  sqflite_android: ">=2.4.3 <4.0.0"
+  sqflite_android: ">=2.4.5 <4.0.0"
   sqflite_darwin: ">=2.4.3 <4.0.0"
   sqflite_platform_interface: ">=2.4.1 <4.0.0"
   sqflite_common: ">=2.5.9 <4.0.0"
