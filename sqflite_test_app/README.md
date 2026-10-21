@@ -22,6 +22,18 @@ flutter pub run sqflite_common_ffi_web:setup
 flutter run -d chrome
 ```
 
+## Console test runners
+
+Run the `sqflite_common_test` tests on a device/emulator, results in the console:
+
+```bash
+# sqflite plugin (Android, iOS, macOS)
+flutter run -t lib/test_main.dart
+
+# ffi (io platforms)
+flutter run -t lib/test_ffi_main.dart
+```
+
 ## Included test_driver
 
 Flutter driver test to execute.

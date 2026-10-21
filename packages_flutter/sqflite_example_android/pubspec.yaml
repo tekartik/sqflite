@@ -1,0 +1,45 @@
+name: sqflite_example_android
+description: Android example app and sqflite_common_test runner (console output).
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  test:
+  sqflite_android:
+    git:
+      url: https://github.com/tekartik/sqflite
+      path: sqflite_android
+  sqflite_platform_interface:
+    git:
+      url: https://github.com/tekartik/sqflite
+      path: sqflite_platform_interface
+  sqflite_common_test:
+    git:
+      url: https://github.com/tekartik/sqflite
+      path: sqflite_common_test
+  sqflite_example_common:
+    git:
+      url: https://github.com/tekartik/sqflite
+      path: packages_flutter/sqflite_example_common
+
+dev_dependencies:
+  flutter_lints: ">=6.0.0"
+
+dependency_overrides:
+  sqflite_android:
+    path: ../../sqflite_android
+  sqflite_common:
+    path: ../../sqflite_common
+  sqflite_common_test:
+    path: ../../sqflite_common_test
+  sqflite_example_common:
+    path: ../sqflite_example_common
+  sqflite_platform_interface:
+    path: ../../sqflite_platform_interface
+
+flutter:
+  uses-material-design: true
