@@ -19,6 +19,8 @@ jobs:
   test:
     name: Test on ${{ matrix.os }} / flutter ${{ matrix.flutter }}
     runs-on: ${{ matrix.os }}
+    # Flutter master might fail, it does not fail the workflow
+    continue-on-error: ${{ matrix.flutter == 'master' }}
     defaults:
       run:
         working-directory: ./sqflite_support
@@ -30,6 +32,8 @@ jobs:
             flutter: stable
           - os: ubuntu-latest
             flutter: beta
+          - os: ubuntu-latest
+            flutter: master
 
     steps:
       - uses: actions/checkout@v7
