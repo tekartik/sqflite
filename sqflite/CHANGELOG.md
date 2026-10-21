@@ -1,3 +1,8 @@
+## 2.4.5
+
+* Mark the transaction closed when SQLite rolled it back by itself on Android
+  (`ConflictAlgorithm.rollback`, `RAISE(ROLLBACK)`...), requires sqflite_android 2.4.5 for the fix
+
 ## 2.4.4+2
 
 * Remove `flutter/material` import, adapt example to `material_ui`

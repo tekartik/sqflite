@@ -454,7 +454,9 @@ class Database {
     private boolean leaveTransactionIfRolledBack() {
         SQLiteDatabase db = getWritableDatabase();
         try {
-            if (currentTransactionId == null && !isInTransaction() && !db.inTransaction()) {
+            // Only check when Android is in a transaction, it then holds the connection used
+            // by the probe below (otherwise a WAL read connection could be used).
+            if (!db.inTransaction()) {
                 return false;
             }
             // The leading ';' prevents SQLiteSession from handling it so that it reaches SQLite,
@@ -465,16 +467,12 @@ class Database {
         }
         // SQLite is in the transaction we just began, ending the Android one rolls it back.
         try {
-            if (db.inTransaction()) {
-                while (db.inTransaction()) {
-                    try {
-                        db.endTransaction();
-                    } catch (Exception ignore) {
-                        // The stack is popped before running SQL
-                    }
+            while (db.inTransaction()) {
+                try {
+                    db.endTransaction();
+                } catch (SQLException ignore) {
+                    // The stack is popped before running SQL
                 }
-            } else {
-                db.execSQL(";ROLLBACK");
             }
         } catch (Exception ignore) {
             // Closed database
@@ -521,7 +519,9 @@ class Database {
             // execSQL fails when a PRAGMA returns a row (journal_mode, locking_mode...):
             // "Queries can be performed using SQLiteDatabase query or rawQuery methods only."
             // Run it as a query then.
-            if (DatabaseUtils.getSqlStatementType(command.getSql()) != DatabaseUtils.STATEMENT_PRAGMA) {
+            String message = e.getMessage();
+            if (DatabaseUtils.getSqlStatementType(command.getSql()) != DatabaseUtils.STATEMENT_PRAGMA
+                    || message == null || !message.contains("Queries can be performed")) {
                 throw e;
             }
             try (Cursor cursor = db.rawQueryWithFactory(

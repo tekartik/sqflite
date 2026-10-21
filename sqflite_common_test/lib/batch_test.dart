@@ -249,9 +249,15 @@ void run(SqfliteTestContext context, {bool noManualTransactionTest = false}) {
             } catch (_) {
               /// On sqflite we get something like
               /// 'databaseexception(cannot commit - no transaction is active (code 1 sqlite_error)) sql \'commit\' args []'
+              /// or on Android (when the client did not know that the
+              /// transaction was closed)
+              /// 'databaseexception(cannot perform this operation because there is no current transaction.) sql \'rollback\' args []'
               expect(
                 e.toString().toLowerCase(),
-                contains('no transaction is active'),
+                anyOf(
+                  contains('no transaction is active'),
+                  contains('no current transaction'),
+                ),
                 reason: e.toString(),
               );
             }
