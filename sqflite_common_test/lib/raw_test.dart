@@ -226,6 +226,24 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    test('execute pragma returning a row', () async {
+      // Such pragma (journal_mode, locking_mode...) used to fail with execute
+      // on Android
+      var path = await context.initDeleteDb('execute_pragma_row.db');
+      var db = await factory.openDatabase(path);
+      try {
+        await db.execute('PRAGMA journal_mode = WAL');
+        if (!context.isWeb) {
+          var journalMode = (await db.rawQuery(
+            'PRAGMA journal_mode',
+          )).first.values.first;
+          expect(journalMode.toString().toLowerCase(), 'wal');
+        }
+      } finally {
+        await db.close();
+      }
+    });
+
     test('without rowid', () async {
       // utils.devSetDebugModeOn(true);
       // this fails on iOS

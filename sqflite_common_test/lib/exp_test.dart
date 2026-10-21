@@ -570,8 +570,7 @@ INSERT INTO test (value) VALUES (10);
         options: OpenDatabaseOptions(
           version: 1,
           onConfigure: (Database db) async {
-            await db.execute('PRAGMA journal_mode=WAL');
-            await db.rawQuery('PRAGMA journal_mode=WAL');
+            await db.setJournalMode('WAL');
           },
           onCreate: (Database db, int version) async {
             await db.execute('CREATE TABLE test (id INTEGER)');
