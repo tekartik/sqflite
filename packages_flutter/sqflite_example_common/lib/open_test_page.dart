@@ -144,10 +144,13 @@ class OpenTestPage extends TestPage {
       final databasesPath = await factory.getDatabasesPath();
       // On Android we know it is current a 'databases' folder in the package folder
       print('databasesPath: $databasesPath');
-      if (platform.isAndroid) {
-        expect(basename(databasesPath), 'databases');
-      } else if (platform.isIOS) {
-        expect(basename(databasesPath), 'Documents');
+      // Native plugin locations, ffi apps set their own path
+      if (supportsCompatMode) {
+        if (platform.isAndroid) {
+          expect(basename(databasesPath), 'databases');
+        } else if (platform.isIOS) {
+          expect(basename(databasesPath), 'Documents');
+        }
       }
       final path = join(databasesPath, 'in_default_directory.db');
       await factory.deleteDatabase(path);
@@ -1014,7 +1017,8 @@ class OpenTestPage extends TestPage {
       }
       await db.close();
 
-      if (platform.isAndroid) {
+      // Android native plugin only, ffi on Android keeps the file
+      if (supportsCompatMode && platform.isAndroid) {
         // Content has changed, it is a big file now!
         expect(
           (await readFileAsBytes(path)).length,

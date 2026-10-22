@@ -110,10 +110,13 @@ void run(SqfliteTestContext context) {
       var databasesPath = await factory.getDatabasesPath();
       // On Android we know it is current a 'databases' folder in the package folder
       print('databasesPath: $databasesPath');
-      if (platform.isAndroid) {
-        expect(basename(databasesPath), 'databases');
-      } else if (platform.isIOS) {
-        expect(basename(databasesPath), 'Documents');
+      // Native plugin locations, ffi apps set their own path
+      if (context.isPlugin) {
+        if (platform.isAndroid) {
+          expect(basename(databasesPath), 'databases');
+        } else if (platform.isIOS) {
+          expect(basename(databasesPath), 'Documents');
+        }
       }
       var path = context.pathContext.join(
         databasesPath,

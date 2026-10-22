@@ -258,10 +258,11 @@ void run(SqfliteTestContext context) {
           'CREATE TABLE Test (name TEXT PRIMARY KEY) WITHOUT ROWID',
         );
         var id = await db.insert('Test', <String, Object?>{'name': 'test'});
-        // it seems to always return 1 on Android, 0 on iOS...
+        // it seems to always return 1 on Android (native plugin), 0 on iOS...
         if (context.isIOS) {
           expect(id, 0);
-        } else if (context.isAndroid) {
+        } else if (context.isPlugin && context.isAndroid) {
+          // Android native plugin only, ffi on Android returns 0
           expect(id, 1);
         } else if (context.supportsWithoutRowId) {
           expect(id, 0);
@@ -272,7 +273,8 @@ void run(SqfliteTestContext context) {
         // it seems to always return 1
         if (context.isIOS) {
           expect(id, 0);
-        } else if (context.isAndroid) {
+        } else if (context.isPlugin && context.isAndroid) {
+          // Android native plugin only, ffi on Android returns 0
           expect(id, 1);
         } else if (context.supportsWithoutRowId) {
           expect(id, 0);
