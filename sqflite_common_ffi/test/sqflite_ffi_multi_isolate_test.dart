@@ -18,14 +18,34 @@ import 'package:test/test.dart';
 /// The problem only shows with a SQLite library that has shared cache (a
 /// custom build or `source: system`). The library bundled by package:sqlite3
 /// is built with SQLITE_OMIT_SHARED_CACHE, so these tests are skipped with it.
-/// To run them with another library, use `source: process` in the pubspec hooks
-/// and set SQFLITE_TEST_SQLITE3_LIBRARY to the library to load.
+///
+/// On Linux, the easy way to run them is `source: system` in the pubspec hooks
+/// (the distribution libsqlite3 has shared cache):
+///
+/// ```yaml
+/// hooks:
+///   user_defines:
+///     sqlite3:
+///       source: system
+/// ```
+///
+/// On Windows, to run them with a custom library, use `source: process` and
+/// set SQFLITE_TEST_SQLITE3_LIBRARY to the library to load. This only works on
+/// Windows: on Linux and macOS `DynamicLibrary.open` loads the library with
+/// local symbols, so the process lookup does not find them.
 void main() {
   var library = Platform.environment['SQFLITE_TEST_SQLITE3_LIBRARY'];
   if (library != null) {
-    // Its dependencies may sit next to it.
+    library = absolute(library);
+    // Its dependencies may sit next to it, Windows looks for them in the
+    // current directory.
+    var previous = Directory.current;
     Directory.current = dirname(library);
-    DynamicLibrary.open(library);
+    try {
+      DynamicLibrary.open(library);
+    } finally {
+      Directory.current = previous;
+    }
   }
   var sharedCache = !sqlite3.sqlite3
       .openInMemory()
