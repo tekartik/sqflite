@@ -10,8 +10,6 @@ import 'package:sqflite_common_ffi/src/sqflite_ffi_handler.dart';
 import 'package:sqlite3/common.dart' as common;
 import 'package:synchronized/synchronized.dart';
 
-import 'database_tracker.dart'
-    if (dart.library.js_interop) 'database_tracker_web.dart';
 import 'import.dart';
 import 'sqflite_ffi_impl_io.dart'
     if (dart.library.js_interop) 'sqflite_ffi_impl_web.dart';
@@ -885,11 +883,6 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     var database = getDatabaseOrThrow();
     if (database.singleInstance) {
       ffiSingleInstanceDbs.remove(database.path);
-
-      // Handle hot-restart for single instance
-      // The dart code is killed but the native code remains
-      // Remove the database from our cache
-      tracker.markClosed(database._ffiDb);
     }
     database.close();
   }
@@ -1160,8 +1153,6 @@ extension SqfliteFfiMethodCallHandler on FfiMethodCall {
     var singleInstanceDatabase = ffiSingleInstanceDbs[path];
     if (singleInstanceDatabase != null) {
       ffiSingleInstanceDbs.remove(path);
-      // Like handleCloseDatabase.
-      tracker.markClosed(singleInstanceDatabase._ffiDb);
       singleInstanceDatabase.close();
     }
 
