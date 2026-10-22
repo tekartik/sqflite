@@ -3,8 +3,10 @@
 @TestOn('vm')
 library;
 
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:path/path.dart' show join;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:test/test.dart';
 
@@ -37,6 +39,25 @@ void main() {
     var originalDatabasesPath = await databaseFactory.getDatabasesPath();
     expect(originalDatabasesPath, isNotNull);
   });
+  test(
+    'uri in a missing directory',
+    () async {
+      var dir = await Directory.systemTemp.createTemp('sqflite_ffi_uri_');
+      try {
+        var path = join(dir.path, 'sub', 'uri.db');
+        var db = await databaseFactory.openDatabase(Uri.file(path).toString());
+        await db.close();
+        expect(File(path).existsSync(), isTrue);
+        // The parent was once created from the uri string, in the current
+        // directory.
+        expect(Directory('file:').existsSync(), isFalse);
+      } finally {
+        await dir.delete(recursive: true);
+      }
+    },
+    // The uri path (/C:/...) is not a valid file path on Windows.
+    testOn: '!windows',
+  );
   test('exception', () async {
     var db = await databaseFactory.openDatabase(inMemoryDatabasePath);
 

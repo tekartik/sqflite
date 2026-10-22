@@ -34,9 +34,10 @@ class _SqfliteFfiHandlerIo with SqfliteFfiHandlerNonImplementedMixin {
       } else {
         // ignore: avoid_slow_async_io
         if (!(await file.exists())) {
-          // Make sure its parent exists
+          // Make sure its parent exists (from the file path, a uri path
+          // would create a `file:` directory in the current directory)
           try {
-            await Directory(dirname(path)).create(recursive: true);
+            await file.parent.create(recursive: true);
           } catch (_) {}
         }
       }
