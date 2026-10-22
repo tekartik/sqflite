@@ -1,3 +1,8 @@
+## 0.1.1+1
+
+* Document the databases path initialization (the ffi default is not writable on
+  Android and iOS), in the README and the `sqflite-ffi-flutter` skill
+
 ## 0.1.1
 
 * Add `sqflite-ffi-flutter` agent skill in `skills/`, installable with `dart run skills@ get`

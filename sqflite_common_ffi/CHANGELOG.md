@@ -1,3 +1,13 @@
+## 2.4.5
+
+* Remove the database tracker (hot restart workaround). With a SQLite built with
+  shared cache (e.g. `source: system` on Linux), each new sqflite isolate closed the
+  live connections of the other ones, which then failed with `SqliteException(21)`
+  (#1218, thanks to iulian0512). On hot restart, package:sqlite3 3.x already closes
+  the connections when the isolate group shuts down.
+* Opening a `file:` uri database creates its parent directory from the file path
+  (it created a `file:` directory in the current directory)
+
 ## 2.4.4
 
 * Release closed and deleted databases (they were kept in memory forever), an operation
