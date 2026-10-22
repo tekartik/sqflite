@@ -95,10 +95,16 @@ Future<void> main() async {
 * Stale registrations (hot restart leaves a dead port in
   `IsolateNameServer`) are detected with a ping (2 s timeout) and replaced
   automatically; no code needed.
-* Paths: relative paths resolve under `.dart_tool/sqflite_common_ffi/databases`
-  in the current directory. In an app use `path_provider`
-  (`getApplicationSupportDirectory()`) and `package:path` `join`. The parent
-  directory is created on open.
+* Paths: relative paths and `getDatabasesPath()` resolve under
+  `.dart_tool/sqflite_common_ffi/databases` in the current directory, which
+  is `/` (not writable) on Android and iOS. `sqflite_ffi` does not depend on
+  `path_provider`: in an app, call `databaseFactory.setDatabasesPath(...)`
+  once in `main()` (not on web) with a `path_provider` folder: a `databases`
+  folder in `getApplicationSupportDirectory()` on every platform, or the
+  native sqflite folders (Android `<data>/databases`, iOS and macOS
+  Documents) to keep the databases of an app moving from `sqflite`. The path
+  is stored in the factory of the calling isolate: pass full paths to
+  background isolates. The parent directory is created on open.
 * Tests: `flutter test` works with `sqfliteDatabaseFactoryFfi` after
   `TestWidgetsFlutterBinding.ensureInitialized()` and `sqfliteFfiInit()`;
   plain `sqflite_common_ffi` in `dev_dependencies` is enough when the test
@@ -168,22 +174,52 @@ Future<void> main() async {
 }
 ```
 
-### Database path with path_provider
+### Databases path with path_provider (all platforms)
 
 ```dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_ffi/sqflite_ffi.dart';
 
-Future<Database> openAppDatabase() async {
-  final dir = await getApplicationSupportDirectory();
-  return openDatabase(
-    p.join(dir.path, 'app.db'),
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) {
+    final dir = await getApplicationSupportDirectory();
+    await databaseFactory.setDatabasesPath(p.join(dir.path, 'databases'));
+  }
+  // Relative paths now resolve in the application support directory.
+  final db = await openDatabase(
+    'app.db',
     version: 1,
     onCreate: (db, _) => db.execute(
       'CREATE TABLE Note (id INTEGER PRIMARY KEY, text TEXT)',
     ),
   );
+  await db.close();
+  runApp(const SizedBox());
+}
+```
+
+### Same folders as the native sqflite plugin
+
+```dart
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
+Future<String> sqflitePluginDatabasesPath() async {
+  if (Platform.isAndroid) {
+    // <data>/files and <data>/databases share the application data directory.
+    final dir = await getApplicationSupportDirectory();
+    return p.join(p.dirname(dir.path), 'databases');
+  } else if (Platform.isIOS || Platform.isMacOS) {
+    return (await getApplicationDocumentsDirectory()).path;
+  }
+  // Linux, Windows: no native plugin.
+  return p.join((await getApplicationSupportDirectory()).path, 'databases');
 }
 ```
 
@@ -245,6 +281,9 @@ void main() {
   sqflite default factory" warning. Use `sqfliteDatabaseFactoryFfi` or
   nothing.
 * Expecting ffi on the web: use `sqflite_common_ffi_web`.
+* Opening a relative path on Android or iOS without
+  `databaseFactory.setDatabasesPath(...)`: the default folder is under `/`,
+  not writable.
 * Closing a shared single-instance database from a background isolate.
 * Opening the same file from two isolates in debug mode without
   `rollbackActiveTransactionOnOpen: false`.
