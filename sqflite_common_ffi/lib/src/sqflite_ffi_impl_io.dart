@@ -9,7 +9,6 @@ import 'package:sqflite_common/src/mixin/platform.dart'; // ignore: implementati
 import 'package:sqlite3/common.dart' as common;
 import 'package:sqlite3/sqlite3.dart' as ffi;
 
-import 'database_tracker.dart';
 import 'sqflite_ffi_handler.dart';
 
 /// Ffi handler.
@@ -18,7 +17,6 @@ class _SqfliteFfiHandlerIo with SqfliteFfiHandlerNonImplementedMixin {
   @override
   Future<common.CommonDatabase> openPlatform(Map argumentsMap) async {
     var path = argumentsMap['path'] as String;
-    var singleInstance = (argumentsMap['singleInstance'] as bool?) ?? false;
     var readOnly = (argumentsMap['readOnly'] as bool?) ?? false;
 
     common.CommonDatabase? ffiDb;
@@ -46,12 +44,6 @@ class _SqfliteFfiHandlerIo with SqfliteFfiHandlerNonImplementedMixin {
           ? ffi.OpenMode.readOnly
           : ffi.OpenMode.readWriteCreate;
       ffiDb = ffi.sqlite3.open(path, mode: mode, uri: isUri);
-
-      // Handle hot-restart for single instance
-      // The dart code is killed but the native code remains
-      if (singleInstance) {
-        if (ffiDb is ffi.Database) tracker.markOpened(ffiDb);
-      }
     }
 
     return ffiDb;
