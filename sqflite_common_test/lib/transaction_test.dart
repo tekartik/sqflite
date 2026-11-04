@@ -607,8 +607,174 @@ void run(SqfliteTestContext context) {
       } finally {
         await db.close();
       }
-      // Only fixed in the Android plugin so far, ffi and darwin still block.
-    }, skip: !(context.isPlugin && context.isAndroid));
+      // Not verified yet on the darwin plugin.
+    }, skip: context.isPlugin && !context.isAndroid);
+
+    group('failed commit (busy)', () {
+      /// Long enough to detect a hang.
+      const timeout = Duration(seconds: 10);
+
+      /// SQLITE_BUSY primary result code.
+      const sqliteBusy = 5;
+
+      /// Runs [failingWrite] (a transaction or a batch on the database) while
+      /// a second connection on the same file holds a SHARED lock (open read
+      /// transaction): its COMMIT fails with SQLITE_BUSY and SQLite keeps the
+      /// transaction open.
+      ///
+      /// The database must then be usable again.
+      Future<void> testFailedBusyCommit(
+        String dbName,
+        Future<void> Function(Database db) failingWrite, {
+        int? busyTimeout,
+      }) async {
+        var path = await context.initDeleteDb(dbName);
+        var db = await factory.openDatabase(path);
+        Database? reader;
+        try {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+          );
+          if (busyTimeout != null) {
+            await db.rawQuery('PRAGMA busy_timeout = $busyTimeout');
+          }
+          reader = await factory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(readOnly: true, singleInstance: false),
+          );
+          // Hold a SHARED lock until the end of the read transaction.
+          await reader.execute('BEGIN');
+          expect(
+            utils.firstIntValue(
+              await reader.rawQuery('SELECT COUNT(*) FROM Test'),
+            ),
+            0,
+          );
+
+          try {
+            await failingWrite(db).timeout(timeout);
+            fail('COMMIT should fail');
+          } on DatabaseException catch (e) {
+            expect(e.getResultCode()! & 0xff, sqliteBusy, reason: '$e');
+          }
+
+          // The connection is not blocked while the reader still holds its
+          // lock and the failed transaction has been rolled back.
+          expect(await db.rawQuery('SELECT 1 AS one').timeout(timeout), [
+            {'one': 1},
+          ]);
+          expect(await db.query('Test').timeout(timeout), isEmpty);
+
+          await reader.execute('COMMIT');
+          await reader.close();
+          reader = null;
+
+          // Writes, transactions and batches work again.
+          await db.insert('Test', {'id': 1, 'name': 'insert'}).timeout(timeout);
+          await db
+              .transaction((txn) async {
+                await txn.insert('Test', {'id': 2, 'name': 'transaction'});
+              })
+              .timeout(timeout);
+          var batch = db.batch()..insert('Test', {'id': 3, 'name': 'batch'});
+          await batch.commit(noResult: true).timeout(timeout);
+        } finally {
+          await reader?.close();
+          await db.close();
+        }
+
+        // Only the writes done after the failed commit are persisted.
+        db = await factory.openDatabase(path);
+        try {
+          expect(await db.query('Test', orderBy: 'id'), [
+            {'id': 1, 'name': 'insert'},
+            {'id': 2, 'name': 'transaction'},
+            {'id': 3, 'name': 'batch'},
+          ]);
+        } finally {
+          await db.close();
+        }
+      }
+
+      Future<void> failingTransaction(Database db) async {
+        await db.transaction((txn) async {
+          await txn.insert('Test', {'id': 100, 'name': 'failed'});
+        });
+      }
+
+      Future<void> failingBatch(Database db) async {
+        var batch = db.batch()..insert('Test', {'id': 100, 'name': 'failed'});
+        await batch.commit(noResult: true);
+      }
+
+      test('transaction', () async {
+        await testFailedBusyCommit(
+          'failed_commit_busy_transaction.db',
+          failingTransaction,
+        );
+      });
+
+      test('batch', () async {
+        await testFailedBusyCommit('failed_commit_busy_batch.db', failingBatch);
+      });
+
+      test('transaction with busy timeout', () async {
+        await testFailedBusyCommit(
+          'failed_commit_busy_timeout_transaction.db',
+          failingTransaction,
+          busyTimeout: 200,
+        );
+      });
+
+      test('batch with busy timeout', () async {
+        await testFailedBusyCommit(
+          'failed_commit_busy_timeout_batch.db',
+          failingBatch,
+          busyTimeout: 200,
+        );
+      });
+
+      test('failed begin', () async {
+        var path = await context.initDeleteDb('failed_begin_busy.db');
+        var db = await factory.openDatabase(path);
+        Database? writer;
+        try {
+          await db.execute(
+            'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)',
+          );
+          writer = await factory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(singleInstance: false),
+          );
+          // Hold a RESERVED lock, BEGIN IMMEDIATE fails with SQLITE_BUSY.
+          await writer.execute('BEGIN IMMEDIATE');
+          try {
+            await failingTransaction(db).timeout(timeout);
+            fail('BEGIN should fail');
+          } on DatabaseException catch (e) {
+            expect(e.getResultCode()! & 0xff, sqliteBusy, reason: '$e');
+          }
+          expect(await db.query('Test').timeout(timeout), isEmpty);
+          await writer.execute('ROLLBACK');
+          await writer.close();
+          writer = null;
+
+          await db
+              .transaction((txn) async {
+                await txn.insert('Test', {'id': 1, 'name': 'transaction'});
+              })
+              .timeout(timeout);
+          expect(await db.query('Test').timeout(timeout), [
+            {'id': 1, 'name': 'transaction'},
+          ]);
+        } finally {
+          await writer?.close();
+          await db.close();
+        }
+      });
+      // Multiple connections on the same file, native plugins (default busy
+      // timeouts, BEGIN on a read-only connection) not verified.
+    }, skip: context.isPlugin || !context.supportsMultipleInstances);
 
     test('throw in transaction', () async {
       var path = await context.initDeleteDb('throw_in_transaction.db');
