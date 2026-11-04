@@ -30,3 +30,7 @@ dart run tool/run_test_runner_host.dart
 # or
 flutter run -t lib/main_sqflite_plugin_test_runner.dart -d <device id>
 ```
+
+The tools quit once the tests are done (exit code 1 if some failed). With
+`--no-quit` they stay attached: the console input goes to `flutter run`, `R` +
+Enter runs the tests again, `q` + Enter quits.

@@ -36,3 +36,7 @@ dart run tool/run_test_runner.dart
 # Console runner on the host (linux, macos or windows)
 dart run tool/run_test_runner_host.dart
 ```
+
+The console runners quit once the tests are done (exit code 1 if some
+failed). With `--no-quit` they stay attached: the console input goes to
+`flutter run`, `R` + Enter runs the tests again, `q` + Enter quits.
