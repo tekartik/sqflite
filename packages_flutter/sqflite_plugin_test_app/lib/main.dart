@@ -1,5 +1,7 @@
-import 'main_sqflite_plugin_test_runner.dart' as runner;
+import 'package:material_ui/material_ui.dart';
+import 'package:sqflite_example_common/main.dart';
 
-/// A plain `flutter run` runs the tests too, see
-/// main_sqflite_plugin_test_runner.dart.
-Future<void> main() => runner.main();
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  mainExampleApp();
+}
