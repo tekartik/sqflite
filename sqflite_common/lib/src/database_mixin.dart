@@ -879,7 +879,21 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
       } else {
         try {
           if (txn.successful == true) {
-            await txnExecute<dynamic>(txn, 'COMMIT', null);
+            try {
+              await txnExecute<dynamic>(txn, 'COMMIT', null);
+            } catch (_) {
+              // A failed COMMIT (SQLITE_BUSY, deferred foreign key violation...)
+              // can leave the transaction open, roll it back so that it does
+              // not block the next calls.
+              if (txn.closed != true) {
+                try {
+                  await txnExecute<dynamic>(txn, 'ROLLBACK', null);
+                } catch (_) {
+                  // Already rolled back by SQLite
+                }
+              }
+              rethrow;
+            }
           } else {
             await txnExecute<dynamic>(txn, 'ROLLBACK', null);
           }

@@ -1,3 +1,10 @@
+## 2.5.15
+
+* Fix every later call hanging after a failed `COMMIT` of a transaction or a batch
+  (`SQLITE_BUSY` while another connection reads the database, deferred foreign key
+  violation...), seen with `sqflite_common_ffi`: the transaction left open by SQLite
+  is now rolled back before the error is thrown.
+
 ## 2.5.14
 
 * Fix hang when closing a query cursor before its end inside a transaction
