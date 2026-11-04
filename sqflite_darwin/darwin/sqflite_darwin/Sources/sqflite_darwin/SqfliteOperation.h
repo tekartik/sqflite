@@ -39,6 +39,8 @@
 - (void)handleSuccess:(NSMutableArray*)results;
 - (void)handleErrorContinue:(NSMutableArray*)results;
 - (void)handleError:(FlutterResult)result;
+// True if the error ended the transaction (rolled back by SQLite), the batch must stop.
+- (bool)isTransactionClosed;
 
 @end
 

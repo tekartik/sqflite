@@ -71,6 +71,8 @@ NSString *const SqfliteParamSql = @"sql";
 NSString *const SqfliteParamSqlArguments = @"arguments";
 NSString *const SqfliteParamInTransactionChange = @"inTransaction";
 NSString *const SqfliteParamTransactionId = @"transactionId"; // int or null
+// Set in the error data when SQLite rolled back the transaction by itself
+NSString *const SqfliteParamTransactionClosed = @"transactionClosed";
 NSString *const SqfliteParamNoResult = @"noResult";
 NSString *const SqfliteParamContinueOnError = @"continueOnError";
 NSString *const SqfliteParamMethod = @"method";
@@ -536,20 +538,18 @@ static NSInteger _databaseOpenCount = 0;
         return;
     }
     
+    SqfliteDatabase* database = [SqfliteDatabase new];
+    database.fmDatabaseQueue = queue;
     // First call will be to prepare the database.
     // We turn on extended result code, allowing failure
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [queue inDatabase:^(SqfliteDarwinDatabase *db) {
-            sqlite3_extended_result_codes(db.sqliteHandle, 1);
-        }];
-    });
-    
+    [database inDatabase:^(SqfliteDarwinDatabase *db) {
+        sqlite3_extended_result_codes(db.sqliteHandle, 1);
+    }];
+
     NSNumber* databaseId;
     @synchronized (self.mapLock) {
-        SqfliteDatabase* database = [SqfliteDatabase new];
         databaseId = [NSNumber numberWithInteger:++_lastDatabaseId];
         database.inTransaction = false;
-        database.fmDatabaseQueue = queue;
         database.singleInstance = singleInstance;
         database.databaseId = databaseId;
         database.path = path;
@@ -609,7 +609,8 @@ static NSInteger _databaseOpenCount = 0;
         }
     }
     SqfliteDarwinDatabaseQueue* queue = database.fmDatabaseQueue;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    // After the calls already received
+    dispatch_async(database.dispatchQueue, ^{
         // It is safe to call this from a background queue because the function
         // dispatches immediately to its queue synchronously.
         [queue close];

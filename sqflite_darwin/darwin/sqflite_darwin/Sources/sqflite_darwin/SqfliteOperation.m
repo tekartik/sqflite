@@ -125,6 +125,11 @@
     result(error);
 }
 
+- (bool)isTransactionClosed {
+    id details = self.error.details;
+    return [details isKindOfClass:[NSDictionary class]] && [details[SqfliteParamTransactionClosed] boolValue];
+}
+
 - (id)getArgument:(NSString*)key {
     return [dictionary objectForKey:key];
 }

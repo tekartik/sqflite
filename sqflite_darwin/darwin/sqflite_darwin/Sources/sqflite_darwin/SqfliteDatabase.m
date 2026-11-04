@@ -22,12 +22,13 @@ static int transactionIdForce = -1;
 
 @implementation SqfliteDatabase
 
-@synthesize databaseId, fmDatabaseQueue, cursorMap, logLevel, currentTransactionId, noTransactionOperationQueue, lastCursorId,lastTransactionId;
+@synthesize databaseId, fmDatabaseQueue, dispatchQueue, cursorMap, logLevel, currentTransactionId, noTransactionOperationQueue, lastCursorId,lastTransactionId;
 
 
 - (instancetype)init {
     self = [super init];
     if (self) {
+        dispatchQueue = dispatch_queue_create("sqflite.database", DISPATCH_QUEUE_SERIAL);
         cursorMap = [NSMutableDictionary new];
         lastCursorId = 0;
         lastTransactionId = 0;
@@ -38,7 +39,9 @@ static int transactionIdForce = -1;
 
 
 - (void)inDatabase:(void (^)(SqfliteDarwinDatabase *db))block {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    // Not the global concurrent queue, the calls (e.g. the ones of a transaction
+    // that are not awaited) could reach the database out of order.
+    dispatch_async(self.dispatchQueue, ^{
         [self.fmDatabaseQueue inDatabase:block];
     });
 }
@@ -61,11 +64,54 @@ static int transactionIdForce = -1;
             [details setObject:sqlArguments forKey:SqfliteParamSqlArguments];
         }
     }
+    // For a statement that does not begin or end a transaction, SQLite might
+    // have rolled back the transaction by itself
+    if ([operation getInTransactionChange] == nil && [self leaveTransactionIfRolledBack:db]) {
+        if (details == nil) {
+            details = [NSMutableDictionary new];
+        }
+        [details setObject:@YES forKey:SqfliteParamTransactionClosed];
+    }
     
     [operation error:([FlutterError errorWithCode:SqliteErrorCode
                                           message:[NSString stringWithFormat:@"%@", [db lastError]]
                                           details:details])];
     
+}
+
+// Called after a failed statement in a transaction.
+//
+// SQLite rolls back the whole transaction by itself on some errors (ON CONFLICT ROLLBACK,
+// RAISE(ROLLBACK), SQLITE_FULL...), the next statements would then run (and be committed)
+// outside of any transaction.
+//
+// Returns true if SQLite had rolled back the transaction, it is then ended here too.
+- (bool)leaveTransactionIfRolledBack:(SqfliteDarwinDatabase*)db {
+    if (currentTransactionId == nil || !sqlite3_get_autocommit(db.sqliteHandle)) {
+        return false;
+    }
+    self.currentTransactionId = nil;
+    self.inTransaction = false;
+    if (sqfliteHasSqlLogLevel(logLevel)) {
+        NSLog(@"transaction rolled back by SQLite");
+    }
+    return true;
+}
+
+// Called when COMMIT or ROLLBACK failed, the client considers the transaction ended anyway.
+//
+// When SQLite fails (deferred foreign key violation, busy...) it can stay in a transaction
+// that no one would end anymore, roll it back.
+- (void)leaveTransactionOnError:(SqfliteDarwinDatabase*)db sql:(NSString*)sql {
+    if (currentTransactionId == nil) {
+        return;
+    }
+    self.currentTransactionId = nil;
+    if (!sqlite3_get_autocommit(db.sqliteHandle)) {
+        if ([db executeUpdate:@"ROLLBACK"] && sqfliteHasSqlLogLevel(logLevel)) {
+            NSLog(@"rolled back the transaction left by the failed %@", sql);
+        }
+    }
 }
 
 - (void)dbRunQueuedOperations:(SqfliteDarwinDatabase*)db {
@@ -131,6 +177,10 @@ static int transactionIdForce = -1;
             if (enteringTransaction) {
                 // On error revert change
                 self.currentTransactionId = nil;
+            } else if (inTransactionChange != nil && [inTransactionChange boolValue] == false) {
+                // A failed COMMIT/ROLLBACK ends the transaction too, the client won't use
+                // it anymore. Otherwise the queued operations would wait forever.
+                [self leaveTransactionOnError:db sql:[operation getSql]];
             }
         }
     }];
@@ -362,37 +412,45 @@ static int transactionIdForce = -1;
         if ([SqfliteMethodInsert isEqualToString:method]) {
             if ([self dbDoInsert:db operation:operation]) {
                 [operation handleSuccess:operationResults];
-            } else if (continueOnError) {
+            } else if (continueOnError && ![operation isTransactionClosed]) {
                 [operation handleErrorContinue:operationResults];
             } else {
                 [operation handleError:mainOperation.flutterResult];
+                // The transaction might have been rolled back by SQLite
+                [self dbRunQueuedOperations:db];
                 return;
             }
         } else if ([SqfliteMethodUpdate isEqualToString:method]) {
             if ([self dbDoUpdate:db operation:operation]) {
                 [operation handleSuccess:operationResults];
-            } else if (continueOnError) {
+            } else if (continueOnError && ![operation isTransactionClosed]) {
                 [operation handleErrorContinue:operationResults];
             } else {
                 [operation handleError:mainOperation.flutterResult];
+                // The transaction might have been rolled back by SQLite
+                [self dbRunQueuedOperations:db];
                 return;
             }
         } else if ([SqfliteMethodExecute isEqualToString:method]) {
             if ([self dbDoExecute:db operation:operation]) {
                 [operation handleSuccess:operationResults];
-            } else if (continueOnError) {
+            } else if (continueOnError && ![operation isTransactionClosed]) {
                 [operation handleErrorContinue:operationResults];
             } else {
                 [operation handleError:mainOperation.flutterResult];
+                // The transaction might have been rolled back by SQLite
+                [self dbRunQueuedOperations:db];
                 return;
             }
         } else if ([SqfliteMethodQuery isEqualToString:method]) {
             if ([self dbDoQuery:db operation:operation]) {
                 [operation handleSuccess:operationResults];
-            } else if (continueOnError) {
+            } else if (continueOnError && ![operation isTransactionClosed]) {
                 [operation handleErrorContinue:operationResults];
             } else {
                 [operation handleError:mainOperation.flutterResult];
+                // The transaction might have been rolled back by SQLite
+                [self dbRunQueuedOperations:db];
                 return;
             }
         } else {

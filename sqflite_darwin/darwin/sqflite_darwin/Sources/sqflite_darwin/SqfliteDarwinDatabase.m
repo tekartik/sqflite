@@ -1054,7 +1054,13 @@ static int SqfliteDarwinDBDatabaseBusyHandler(void *f, int count) {
         return false;
     }
 
-    return [rs internalStepWithError:outErr] == SQLITE_DONE;
+    // A statement can return rows (PRAGMA journal_mode = WAL...), step through them
+    // as sqlite3_exec does
+    int rc;
+    do {
+        rc = [rs internalStepWithError:outErr];
+    } while (rc == SQLITE_ROW);
+    return rc == SQLITE_DONE;
 }
 
 - (BOOL)executeUpdate:(NSString*)sql, ... {

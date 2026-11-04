@@ -14,6 +14,8 @@
 @interface SqfliteDatabase : NSObject
 
 @property (atomic, retain) SqfliteDarwinDatabaseQueue *fmDatabaseQueue;
+// Serial queue, the calls run off the main thread in the order they were received
+@property (atomic, retain, readonly) dispatch_queue_t dispatchQueue;
 @property (atomic, retain) NSNumber *databaseId;
 @property (atomic, retain) NSString* path;
 @property (nonatomic) bool singleInstance;

@@ -607,8 +607,7 @@ void run(SqfliteTestContext context) {
       } finally {
         await db.close();
       }
-      // Not verified yet on the darwin plugin.
-    }, skip: context.isPlugin && !context.isAndroid);
+    });
 
     group('failed commit (busy)', () {
       /// Long enough to detect a hang.
