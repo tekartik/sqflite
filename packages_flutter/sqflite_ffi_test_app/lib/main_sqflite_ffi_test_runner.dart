@@ -22,9 +22,20 @@ class SqfliteRunnerTestContext extends SqfliteLocalTestContext {
 
 /// Test runner context
 var testContext = SqfliteRunnerTestContext();
+
+/// The databases go in the application support directory, call before the
+/// tests run (also used by integration_test/sqflite_ffi_test.dart).
+Future<void> initTestContext() async {
+  await testContext.databaseFactory.setDatabasesPath(await appDatabasesPath());
+}
+
+/// Runs sqflite_common_test on ffi, results in the console:
+///
+/// `flutter run -t lib/main_sqflite_ffi_test_runner.dart -d <device id>`
+///
+/// (tool/run_test_runner.dart picks the device).
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  var testContext = SqfliteRunnerTestContext();
-  await testContext.databaseFactory.setDatabasesPath(await appDatabasesPath());
+  await initTestContext();
   all.run(testContext);
 }

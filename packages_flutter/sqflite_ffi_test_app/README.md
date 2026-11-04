@@ -18,3 +18,21 @@ flutter test
 ```bash
 flutter run
 ```
+
+## Running sqflite_common_test on a device
+
+The device is `SQFLITE_TEST_DEVICE_ID` when set (`ds env var set
+SQFLITE_TEST_DEVICE_ID emulator-5554`), the only phone, emulator or simulator
+connected, or the one picked in the list (the plugin twin is
+`sqflite_plugin_test_app`).
+
+```bash
+# Integration test, results and exit code on the host
+dart run tool/run_integration_test.dart
+# Integration test on the host (linux, macos or windows)
+dart run tool/run_integration_test_host.dart
+# Console runner, results in the flutter run console
+dart run tool/run_test_runner.dart
+# Console runner on the host (linux, macos or windows)
+dart run tool/run_test_runner_host.dart
+```
