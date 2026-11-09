@@ -11,7 +11,7 @@ the desktop (MacOS/Windows/Linux).
 Include `sqflite_common_ffi` as a `dev_dependency` in `pubspec.yaml`:
 
 ```yaml
-dev_dependency:
+dev_dependencies:
   sqflite_common_ffi:
 ```
 
@@ -24,7 +24,6 @@ This can be done in a `setUpAll` method like this:
 ```dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite/sqflite.dart';
 
 Future main() async {
   // Setup sqflite_common_ffi for flutter test
@@ -55,14 +54,13 @@ Future main() async {
 
 ### Writing unit test for Dart VM
 
-You can also write regular dart test. Instead of using `openDatabase` (which is flutter only) you have use
-the proper `SqfliteDatabaseFactory` to open a database:
+You can also write regular dart test. Instead of using the global `openDatabase` (which needs the global
+`databaseFactory` to be set), you can use the factory directly to open a database:
 
 ```dart
 @TestOn('vm')
-library sqflite_common_ffi.test.sqflite_ffi_doc_test;
+library;
 
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:test/test.dart';
 
@@ -89,6 +87,9 @@ void main() {
 }
 ```
 
+Close the database at the end of each test: while it is open, `openDatabase(inMemoryDatabasePath)`
+returns the same in-memory database (single instance), after a close it gives a new empty database.
+
 ### Writing widget test
 
 There seems to be several restrictions in widget test. One solution here is to use the ffi implementation
@@ -96,7 +97,6 @@ without isolate:
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

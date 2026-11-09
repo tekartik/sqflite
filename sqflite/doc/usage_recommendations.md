@@ -6,7 +6,10 @@ The API is largely inspired from Android ContentProvider where a typical SQLite 
 opening the database once on the first request and keeping it open.
 
 Personally I have one global reference Database in my Flutter application to avoid lock issues. Opening the
-database should be safe if called multiple times.
+database should be safe if called multiple times: with the default `singleInstance: true`, opening the same path
+again returns the same `Database` (the callbacks of the new call are ignored) and closing it closes it for
+everyone. Keep the `Future<Database>` of the first call to avoid opening it concurrently (see
+[opening a database](opening_db.md#prevent-database-locked-issue)).
 
 If you don't use `singleInstance`, keeping a reference (at the app level or in a widget) can cause issues with hot reload if the reference is lost (and the database not
 closed yet).
@@ -50,7 +53,7 @@ Batch
 - A batch is just a list of statement to execute all at once
 - A batch on a database is run in a transaction (a transaction is created for you)
 - A batch in a transaction is committed when the transaction terminates
-- You can create/commit mutiple batches in a transaction however the changes are committed *for real* only when the transaction terminates (and a failure would rollback all batches)
+- You can create/commit multiple batches in a transaction however the changes are committed *for real* only when the transaction terminates (and a failure would rollback all batches)
 
 Prefer:
 - A batch if you have a list statements to execute in sequence and no query on which your behavior depends on

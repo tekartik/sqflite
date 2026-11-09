@@ -1,5 +1,7 @@
-## 2.4.5
+## 2.4.5+1
 
+* Doc: getting started per platform, one code base for mobile/desktop/web, common
+  pitfalls, example tab, fixed README snippets, skills updated
 * Mark the transaction closed when SQLite rolled it back by itself on Android
   (`ConflictAlgorithm.rollback`, `RAISE(ROLLBACK)`...), requires sqflite_android 2.4.5 for the fix
 

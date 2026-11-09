@@ -1,5 +1,8 @@
 ## 2.5.16
 
+* Doc: README and example tab; `openDatabase`/`OpenDatabaseOptions` dartdoc
+  (a read-only open still calls `onConfigure`/`onOpen`, `:memory:` is shared
+  while open); iterate doc method names
 * Fix the single instance cache: closing an already closed database no longer
   drops a newer instance opened at the same path, and after an
   `onDatabaseDowngradeDelete` open or a `deleteDatabase` through

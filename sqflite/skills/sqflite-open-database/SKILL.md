@@ -1,13 +1,18 @@
 ---
 name: sqflite-open-database
 description: >-
-  Use when opening, creating, migrating, closing or deleting a SQLite database
-  with package:sqflite in a Flutter app (Android, iOS, macOS): openDatabase,
+  Use when getting started with package:sqflite or opening, creating,
+  migrating, closing or deleting a SQLite database in a Flutter app: which
+  package and factory per platform (sqflite on Android/iOS/macOS,
+  sqflite_common_ffi on Windows/Linux, sqflite_common_ffi_web on the web, one
+  code base for mobile + desktop + web), where the database file is
+  (getDatabasesPath per platform, path_provider), openDatabase,
   openReadOnlyDatabase, OpenDatabaseOptions, version, onConfigure, onCreate,
-  onUpgrade, onDowngrade, onDatabaseDowngradeDelete, onOpen, getDatabasesPath,
-  deleteDatabase, databaseExists, inMemoryDatabasePath, singleInstance,
-  readOnly, databaseFactory, getVersion, setJournalMode (WAL), foreign keys,
-  copying an asset database, and the "database is locked" pitfalls.
+  onUpgrade, onDowngrade, onDatabaseDowngradeDelete, onOpen, deleteDatabase,
+  databaseExists, inMemoryDatabasePath, singleInstance, readOnly,
+  databaseFactory, getVersion, setJournalMode (WAL), foreign keys, copying an
+  asset database, and the common pitfalls (opening many times, not awaiting,
+  schema change without version bump, "database is locked").
 ---
 
 # sqflite: opening and migrating a database
@@ -39,6 +44,68 @@ Future<Database> openAppDatabase() async {
 
 ## Guidelines
 
+### Which package for which platform
+
+| Platform | Package | Factory | SQLite library |
+|---|---|---|---|
+| Android, iOS, macOS | `sqflite` | set by the plugin, nothing to do | the OS one (version depends on the OS) |
+| Windows, Linux (and macOS without the plugin) | `sqflite_common_ffi` (or `sqflite_ffi` in Flutter, auto registered) | `sqfliteFfiInit(); databaseFactory = databaseFactoryFfi;` | bundled by `package:sqlite3` build hooks, nothing to install |
+| Web | `sqflite_common_ffi_web` | `databaseFactory = databaseFactoryFfiWeb;` | `sqlite3.wasm` + `sqflite_sw.js` in `web/`, created by `dart run sqflite_common_ffi_web:setup` |
+| `flutter test`, Dart VM | `sqflite_common_ffi` (dev dependency) | `databaseFactoryFfi` (`databaseFactoryFfiNoIsolate` in `testWidgets`) | bundled |
+
+* The global `openDatabase()` uses the global `databaseFactory`. Set it once
+  in `main()`, before any open, on every platform but Android/iOS/macOS;
+  otherwise `openDatabase` throws `Bad state: databaseFactory not
+  initialized` (also in `flutter test`).
+* One Flutter code base for mobile + desktop + web (dependencies `sqflite`,
+  `sqflite_common_ffi`, `sqflite_common_ffi_web`, `path_provider`, `path`):
+
+  ```dart
+  import 'package:flutter/foundation.dart';
+  import 'package:flutter/widgets.dart';
+  import 'package:path/path.dart';
+  import 'package:path_provider/path_provider.dart';
+  import 'package:sqflite/sqflite.dart';
+  import 'package:sqflite_common_ffi/sqflite_ffi.dart'
+      show databaseFactoryFfi, sqfliteFfiInit;
+  import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+
+  Future<void> main() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    if (kIsWeb) {
+      // Requires `dart run sqflite_common_ffi_web:setup` (files in web/).
+      databaseFactory = databaseFactoryFfiWeb;
+    } else if (defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux) {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+      // The ffi default folder is relative to the current directory.
+      var dir = await getApplicationSupportDirectory();
+      await databaseFactory.setDatabasesPath(join(dir.path, 'databases'));
+    }
+    // Android, iOS and macOS: the sqflite plugin factory is already set.
+    runApp(const SizedBox());
+  }
+  ```
+
+  Check `kIsWeb` first: `dart:io` `Platform` throws on the web. With
+  `sqflite_ffi` instead of `sqflite_common_ffi`, Windows/Linux need no code.
+
+### Where the database is
+
+* A relative path is resolved against `getDatabasesPath()`:
+  * `sqflite` Android: `/data/data/<package>/databases`;
+  * `sqflite` iOS/macOS: the Documents directory (`path_provider`
+    `getLibraryDirectory()` is a better choice on iOS, not user visible);
+  * `sqflite_common_ffi`: `.dart_tool/sqflite_common_ffi/databases` in the
+    current directory, fine for tests only: in a desktop app use
+    `getApplicationSupportDirectory()` (absolute path or
+    `databaseFactory.setDatabasesPath(...)` in `main()`);
+  * `sqflite_common_ffi_web`: `/`, a path is only a name (`'app.db'`), no
+    `path_provider`, no `dart:io`.
+* `openDatabase('app.db', ...)` (relative name) therefore works on every
+  platform once the factory and the databases path are set.
+
 ### Imports and platforms
 
 * `import 'package:sqflite/sqflite.dart';` gives the global functions
@@ -55,11 +122,9 @@ Future<Database> openAppDatabase() async {
   not depend on Flutter should import `package:sqflite_common/sqlite_api.dart`
   and receive a `DatabaseFactory`.
 * Build paths with `join` from `package:path`, never with string
-  concatenation. `getDatabasesPath()` is `data/data/<package>/databases` on
-  Android and the Documents directory on iOS/macOS; on iOS the Library
-  directory from `path_provider` (`getLibraryDirectory()`) is the recommended
-  location instead.
-* The plugin creates the parent directory of a read-write database on open.
+  concatenation (see "Where the database is" above).
+* The plugin (and ffi) creates the parent directory of a read-write database
+  on open.
   When you write the file yourself (asset copy) create the directory first
   with `Directory(dirname(path)).create(recursive: true)`.
 
@@ -69,7 +134,9 @@ Future<Database> openAppDatabase() async {
   order: `onConfigure`, then exactly one of `onCreate` / `onUpgrade` /
   `onDowngrade`, then `onOpen`. Without `version` only `onConfigure` and
   `onOpen` run.
-* `onCreate(db, version)` runs when the file does not exist. `onUpgrade(db,
+* `onCreate(db, version)` runs when the file does not exist (never again:
+  editing `onCreate` alone does not change existing databases, bump
+  `version` and handle it in `onUpgrade`). `onUpgrade(db,
   oldVersion, newVersion)` runs when the stored version is lower than
   `version` (and also instead of `onCreate`, with `oldVersion == 0`, when no
   `onCreate` is given). `onDowngrade` runs when the stored version is higher;
@@ -103,16 +170,22 @@ Future<Database> openAppDatabase() async {
   call. Many apps never close it.
 * `singleInstance: true` (default) returns the same `Database` for the same
   path; a second `openDatabase` on that path returns the existing instance and
-  ignores its callbacks. It is forced to `false` for `inMemoryDatabasePath`
-  (`':memory:'`). Opening the same file twice with `singleInstance: false`
-  causes "database is locked" errors on Android.
+  ignores its callbacks, and `close()` closes it for every holder. This also
+  applies to `inMemoryDatabasePath` (`':memory:'`): while open, a second open
+  returns the same in-memory database (same tables and rows); after
+  `close()`, the next open is a new empty database; `singleInstance: false`
+  gives a private in-memory database at each open. Opening the same file
+  twice with `singleInstance: false` causes "database is locked" errors on
+  Android and throws `ArgumentError` on the web.
 * `rollbackActiveTransactionOnOpen` (`OpenDatabaseOptions`, default: true in
   debug, false in release) rolls back a transaction left open by a previous
   isolate/hot restart when `singleInstance` is true. Keep the default unless
   you deliberately use several isolates.
-* `readOnly: true` (or `openReadOnlyDatabase(path)`) ignores every callback,
-  never starts a transaction and fails on the first write. Use it for shipped
-  asset databases.
+* `readOnly: true` (or `openReadOnlyDatabase(path)`): the file must exist
+  and any write fails (`isReadOnlyError()`). `onConfigure` and `onOpen` still
+  run. Do not pass `version`: if it differs from the file version the
+  migration callback runs and saving the version fails, so the open fails.
+  Use it for shipped asset databases.
 * Delete with `deleteDatabase(path)`, never with `File(path).delete()`: it
   closes the open instance, handles the hot-restart state and removes the
   `-wal`, `-shm` and `-journal` side files.
@@ -239,7 +312,7 @@ Future<Database> openAssetDatabase() async {
       data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
     );
   }
-  // Shipped data: open read-only, no callbacks run.
+  // Shipped data: open read-only, no version.
   return openReadOnlyDatabase(path);
 }
 ```
@@ -255,8 +328,12 @@ Future<void> resetDatabase() async {
   await deleteDatabase(path); // also closes the open instance
 }
 
-Future<Database> openScratchDb() =>
-    openDatabase(inMemoryDatabasePath); // singleInstance is forced to false
+/// Shared while open: a second openDatabase(inMemoryDatabasePath) returns it.
+Future<Database> openScratchDb() => openDatabase(inMemoryDatabasePath);
+
+/// A new private in-memory database at each call.
+Future<Database> openPrivateScratchDb() =>
+    openDatabase(inMemoryDatabasePath, singleInstance: false);
 ```
 
 ### Opening through an explicit factory
@@ -279,6 +356,9 @@ Future<Database> openWith(DatabaseFactory factory, String path) {
 
 ## Common mistakes
 
+* Opening the database in each widget/function instead of once.
+* Not awaiting a call in `onCreate` / `onUpgrade`: `openDatabase` succeeds,
+  the version is saved with a partial schema and the error is uncaught.
 * Calling `db.transaction()` inside `onCreate` / `onUpgrade`: they are already
   in a transaction, use `db` directly or a batch.
 * Creating two tables in one `execute` string. One statement per call.
@@ -293,6 +373,12 @@ Future<Database> openWith(DatabaseFactory factory, String path) {
 * Calling `openDatabase` on Linux/Windows/web without first setting
   `databaseFactory` from `sqflite_common_ffi` / `sqflite_common_ffi_web`
   (`StateError: databaseFactory not initialized`).
+* Forgetting `dart run sqflite_common_ffi_web:setup` on the web (the first
+  call fails, "An error occurred while initializing the web worker").
+* Using `getDatabasesPath()` of ffi (`.dart_tool/...`) in an installed
+  desktop app, or `path_provider` / `dart:io` on the web.
+* Expecting `inMemoryDatabasePath` to give a fresh database while a previous
+  one is still open (single instance).
 
 ## More
 

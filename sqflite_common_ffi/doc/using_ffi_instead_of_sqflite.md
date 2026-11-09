@@ -1,6 +1,6 @@
 # Using sqflite_ffi instead of sqflite
 
-Currently (as of 2020/07/01) sqflite only supports iOS/Android/MacOS. `sqflite_common_ffi` allows supporting Windows and Linux
+sqflite only supports iOS/Android/MacOS. `sqflite_common_ffi` allows supporting Windows and Linux
 on DartVM or flutter.
 
 * [sqflite_common](https://pub.dev/packages/sqflite_common) provides an abstracted [`DatabaseFactory`](https://pub.dev/documentation/sqflite_common/latest/sqlite_api/DatabaseFactory-class.html) that allows another level
@@ -15,7 +15,7 @@ For convenience and targetting only flutter, 3rd party packages (cached_network_
 sqflite implementation uses a global `databaseFactory` that could be replace so that it will bypass the regular sqflite
 plugin implementation.
 
-Simply doing `databaseFactory = databaseFactoryFFi;` should bring Linux and Windows support.
+Simply doing `databaseFactory = databaseFactoryFfi;` (after `sqfliteFfiInit()`) should bring Linux and Windows support.
 
 ## Setup
 
@@ -26,7 +26,7 @@ dependencies:
   sqflite_common_ffi:
 ```
 
-(Only for dart < 3.9.0 and sqlite_common_ffi < 2.4.0) On iOS, Android and MacOS, add
+(Only for dart < 3.9.0 and sqflite_common_ffi < 2.4.0) On iOS, Android and MacOS, add
 ```
 dependencies:
   sqlite3_flutter_libs:
@@ -34,28 +34,44 @@ dependencies:
 
 ## Initialization
 
-Then initialize ffi before running your app:
+Then initialize ffi before running your app. To use ffi on Windows and Linux
+only (and the `sqflite` plugin on iOS, Android and MacOS):
 
 ```dart
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'dart:io';
+
+import 'package:flutter/widgets.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart'
+    show databaseFactoryFfi, sqfliteFfiInit;
 
 Future main() async {
   if (Platform.isWindows || Platform.isLinux) {
     // Initialize FFI
     sqfliteFfiInit();
+    // Change the default factory.
+    databaseFactory = databaseFactoryFfi;
   }
-  // Change the default factory. On iOS/Android, if not using `sqlite_flutter_lib` you can forget
-  // this step, it will use the sqlite version available on the system.
-  databaseFactory = databaseFactoryFfi;
   runApp(MyApp());
 }
 ```
 
+To use ffi on every platform (newer SQLite on iOS/Android/MacOS too), set
+`databaseFactory = databaseFactoryFfi;` without the platform test. For an app
+also running on the web, see
+[one code base for mobile, desktop and web](https://github.com/tekartik/sqflite/blob/master/sqflite/README.md#one-code-base-for-mobile-desktop-and-web)
+(`dart:io` `Platform` cannot be used on the web).
+
 As a side note, `sqfliteFfiInit` is only made to be convenient during development. You can customize the setup (finding/loading the sqlite shared library) by
 following [sqlite3](https://pub.dev/packages/sqlite3) documentation.
 
-As another note, `getDatabasesPath()` has a lame implementation when using ffi. you'd better rely on a custom strategy using package such as `path_provider`.
+As another note, `getDatabasesPath()` returns `.dart_tool/sqflite_common_ffi/databases` in the current directory when using
+ffi. You'd better rely on a custom strategy using package such as `path_provider`, for example:
+
+```dart
+var dir = await getApplicationSupportDirectory();
+await databaseFactory.setDatabasesPath(join(dir.path, 'databases'));
+```
 
 ## Long term planning
 

@@ -1,28 +1,31 @@
 # Unit test
 
-Currently testing using the package `test` or `flutter_test` is not supported. Testing using sqflite requires running
-on a real supported platforms. That's unfortunately an issue for all plugins where mocking cannot easily be done.
+The `sqflite` plugin needs a real Android, iOS or macOS device or simulator: it
+does not run in `flutter test` (`openDatabase` throws `Bad state: databaseFactory
+not initialized`). To run your sqflite code in unit tests, use
+`sqflite_common_ffi`: same API, running SQLite on the desktop (Linux, macOS,
+Windows, also on CI).
 
-Possible alternative (not as good though) are:
-
-## Using flutter_driver
-
-A solution is to use flutter driver. Look at the example app:
-
-```bash
-flutter driver --target=test_driver/main.dart
-```
+To test on the device itself, use integration tests (see below).
 
 ## Using sqflite_common_ffi
 
-This allow running unit tests using the desktop sqlite version installed. Be aware that the sqlite version used could be
-different (and likely more recent).
+This allow running unit tests using the desktop sqlite version bundled by
+`sqflite_common_ffi`. Be aware that the sqlite version used could be different
+(and likely more recent) than the one of the device.
+
+Add it as a dev dependency:
+
+```bash
+flutter pub add dev:sqflite_common_ffi
+```
 
 Simple flutter test example:
 ```dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart'
+    show databaseFactoryFfi, sqfliteFfiInit;
 
 /// Initialize sqflite for test.
 void sqfliteTestInit() {
@@ -54,6 +57,12 @@ Future main() async {
   });
 }
 ```
+
+Close the database at the end of each test: while it is open,
+`openDatabase(inMemoryDatabasePath)` returns the same in-memory database (single
+instance). After a close, the next open gives a new empty database. For file
+databases, call `deleteDatabase(path)` before the test.
+
 More info on [sqflite_common_ffi](https://github.com/tekartik/sqflite/tree/master/sqflite_common_ffi).
 
 ### Writing widget test
@@ -64,7 +73,8 @@ without isolate:
 ```dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart'
+    show databaseFactoryFfiNoIsolate, sqfliteFfiInit;
 
 void main() {
   // Initialize ffi implementation
@@ -89,4 +99,14 @@ void main() {
     await db.close();
   });
 }
+```
+
+## Testing on a device
+
+Use [integration tests](https://docs.flutter.dev/testing/integration-tests)
+to run your code with the `sqflite` plugin on a device or simulator. The
+[example app](../example) of this package runs its tests this way:
+
+```bash
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/sqflite_test.dart
 ```

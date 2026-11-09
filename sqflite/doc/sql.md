@@ -15,7 +15,14 @@ and common pitfalls.
 
 ## Basic usage
 
-All methods run a single SQL statement. Statements separated by `;` are not supported.
+All methods run a single SQL statement. Statements separated by `;` are not supported
+(depending on the platform, only the first one or all of them run).
+
+In SQL, string literals use single quotes (`'my text'`), double quotes are for
+table and column names (`"group"`). The SQLite bundled with `sqflite_common_ffi`
+(desktop, tests) rejects double quoted string literals.
+
+Values should not be put in the SQL string, use parameters (see [Parameters](#parameters)).
 
 ### execute
 
@@ -54,7 +61,7 @@ list.add(<String, Object?>{'name': 'some data'});
 ```
 ```dart
 // This works
-list = List.from(list)
+list = List.of(list);
 list.add(<String, Object?>{'name': 'some data'});
 ```
 
@@ -66,7 +73,7 @@ map['name'] = 'other';
 ```
 ```dart
 // This works
-map = Map.from(map);
+map = Map<String, Object?>.of(map);
 map['name'] = 'other';
 ```
 
@@ -131,14 +138,16 @@ await db.transaction((txn) async {
 
 ## Parameters
 
-When providing a raw SQL statement, you should not attempt to "sanitize" any values. Instead, you
+When providing a raw SQL statement, you should not attempt to "sanitize" any values or to
+put them in the SQL string using string interpolation (`'... WHERE name = \'$name\''`):
+it breaks when the value contains a quote and allows SQL injection. Instead, you
 should use the standard SQLite binding syntax:
 
 ```dart
 // good
-int recordId = await db.rawInsert('INSERT INTO my_table(name, year) VALUES (?, ?)', ['my_name', 2019]);
+var recordId = await db.rawInsert('INSERT INTO my_table(name, year) VALUES (?, ?)', [name, year]);
 // bad
-int recordId = await db.rawInsert("INSERT INTO my_table(name, year) VALUES ('my_name', 2019)");
+var recordId = await db.rawInsert("INSERT INTO my_table(name, year) VALUES ('$name', $year)");
 ```
 
 The `?` character is recognized by SQLite as a placeholder for a value to be inserted.
@@ -146,7 +155,7 @@ The `?` character is recognized by SQLite as a placeholder for a value to be ins
 The number of `?` characters must match the number of arguments. Arguments types must be in the list of 
 [supported types](supported_types.md).
 
-Particulary, lists (expect for blob content) are not supported. A common mistake is to expect to use `IN (?)` and give a list
+Particularly, lists (except for blob content, a `Uint8List`) are not supported. A common mistake is to expect to use `IN (?)` and give a list
 of values. This does not work. Instead you should list each argument one by one:
 
 ```dart
@@ -214,11 +223,11 @@ SQLite has a [`sqlite_master`](https://www.sqlite.org/faq.html#q7) table that st
 
 ```dart
 Future<bool> tableExists(DatabaseExecutor db, String table) async {
-  var count = firstIntValue(await db.query('sqlite_master',
+  var count = Sqflite.firstIntValue(await db.query('sqlite_master',
       columns: ['COUNT(*)'],
       where: 'type = ? AND name = ?',
       whereArgs: ['table', table]));
-  return count > 0;
+  return (count ?? 0) > 0;
 }
 ```
 

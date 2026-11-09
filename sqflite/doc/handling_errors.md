@@ -42,8 +42,7 @@ For example if we perform the following SQL query if no table exists yet:
 
 ```dart
 await db.query('Test');
-// iOS: Error Domain=FMDatabase Code=19 "UNIQUE constraint failed: Test.name" UserInfo={NSLocalizedDescription=UNIQUE constraint failed: Test.name})
-// Android: UNIQUE constraint failed: Test.name (code 2067))
+// Throws a DatabaseException, its message contains: no such table: Test
 ```
 
 This could be caught this way
@@ -65,7 +64,7 @@ One personal strategy is to avoid exceptions as much as possible. If any error o
 error (SQL commands malformed, invalid input), an error will be logged and it 
 will cancel the current transaction; good for testing and reproduce.
 
-Most errors could be avoided however you might have indecies and a `isUniqueContraintError` could be thrown. Here as well you could decide to avoid the potential error by
+Most errors could be avoided however you might have indices and a `isUniqueConstraintError` could be thrown. Here as well you could decide to avoid the potential error by
 reading data first and writing updates, everything in a transaction.
 
 ```dart
@@ -108,21 +107,23 @@ await upsertRecord(product);
 or you could try to insert and handle a constraint error:
 
 ```dart
-Future _update(Product product) async {
+Future<void> _update(Product product) async {
   await db.update('Product', product.toMap(),
       where: 'id = ?', whereArgs: [product.id]);
 }
 
-Future< _insert(Product product) async {
+Future<void> _insert(Product product) async {
   await db.insert('Product', product.toMap()..['id'] = product.id);
 }
 
-Future upsertRecord(Product product) async {
+Future<void> upsertRecord(Product product) async {
   try {
     await _insert(product);
   } on DatabaseException catch (e) {
     if (e.isUniqueConstraintError()) {
       await _update(product);
+    } else {
+      rethrow;
     }
   }
 }

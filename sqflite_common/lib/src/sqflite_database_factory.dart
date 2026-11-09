@@ -26,7 +26,17 @@ set databaseFactoryOrNull(DatabaseFactory? databaseFactory) {
   }
 }
 
-/// sqflite Default factory.
+/// sqflite Default factory, used by the global `openDatabase()`,
+/// `deleteDatabase()`, `getDatabasesPath()`...
+///
+/// It is set by the `sqflite` plugin on Android, iOS and macOS (and by the
+/// `sqflite_ffi` plugin). Otherwise set it once, in `main()`, before opening
+/// a database:
+/// * Windows, Linux, Dart VM, unit tests (`sqflite_common_ffi`):
+///   `sqfliteFfiInit(); databaseFactory = databaseFactoryFfi;`
+/// * Web (`sqflite_common_ffi_web`): `databaseFactory = databaseFactoryFfiWeb;`
+///
+/// Throws a [StateError] (`databaseFactory not initialized`) when not set.
 DatabaseFactory get databaseFactory =>
     _databaseFactory ??
     () {

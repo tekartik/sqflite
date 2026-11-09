@@ -6,7 +6,7 @@ sqlite3 v3 (imported since sqflite_common_ffi 2.4.0+) depends on hooks which can
 Until these issues are resolved, you can simply add the following constraint to continue using sqlite3 v2
 
 ```yaml
-dependencives:
+dependencies:
   sqlite3: ^2.9.4
   sqflite_common_ffi: ^2.3.7
 ```

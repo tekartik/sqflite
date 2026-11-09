@@ -14,10 +14,12 @@ description: >-
 # sqflite: tests, other platforms and debugging
 
 The `sqflite` plugin itself only runs on an Android, iOS or macOS device or
-simulator: `flutter test` has no native SQLite, so `openDatabase` throws
-`MissingPluginException`. Every sqflite API is routed through the global
-`databaseFactory`; point it at another implementation and the rest of the
-code (`openDatabase`, `Database`, `Transaction`, `Batch`) is unchanged.
+simulator: in `flutter test` no factory is registered, so the global
+`openDatabase` throws `Bad state: databaseFactory not initialized` (and the
+plugin factory itself `MissingPluginException`). Every sqflite API is routed
+through the global `databaseFactory`; point it at another implementation and
+the rest of the code (`openDatabase`, `Database`, `Transaction`, `Batch`) is
+unchanged.
 
 ```dart
 // test/db_test.dart
@@ -64,9 +66,13 @@ void main() {
   databaseFactoryFfiWeb` (setup of the worker/wasm binaries is described in
   that package's own skill/README).
 * One `main()` can select the factory at runtime: `kIsWeb` first, then
-  `Platform.isWindows || Platform.isLinux`, otherwise leave the sqflite
-  default. Set `databaseFactory` once, before any `openDatabase`, and before
-  `runApp`. Setting it twice prints a warning.
+  `defaultTargetPlatform` (or `Platform.isWindows || Platform.isLinux`)
+  windows/linux, otherwise leave the sqflite default. Set `databaseFactory`
+  once, before any `openDatabase`, and before `runApp`. Setting it twice
+  prints a warning. On Windows/Linux also set a real databases folder
+  (`databaseFactory.setDatabasesPath(join((await
+  getApplicationSupportDirectory()).path, 'databases'))`): the ffi default is
+  `.dart_tool/sqflite_common_ffi/databases` in the current directory.
 * `databaseFactory` throws `StateError('databaseFactory not initialized')`
   when read before an implementation registered; `databaseFactoryOrNull` is
   the nullable getter.
@@ -79,9 +85,11 @@ void main() {
   `DatabaseFactory` (or an already open `Database`) and open with
   `factory.openDatabase(path, options: OpenDatabaseOptions(...))`. Tests pass
   `databaseFactoryFfi`, the app passes `databaseFactory`.
-* Use `inMemoryDatabasePath` for fast, isolated tests (no file, no
-  single-instance sharing). To test file behaviour use a temp directory and
-  `factory.deleteDatabase(path)` in `setUp`.
+* Use `inMemoryDatabasePath` for fast tests (no file). It is a single
+  instance like any path: while open, another `openDatabase(inMemoryDatabasePath)`
+  returns the same database, so `close()` it at the end of each test (or
+  pass `singleInstance: false` for a private one). To test file behaviour use
+  a temp directory and `factory.deleteDatabase(path)` in `setUp`.
 * `factory.sandbox(path: dir)` returns a factory confined to `dir`, handy to
   keep a test's databases apart from the app's.
 * Run migration tests by opening at `version: 1`, closing, then reopening at
@@ -225,9 +233,7 @@ void main() {
 ### Selecting the factory per platform in main()
 
 ```dart
-import 'dart:io';
-
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 // sqflite_ffi.dart already exports databaseFactory; the sqflite plugin
 // registers itself on Android/iOS/macOS without any import.
@@ -237,8 +243,10 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
+    // Requires `dart run sqflite_common_ffi_web:setup` (files in web/).
     databaseFactory = databaseFactoryFfiWeb;
-  } else if (Platform.isWindows || Platform.isLinux) {
+  } else if (defaultTargetPlatform == TargetPlatform.windows ||
+      defaultTargetPlatform == TargetPlatform.linux) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
@@ -251,6 +259,7 @@ Future<void> main() async {
 
 ```dart
 import 'package:sqflite/sqflite.dart';
+// sqflite_common must be a direct dependency for this import.
 import 'package:sqflite_common/sqflite_logger.dart';
 
 void enableSqlLogs() {
@@ -324,8 +333,9 @@ void main() {
 
 ## Common mistakes
 
-* Running `flutter test` against the plugin factory and getting
-  `MissingPluginException`: set `databaseFactory = databaseFactoryFfi`.
+* Running `flutter test` without a factory and getting `databaseFactory not
+  initialized` (or `MissingPluginException` with the plugin factory): set
+  `databaseFactory = databaseFactoryFfi`.
 * Forgetting `sqfliteFfiInit()` before using `databaseFactoryFfi` on Windows
   or Linux.
 * Using `databaseFactoryFfi` (isolate) in `testWidgets`; use
@@ -334,8 +344,9 @@ void main() {
   in a library rather than in the app's `main()`.
 * Leaving `debugQuickLoggerWrapper()` / `debugSetLogLevel` in production
   code; they are deprecated so the analyzer flags them.
-* Reusing an in-memory path between tests and expecting shared state: each
-  `openDatabase(inMemoryDatabasePath)` is a new empty database.
+* Not closing an in-memory database between tests: the next
+  `openDatabase(inMemoryDatabasePath)` returns the same database with the
+  previous test's tables. After `close()` it is a new empty database.
 
 ## More
 

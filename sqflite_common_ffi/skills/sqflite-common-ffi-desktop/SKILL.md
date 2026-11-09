@@ -44,7 +44,7 @@ skills (`sqflite-open-database`, `sqflite-crud-and-transactions`,
 
 ### Dependency and import
 
-* Add `sqflite_common_ffi: ^2.4.2` to `dependencies` (or `dev_dependencies`
+* Add `sqflite_common_ffi: ^2.4.5` to `dependencies` (or `dev_dependencies`
   when it is only used by tests). It requires Dart 3.12 and `sqlite3 >= 3`.
 * Import `package:sqflite_common_ffi/sqflite_ffi.dart`. It re-exports
   `package:sqflite_common/sqflite.dart`, so `Database`, `DatabaseFactory`,
@@ -96,8 +96,11 @@ skills (`sqflite-open-database`, `sqflite-crud-and-transactions`,
 
 ### Paths
 
-* `inMemoryDatabasePath` (`:memory:`) opens a private in-memory database.
-  After `close()` the data is gone.
+* `inMemoryDatabasePath` (`:memory:`) opens an in-memory database. Like any
+  path it is a single instance by default: while open, another
+  `openDatabase(inMemoryDatabasePath)` on the same factory returns the same
+  database; after `close()` the data is gone and the next open is empty.
+  `OpenDatabaseOptions(singleInstance: false)` gives a private one.
 * A relative path is joined with `getDatabasesPath()`, which for ffi is
   `<current directory>/.dart_tool/sqflite_common_ffi/databases`. This is fine
   for scripts and tests, not for an installed application: build an absolute

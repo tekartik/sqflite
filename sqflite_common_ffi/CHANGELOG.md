@@ -1,5 +1,7 @@
-## 2.4.5
+## 2.4.5+1
 
+* Doc: README (SQLite bundled by the build hooks), example, encryption with the
+  sqlite3mc/sqlcipher hooks, dartdoc
 * Remove the database tracker (hot restart workaround). With a SQLite built with
   shared cache (e.g. `source: system` on Linux), each new sqflite isolate closed the
   live connections of the other ones, which then failed with `SqliteException(21)`

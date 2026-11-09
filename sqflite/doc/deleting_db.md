@@ -1,13 +1,13 @@
 # Deleting a database
 
-While you might be enclined to simply delete the file, you should however use
+While you might be inclined to simply delete the file, you should however use
 `deleteDatabase` to properly delete a database.
 
 ```dart
-# Do not call File.delete, it will not work in a hot restart scenario
+// Do not call File.delete, it will not work in a hot restart scenario
 await File(path).delete();
 
-# Instead do
+// Instead do
 await deleteDatabase(path);
 ```
 

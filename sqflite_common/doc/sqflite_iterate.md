@@ -1,11 +1,14 @@
 # Sqflite - Iterate
 
-The `iterate` method lets you walk over records one at a time using a cursor. Unlike `query`, which loads all matching records into memory, `iterate` processes each record in the callback as the cursor advances — making it efficient for large datasets.
+The `queryIterate` method lets you walk over records one at a time using a cursor. Unlike `query`, which loads all matching records into memory, `queryIterate` processes each record in the callback as the cursor advances — making it efficient for large datasets.
+
+`queryIterate` and `rawQueryIterate` are extension methods (`SqfliteDatabaseExecutorIterateExt`) available on a `Database`
+and on a `Transaction`.
 
 ## Table iterate
 
 ```dart
-await db.iterate('Test', orderBy: 'id', onRow: (row) {
+await db.queryIterate('Test', orderBy: 'id', onRow: (row) {
   // process row ...
   return true; // return false to stop early
 });
@@ -15,7 +18,7 @@ The `onRow` callback receives a `Map<String, Object?>` representing the current 
 
 ### Parameters
 
-The parameters for `iterate` are identical to the `query` method, with the addition of `onRow` and an optional `bufferSize`:
+The parameters for `queryIterate` are identical to the `query` method, with the addition of `onRow` and an optional `bufferSize`:
 
 - `table`: The table name.
 - `distinct`: True if each row should be unique.
@@ -32,10 +35,10 @@ The parameters for `iterate` are identical to the `query` method, with the addit
 
 ## Raw iterate
 
-For raw SQL queries, use `rawIterate`:
+For raw SQL queries, use `rawQueryIterate` (the arguments are required, pass `null` if there are none):
 
 ```dart
-await db.rawIterate('SELECT * FROM Test WHERE value > ?', [10], onRow: (row) {
+await db.rawQueryIterate('SELECT * FROM Test WHERE value > ?', [10], onRow: (row) {
   // process row ...
   return true;
 });
@@ -45,7 +48,7 @@ await db.rawIterate('SELECT * FROM Test WHERE value > ?', [10], onRow: (row) {
 
 ```dart
 var found = false;
-await db.iterate('Test', onRow: (row) async {
+await db.queryIterate('Test', onRow: (row) async {
   if (row['id'] == expectedId) {
     found = true;
     return false; // stop after the first match
@@ -56,11 +59,11 @@ await db.iterate('Test', onRow: (row) async {
 
 ### Iterating inside an existing transaction
 
-You can call `iterate` or `rawIterate` on a transaction object just like on a database object.
+You can call `queryIterate` or `rawQueryIterate` on a transaction object just like on a database object.
 
 ```dart
 await db.transaction((txn) async {
-  await txn.iterate('Test', onRow: (row) async {
+  await txn.queryIterate('Test', onRow: (row) async {
     // process row within transaction ...
     return true;
   });
@@ -71,4 +74,5 @@ await db.transaction((txn) async {
 
 - Return `true` to continue, `false` to stop early.
 - Cursors are automatically closed when iteration completes or is stopped early.
-- For simple queries that fit in memory, `query` is often simpler. Use `iterate` for large datasets to keep memory usage low.
+- For simple queries that fit in memory, `query` is often simpler. Use `queryIterate` for large datasets to keep memory usage low.
+- For the same thing with a cursor you manage yourself, see `queryCursor` / `rawQueryCursor` (call `cursor.close()` in a `finally`).

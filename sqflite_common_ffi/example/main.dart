@@ -3,22 +3,46 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 Future main() async {
-  // Init ffi loader if needed.
+  // Init ffi (Windows specific setup, no-op on other platforms).
   sqfliteFfiInit();
 
-  var databaseFactory = databaseFactoryFfi;
-  var db = await databaseFactory.openDatabase(inMemoryDatabasePath);
-  await db.execute('''
+  var factory = databaseFactoryFfi;
+  // In memory database, see persistent_example.dart for a database file.
+  var db = await factory.openDatabase(
+    inMemoryDatabasePath,
+    options: OpenDatabaseOptions(
+      version: 1,
+      onCreate: (db, version) async {
+        await db.execute('''
   CREATE TABLE Product (
       id INTEGER PRIMARY KEY,
-      title TEXT
+      title TEXT NOT NULL
   )
   ''');
-  await db.insert('Product', <String, Object?>{'title': 'Product 1'});
-  await db.insert('Product', <String, Object?>{'title': 'Product 1'});
+      },
+    ),
+  );
+  // Insert
+  var id = await db.insert('Product', <String, Object?>{'title': 'Product 1'});
+  await db.insert('Product', <String, Object?>{'title': 'Product 2'});
 
-  var result = await db.query('Product');
+  // Update
+  await db.update(
+    'Product',
+    {'title': 'Product 1 updated'},
+    where: 'id = ?',
+    whereArgs: [id],
+  );
+
+  // Query
+  var result = await db.query('Product', orderBy: 'id');
   print(result);
-  // prints [{id: 1, title: Product 1}, {id: 2, title: Product 1}]
+  // prints [{id: 1, title: Product 1 updated}, {id: 2, title: Product 2}]
+
+  // Delete
+  await db.delete('Product', where: 'id = ?', whereArgs: [id]);
+  print(await db.query('Product'));
+  // prints [{id: 2, title: Product 2}]
+
   await db.close();
 }

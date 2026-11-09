@@ -25,9 +25,10 @@ And check the available SQLite version on the platform you are targeting.
 
 You could get a more recent version using [`sqflite_common_ffi`](https://pub.dev/packages/sqflite_common_ffi).
 
-sqlite_common_ffi post 2.4.0: sqlite3 generates sqlite libs.
+`sqflite_common_ffi` 2.4.0 and later: [`sqlite3`](https://pub.dev/packages/sqlite3) 3.x bundles a recent SQLite
+with your application on every platform (build hooks), nothing else to add.
 
-sqlite_common_ffi pre 2.4.0: You could then add [`sqlite3_flutter_libs`](https://pub.dev/packages/sqlite3_flutter_libs) for ios/android or include your own
+`sqflite_common_ffi` before 2.4.0: You could then add [`sqlite3_flutter_libs`](https://pub.dev/packages/sqlite3_flutter_libs) for ios/android or include your own
 sqlite shared library for desktop or mobile (one for each platform).
 
 ## Android

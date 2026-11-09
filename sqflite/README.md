@@ -2,39 +2,170 @@
 
 [![pub package](https://img.shields.io/pub/v/sqflite.svg)](https://pub.dev/packages/sqflite)
 
-SQLite plugin for [Flutter](https://flutter.io).
-Supports iOS, Android and MacOS.
+SQLite plugin for [Flutter](https://flutter.dev). Supports iOS, Android and macOS.
+The same API also runs on Windows, Linux, the Dart VM, unit tests and the web
+through companion packages (see the table below).
 
 * Support transactions and batches
-* Automatic version managment during open
+* Automatic version management during open
 * Helpers for insert/query/update/delete queries
-* DB operation executed in a background thread on iOS and Android
+* DB operation executed in a background thread on iOS, Android and macOS
 
-Other platforms support:
-* Linux/Windows/DartVM support using [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi)
-* Experimental Web support using [sqflite_common_ffi_web](https://pub.dev/packages/sqflite_common_ffi_web).
-
-Usage example: 
+Usage example:
 * [notepad_sqflite](https://github.com/alextekartik/flutter_app_example/tree/master/notepad_sqflite): Simple flutter notepad working on iOS/Android/Windows/linux/Mac
 
 ## Getting Started
 
-To get started, you need to add `sqflite` to your project. Follow the steps below:
+### Which package for which platform
 
-1. Open the terminal in your project root. You can do this by pressing `Alt+F12` in Android Studio or `` Ctrl+` `` in VS Code.
+| Platform | Package | Factory | SQLite library |
+|---|---|---|---|
+| Android, iOS, macOS | `sqflite` | set by the plugin, nothing to do | the one of the OS (version depends on the OS version) |
+| Windows, Linux (and macOS without the plugin) | [`sqflite_common_ffi`](https://pub.dev/packages/sqflite_common_ffi) (or [`sqflite_ffi`](https://pub.dev/packages/sqflite_ffi) in Flutter) | `databaseFactoryFfi` after `sqfliteFfiInit()` | bundled by `package:sqlite3` build hooks, nothing to install |
+| Web (experimental, see [limits](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/web_support.md#limits)) | [`sqflite_common_ffi_web`](https://pub.dev/packages/sqflite_common_ffi_web) | `databaseFactoryFfiWeb` | `sqlite3.wasm` and a worker, copied in `web/` by `dart run sqflite_common_ffi_web:setup` |
+| Unit tests (`flutter test`, Dart VM) | `sqflite_common_ffi` (dev dependency) | `databaseFactoryFfi` (`databaseFactoryFfiNoIsolate` in `testWidgets`) | bundled |
 
-2. Run the following command:
+Every package uses the same API (`openDatabase`, `Database`, `Transaction`,
+`Batch`...). The global `openDatabase()` uses the global `databaseFactory`:
+`sqflite` sets it on Android, iOS and macOS. On other platforms, set it once in
+`main()` before opening a database, for example `databaseFactory = databaseFactoryFfi;`.
+Details: [desktop](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/desktop_support.md),
+[web](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/web_support.md),
+[unit tests](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/testing.md).
+
+### Add the dependency
 
 ```bash
-flutter pub add sqflite
+flutter pub add sqflite path
 ```
 
-This command will add a line to your package's `pubspec.yaml` file and run an implicit `flutter pub get`. The added line will look like this:
+### Open, read, write, close
 
-```yaml
-dependencies:
-  sqflite: 
+A database is a file identified by a path. `getDatabasesPath()` gives the
+default folder: `/data/data/<package>/databases` on Android, the Documents
+directory on iOS and macOS. A relative path is relative to this folder.
+Its parent directory is created when opening.
+
+Open the database once (at startup or on first use) with a `version` and an
+`onCreate` callback that creates the tables, then keep the `Database` object.
+
+```dart
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
+/// Opens the database. Call it once and keep the result.
+Future<Database> openAppDatabase() async {
+  // Android: /data/data/<package>/databases, iOS and macOS: Documents.
+  var path = join(await getDatabasesPath(), 'app.db');
+  return openDatabase(
+    path,
+    // Increment the version (and handle it in onUpgrade) on schema changes.
+    version: 1,
+    onCreate: (db, version) async {
+      await db.execute(
+        'CREATE TABLE Todo (id INTEGER PRIMARY KEY, title TEXT NOT NULL, '
+        'done INTEGER NOT NULL)',
+      );
+    },
+  );
+}
+
+Future<void> todoDemo() async {
+  var db = await openAppDatabase();
+
+  // Create
+  var id = await db.insert('Todo', {'title': 'Buy milk', 'done': 0});
+  // Read
+  var rows = await db.query('Todo', where: 'done = ?', whereArgs: [0]);
+  print(rows); // [{id: 1, title: Buy milk, done: 0}]
+  // Update
+  await db.update('Todo', {'done': 1}, where: 'id = ?', whereArgs: [id]);
+  // Delete
+  await db.delete('Todo', where: 'id = ?', whereArgs: [id]);
+
+  // Optional: many apps keep the database open until they exit.
+  await db.close();
+}
 ```
+
+To change the schema later, increment `version` and add an `onUpgrade` callback,
+see [opening a database](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/opening_db.md)
+and the [migration example](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/migration_example.md).
+
+### One code base for mobile, desktop and web
+
+Add `sqflite_common_ffi`, `sqflite_common_ffi_web` and `path_provider`, run
+`dart run sqflite_common_ffi_web:setup` once for the web, then select the factory
+in `main()`:
+
+```dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart'
+    show databaseFactoryFfi, sqfliteFfiInit;
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    // Requires `dart run sqflite_common_ffi_web:setup` (files in web/).
+    databaseFactory = databaseFactoryFfiWeb;
+  } else if (defaultTargetPlatform == TargetPlatform.windows ||
+      defaultTargetPlatform == TargetPlatform.linux) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+    // The ffi default folder is relative to the current directory,
+    // use the application support directory instead.
+    var dir = await getApplicationSupportDirectory();
+    await databaseFactory.setDatabasesPath(join(dir.path, 'databases'));
+  }
+  // Android, iOS and macOS: the sqflite plugin factory is already set.
+
+  runApp(const MyApp());
+}
+```
+
+The rest of the code (`openDatabase`, queries) stays the same. On the web the
+path is only a name in the browser storage (IndexedDB).
+
+## Common pitfalls
+
+* **Open the database once.** Keep the `Database` (or the `Future<Database>`)
+  in a single place. With the default `singleInstance: true`, opening the same
+  path again returns the same instance and ignores the new callbacks; closing it
+  closes it for every caller.
+* **Await every call.** A call that is not awaited in `onCreate` does not make
+  `openDatabase` fail: the version is saved with a partial schema and the error
+  is uncaught.
+* **Use `txn`, not `db`, in a transaction.** Calling `db` inside
+  `db.transaction((txn) async {...})` deadlocks (a warning is printed after 10
+  seconds). `onCreate`, `onUpgrade` and `onDowngrade` already run in a
+  transaction: use their `db` directly.
+* **A schema change needs a version bump.** `onCreate` only runs when the
+  database does not exist. Increment `version` and handle the change in
+  `onUpgrade` for existing installs.
+* **Supported types are `int`, `num`, `String`, `Uint8List` and `null`.** Store
+  a `bool` as `0`/`1` and a `DateTime` as an `int` (`millisecondsSinceEpoch`) or
+  a `String` (`toIso8601String()`). A blob must be a `Uint8List`, not a
+  `List<int>`. See [supported types](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/supported_types.md).
+* **Pass values as arguments.** Use `?` with `whereArgs` or the `arguments` of
+  the raw methods, never string interpolation (`'... WHERE name = $name'`), which
+  breaks on quotes and allows SQL injection. In SQL, string literals use single
+  quotes (`'text'`); double quotes are for table and column names.
+* **One statement per call.** `execute('CREATE TABLE A ...; CREATE TABLE B ...')`
+  is not portable, use two calls or a batch.
+* **A batch does nothing until `await batch.commit()`.** Inside a transaction,
+  create it with `txn.batch()`.
+* **Query results are read-only.** Copy a row with `Map<String, Object?>.from(row)`
+  before modifying it.
+* **Set the factory on desktop, web and in tests.** Otherwise `openDatabase`
+  throws `databaseFactory not initialized`. On the web, also run
+  `dart run sqflite_common_ffi_web:setup`.
+* **Delete with `deleteDatabase(path)`**, not `File(path).delete()`, so that an
+  open instance is closed first.
 
 ## Usage example
 
@@ -44,82 +175,74 @@ Import `sqflite.dart`
 import 'package:sqflite/sqflite.dart';
 ```
 
-### Opening a database
-
-A SQLite database is a file in the file system identified by a path. If relative, this path is relative to the path
-obtained by `getDatabasesPath()`, which is the default database directory on Android and the documents directory on iOS/MacOS.
-
-```dart
-var db = await openDatabase('my_db.db');
-```
-
-There is a basic migration mechanism to handle schema changes during opening.
-
-Many applications use one database and would never need to close it (it will be closed when the application is
-terminated). If you want to release resources, you can close the database.
-
-```dart
-await db.close();
-```
-
+Opening a database, its callbacks and migrations:
 * See [more information on opening a database](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/opening_db.md).
 * Full [migration example](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/migration_example.md)
 
 ### Raw SQL queries
-    
+
 Demo code to perform Raw SQL queries
 
 ```dart
 // Get a location using getDatabasesPath
 var databasesPath = await getDatabasesPath();
-String path = join(databasesPath, 'demo.db');
+var path = join(databasesPath, 'demo.db');
 
 // Delete the database
 await deleteDatabase(path);
 
 // open the database
-Database database = await openDatabase(path, version: 1,
-    onCreate: (Database db, int version) async {
-  // When creating the db, create the table
-  await db.execute(
-      'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
-});
+var database = await openDatabase(
+  path,
+  version: 1,
+  onCreate: (Database db, int version) async {
+    // When creating the db, create the table
+    await db.execute(
+      'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)',
+    );
+  },
+);
 
 // Insert some records in a transaction
 await database.transaction((txn) async {
-  int id1 = await txn.rawInsert(
-      'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
+  // String literals use single quotes in SQL
+  var id1 = await txn.rawInsert(
+    "INSERT INTO Test(name, value, num) VALUES('some name', 1234, 456.789)",
+  );
   print('inserted1: $id1');
-  int id2 = await txn.rawInsert(
-      'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
-      ['another name', 12345678, 3.1416]);
+  // Prefer arguments (?) to put values in a statement
+  var id2 = await txn.rawInsert(
+    'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
+    ['another name', 12345678, 3.1416],
+  );
   print('inserted2: $id2');
 });
 
 // Update some record
-int count = await database.rawUpdate(
-    'UPDATE Test SET name = ?, value = ? WHERE name = ?',
-    ['updated name', '9876', 'some name']);
+var count = await database.rawUpdate(
+  'UPDATE Test SET name = ?, value = ? WHERE name = ?',
+  ['updated name', 9876, 'some name'],
+);
 print('updated: $count');
 
 // Get the records
-List<Map> list = await database.rawQuery('SELECT * FROM Test');
-List<Map> expectedList = [
-  {'name': 'updated name', 'id': 1, 'value': 9876, 'num': 456.789},
-  {'name': 'another name', 'id': 2, 'value': 12345678, 'num': 3.1416}
-];
+var list = await database.rawQuery('SELECT * FROM Test');
 print(list);
-print(expectedList);
-assert(const DeepCollectionEquality().equals(list, expectedList));
+// [{id: 1, name: updated name, value: 9876, num: 456.789},
+//  {id: 2, name: another name, value: 12345678, num: 3.1416}]
 
 // Count the records
-count = Sqflite
-    .firstIntValue(await database.rawQuery('SELECT COUNT(*) FROM Test'));
+count =
+    Sqflite.firstIntValue(
+      await database.rawQuery('SELECT COUNT(*) FROM Test'),
+    ) ??
+    0;
 assert(count == 2);
 
 // Delete a record
-count = await database
-    .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
+count = await database.rawDelete('DELETE FROM Test WHERE name = ?', [
+  'another name',
+]);
 assert(count == 1);
 
 // Close the database
@@ -133,49 +256,52 @@ Basic information on SQL [here](https://github.com/tekartik/sqflite/blob/master/
 Example using the helpers
 
 ```dart
-final String tableTodo = 'todo';
-final String columnId = '_id';
-final String columnTitle = 'title';
-final String columnDone = 'done';
+const String tableTodo = 'todo';
+const String columnId = '_id';
+const String columnTitle = 'title';
+const String columnDone = 'done';
 
 class Todo {
-  int id;
+  Todo({this.id, required this.title, this.done = false});
+
+  Todo.fromMap(Map<String, Object?> map)
+    : id = map[columnId] as int?,
+      title = map[columnTitle] as String,
+      done = map[columnDone] == 1;
+
+  int? id;
   String title;
   bool done;
 
   Map<String, Object?> toMap() {
     var map = <String, Object?>{
       columnTitle: title,
-      columnDone: done == true ? 1 : 0
+      // bool is not a SQLite type, store 0 or 1
+      columnDone: done ? 1 : 0,
     };
     if (id != null) {
       map[columnId] = id;
     }
     return map;
   }
-
-  Todo();
-
-  Todo.fromMap(Map<String, Object?> map) {
-    id = map[columnId];
-    title = map[columnTitle];
-    done = map[columnDone] == 1;
-  }
 }
 
 class TodoProvider {
-  Database db;
+  late Database db;
 
-  Future open(String path) async {
-    db = await openDatabase(path, version: 1,
-        onCreate: (Database db, int version) async {
-      await db.execute('''
-create table $tableTodo ( 
-  $columnId integer primary key autoincrement, 
+  Future<void> open(String path) async {
+    db = await openDatabase(
+      path,
+      version: 1,
+      onCreate: (Database db, int version) async {
+        await db.execute('''
+create table $tableTodo (
+  $columnId integer primary key autoincrement,
   $columnTitle text not null,
   $columnDone integer not null)
 ''');
-    });
+      },
+    );
   }
 
   Future<Todo> insert(Todo todo) async {
@@ -183,12 +309,14 @@ create table $tableTodo (
     return todo;
   }
 
-  Future<Todo> getTodo(int id) async {
-    List<Map> maps = await db.query(tableTodo,
-        columns: [columnId, columnDone, columnTitle],
-        where: '$columnId = ?',
-        whereArgs: [id]);
-    if (maps.length > 0) {
+  Future<Todo?> getTodo(int id) async {
+    var maps = await db.query(
+      tableTodo,
+      columns: [columnId, columnDone, columnTitle],
+      where: '$columnId = ?',
+      whereArgs: [id],
+    );
+    if (maps.isNotEmpty) {
       return Todo.fromMap(maps.first);
     }
     return null;
@@ -199,11 +327,15 @@ create table $tableTodo (
   }
 
   Future<int> update(Todo todo) async {
-    return await db.update(tableTodo, todo.toMap(),
-        where: '$columnId = ?', whereArgs: [todo.id]);
+    return await db.update(
+      tableTodo,
+      todo.toMap(),
+      where: '$columnId = ?',
+      whereArgs: [todo.id],
+    );
   }
 
-  Future close() async => db.close();
+  Future<void> close() async => db.close();
 }
 ```
 
@@ -259,7 +391,7 @@ try {
       await txn.update('TABLE', {'foo': 'bar'});
    });
    // No error, the transaction is committed
-} catch (e, st) {
+} catch (e) {
    // this reliably catch if there is a key conflict
    // We know that the transaction is rolled back.
 }
@@ -270,7 +402,7 @@ try {
     // cancel the transaction (any error will do)
     throw StateError('cancel transaction');
   });
-} catch (e, st) {
+} catch (e) {
   // We know that the transaction is rolled back.
 }
 ```
@@ -281,9 +413,8 @@ await database.transaction((txn) async {
   // ...
   try {
     await txn.update('TABLE', {'foo': 'bar'});
-  } catch (e, st) {
-   // this reliably catch if there is a key conflict
-   // We know that the transaction is rolled back.
+  } catch (e) {
+    // The failed update is not applied, the transaction goes on.
   }
   // ...
   // The transaction will be committed
@@ -294,11 +425,11 @@ await database.transaction((txn) async {
 To avoid ping-pong between dart and native code, you can use `Batch`:
 
 ```dart
-batch = db.batch();
+var batch = db.batch();
 batch.insert('Test', {'name': 'item'});
 batch.update('Test', {'name': 'new_item'}, where: 'name = ?', whereArgs: ['item']);
 batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
-results = await batch.commit();
+var results = await batch.commit();
 ```
 
 Getting the result for each operation has a cost (id for insertion and number of changes for
@@ -326,7 +457,7 @@ await database.transaction((txn) async {
 ```
 
 By default a batch stops as soon as it encounters an error (which typically reverts the uncommitted changes). You 
-can ignore errors so that every successfull operation is ran and committed even if one operation fails:
+can ignore errors so that every successful operation is ran and committed even if one operation fails:
 
 ```dart
 await batch.commit(continueOnError: true);
@@ -355,36 +486,22 @@ properly using double quote. For example see below where the column name `group`
 argument, but is escaped in the `where` argument.
 
 ```dart
-db.query('table', columns: ['group'], where: '"group" = ?', whereArgs: ['my_group']);
+db.query('table', columns: ['group'], where: '"group" = ?', whereArgs: ['my_group']);
 ```
 
 ## Supported SQLite types
 
-No validity check is done on values yet so please avoid non supported types [https://www.sqlite.org/datatype3.html](https://www.sqlite.org/datatype3.html)
+| SQLite type | Dart type |
+|---|---|
+| `INTEGER` | `int` (from -2^63 to 2^63 - 1) |
+| `REAL` | `num` |
+| `TEXT` | `String` |
+| `BLOB` | `Uint8List` |
 
-`DateTime` is not a supported SQLite type. Personally I store them as 
-int (millisSinceEpoch) or string (iso8601)
-
-`bool` is not a supported SQLite type. Use `INTEGER` and 0 and 1 values.
-
-More information on supported types [here](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/supported_types.md).
-
-### INTEGER
-
-* Dart type: `int`
-* Supported values: from -2^63 to 2^63 - 1
-
-### REAL
-
-* Dart type: `num`
-
-### TEXT
-
-* Dart type: `String`
-
-### BLOB
-
-* Dart type: `Uint8List`
+`DateTime` and `bool` are not SQLite types: store a `DateTime` as an `int`
+(`millisecondsSinceEpoch`) or a `String` (`toIso8601String()`), a `bool` as
+`INTEGER` 0 or 1. See [supported types](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/supported_types.md)
+and the [SQLite documentation](https://www.sqlite.org/datatype3.html).
 
 ## Current issues
 
@@ -400,4 +517,6 @@ thread is blocked while in a transaction...
 * [Notes about Desktop support](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/desktop_support.md)
 * [Notes about Encryption support](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/encryption_support.md)
 * [Notes about Web support](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/web_support.md)
+* [Unit testing](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/testing.md)
 * [Notes about SQLite versions](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/version.md) as some features may not be available depending on the SQLite version.
+* [Troubleshooting](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/troubleshooting.md)

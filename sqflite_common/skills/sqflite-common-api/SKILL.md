@@ -106,7 +106,17 @@ class NoteStore {
 * Type your SQL-facing functions on `DatabaseExecutor` so they work with both
   a `Database` and a `Transaction`.
 * Opening returns the same instance for the same path while `singleInstance`
-  is true (default); it is forced to false for in-memory databases.
+  is true (default), and `close()` closes it for every holder. This includes
+  `inMemoryDatabasePath`: while open, a second open returns the same
+  in-memory database; after `close()` the next open is a new empty one;
+  `singleInstance: false` gives a private in-memory database.
+* `readOnly: true`: the file must exist, writes fail, `onConfigure` and
+  `onOpen` still run; do not pass `version` (a different version runs the
+  migration callback and saving the version fails the open).
+* Values are bound with `?`; string literals in SQL use single quotes (the
+  ffi SQLite rejects double quoted strings). Other implementations reject
+  unsupported value types (`bool`, `DateTime`, `List<int>`) with a
+  `DatabaseException`.
 * `databaseFactory` throws `StateError('databaseFactory not initialized')`
   until an implementation sets it; the setter rejects factories that are not
   sqflite implementations (`ArgumentError`) and prints a warning when

@@ -12,14 +12,13 @@ If you ran into build/runtime issues, please try the following:
 
 # Recommendations
 
-* Enable strong-mode
-* Disable implicit casts
+* Enable strict casts and strict inference to find type issues at compile time
 
 Sample `analysis_options.yaml` file:
 
-```
+```yaml
 analyzer:
-    language:
+  language:
     strict-casts: true
     strict-inference: true
 ```
@@ -37,11 +36,16 @@ Unhandled exception: type '_InternalLinkedHashMap' is not a subtype of type 'Map
 ```
 
 Make sure you create object of type `Map<String, Object?>` and not simply `Map` for records you
-insert and update. The option `language: strict-casts: false` explained above helps to find such issues
+insert and update. The option `strict-casts: true` explained above helps to find such issues
 
 ## MissingPluginException
 
 This error is typically a build/setup error after adding the dependency.
+
+It also happens when calling the `sqflite` plugin where it is not available
+(the global `openDatabase()` then throws `databaseFactory not initialized`, see
+below): in `flutter test` (see [testing](testing.md)), on Windows, Linux (see
+[desktop support](desktop_support.md)) or the web (see [web support](web_support.md)).
 
 - Try all the steps defined at the top of the documents
 - Make sure you stop the current running application if any (hot restart/reload won't work)
@@ -96,6 +100,15 @@ Advanced checks:
 
 Before raising this issue, try adding another well established plugin (the simplest being
 `path_provider` or `shared_preferences`) to see if you get the error here as well.
+
+## Bad state: databaseFactory not initialized
+
+The global `openDatabase()` uses the global `databaseFactory`. It is set by the
+`sqflite` plugin on Android, iOS and macOS only. On Windows, Linux, the web and
+in unit tests, set it once in `main()` before opening a database:
+`databaseFactory = databaseFactoryFfi;` (after `sqfliteFfiInit()`) or
+`databaseFactory = databaseFactoryFfiWeb;`. See [desktop support](desktop_support.md),
+[web support](web_support.md) and [testing](testing.md).
 
 ## Warning database has been locked for...
 
@@ -389,7 +402,7 @@ Please check and ensure that:
 - The parent folder is writable (try to create a file in it if you still get the error).
 
 Solutions:
-- Use the `path_provider` package to find the best location for you database (`getDatabasesPath()` is only relevant for Android)
+- Use the `path_provider` package to find the best location for you database (`getDatabasesPath()` is only relevant for the `sqflite` plugin on Android, iOS and macOS)
 - Build the database path properly (using `join` from the `path` package)
 - Create the parent folder if it does not exist
 
@@ -458,7 +471,9 @@ Sometimes adding `android:largeHeap="true"` in manifest file could help.
 
 ## Error in Flutter web
 
-Look at package [sqflite_common_ffi_web](https://pub.dev/packages/sqflite_common_ffi_web) for experimental Web support.
+Look at package [sqflite_common_ffi_web](https://pub.dev/packages/sqflite_common_ffi_web) for experimental Web support
+(see [web support](web_support.md)). If the first database call fails with an error about the web worker, run
+`dart run sqflite_common_ffi_web:setup` to create `web/sqlite3.wasm` and `web/sqflite_sw.js`.
 
 IndexedDB or any solution on top of it should be considered for storage on the Web.
 

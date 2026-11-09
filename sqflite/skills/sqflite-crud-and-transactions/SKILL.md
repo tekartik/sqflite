@@ -34,15 +34,23 @@ Future<List<Map<String, Object?>>> pendingTodos(Database db) =>
 ### Statements and arguments
 
 * `execute(sql, [args])` is for DDL and statements without a result (`CREATE
-  TABLE`, `PRAGMA`, `DROP`). One statement per call; `;`-separated strings
-  are rejected.
+  TABLE`, `PRAGMA`, `DROP`). One statement per call: with `;`-separated
+  statements the behavior depends on the platform (only the first one or all
+  of them run), so never rely on it.
+* Always `await` each call; an un-awaited call runs later and its error is
+  uncaught.
 * `insert(table, values, {nullColumnHack, conflictAlgorithm})` returns the
   inserted row id (`rawInsert` too). `update(...)` / `delete(...)` and
   `rawUpdate` / `rawDelete` return the number of rows changed. `query(...)`
   / `rawQuery(...)` return `List<Map<String, Object?>>`.
 * Always bind values with `?` and an argument list (`whereArgs` or the raw
-  `arguments`). Never interpolate user data into the SQL string. `?NNN`
-  positional references (`?1`, `?2`) are supported.
+  `arguments`). Never interpolate user data into the SQL string (quotes break
+  it, SQL injection). `?NNN` positional references (`?1`, `?2`) are
+  supported.
+* In SQL, string literals use single quotes (`'text'`) and double quotes are
+  for identifiers (`"group"`). The SQLite bundled with `sqflite_common_ffi`
+  (desktop, tests) is built without double quoted string literals:
+  `VALUES("x")` fails there with `no such column`.
 * `IN (?)` does not accept a list argument. Generate one `?` per value:
   `'id IN (${List.filled(ids.length, '?').join(',')})'` with `whereArgs: ids`.
 * Test for null with `IS NULL` / `IS NOT NULL` in the SQL, not with `= ?`
@@ -55,8 +63,11 @@ Future<List<Map<String, Object?>>> pendingTodos(Database db) =>
 * Column values must be `int`, `num` (`REAL`), `String` (`TEXT`),
   `Uint8List` (`BLOB`) or `null`. `bool` is stored as `INTEGER` 0/1;
   `DateTime` as `millisecondsSinceEpoch` (`INTEGER`) or `toIso8601String()`
-  (`TEXT`); nested maps/lists as a JSON `TEXT`. Passing another type prints a
-  warning in debug mode and will throw in the future.
+  (`TEXT`); nested maps/lists as a JSON `TEXT`. A blob must be a `Uint8List`
+  (a `List<int>` is not a blob). Another type throws a `DatabaseException`
+  (`Invalid sql argument type`) with `sqflite_common_ffi` and the web, and
+  only prints a debug warning with the native plugin (result platform
+  dependent).
 * Table and column names that are SQLite keywords (`group`, `order`,
   `table`, `values`, ...) are escaped automatically by the helpers
   (`insert`, `query`, `update`, `delete` and the `columns` list) but not
@@ -390,7 +401,10 @@ Future<List<Map<String, Object?>>> safeQuery(Database db) async {
 * Using `db` instead of `txn` inside `transaction()`: deadlock, then the
   10 s "database has been locked" warning.
 * `whereArgs: [list]` for an `IN` clause, or `'col = ?'` with `[null]`.
-* Storing `bool`, `DateTime`, `List` or `Map` values directly.
+* Storing `bool`, `DateTime`, `List` (including `List<int>` for a blob) or
+  `Map` values directly.
+* Double quoted string literals in SQL (`VALUES("x")`): use single quotes or,
+  better, arguments.
 * Mutating a row map returned by `query` (read-only) instead of copying it.
 * Expecting `batch.commit()` in a transaction to be visible outside before the
   transaction commits, or expecting `apply()` to be atomic.

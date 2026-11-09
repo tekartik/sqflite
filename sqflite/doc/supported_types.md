@@ -49,13 +49,36 @@ CREATE TABLE Product (
 
 ## Supported SQLite types
 
-No validity check is done on values yet so please avoid non supported types [https://www.sqlite.org/datatype3.html](https://www.sqlite.org/datatype3.html)
+Values must be `int`, `num`, `String`, `Uint8List` or `null`. See also the SQLite
+[datatype documentation](https://www.sqlite.org/datatype3.html).
 
 `DateTime` is not a supported SQLite type. Personally I store them as 
 int (millisSinceEpoch) or string (iso8601). SQLite `TIMESTAMP` type sometimes requires using [date functions](https://www.sqlite.org/lang_datefunc.html). 
 `TIMESTAMP` values are read as `String` that the application needs to parse.
 
 `bool` is not a supported SQLite type. Use `INTEGER` and 0 and 1 values.
+
+A blob must be a `Uint8List`. A `List<int>` is not a blob.
+
+Other types are rejected: `sqflite_common_ffi` (desktop, tests) and
+`sqflite_common_ffi_web` throw a `DatabaseException` (`Invalid sql argument
+type`), the `sqflite` plugin prints a warning in debug mode and the result
+depends on the platform. Convert the values yourself:
+
+```dart
+// Write: convert to SQLite types
+await db.insert('Event', {
+  'done': done ? 1 : 0,
+  'date': date.millisecondsSinceEpoch, // or date.toIso8601String() in a TEXT column
+  'data': Uint8List.fromList([1, 2, 3]), // not a List<int>
+});
+
+// Read: convert back
+var row = (await db.query('Event')).first;
+var readDone = row['done'] == 1;
+var readDate = DateTime.fromMillisecondsSinceEpoch(row['date'] as int);
+var readData = row['data'] as Uint8List;
+```
 
 ### INTEGER
 
@@ -75,5 +98,5 @@ int (millisSinceEpoch) or string (iso8601). SQLite `TIMESTAMP` type sometimes re
 
 ### BLOB
 
-* SQLite typ: `BLOB`
+* SQLite type: `BLOB`
 * Dart type: `Uint8List`

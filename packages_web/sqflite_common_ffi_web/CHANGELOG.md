@@ -1,5 +1,6 @@
-## 1.2.0
+## 1.2.0+1
 
+* Doc: README, example tab, `databaseFactoryFfiWeb` dartdoc
 * Fix `deleteDatabase`, `databaseExists`, `readDatabaseBytes` and `writeDatabaseBytes` when the
   application is compiled with dart2wasm (`flutter build web --wasm`): paths are now resolved the way
   sqlite does (requires `sqflite_common` 2.5.13, web detection was wrong with dart2wasm)

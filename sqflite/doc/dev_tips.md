@@ -2,7 +2,8 @@
 
 ## Debugging
 
-Unfortunately at this point, we cannot use sqflite in unit test.
+The sqflite plugin does not run in unit tests, but your code can, using
+`sqflite_common_ffi` (see [Unit tests](#unit-tests) below and [testing](testing.md)).
 Here are some debugging tips when you encounter issues:
 
 ### Try the experimental Logger
@@ -10,24 +11,31 @@ Here are some debugging tips when you encounter issues:
 **Experimental feature**
 
 The easiest is to wrap the factory you are using with `SqfliteDatabaseFactoryLogger`
+from `package:sqflite_common/sqflite_logger.dart` (add `sqflite_common` to your
+dependencies; being experimental, it triggers an `experimental_member_use` warning).
 
 ```dart
+import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common/sqflite_logger.dart';
 
 Future<void> main() async {
-  var factoryWithLogs = SqfliteDatabaseFactoryLogger(databaseFactory,
-          options: SqfliteLoggerOptions(
-                  type: SqfliteDatabaseFactoryLoggerType.all));
-  var db = await factoryWithLogs.openDatabase(inMemoryDatabasePath,
-          options: OpenDatabaseOptions(
-              version: 1,
-              onCreate: (db, _) {
-                db.execute('''
+  var factoryWithLogs = SqfliteDatabaseFactoryLogger(
+    databaseFactory,
+    options: SqfliteLoggerOptions(type: SqfliteDatabaseFactoryLoggerType.all),
+  );
+  var db = await factoryWithLogs.openDatabase(
+    inMemoryDatabasePath,
+    options: OpenDatabaseOptions(
+      version: 1,
+      onCreate: (db, _) async {
+        await db.execute('''
   CREATE TABLE Product (
     id TEXT PRIMARY KEY,
     title TEXT
    )''');
-          }));
+      },
+    ),
+  );
   await db.close();
 }
 ```
@@ -111,7 +119,6 @@ dev_dependencies:
 ```
 
 ```dart
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:test/test.dart';
 
@@ -169,15 +176,15 @@ following in you app manifest (in the application object):
 
 Alternatively, a more conservative (multiplatform) way is to call during onConfigure:
 
-```db
-await db.execute('PRAGMA journal_mode=WAL')
+```dart
+await db.execute('PRAGMA journal_mode=WAL');
 ```
 
 As reported [here](https://github.com/tekartik/sqflite/issues/929) on sqflite Android, if the metadata is not set
 in the manifest, the following should be used
 
-```db
-await db.rawQuery('PRAGMA journal_mode=WAL')
+```dart
+await db.rawQuery('PRAGMA journal_mode=WAL');
 ```
 
 so something like that could be used, however, I do recommend setting the metadata in the manifest.
@@ -229,7 +236,7 @@ SELECT * FROM Test ORDER BY name COLLATE LOCALIZED ASC
 
 There is an extra Android only API to specify the locale to use:
 ```dart
-await database.setLocale('fr-FR');
+await database.androidSetLocale('fr-FR');
 ```
 
 This API must be called during onConfigure (each time you open the database). The specified IETF BCP 47 language tag
@@ -246,5 +253,5 @@ var db = await openDatabase(path,
               await db.execute('CREATE TABLE Test(name TEXT)');
             });
 // Localized sorting.
-var result = await db.query('Test', orderBy: 'name COLLATE LOCALIZED ASC'));
+var result = await db.query('Test', orderBy: 'name COLLATE LOCALIZED ASC');
 ```

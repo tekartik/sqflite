@@ -6,12 +6,13 @@ Here is a simple example of a database schema migration where:
 
 ```dart
 // Our database path
-String path;
+late String path;
 // Our database once opened
-Database db;
+late Database db;
 ```
 
-In the examples below, `factory` can be replaced by `sqfliteDatabaseFactory` when using `sqflite`.
+In the examples below, `factory` is a `DatabaseFactory`: the global `databaseFactory` when using `sqflite`
+(`openDatabase(path, version: ..., onCreate: ...)` is equivalent), `databaseFactoryFfi` with `sqflite_common_ffi`.
 
 ## 1st version
 
@@ -94,7 +95,7 @@ db = await factory.openDatabase(path,
         },
         onUpgrade: (db, oldVersion, newVersion) async {
           var batch = db.batch();
-          if (oldVersion == 1) {
+          if (oldVersion < 2) {
             // We update existing table and create the new tables
             _updateTableCompanyV1toV2(batch);
             _createTableEmployeeV2(batch);

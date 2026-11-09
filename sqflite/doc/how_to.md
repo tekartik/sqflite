@@ -1,5 +1,7 @@
 # Sqflite guide
 
+* [Getting started](../README.md#getting-started): which package for which platform, a first database
+* [Common pitfalls](../README.md#common-pitfalls)
 * How to [Open a database](opening_db.md)
 * How to [Open an asset database](opening_asset_db.md)
 * Basic [SQL information](sql.md)
@@ -14,3 +16,6 @@
 * [Unit testing](testing.md) 
 * [External](external.md) documentation and tutorials
 * [Supports Windows and Linux](https://github.com/tekartik/sqflite/blob/master/sqflite_common_ffi/doc/using_ffi_instead_of_sqflite.md)
+* [Desktop support](desktop_support.md) and [Web support](web_support.md)
+* [Supported types](supported_types.md) (`bool`, `DateTime`, blobs)
+* [Migration example](migration_example.md)

@@ -36,35 +36,62 @@ export 'package:sqflite_common/src/sql_command.dart'
 export 'package:sqflite_common/src/sql_command_executor_ext.dart'
     show SqfliteSqlCommandExecutorExt;
 
-/// Basic databases operations
+/// Basic databases operations: open, delete, check if a database exists.
+///
+/// Implementations:
+/// * `sqflite` (Flutter, Android/iOS/macOS): the global `databaseFactory`,
+///   set by the plugin.
+/// * `sqflite_common_ffi` (Windows/Linux/macOS, Dart VM, unit tests):
+///   `databaseFactoryFfi`, after calling `sqfliteFfiInit()`.
+/// * `sqflite_common_ffi_web` (web): `databaseFactoryFfiWeb`.
+///
+/// Platform independent code should take a [DatabaseFactory] as a parameter
+/// rather than using the global `databaseFactory`.
 abstract class DatabaseFactory {
   /// Open a database at [path] with the given [OpenDatabaseOptions]`options`
   ///
+  /// A relative [path] is relative to [getDatabasesPath]. Open a database once
+  /// and keep the returned [Database], see [OpenDatabaseOptions.new] for the
+  /// options and the callbacks.
+  ///
+  /// ```dart
+  /// var path = join(await factory.getDatabasesPath(), 'demo.db');
+  /// var db = await factory.openDatabase(
+  ///   path,
+  ///   options: OpenDatabaseOptions(
+  ///     version: 1,
+  ///     onCreate: (db, version) async {
+  ///       // When creating the db, create the table
+  ///       await db.execute(
+  ///         'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)',
+  ///       );
+  ///     },
+  ///   ),
+  /// );
   /// ```
-  ///   var databasesPath = await getDatabasesPath();
-  ///   String path = join(databasesPath, 'demo.db');
-  ///   Database database = await openDatabase(path, version: 1,
-  ///       onCreate: (Database db, int version) async {
-  ///     // When creating the db, create the table
-  ///     await db.execute(
-  ///         'CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT, value INTEGER, num REAL)');
-  ///   });
-  ///```
   /// Notice, `join` is a part of the [path](https://pub.dev/packages/path) package
   Future<Database> openDatabase(String path, {OpenDatabaseOptions? options});
 
   /// Get the default databases location path.
   ///
-  /// When using sqfliteFactory:
+  /// A relative path given to [openDatabase] is relative to this location.
+  ///
+  /// When using sqflite (Flutter plugin):
   /// * On Android, it is typically `data/data/<package_name>/databases`
   /// * On iOS and MacOS, it is the Documents directory
   ///
-  /// For other implementation (ffi), the location is a default location
-  /// that makes mainly sense for debug/testing and you'd better rely on a
-  /// custom strategy using package such as `path_provider`.
+  /// With `sqflite_common_ffi`, it is `.dart_tool/sqflite_common_ffi/databases`
+  /// in the current directory: fine for tests and scripts, but an
+  /// application should use its own location (for example from the
+  /// `path_provider` package), absolute paths or [setDatabasesPath].
+  ///
+  /// With `sqflite_common_ffi_web`, it is `/`: on the web a path is only a
+  /// name.
   Future<String> getDatabasesPath();
 
-  /// Set the default databases location path
+  /// Set the default databases location path.
+  ///
+  /// Call it before opening any database, typically in `main()`.
   Future<void> setDatabasesPath(String path);
 
   /// Delete a database if it exists
@@ -81,6 +108,15 @@ abstract class DatabaseFactory {
 }
 
 /// Common API for [Database] and [Transaction] to execute SQL commands
+///
+/// Each method runs a single SQL statement. Pass values as arguments
+/// (`?` placeholders with `arguments` or `whereArgs`), never by string
+/// interpolation in the SQL. Supported value types are `int`, `num`,
+/// `String`, `Uint8List` and `null` (store a `bool` as 0/1, a `DateTime` as
+/// an `int` or a `String`).
+///
+/// Inside [Database.transaction], use the [Transaction] object, never the
+/// [Database] (deadlock).
 abstract class DatabaseExecutor {
   /// Executes a single SQL statement with no return value.
   ///
@@ -96,9 +132,14 @@ abstract class DatabaseExecutor {
 
   /// Executes a raw SQL INSERT query and returns the last inserted row ID.
   ///
-  /// ```
+  /// ```dart
   /// int id1 = await database.rawInsert(
-  ///   'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)');
+  ///   "INSERT INTO Test(name, value, num) VALUES('some name', 1234, 456.789)",
+  /// );
+  /// int id2 = await database.rawInsert(
+  ///   'INSERT INTO Test(name, value, num) VALUES(?, ?, ?)',
+  ///   ['another name', 12345678, 3.1416],
+  /// );
   /// ```
   ///
   /// 0 could be returned for some specific conflict algorithms if not inserted.
@@ -181,8 +222,13 @@ abstract class DatabaseExecutor {
   /// Executes a raw SQL SELECT query and returns a list
   /// of the rows that were found.
   ///
-  /// ```
-  /// List<Map> list = await database.rawQuery('SELECT * FROM Test');
+  /// The result list and its maps are read-only, copy them to modify them.
+  ///
+  /// ```dart
+  /// var list = await database.rawQuery(
+  ///   'SELECT * FROM Test WHERE name = ?',
+  ///   ['some name'],
+  /// );
   /// ```
   Future<List<Map<String, Object?>>> rawQuery(
     String sql, [
@@ -303,11 +349,19 @@ abstract class DatabaseExecutor {
   Database get database;
 }
 
-/// Database transaction
-/// to use during a transaction
+/// Database transaction, given to the [Database.transaction] callback.
+///
+/// Inside the callback, run every statement on the transaction object, not
+/// on the [Database]: a call on the [Database] waits for the transaction to
+/// end and deadlocks.
 abstract class Transaction implements DatabaseExecutor {}
 
 /// Database to send sql commands, created during [openDatabase]
+///
+/// Open a database once and keep this object for the lifetime of the
+/// application (or until [close] is called). By default (single instance), a
+/// new open of the same path returns the same object and [close] closes it
+/// for every holder.
 abstract class Database implements DatabaseExecutor {
   /// The path of the database
   String get path;
@@ -315,10 +369,16 @@ abstract class Database implements DatabaseExecutor {
   /// Close the database. Cannot be accessed anymore
   Future<void> close();
 
+  /// Runs [action] in a transaction.
+  ///
+  /// The transaction is committed when [action] completes and rolled back
+  /// when it throws (the error is then rethrown). Return a value from
+  /// [action] to get it as the result.
+  ///
   /// Calls in action must only be done using the transaction object
   /// using the database will trigger a dead-lock.
   ///
-  /// ```
+  /// ```dart
   /// await database.transaction((txn) async {
   ///   // Ok
   ///   await txn.execute('CREATE TABLE Test1 (id INTEGER PRIMARY KEY)');
@@ -421,7 +481,7 @@ const OnDatabaseVersionChangeFn onDatabaseDowngradeDelete =
     __onDatabaseDowngradeDelete;
 
 /// Options for opening the database
-/// see [openDatabase] for details
+/// see [OpenDatabaseOptions.new] and [openDatabase] for details
 abstract class OpenDatabaseOptions {
   /// Open the database at a given path
   ///
@@ -434,7 +494,7 @@ abstract class OpenDatabaseOptions {
   ///
   /// 1. [onConfigure]
   /// 2. [onCreate] or [onUpgrade] or [onDowngrade]
-  /// 5. [onOpen]
+  /// 3. [onOpen]
   ///
   /// [onConfigure] is the first callback invoked when opening the database. It
   /// allows you to perform database initialization such as enabling foreign keys
@@ -443,11 +503,15 @@ abstract class OpenDatabaseOptions {
   /// If [version] is specified, [onCreate], [onUpgrade], and [onDowngrade] can
   /// be called. These functions are mutually exclusive — only one of them can be
   /// called depending on the context, although they can all be specified to
-  /// cover multiple scenarios
+  /// cover multiple scenarios. They run in a transaction: use the database they
+  /// receive directly (do not start a transaction) and await every call. The
+  /// new version is saved when the callback completes.
   ///
   /// [onCreate] is called if the database did not exist prior to calling
   /// [openDatabase]. You can use the opportunity to create the required tables
-  /// in the database according to your schema
+  /// in the database according to your schema. It is not called for an
+  /// existing database: a schema change needs a new [version] handled in
+  /// [onUpgrade].
   ///
   /// [onUpgrade] is called if either of the following conditions are met:
   ///
@@ -467,15 +531,25 @@ abstract class OpenDatabaseOptions {
   /// [onOpen] is the last optional callback to be invoked. It is called after
   /// the database version has been set and before [openDatabase] returns
   ///
-  /// When [readOnly] (false by default) is true, all other parameters are
-  /// ignored and the database is opened as-is
+  /// When [readOnly] (false by default) is true, the database is opened in
+  /// read-only mode: the file must exist and any write fails. The other
+  /// parameters are not ignored: [onConfigure] and [onOpen] are still called,
+  /// and if [version] is specified and differs from the version of the
+  /// database, the migration callback is called and saving the new version
+  /// fails, making the open fail. Don't specify [version] for a read-only
+  /// database.
   ///
   /// When [singleInstance] is true (the default), a single database instance is
   /// returned for a given path. Subsequent calls to [openDatabase] with the
   /// same path will return the same instance, and will discard all other
-  /// parameters such as callbacks for that invocation. You could set it to
-  /// false for in memory database (it is forced to false for `:memory:` path)
-  /// but not for uri.
+  /// parameters such as callbacks for that invocation. Closing the database
+  /// closes it for every holder.
+  ///
+  /// This also applies to the in-memory database ([inMemoryDatabasePath],
+  /// `:memory:`): opening it again without closing it returns the same
+  /// instance (same data); once closed, the next open gives a new empty
+  /// database. Set [singleInstance] to false to get a new private in-memory
+  /// database at each open. Don't set it to false for a `file:` uri.
   ///
   /// On the web (`sqflite_common_ffi_web`), [singleInstance] must be true
   /// for a persistent database, multiple connections to the same database
@@ -545,10 +619,14 @@ abstract class OpenDatabaseOptions {
   /// Called after all other callbacks have been called.
   OnDatabaseOpenFn? get onOpen;
 
-  /// Open the database in read-only mode (no callback called).
+  /// Open the database in read-only mode.
+  ///
+  /// [onConfigure] and [onOpen] are still called, see
+  /// [OpenDatabaseOptions.new].
   bool get readOnly;
 
-  /// The existing single-instance (hot-restart)
+  /// True (the default) to share a single [Database] instance per path
+  /// (including [inMemoryDatabasePath]), see [OpenDatabaseOptions.new].
   bool get singleInstance;
 }
 
@@ -557,12 +635,16 @@ abstract class OpenDatabaseOptions {
 /// methods for adding operation. None of the operation will be
 /// executed (or visible locally) until commit() is called.
 ///
-/// ```
-/// batch = db.batch();
+/// Inside a transaction, create the batch from the [Transaction]
+/// (`txn.batch()`), it is then committed with the transaction.
+///
+/// ```dart
+/// var batch = db.batch();
 /// batch.insert('Test', {'name': 'item'});
 /// batch.update('Test', {'name': 'new_item'}, where: 'name = ?', whereArgs: ['item']);
 /// batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
-/// results = await batch.commit();
+/// // One result per operation: [insertedId, updateCount, deleteCount]
+/// var results = await batch.commit();
 /// ```
 abstract class Batch {
   /// Commits all of the operations in this batch as a single atomic unit

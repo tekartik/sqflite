@@ -40,7 +40,7 @@ Future<void> main() async {
 
 ### Dependency, binaries and import
 
-* Add `sqflite_common_ffi_web` (currently 1.1.x, Dart 3.12, `platforms: web`
+* Add `sqflite_common_ffi_web` (currently 1.2.x, Dart 3.12, `platforms: web`
   only) to `dependencies`. It depends on `sqflite_common_ffi` and
   `sqflite_common`.
 * Run `dart run sqflite_common_ffi_web:setup` in the project directory after
@@ -106,8 +106,10 @@ Future<void> main() async {
   origin. IndexedDB is per origin including the port: `localhost:8080` and
   `localhost:8081` are different stores, so always debug on the same port.
   There is no OPFS backend.
-* `inMemoryDatabasePath` opens a private in-memory SQLite database inside
-  the worker (nothing stored).
+* `inMemoryDatabasePath` opens an in-memory SQLite database inside the
+  worker (nothing stored). With the default `singleInstance: true` it is
+  shared while open (a second open returns the same database);
+  `singleInstance: false` gives a private one (allowed for in-memory only).
 * To import a bundled database (asset or download), write its bytes with
   `factory.writeDatabaseBytes(path, bytes)` then `openDatabase(path)`;
   `readDatabaseBytes(path)` exports it. `databaseExists`, `deleteDatabase`

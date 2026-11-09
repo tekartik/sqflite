@@ -73,8 +73,11 @@ void main() {
 ### Isolation between tests
 
 * Prefer `inMemoryDatabasePath`: each `openDatabase` after a `close()` gives
-  an empty database and nothing is left on disk. Always `close()` in the test
-  (or in `tearDown`) so the next test starts fresh.
+  an empty database and nothing is left on disk. While it is open, another
+  `openDatabase(inMemoryDatabasePath)` returns the same database (single
+  instance), so always `close()` in the test (or in `tearDown`) so the next
+  test starts fresh, or use `OpenDatabaseOptions(singleInstance: false)` for a
+  private one.
 * For file-based tests (migrations, `onUpgrade`, reopen scenarios) use a
   unique relative name per test: it resolves under
   `.dart_tool/sqflite_common_ffi/databases`, is created on open and is
@@ -280,7 +283,8 @@ void main() {
 * Calling the global `openDatabase()` without setting `databaseFactory`
   first: `StateError: databaseFactory not initialized`.
 * Not closing databases between tests, so `singleInstance` returns the
-  previous test's database (same path) with stale tables.
+  previous test's database (same path, `inMemoryDatabasePath` included) with
+  stale tables.
 * Reusing a file path across tests without `deleteDatabase` in `setUp`.
 * Running the test file in a browser configuration: add `@TestOn('vm')`.
 * Matching on exception messages instead of `DatabaseException` helpers.
