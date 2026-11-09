@@ -1,3 +1,14 @@
+## 1.0.5
+
+* `deleteDatabase` of an open database closes it: opening it again reused the connections on the
+  deleted file and lost what was written next.
+* `readDatabaseBytes` of an open database checkpoints it first (the last changes were missing,
+  still in the `-wal` file).
+* `writeDatabaseBytes` creates the parent directory, `openDatabase` opens the database at once
+  (file created, open errors reported by `openDatabase`), `file::memory:` is in memory (it
+  created a temporary file).
+* Doc: README getting started and differences with sqflite_common_ffi, example, skill.
+
 ## 1.0.4
 
 * `queryCursor`/`rawQueryCursor` errors are `DatabaseException` like `rawQuery` ones (a raw

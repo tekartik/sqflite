@@ -51,6 +51,14 @@ class SqfliteDatabaseFfiAsyncIo extends SqfliteDatabaseFfiAsyncBase {
       path: path,
       options: sqliteOptions,
     );
+    // sqlite_async opens its connections on the first statement: open them
+    // now, as the other implementations, so that the file exists and an open
+    // error is an openDatabase error.
+    try {
+      await ffiAsyncDatabase.initialize();
+    } catch (e) {
+      throw ffiWrapAnyException(e);
+    }
     return ffiAsyncId;
   }
 }

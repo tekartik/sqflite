@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:js_interop';
 
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi_web/src/constant.dart' show sqlite3WasmFile;
 import 'package:sqflite_common_ffi_web/src/import.dart';
 import 'package:sqflite_common_ffi_web/src/sqflite_ffi_impl_web.dart'; // ignore: implementation_imports
 import 'package:sqflite_common_ffi_web/src/utils.dart';
@@ -15,8 +16,35 @@ bool get _debug => sqliteFfiWebDebugWebWorker; // devWarning(true); // false
 /// Shared worker globals
 var swGlobals = <String, Object?>{};
 var _log = print;
-SqfliteFfiWebContext? _swContext;
+Future<SqfliteFfiWebContext>? _swContextFuture;
 var _swOptions = SqfliteFfiWebOptions();
+
+/// Loads sqlite3.wasm and the file system once, even when several calls
+/// arrive before it is done (two tabs, or `Future.wait` of two opens): each
+/// load is a separate sqlite3 instance and in-memory copy of the IndexedDB
+/// storage. A failed load is retried on the next call.
+Future<SqfliteFfiWebContext> _swContextReady() {
+  return _swContextFuture ??= () async {
+    try {
+      if (_debug) {
+        _log('$_shw loading wasm');
+      }
+      var context = await sqfliteFfiWebLoadSqlite3Wasm(
+        _swOptions,
+        fromWebWorker: true,
+      );
+      sqfliteFfiHandler = SqfliteFfiHandlerWeb(context);
+      return context;
+    } catch (e) {
+      _swContextFuture = null;
+      throw StateError(
+        'sqflite web worker initialization failed '
+        '(sqlite3.wasm: ${_swOptions.sqlite3WasmUri ?? sqlite3WasmFile}, '
+        'IndexedDB: ${_swOptions.indexedDbName ?? 'sqflite_databases'}): $e',
+      );
+    }
+  }();
+}
 
 /// Sometimes needed when debugging to ensure we are testing the new version
 var _debugVersion = 2;
@@ -90,17 +118,6 @@ Future<void> _handleMessageEvent(web.Event event) async {
             dataFromEncodable(ffiMethodCall.arguments),
           );
 
-          /// Init context on first call,
-          if (_swContext == null) {
-            if (_debug) {
-              _log('$_shw loading wasm');
-            }
-            _swContext = await sqfliteFfiWebLoadSqlite3Wasm(
-              _swOptions,
-              fromWebWorker: true,
-            );
-            sqfliteFfiHandler = SqfliteFfiHandlerWeb(_swContext!);
-          }
           void postResponse(FfiMethodResponse response) {
             var data = response.toDataMap();
             if (_debug) {
@@ -110,6 +127,9 @@ Future<void> _handleMessageEvent(web.Event event) async {
           }
 
           try {
+            // Init context on first call, an error is sent back as the
+            // response of this call.
+            await _swContextReady();
             var result = await ffiMethodCall.handleImpl();
             result = dataToEncodable(result);
             postResponse(FfiMethodResponse(result: result));

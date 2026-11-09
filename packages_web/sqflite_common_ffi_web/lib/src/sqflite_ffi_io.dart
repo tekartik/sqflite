@@ -25,19 +25,24 @@ import 'package:sqflite_common/sqlite_api.dart';
 ///
 /// Web only: throws [UnsupportedError] on io (Android, iOS, desktop, Dart
 /// VM), use `sqflite` or `sqflite_common_ffi` there.
-DatabaseFactory get databaseFactoryFfiWeb => throw UnsupportedError(
-  'databaseFactoryFfiWebNoWebWorker only supported on io',
-);
+DatabaseFactory get databaseFactoryFfiWeb =>
+    throw UnsupportedError(_webOnlyMessage('databaseFactoryFfiWeb'));
 
 /// The database factory to use for ffi web without web worker.
 ///
 /// Web only: throws [UnsupportedError] on io.
-DatabaseFactory get databaseFactoryFfiWebNoWebWorker => throw UnsupportedError(
-  'databaseFactoryFfiWebNoWebWorker only supported on io',
-);
+DatabaseFactory get databaseFactoryFfiWebNoWebWorker =>
+    throw UnsupportedError(_webOnlyMessage('databaseFactoryFfiWebNoWebWorker'));
 
-/// The database factory to use for ffi web. not supported on io
+/// The database factory to use for ffi web with a basic web worker.
+///
+/// Testing only. Web only: throws [UnsupportedError] on io.
 DatabaseFactory get databaseFactoryFfiWebBasicWebWorker =>
     throw UnsupportedError(
-      'databaseFactoryFfiWebBasicWebWorker only supported on io',
+      _webOnlyMessage('databaseFactoryFfiWebBasicWebWorker'),
     );
+
+String _webOnlyMessage(String name) =>
+    '$name is only supported on the web, use the sqflite plugin '
+    '(Android, iOS, macOS) or databaseFactoryFfi from sqflite_common_ffi '
+    '(desktop, Dart VM) here';

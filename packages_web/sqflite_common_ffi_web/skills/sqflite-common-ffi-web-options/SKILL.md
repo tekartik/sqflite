@@ -43,8 +43,12 @@ final databaseFactoryCustomWeb = createDatabaseFactoryFfiWeb(
   starts its own worker connection / wasm instance on first use, guarded by a
   lock, and keeps it for the life of the page.
 * `noWebWorker: true` loads the wasm in the main thread using the same
-  options (`sqlite3WasmUri`, `indexedDbName`); `sharedWorkerUri` is ignored.
-  `databaseFactoryFfiWebNoWebWorker` is this with default options.
+  options (`sqlite3WasmUri`, `indexedDbName`, `inMemory`); `sharedWorkerUri`
+  is ignored. `databaseFactoryFfiWebNoWebWorker` is this with default
+  options. The factories of a page share the sqflite state (the open
+  databases by path, the handler of the last initialized no worker
+  factory): use one no worker configuration per page, not mixed with worker
+  factories.
 * `tag` (default `ffi_web`) only labels the factory in logs and
   `toString()`.
 * Options are sent to the worker before the first database call
@@ -76,12 +80,14 @@ final databaseFactoryCustomWeb = createDatabaseFactoryFfiWeb(
   then re-run `dart run sqflite_common_ffi_web:setup` and pass the same name
   in `sharedWorkerUri`.
 * `indexedDbName` (default `sqflite_databases`): the IndexedDB database
-  hosting the virtual file system. Factories with different names (and
-  different workers, see above) are fully isolated stores, for example
-  production data vs. a scratch store.
-* `inMemory`: declared and transported, but the current loader always opens
-  the IndexedDB file system; do not rely on it. Use `inMemoryDatabasePath`
-  as the database path for a non-persistent database instead.
+  hosting the virtual file system. Factories with different names and
+  different worker files (see above) are isolated stores, for example
+  production data vs. a scratch store (not two no worker factories of the
+  same page).
+* `inMemory: true`: nothing is persisted, the databases live in memory until
+  the page (or the worker) goes away; `indexedDbName` is ignored (up to
+  1.2.0+1 the option was ignored and the databases went to IndexedDB). For a
+  single temporary database, `inMemoryDatabasePath` as the path is enough.
 * `forceAsBasicWorker` is `@visibleForTesting` (used by
   `databaseFactoryFfiWebBasicWebWorker`): forces a dedicated `Worker`
   instead of a `SharedWorker`. Do not set it in application code.
@@ -89,7 +95,8 @@ final databaseFactoryCustomWeb = createDatabaseFactoryFfiWeb(
 
 ### Lower-level entry points
 
-* `sqfliteFfiWebLoadSqlite3Wasm(options)` opens the IndexedDB file system,
+* `sqfliteFfiWebLoadSqlite3Wasm(options)` opens the IndexedDB file system
+  (an in-memory one with `inMemory: true`),
   fetches the wasm and returns a `SqfliteFfiWebContext` (main thread, what
   `noWebWorker` does). `sqfliteFfiWebStartSharedWorker(options)` spawns the
   shared (or basic) worker and returns a context that forwards messages.
@@ -115,9 +122,11 @@ final databaseFactoryCustomWeb = createDatabaseFactoryFfiWeb(
   while initializing the web worker" means the worker script could not be
   loaded (wrong `sharedWorkerUri`, setup not run, file not deployed); the
   message names the URL tried.
-* Wrong or outdated `sqlite3.wasm` shows as a load failure inside the worker
-  (visible in the worker console); re-run setup with `--force` or download
-  the wasm matching the resolved `sqlite3` version.
+* A missing, wrong or outdated `sqlite3.wasm` fails the database call with
+  an error naming the wasm url and the IndexedDB name (up to 1.2.0+1 the
+  worker answered `null`: `unsupported result null`); re-run setup with
+  `--force` or `--sqlite3-wasm-url` for the wasm matching the resolved
+  `sqlite3` version.
 
 ## Examples
 
@@ -200,6 +209,7 @@ void enableSqfliteWebLogs() {
 * Setting `sharedWorkerUri` without deploying a file at that URL, or
   changing the setup output name without updating the option (or the
   reverse).
-* Relying on `inMemory: true` for a private database.
+* Expecting `inMemory: true` on a shared worker already started by another
+  factory or tab with other options: the worker keeps its first options.
 * Using `forceAsBasicWorker` in production code.
 * Reading `SqfliteFfiWebContext.fs` from application code (unstable, `src/`).

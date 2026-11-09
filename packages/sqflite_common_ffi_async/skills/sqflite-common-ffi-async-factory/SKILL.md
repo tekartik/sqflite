@@ -6,7 +6,7 @@ description: >-
   VM: databaseFactoryFfiAsync, databaseFactoryFfiAsyncTest, readTransaction
   and concurrent reads, how it differs from sqflite_common_ffi
   (databaseFactoryFfi), what falls back to plain ffi (in-memory, read-only),
-  and its limitations (no logger, singleInstance ignored, io only).
+  and its limitations (no logger, WAL files, io only).
 ---
 
 # sqflite_common_ffi_async: sqflite API on top of sqlite_async
@@ -51,28 +51,37 @@ Future<void> main() async {
   * `db.readTransaction((txn) async { ... })` runs on a read connection
     concurrently with writes. Only reads are allowed inside: a write through
     that `txn` throws a `DatabaseException` ("read transaction cannot be used
-    for write"). On other sqflite implementations `readTransaction` is not
-    supported, so keep it behind this factory.
+    for write"). On the other sqflite implementations `readTransaction` is a
+    normal transaction rolled back at the end: same code, but no concurrency.
+  * Calling a `db` method (instead of `txn`) inside a transaction throws a
+    `DatabaseException` (sqlite_async `LockError`) at once, where the other
+    implementations wait forever.
   * `db.transaction(...)` is a `sqlite_async` write transaction. Several
     `transaction` calls from different callers are queued by the pool, not by
     sqflite, so reads issued outside a transaction are not blocked by a
     running write transaction.
 * Falls back to `databaseFactoryFfi` (regular ffi, separate isolate):
-  * `openDatabase(inMemoryDatabasePath)`: in-memory databases come from
-    `sqflite_common_ffi` (mainly for tests).
+  * `openDatabase(inMemoryDatabasePath)` (or `file::memory:`): in-memory
+    databases come from `sqflite_common_ffi` (mainly for tests).
   * `openDatabase(path, options: OpenDatabaseOptions(readOnly: true))`.
   * `deleteDatabase(path)` and `getDatabasesPath()` (default is
     `<cwd>/.dart_tool/sqflite_common_ffi/databases`, relative paths resolve
     there).
-* The parent directory of a database file is created on open. Prefer absolute
-  paths in applications.
+* `singleInstance` (default true) works as elsewhere: the same `Database`
+  for the same path. `deleteDatabase` of an open database closes it first
+  (sqlite_async shares its connection pool by path in the process).
+* The databases use WAL mode (`-wal` and `-shm` files next to the database,
+  deleted by `deleteDatabase`); `readDatabaseBytes` of an open database
+  checkpoints it first, so the bytes hold the last committed changes.
+* The parent directory of a database file is created on open and on
+  `writeDatabaseBytes`. Prefer absolute paths in applications.
 * Limitations (from the package README and source):
-  * `singleInstance` is ignored: `sqlite_async` manages opening/closing.
   * No logger support (`SqfliteDatabaseFactoryLogger` wrappers are not
     wired in).
   * `queryCursor` / `rawQueryCursor` load the whole result set, no paging.
-  * io only (`platforms: linux, macos, windows, android, ios`); no web.
-    Calling on the web throws `UnsupportedError`.
+  * io only (`platforms: linux, macos, windows, android, ios`); no web: the
+    web factory is unfinished (`getDatabasesPath`, `deleteDatabase`,
+    `databaseExists` throw `UnimplementedError`).
   * After `close()`, any call fails with a `database_closed` error.
 * For unit tests prefer `databaseFactoryFfi` from `sqflite_common_ffi` (see
   `sqflite-common-ffi-testing`) unless the test exercises `readTransaction`
@@ -90,6 +99,7 @@ import 'package:sqflite_common_ffi_async/sqflite_ffi_async.dart';
 Future<void> main() async {
   sqfliteFfiInit();
   var factory = databaseFactoryFfiAsync;
+  await factory.deleteDatabase('concurrent.db'); // start empty
   var db = await factory.openDatabase(
     'concurrent.db',
     options: OpenDatabaseOptions(
@@ -168,10 +178,11 @@ DatabaseFactory pickFactory() {
 ## Common mistakes
 
 * Writing inside `readTransaction`: throws. Use `transaction` for writes.
-* Using `readTransaction` with `databaseFactoryFfi` or the `sqflite` plugin:
-  not supported there.
-* Expecting `singleInstance: true` semantics (same `Database` object for the
-  same path): the async factory does not honor it.
+* Expecting concurrent reads from `readTransaction` with `databaseFactoryFfi`
+  or the `sqflite` plugin: there it is a normal transaction, run after the
+  current one.
+* Copying the database file of an open database: the last changes may still
+  be in the `-wal` file, use `readDatabaseBytes`.
 * Forgetting `sqfliteFfiInit()` on Windows.
 * Using it on the web: use `sqflite_common_ffi_web` instead.
 * Depending only on `sqflite_common_ffi_async` and importing

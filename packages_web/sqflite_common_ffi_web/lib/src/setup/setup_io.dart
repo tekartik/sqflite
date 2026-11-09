@@ -224,7 +224,8 @@ extension SetupContextExt on SetupContext {
 
       var wasmFile = join(out, options.sqlite3WasmFilename ?? sqlite3WasmFile);
       if (!options.noSqlite3Wasm) {
-        var uri = sqlite3WasmReleaseUri;
+        // --sqlite3-wasm-url, the release matching sqlite3 by default.
+        var uri = options.sqlite3WasmUri;
         _log('Fetching: $uri');
         var wasmBytes = await readBytes(uri);
         await File(wasmFile).writeAsBytes(wasmBytes);

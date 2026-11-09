@@ -14,6 +14,7 @@ import 'package:sqflite_common_ffi_web/src/web/load_sqlite_web.dart'
         SqfliteFfiWebContextExt,
         SqfliteFfiWebWorkerException,
         defaultSharedWorkerUri;
+import 'package:sqflite_common_ffi_web/src/web_path.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:web/web.dart' as web;
 
@@ -39,7 +40,34 @@ var databaseFactoryFfiWebImpl = () {
 
 final _initLock = Lock();
 
-/// Creates an FFI database factory
+/// The web factory: the sqflite_common factory with the web path resolution.
+class _SqfliteDatabaseFactoryFfiWeb with SqfliteDatabaseFactoryMixin {
+  _SqfliteDatabaseFactoryFfiWeb(this._invokeMethod, {required String tag}) {
+    this.tag = tag;
+  }
+
+  final Future<dynamic> Function(String method, [Object? arguments])
+  _invokeMethod;
+
+  @override
+  Future<T> invokeMethod<T>(String method, [Object? arguments]) async =>
+      (await _invokeMethod(method, arguments)) as T;
+
+  /// `x.db` and `/x.db` are the same database (the same file for sqlite),
+  /// see [sqfliteFfiWebFixPath].
+  @override
+  Future<String> fixPath(String path) async =>
+      sqfliteFfiWebFixPath(await super.fixPath(path));
+}
+
+/// Creates a web database factory with its own [options] (sqlite3.wasm and
+/// worker urls, IndexedDB name).
+///
+/// SQLite runs in a shared worker (`sqflite_sw.js`), or in the page when
+/// [noWebWorker] is true (only `sqlite3.wasm` needed, not safe across tabs).
+/// [tag] names the factory in the logs.
+///
+/// Web only: throws [UnsupportedError] on io.
 DatabaseFactory createDatabaseFactoryFfiWeb({
   SqfliteFfiWebOptions? options,
   bool noWebWorker = false,
@@ -47,34 +75,34 @@ DatabaseFactory createDatabaseFactoryFfiWeb({
 }) {
   var webOptions = options ??= SqfliteFfiWebOptions();
   SqfliteFfiWebContext? context;
-  return buildDatabaseFactory(
-    tag: tag ?? 'ffi_web',
-    invokeMethod: (String method, [Object? arguments]) async {
-      if (method == methodOpenDatabase) {
-        // singleInstance: false is not supported on the web
-        checkOpenDatabaseArgumentsWeb(arguments);
+  return _SqfliteDatabaseFactoryFfiWeb(tag: tag ?? 'ffi_web', (
+    String method, [
+    Object? arguments,
+  ]) async {
+    if (method == methodOpenDatabase) {
+      // singleInstance: false is not supported on the web
+      checkOpenDatabaseArgumentsWeb(arguments);
+    }
+    final methodCall = FfiMethodCall(method, arguments);
+    if (noWebWorker) {
+      if (context == null) {
+        await _initLock.synchronized(() async {
+          context ??= await sqfliteFfiWebLoadSqlite3Wasm(webOptions);
+          sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
+        });
       }
-      final methodCall = FfiMethodCall(method, arguments);
-      if (noWebWorker) {
-        if (context == null) {
-          await _initLock.synchronized(() async {
-            context ??= await sqfliteFfiWebLoadSqlite3Wasm(webOptions);
-            sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
-          });
-        }
-        return ffiMethodCallHandleNoWebWorker(methodCall, context!);
-      } else {
-        if (context == null) {
-          await _initLock.synchronized(() async {
-            context ??= await sqfliteFfiWebStartSharedWorker(webOptions);
-            sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
-          });
-        }
+      return ffiMethodCallHandleNoWebWorker(methodCall, context!);
+    } else {
+      if (context == null) {
+        await _initLock.synchronized(() async {
+          context ??= await sqfliteFfiWebStartSharedWorker(webOptions);
+          sqfliteFfiHandler = SqfliteFfiHandlerWeb(context!);
+        });
+      }
 
-        return ffiMethodCallSendToWebWorker(methodCall, context!);
-      }
-    },
-  );
+      return ffiMethodCallSendToWebWorker(methodCall, context!);
+    }
+  });
 }
 
 // Debug database factory web

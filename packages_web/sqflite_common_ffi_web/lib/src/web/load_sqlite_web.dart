@@ -19,6 +19,10 @@ var _log = print;
 Future<SqfliteFfiWebContext> sqfliteFfiWebLoadSqlite3FileSystem(
   SqfliteFfiWebOptions options,
 ) async {
+  if (options.inMemory ?? false) {
+    // Nothing persisted, indexedDbName is ignored.
+    return SqfliteFfiWebContextImpl(options: options, fs: InMemoryFileSystem());
+  }
   var indexedDbName = options.indexedDbName ?? 'sqflite_databases';
   final fs = await IndexedDbFileSystem.open(dbName: indexedDbName);
   return SqfliteFfiWebContextImpl(options: options, fs: fs);

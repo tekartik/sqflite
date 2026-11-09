@@ -44,16 +44,22 @@ Future<void> main() async {
   only) to `dependencies`. It depends on `sqflite_common_ffi` and
   `sqflite_common`.
 * Run `dart run sqflite_common_ffi_web:setup` in the project directory after
-  adding the dependency and after every upgrade of the package or of
-  `sqlite3`. It builds the shared worker with `webdev` (into
-  `.dart_tool/sqflite_common_ffi_web/setup/<version>/`) and writes
-  `web/sqflite_sw.js` plus `web/sqlite3.wasm` (downloaded from the
-  `sqlite3.dart` GitHub releases, version pinned by the package).
+  adding the dependency and after every upgrade of the package. It builds the
+  shared worker with `webdev` (into
+  `.dart_tool/sqflite_common_ffi_web/setup/<version>/`, a copy of the package
+  with its dependencies resolved anew: the newest compatible versions, not
+  the ones of the app `pubspec.lock`) and writes `web/sqflite_sw.js` plus
+  `web/sqlite3.wasm` (downloaded from the `sqlite3.dart` GitHub releases,
+  version pinned by the package). The worker is cached per
+  `sqflite_common_ffi_web` version: after upgrading only
+  `sqflite_common_ffi`, `sqflite_common` or `sqlite3`, run it with `--force`
+  to get their fixes in the worker.
   Options: `--force` (`-f`) rebuild, `--dir <dir>` output directory
   (default `web`), `--verbose`, `--no-sqlite3-wasm` (skip the wasm
-  download), `--sqlite3-wasm-url <url>`, and an optional project path
-  argument. Commit the two files or add them to `.gitignore` and run setup in
-  CI; either way they must be present in the deployed site root.
+  download), `--sqlite3-wasm-url <url>` (the `sqlite3.wasm` to download,
+  ignored up to 1.2.0+1), and an optional project path argument. Commit the
+  two files or add them to `.gitignore` and run setup in CI; either way they
+  must be present in the deployed site root.
 * The same setup is callable from Dart: `setupSqfliteWebBinaries(options:
   SqfliteWebSetupOptions(...))` from `package:sqflite_common_ffi_web/setup.dart`
   (`path`, `dir`, `force`, `verbose`, `sqlite3WasmUri`, `noSqlite3Wasm`,
@@ -98,9 +104,14 @@ Future<void> main() async {
 
 ### Paths and persistence
 
-* `getDatabasesPath()` returns `/` and relative paths are used as is: a
+* `getDatabasesPath()` returns `/` and a relative name is at the root: a
   database name such as `my_db.db` is a key in the virtual file system, not
-  a file. Do not build paths with `path_provider` on the web.
+  a file. `my_db.db`, `./my_db.db` and `/my_db.db` are the same database
+  (`db.path` is `/my_db.db`; up to 1.2.0+1 two spellings opened two
+  connections and a delete by the relative name did not close the open
+  database).
+  `setDatabasesPath()` does not apply to relative names on the web. Do not
+  build paths with `path_provider` on the web.
 * Storage is an IndexedDB database named `sqflite_databases` (override with
   `SqfliteFfiWebOptions.indexedDbName`) holding every sqflite database of the
   origin. IndexedDB is per origin including the port: `localhost:8080` and
@@ -233,14 +244,16 @@ Future<String> sqliteVersion() async {
 
 * Forgetting `dart run sqflite_common_ffi_web:setup`: the first call fails
   and the console prints "An error occurred while initializing the web
-  worker ... failure to find the worker javascript file at sqflite_sw.js".
+  worker ... failure to find the worker javascript file at sqflite_sw.js";
+  without `sqlite3.wasm` the error of the call names the wasm url.
 * Serving the app from a sub path without adjusting `sharedWorkerUri` /
   `sqlite3WasmUri`, or a server that does not serve `.wasm` as
   `application/wasm`.
-* Upgrading `sqflite_common_ffi_web` or `sqlite3` without re-running setup
-  (`--force` if the files look up to date but the wasm version changed).
-* Using `getDatabasesPath()` + `join` or `path_provider` on the web; use a
-  plain name.
+* Upgrading `sqflite_common_ffi_web` without re-running setup, or
+  `sqflite_common_ffi`, `sqflite_common`, `sqlite3` without `setup --force`
+  (the setup says the binaries are up to date and keeps the old worker).
+* Using `path_provider` on the web; use a plain name (`join` with
+  `getDatabasesPath()` gives the same database, `/my_db.db`).
 * Debugging on changing ports and "losing" the database.
 * Passing `singleInstance: false` in shared code (for example for a
   background task or a second controller): it throws on the web; share the

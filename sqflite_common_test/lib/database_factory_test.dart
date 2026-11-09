@@ -37,6 +37,72 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    Future<Database> openTestDb(String path, {void Function()? onCreated}) {
+      return factory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, version) async {
+            onCreated?.call();
+            await db.execute('CREATE TABLE Test(id INTEGER PRIMARY KEY)');
+          },
+        ),
+      );
+    }
+
+    test('delete an open database by its name then open it again', () async {
+      // A relative name, resolved in the databases path (at the root on the
+      // web, where a relative name was not found by the delete,
+      // sqflite_common_ffi_web <= 1.2.0+1).
+      var name = 'delete_open_reopen.db';
+      await factory.deleteDatabase(name);
+      var db = await openTestDb(name);
+      await db.insert('Test', {'id': 1});
+      await factory.deleteDatabase(name);
+      expect(await factory.databaseExists(name), isFalse);
+      try {
+        await db.getVersion();
+        fail('should fail, db was closed by calling deleteDatabase');
+      } catch (e) {
+        expect(e, isNot(const TypeMatcher<TestFailure>()));
+      }
+      await db.close();
+
+      // A new empty database, not the deleted one (sqflite_common_ffi_async
+      // <= 1.0.4 reopened the deleted file and lost the new data).
+      var created = false;
+      db = await openTestDb(name, onCreated: () => created = true);
+      try {
+        expect(created, isTrue);
+        expect(await db.query('Test'), isEmpty);
+      } finally {
+        await db.close();
+        await factory.deleteDatabase(name);
+      }
+    });
+
+    test('same database through two spellings', () async {
+      var p = context.pathContext;
+      var dbsPath = await context.createDirectory(null);
+      var path = p.join(dbsPath, 'two_spellings.db');
+      await factory.deleteDatabase(path);
+      var db1 = await openTestDb(path);
+      var db2 = await openTestDb(p.join(dbsPath, '.', 'two_spellings.db'));
+      try {
+        // One database, one connection (two on the web with
+        // sqflite_common_ffi_web <= 1.2.0+1: a write of one could be lost).
+        expect(db2, same(db1));
+        expect(db2.path, db1.path);
+      } finally {
+        await db1.close();
+        await db2.close();
+      }
+      await factory.deleteDatabase(
+        p.join(dbsPath, 'sub', '..', 'two_spellings.db'),
+      );
+      expect(await factory.databaseExists(path), isFalse);
+    });
+
     test('setDatabasesPath', () async {
       var originalDatabasesPath = await factory.getDatabasesPath();
       try {

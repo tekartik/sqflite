@@ -291,6 +291,17 @@ abstract class SqfliteDatabaseFfiAsyncBase extends SqfliteDatabaseBase {
     return result['count'] as int;
   }
 
+  /// Copies the committed changes of the WAL file into the database file,
+  /// so that the file alone holds the whole database (`readDatabaseBytes`).
+  Future<void> checkpoint() {
+    checkNotClosed();
+    return _wrapFfiAsyncCall(() async {
+      await ffiAsyncDatabase.writeLock((wc) async {
+        await wc.execute('PRAGMA wal_checkpoint(FULL)');
+      });
+    });
+  }
+
   /// Called by the base close implementation (which marks the database as
   /// closed first so that any later access fails with a database_closed error
   /// instead of reaching the underlying sqlite_async database while it is

@@ -1,3 +1,18 @@
+## 1.2.1
+
+* `x.db`, `./x.db` and `/x.db` are the same database: they opened two connections on the same
+  file (a write could be lost) and `deleteDatabase` by a relative name did not close the open
+  database. `db.path` is the resolved path (`/x.db`).
+* Worker: `sqlite3.wasm` is loaded once when the first calls arrive together, and a load error
+  (missing or wrong `sqlite3.wasm`) is the error of the call (it was a `null` result).
+* `SqfliteFfiWebOptions(inMemory: true)` keeps the databases in memory (it was ignored).
+* `setup --sqlite3-wasm-url` and `SqfliteWebSetupOptions.sqlite3WasmUri` are used (they were
+  ignored).
+* The io stubs say the factories are web only.
+* Doc: README (getting started, setup options, common mistakes), skills, dartdoc.
+* Run `dart run sqflite_common_ffi_web:setup` after upgrading: the worker gets these fixes and the
+  sqflite_common_ffi 2.4.6 ones (batch rollback error, cursor released on close).
+
 ## 1.2.0+1
 
 * Doc: README, example tab, `databaseFactoryFfiWeb` dartdoc

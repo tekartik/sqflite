@@ -46,13 +46,14 @@ void runFfiAsyncTests(SqfliteTestContext context, {bool all = false}) {
       // investigate parsing
       exception_test.run(context);
       exp_test.run(context);
-      // only delete/exist edge case fail
-      database_factory_test.run(context);
       // Investigate failure
       transaction_test.run(context);
       issue_test.run(context);
       walTests(context);
     }
+    // Before doc_test: its 'BLOB lookup' test leaves an in-memory database
+    // open, which the next in-memory open of the ffi factory gets back.
+    database_factory_test.run(context);
     doc_test.run(context, noLoggerTest: true);
     batch_test.run(context, noManualTransactionTest: true);
     exp_test.run(context, noMultipleStatement: true);

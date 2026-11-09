@@ -1,78 +1,65 @@
 # sqflite_common_ffi_web
 
-sqlite Web implementation (experimental) of the [sqflite](https://pub.dev/packages/sqflite)
-API. Features:
-- Persistency (in indexeddb)
-- Cross-tab safe (runs in a shared worker)
-- Wasm compatible (`flutter build web --wasm`)
+The [sqflite](https://pub.dev/packages/sqflite) API on the web: SQLite
+compiled to WebAssembly ([sqlite3](https://pub.dev/packages/sqlite3), thanks
+Simon Binder), the databases stored in IndexedDB.
 
-Thanks Simon Binder for the excellent sqlite3 lib.
+[![pub package](https://img.shields.io/pub/v/sqflite_common_ffi_web.svg)](https://pub.dev/packages/sqflite_common_ffi_web)
 
-Same API as `sqflite` (`openDatabase`, `Database`, `Transaction`, `Batch`...),
-see the [sqflite documentation](https://pub.dev/packages/sqflite) for the API
-and its common pitfalls.
+- Same API as `sqflite` (`openDatabase`, `Database`, `Transaction`, `Batch`...),
+  see the [sqflite documentation](https://pub.dev/packages/sqflite) for the API
+  and its common pitfalls.
+- Persistent (IndexedDB) and cross-tab safe (SQLite runs in a shared worker).
+- Flutter web and Dart web apps, dart2js and dart2wasm
+  (`flutter build web --wasm`).
+- Web only: on Android, iOS and macOS use the `sqflite` plugin, on Linux,
+  Windows and the Dart VM use
+  [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi).
 
-## Setup
+## Getting started
 
-Add the dependency:
+From the project folder (the one containing the `web` folder, also for a
+Flutter app):
+
 ```bash
 dart pub add sqflite_common_ffi_web
+# Creates web/sqlite3.wasm and web/sqflite_sw.js
+dart run sqflite_common_ffi_web:setup
 ```
 
-### Setup binaries
-
-Implementation requires [sqlite3.wasm binaries](https://github.com/simolus3/sqlite3.dart/releases)
-into your web folder as well as a sqflite specific shared worker.
-
-You can install binaries using the command (from your project folder, the one
-containing the `web` folder, also for a Flutter app):
-
-```bash
-$ dart run sqflite_common_ffi_web:setup
-```
-
-It should create the following files in your web folder:
-- `sqlite3.wasm`
-- `sqflite_sw.js`
-
-that you can put in source control or not (personally I don't, in this case run
-the command in your build/CI before building the web app). Without these files,
-the first database call fails (`An error occurred while initializing the web worker`
-in the browser console).
-
-Note: when sqlite3 and its wasm binary are updated, you may need to run the command again using the force option:
-```bash
-$ dart run sqflite_common_ffi_web:setup --force
-```
-
-However since it depends on `sqflite3` version and its associated binary, if it gets updated 
-and the tool still download the old version (sorry it is hardcoded) you might have to manually
-download a compatible binary from [sqlite3.wasm binaries](https://github.com/simolus3/sqlite3.dart/releases)
-I don't have a better option yet, sorry.
-
-### Use the proper factory.
+The app needs these 2 files next to its `index.html`: `sqlite3.wasm` (SQLite)
+and `sqflite_sw.js` (the shared worker running it). Put them in source control,
+or run the setup in your build/CI before building the web app.
 
 ```dart
+import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 Future<void> main() async {
-  // Use the ffi web factory in web apps (flutter or dart)
   var factory = databaseFactoryFfiWeb;
-  var db = await factory.openDatabase('my_db.db');
-  var sqliteVersion =
-      (await db.rawQuery('select sqlite_version()')).first.values.first;
-  print(sqliteVersion); // the SQLite version of sqlite3.wasm
+  var db = await factory.openDatabase(
+    'my_db.db',
+    options: OpenDatabaseOptions(
+      version: 1,
+      onCreate: (db, version) async {
+        await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY, name TEXT)');
+      },
+    ),
+  );
+  await db.insert('Test', {'name': 'hello'});
+  print(await db.query('Test')); // in the browser console
   await db.close();
 }
 ```
 
-On the web, a database path is only a name (`my_db.db`): there is no file
-system and `getDatabasesPath()` returns `/`.
+On the web a database path is only a name: there is no file system and
+`getDatabasesPath()` returns `/`. `my_db.db`, `./my_db.db` and `/my_db.db` are
+the same database (`db.path` is `/my_db.db`).
 
-### Add web support to existing sqflite application
+### Flutter: the same code on mobile and on the web
 
-If you have any existing iOS/Android application, one solution is to change the default database
-factory once in `main()`, before opening any database:
+Set the default factory once in `main()`, before opening any database; the
+rest of the `sqflite` code is unchanged:
 
 ```dart
 import 'package:flutter/foundation.dart';
@@ -82,15 +69,14 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 Future<void> main() async {
   if (kIsWeb) {
-    // Change default factory on the web
     databaseFactory = databaseFactoryFfiWeb;
   }
-  runApp(const MyApp());
+  runApp(const SizedBox());
 }
 
-/// Anywhere in your app: the same code works on mobile and on the web
+/// Anywhere in your app: relative to getDatabasesPath() on mobile, a name on
+/// the web.
 Future<Database> openMyDatabase() {
-  // Relative to getDatabasesPath() on mobile, only a name on the web.
   return openDatabase(
     'my_db.db',
     version: 1,
@@ -104,43 +90,91 @@ Future<Database> openMyDatabase() {
 For Windows and Linux too, see
 [one code base for mobile, desktop and web](https://github.com/tekartik/sqflite/blob/master/sqflite/README.md#one-code-base-for-mobile-desktop-and-web).
 
+## Which factory
+
+| Factory | SQLite runs | Files needed | Use it for |
+|---|---|---|---|
+| `databaseFactoryFfiWeb` | in a shared worker (a basic worker when shared workers are not available, Android Chrome) | `sqlite3.wasm`, `sqflite_sw.js` | apps (default) |
+| `databaseFactoryFfiWebNoWebWorker` | in the page | `sqlite3.wasm` | tools, demos, tests: a long query blocks the page, not safe across tabs |
+| `createDatabaseFactoryFfiWeb(options: ...)` | as above | as above | other file locations or names, another IndexedDB name, an in memory store (`SqfliteFfiWebOptions`) |
+
+## Setup options
+
+```bash
+dart run sqflite_common_ffi_web:setup --help
+```
+
+- `--force`: rebuild the worker. The setup caches the worker per version of
+  `sqflite_common_ffi_web`: after upgrading `sqflite_common_ffi`,
+  `sqflite_common` or `sqlite3` alone, run it with `--force` to get their fixes
+  in the worker.
+- `--sqlite3-wasm-url <url>`: download another `sqlite3.wasm`
+  ([releases](https://github.com/simolus3/sqlite3.dart/releases)), for example
+  the one matching a newer `sqlite3` package. By default the setup downloads
+  the release known to work with this version.
+- `--dir <dir>` (default `web`), `--no-sqlite3-wasm`, `--verbose`, and the
+  project path as argument.
+
+The same from Dart (io only): `setupSqfliteWebBinaries()` from
+`package:sqflite_common_ffi_web/setup.dart`.
+
+## Common mistakes
+
+- Setup not run, or the files not deployed: the first database call fails,
+  the browser console says `An error occurred while initializing the web
+  worker` (missing `sqflite_sw.js`), or the error names the `sqlite3.wasm` url
+  that could not be loaded.
+- Debugging on a different port each time: the IndexedDB storage is per origin,
+  port included (`localhost:8080` is not `localhost:8081`). Use
+  `flutter run -d chrome --web-port 8080`.
+- `OpenDatabaseOptions(singleInstance: false)` for a persistent database: not
+  supported, `openDatabase` throws an `ArgumentError` (see below).
+- Using `databaseFactoryFfiWeb` outside the web: it throws an
+  `UnsupportedError`, guard it with `kIsWeb`.
+- Importing only `sqflite_ffi_web.dart`: `Database` and `OpenDatabaseOptions`
+  come from `package:sqflite_common/sqlite_api.dart` (or `sqflite`).
+
 ## Limitations
-
-### Use the same web port when debugging
-
-The database is stored in the browser indexeddb. Like any other web storage, it is tied to the port. (i.e. localhost:8080 is different from localhost:8081).
-When debugging, you should use the same port to keep the same indexeddb database
-(`flutter run -d chrome --web-port 8080`).
-
-### No shared worker available
-
-When shared worker are not supported - for example in Android Chrome as of 2022-10-20 -, a basic web worker is used.
-In this case it is not cross-tab safe.
 
 ### One connection per database (`singleInstance: false` not supported)
 
-All the databases of a factory are opened in a single sqlite3 (wasm) instance using a single
-virtual file system (an in-memory image persisted in IndexedDB). This virtual file system has no
-locking between connections, so two connections to the same database file could each write their
-own version of the pages and corrupt the database.
+All the databases of a factory are opened in a single sqlite3 (wasm) instance
+using a single virtual file system (an in-memory image persisted in IndexedDB).
+This virtual file system has no locking between connections, so two connections
+to the same database file could each write their own version of the pages and
+corrupt the database.
 
-For this reason `OpenDatabaseOptions(singleInstance: false)` is not supported for a persistent
-database and `openDatabase` throws an `ArgumentError`. Open the database once (default
-`singleInstance: true`): subsequent calls to `openDatabase` with the same path return the same
-instance. Only in-memory databases (`inMemoryDatabasePath`) can be opened multiple times with
+For this reason `OpenDatabaseOptions(singleInstance: false)` is not supported
+for a persistent database and `openDatabase` throws an `ArgumentError`. Open
+the database once (default `singleInstance: true`): subsequent calls to
+`openDatabase` with the same path return the same instance. Only in-memory
+databases (`inMemoryDatabasePath`) can be opened multiple times with
 `singleInstance: false`, each connection being a private database.
 
-Use the same name for the same database everywhere in your app (for example
-not `my_db.db` here and `/my_db.db` there).
+### One configuration per page or per worker
+
+The factories of a page share the sqflite state. Create each factory once,
+and in a page use a single no worker configuration (`noWebWorker: true`), not
+mixed with worker factories: two no worker factories with different
+`indexedDbName` see the same databases. A shared worker keeps the options of
+its first use: for another `indexedDbName` or `sqlite3.wasm`, use another worker
+file name (`sharedWorkerUri`).
+
+### Basic worker
+
+When shared workers are not supported (Android Chrome), a basic web worker is
+used. In this case it is not cross-tab safe.
 
 ### No file access
 
 Use `databaseFactory.writeDatabaseBytes()` / `readDatabaseBytes()` to import or
-export a database (see [opening an asset database on the web](https://github.com/tekartik/sqflite/blob/master/packages_web/sqflite_common_ffi_web/doc/opening_asset_db_web.md)).
+export a database (see
+[opening an asset database on the web](https://github.com/tekartik/sqflite/blob/master/packages_web/sqflite_common_ffi_web/doc/opening_asset_db_web.md)).
+Relative names are always at the root (`setDatabasesPath()` does not apply to
+them on the web).
 
 ## Status
 
-This is still experimental:
-- slow
-- not fully tested
-- bugs
+This is still experimental: slower than native, not fully tested. See also
+[sqlite3 versions](https://github.com/tekartik/sqflite/blob/master/packages_web/sqflite_common_ffi_web/doc/troubleshooting.md)
+and [why a separate package](https://github.com/tekartik/sqflite/blob/master/packages_web/sqflite_common_ffi_web/doc/why_yet_another_package.md).

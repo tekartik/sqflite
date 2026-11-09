@@ -1,8 +1,11 @@
 import 'package:meta/meta.dart';
 
-/// Web options.
+/// Options of a web factory, see `createDatabaseFactoryFfiWeb`.
+///
+/// All are optional, the defaults match the files created by
+/// `dart run sqflite_common_ffi_web:setup` next to the page.
 class SqfliteFfiWebOptions {
-  /// Default ok for regular dart applications but not flutter app.
+  /// Web factory options.
   SqfliteFfiWebOptions({
     this.inMemory,
     this.sqlite3WasmUri,
@@ -11,16 +14,22 @@ class SqfliteFfiWebOptions {
     @visibleForTesting this.forceAsBasicWorker,
   });
 
-  /// In memory options, indexedDbName is ignored
+  /// True to keep the databases in memory only (nothing persisted,
+  /// [indexedDbName] is ignored).
   final bool? inMemory;
 
-  /// wasm3 uri
+  /// The sqlite3.wasm url (default `sqlite3.wasm`, relative to the worker
+  /// script, or to the page without worker).
   final Uri? sqlite3WasmUri;
 
-  /// Indexed db name holder the databases.
+  /// The IndexedDB database holding the databases (default
+  /// `sqflite_databases`).
   final String? indexedDbName;
 
-  /// If using a shared worker, the one to spawn.
+  /// The worker script url (default `sqflite_sw.js`, relative to the page).
+  ///
+  /// A shared worker serves every factory and tab using this url and keeps
+  /// the options of its first use: use another file name for other options.
   final Uri? sharedWorkerUri;
 
   /// Force sharedWorkerUri as a basic worker (i.e. Worker instead of SharedWorker).
