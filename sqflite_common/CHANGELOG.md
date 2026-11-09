@@ -1,3 +1,17 @@
+## 2.5.16
+
+* Fix the single instance cache: closing an already closed database no longer
+  drops a newer instance opened at the same path, and after an
+  `onDatabaseDowngradeDelete` open or a `deleteDatabase` through
+  `SqfliteDatabaseFactoryLogger`, `openDatabase` no longer returns a second (or
+  the deleted) instance
+* `Batch.apply()` in `onCreate`/`onUpgrade`/`onDowngrade` runs in the open
+  transaction instead of hanging
+* `openDatabase` no longer modifies the given `OpenDatabaseOptions` (options with
+  `onDatabaseDowngradeDelete` can be reused)
+* `DatabaseException.getResultCode()` returns null instead of throwing when the
+  exception has no message
+
 ## 2.5.15
 
 * Fix every later call hanging after a failed `COMMIT` of a transaction or a batch

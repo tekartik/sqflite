@@ -82,5 +82,24 @@ void main() {
       ]);
     });
     test('batch', () async {});
+    test('deleteDatabase removes the single instance', () async {
+      var events = <SqfliteLoggerEvent>[];
+      final factory = SqfliteDatabaseFactoryLogger(
+        MockDatabaseFactory(),
+        options: SqfliteLoggerOptions(log: events.add),
+      );
+      const path = 'logger_delete_single_instance.db';
+      var db1 = await factory.openDatabase(path);
+      await factory.deleteDatabase(path);
+      expect(
+        events.whereType<SqfliteLoggerDatabaseDeleteEvent>().single.path,
+        path,
+      );
+      // The deleted database must not be returned again
+      var db2 = await factory.openDatabase(path);
+      expect(db2, isNot(same(db1)));
+      expect(await factory.openDatabase(path), same(db2));
+      await db2.close();
+    });
   });
 }

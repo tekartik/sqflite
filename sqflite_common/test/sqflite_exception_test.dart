@@ -168,5 +168,12 @@ void main() {
       exception = SqfliteDatabaseException('test', null);
       expect(exception.result, isNull);
     });
+    test('getResultCode null message', () async {
+      // A platform exception message can be null
+      var exception = SqfliteDatabaseException(null, null);
+      expect(exception.getResultCode(), isNull);
+      exception = SqfliteDatabaseException(null, null, resultCode: 19);
+      expect(exception.getResultCode(), 19);
+    });
   });
 }

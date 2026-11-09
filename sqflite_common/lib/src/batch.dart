@@ -221,8 +221,9 @@ class SqfliteDatabaseBatch extends SqfliteBatch {
   Future<List<Object?>> apply({bool? noResult, bool? continueOnError}) {
     database.checkNotClosed();
 
+    // Use the open transaction if any (onCreate/onUpgrade/onDowngrade).
     return database.txnApplyBatch(
-      null,
+      database.txn,
       this,
       noResult: noResult,
       continueOnError: continueOnError,

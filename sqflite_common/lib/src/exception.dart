@@ -158,7 +158,10 @@ class SqfliteDatabaseException extends DatabaseException {
   /// The application should handle both.
   @override
   int? getResultCode() => _resultCode ??= () {
-    final message = _message!.toLowerCase();
+    final message = _message?.toLowerCase();
+    if (message == null) {
+      return null;
+    }
     int? findCode(String patternPrefix) {
       final index = message.indexOf(patternPrefix);
       if (index != -1) {

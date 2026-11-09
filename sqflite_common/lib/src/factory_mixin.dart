@@ -73,10 +73,15 @@ mixin SqfliteDatabaseFactoryMixin
     // Lock per database name
     final lock = _getDatabaseOpenLock(database.path);
     return lock.synchronized(() async {
-      await (database as SqfliteDatabaseWithOpenHelperMixin).openHelper!
-          .closeDatabase(database);
+      final openHelper =
+          (database as SqfliteDatabaseWithOpenHelperMixin).openHelper!;
+      await openHelper.closeDatabase(database);
       if (database.options?.singleInstance != false) {
-        removeDatabaseOpenHelper(database.path);
+        // Only remove our own helper, a closed database closed again must not
+        // remove the one of a newer instance opened at the same path.
+        if (identical(databaseOpenHelpers[database.path], openHelper)) {
+          removeDatabaseOpenHelper(database.path);
+        }
       }
     });
   }
@@ -113,7 +118,13 @@ mixin SqfliteDatabaseFactoryMixin
           setDatabaseOpenHelper(databaseOpenHelper);
         }
         try {
-          return await databaseOpenHelper.openDatabase();
+          final database = await databaseOpenHelper.openDatabase();
+          if (firstOpen) {
+            // The open callbacks might have removed it
+            // (onDatabaseDowngradeDelete deletes the database during open).
+            setDatabaseOpenHelper(databaseOpenHelper);
+          }
+          return database;
         } catch (e) {
           // If first open fail remove the reference
           if (firstOpen) {

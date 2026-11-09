@@ -905,10 +905,16 @@ class _SqfliteDatabaseFactoryLogger
     }
   }
 
+  /// The delegate performs the actual delete.
+  @override
+  Future<void> invokeDeleteDatabase(String path) =>
+      _delegate.deleteDatabase(path);
+
   @override
   Future<void> deleteDatabase(String path) async {
     Future<void> doDeleteDatabase() {
-      return _delegate.deleteDatabase(path);
+      // Also removes the single instance database from our own cache.
+      return super.deleteDatabase(path);
     }
 
     if (_options.type == SqfliteDatabaseFactoryLoggerType.all) {

@@ -327,6 +327,32 @@ void run() {
         // Re-opening, no transaction is created
         expect(db.sqls, <String?>[null, 'PRAGMA user_version', null]);
       });
+
+      test('downgrade delete options reused', () async {
+        final factory = MockDatabaseFactory();
+        const path = 'downgrade_delete_options_reused.db';
+        var createCount = 0;
+        final options = OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, version) {
+            createCount++;
+          },
+          onDowngrade: onDatabaseDowngradeDelete,
+        );
+        for (var i = 1; i <= 2; i++) {
+          var db = await factory.openDatabase(
+            path,
+            options: OpenDatabaseOptions(version: 3),
+          );
+          await db.close();
+          db = await factory.openDatabase(path, options: options);
+          // The caller options are not modified
+          expect(options.onDowngrade, onDatabaseDowngradeDelete);
+          expect(await db.getVersion(), 1);
+          await db.close();
+          expect(createCount, i);
+        }
+      });
     });
     group('openTransaction', () {
       test('onCreate', () async {
@@ -528,6 +554,37 @@ void run() {
           },
           <String, Object?>{'sql': 'COMMIT', 'id': 1, 'inTransaction': false},
           <String, Object?>{'id': 1},
+        ]);
+      });
+
+      test('batch apply', () async {
+        final db =
+            await mockDatabaseFactory
+                    .openDatabase(
+                      'batch_apply.db',
+                      options: OpenDatabaseOptions(
+                        version: 1,
+                        onCreate: (db, _) async {
+                          final batch = db.batch();
+                          batch.execute('test1');
+                          // Run in the open transaction, used to hang
+                          await batch.apply();
+                        },
+                      ),
+                    )
+                    .timeout(const Duration(seconds: 5))
+                as MockDatabase;
+
+        await db.close();
+        expect(db.sqls, <String?>[
+          null,
+          'PRAGMA user_version',
+          'BEGIN EXCLUSIVE',
+          'PRAGMA user_version',
+          'test1',
+          'PRAGMA user_version = 1',
+          'COMMIT',
+          null,
         ]);
       });
     });
@@ -837,6 +894,43 @@ void run() {
         expect(db1, isNot(db2));
         await db1.close();
         await db2.close();
+      });
+
+      test('singleInstance closed twice', () async {
+        final factory = MockDatabaseFactory();
+        const path = 'single_instance_closed_twice.db';
+        final db1 = await factory.openDatabase(path);
+        await db1.close();
+        final db2 = await factory.openDatabase(path);
+        // Closing the old instance again must not affect the new one
+        await db1.close();
+        expect(await factory.openDatabase(path), same(db2));
+        expect(db2.isOpen, isTrue);
+        await db2.close();
+      });
+
+      test('singleInstance after downgrade delete', () async {
+        final factory = MockDatabaseFactory();
+        const path = 'single_instance_downgrade_delete.db';
+        var db = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(version: 2),
+        );
+        await db.close();
+        final db1 = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onDowngrade: onDatabaseDowngradeDelete,
+          ),
+        );
+        expect(await db1.getVersion(), 1);
+        final db2 = await factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(version: 1),
+        );
+        expect(db2, same(db1));
+        await db1.close();
       });
     });
 

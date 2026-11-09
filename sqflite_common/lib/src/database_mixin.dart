@@ -1089,8 +1089,11 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
     var databaseId = await openDatabase();
 
     try {
+      // Never modify the caller options, they could be reused for another
+      // open.
+      var onDowngrade = options.onDowngrade;
       // Special on downgrade delete database
-      if (options.onDowngrade == onDatabaseDowngradeDelete) {
+      if (onDowngrade == onDatabaseDowngradeDelete) {
         // Downgrading will delete the database and open it again
         Future<void> onDatabaseDowngradeDoDelete(
           Database database,
@@ -1134,8 +1137,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           }
         }
 
-        (options as SqfliteOpenDatabaseOptions).onDowngrade =
-            onDatabaseDowngradeDoDelete;
+        onDowngrade = onDatabaseDowngradeDoDelete;
       }
 
       id = databaseId;
@@ -1171,12 +1173,8 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
                   await options.onUpgrade!(this, oldVersion, options.version!);
                 }
               } else if (options.version! < oldVersion) {
-                if (options.onDowngrade != null) {
-                  await options.onDowngrade!(
-                    this,
-                    oldVersion,
-                    options.version!,
-                  );
+                if (onDowngrade != null) {
+                  await onDowngrade(this, oldVersion, options.version!);
                   // Check and reuse transaction if if needed
                   // in case downgrade delete was called
                   if (openTransaction!.transactionId != txn.transactionId) {
