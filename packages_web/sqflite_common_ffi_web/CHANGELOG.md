@@ -10,8 +10,9 @@
   ignored).
 * The io stubs say the factories are web only.
 * Doc: README (getting started, setup options, common mistakes), skills, dartdoc.
-* Run `dart run sqflite_common_ffi_web:setup` after upgrading: the worker gets these fixes and the
-  sqflite_common_ffi 2.4.6 ones (batch rollback error, cursor released on close).
+* Requires sqflite_common_ffi 2.4.6. Run `dart run sqflite_common_ffi_web:setup` after upgrading:
+  the worker gets these fixes and the sqflite_common_ffi 2.4.6 ones (batch rollback error, cursor
+  released on close).
 
 ## 1.2.0+1
 
