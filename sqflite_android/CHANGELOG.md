@@ -1,3 +1,11 @@
+## 2.4.6
+
+* Fix a crash (NullPointerException on the database thread, the app dies) when opening a path
+  without directory, such as a `file:` uri: the open now fails with a DatabaseException (uris
+  are not supported by the plugin).
+* Doc: README (getting started, Android specifics, pitfalls), example, skill fixes (typed
+  arguments, extended result codes, execute PRAGMA).
+
 ## 2.4.5
 
 * Fix every later call hanging after a failed COMMIT or ROLLBACK (e.g. a deferred foreign key

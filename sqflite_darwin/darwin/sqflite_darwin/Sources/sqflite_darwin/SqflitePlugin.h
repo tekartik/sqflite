@@ -31,6 +31,14 @@ extern NSString *const SqfliteParamErrorData;
 extern NSString *const SqfliteParamTransactionId;
 extern NSString *const SqfliteParamTransactionClosed;
 
+@interface SqflitePlugin ()
+
+// Same as resultSetToResults:cursorPageSize:, error is set if reading stopped
+// on an error.
++ (NSMutableDictionary*)resultSetToResults:(SqfliteDarwinResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize error:(NSError**)error;
+
+@end
+
 // Static helpers
 static const int sqfliteLogLevelNone = 0;
 static const int sqfliteLogLevelSql = 1;

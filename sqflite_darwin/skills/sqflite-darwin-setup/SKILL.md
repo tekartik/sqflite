@@ -8,7 +8,7 @@ description: >-
   (no FMDB pod), privacy manifest, getDatabasesPath (Documents) vs
   path_provider, read-only opening, deleteDatabase side files,
   SqfliteDarwin.createUnprotectedFolder for locked-device background access,
-  result codes, Xcode/Podfile build issues.
+  extended result codes, query errors, Xcode/Podfile build issues.
 ---
 
 # sqflite_darwin: iOS and macOS implementation of sqflite
@@ -41,7 +41,8 @@ dependencies:
   app `Podfile` left over from sqflite < 2.3.2 (`Module 'FMDB' not found`).
   After upgrading run `flutter clean` and delete `ios/Podfile.lock` /
   `macos/Podfile.lock`.
-* `getDatabasesPath()` returns the app Documents directory. Prefer
+* `getDatabasesPath()` returns the app Documents directory (the user's
+  `~/Documents` for a macOS app that is not sandboxed). Prefer
   `path_provider` (`getLibraryDirectory()` on iOS, or the application
   support directory) for data the user should not see in Files/iCloud
   backups. A relative path is resolved under Documents.
@@ -51,10 +52,13 @@ dependencies:
   repaired or deleted, unlike Android read-write opens).
 * `deleteDatabase(path)` also removes the `-wal`, `-shm` and `-journal`
   files; use it rather than `File.delete`.
-* `DatabaseException.getResultCode()` yields the primary SQLite result code
-  (for example 19 for a constraint violation) on iOS/macOS, the extended
-  code on Android/ffi; write checks that accept both or use
+* `DatabaseException.getResultCode()` yields the extended SQLite result
+  code (for example 2067 for a UNIQUE constraint, the plugin turns extended
+  codes on at open), as on Android and ffi; prefer
   `isUniqueConstraintError()` and friends.
+* A query failing while reading its rows (constraint of an `INSERT ...
+  RETURNING`, `SQLITE_BUSY`...) throws a `DatabaseException` since 2.4.6;
+  before, it returned the rows read so far.
 * Background isolate while the device is locked (push notification,
   background fetch): files created in protected folders are unreadable.
   Create the database inside a folder made with
@@ -141,7 +145,10 @@ end
   bundles its own renamed copy.
 * Storing user databases in Documents (`getDatabasesPath()`) when they
   should not be exposed or backed up; use `path_provider`.
-* Comparing `getResultCode()` to Android extended codes only.
+* Comparing `getResultCode()` to primary codes (19) only: the code is the
+  extended one (2067, 1555, 1299...).
+* Passing a `List` with null items as an argument: only `null`, `num`,
+  `String` and `Uint8List` are supported.
 * Opening from a background isolate on a locked device without an
   unprotected folder (`DatabaseException(open_failed)`).
 

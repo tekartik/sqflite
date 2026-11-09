@@ -296,12 +296,20 @@ static NSInteger _databaseOpenCount = 0;
 
 // if cursorPageSize is not null, we limit the result count
 + (NSMutableDictionary*)resultSetToResults:(SqfliteDarwinResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize {
+    return [SqflitePlugin resultSetToResults:resultSet cursorPageSize:cursorPageSize error:NULL];
+}
+
+// Same, error is set if reading stopped on an error: SQLite reports most
+// errors (constraint, busy, integer overflow...) when stepping, not when
+// preparing the statement.
++ (NSMutableDictionary*)resultSetToResults:(SqfliteDarwinResultSet*)resultSet cursorPageSize:(NSNumber*)cursorPageSize error:(NSError**)error {
     NSMutableDictionary* results = [NSMutableDictionary new];
     NSMutableArray* columns = nil;
     NSMutableArray* rows;
     int columnCount = 0;
-    
-    while ([resultSet next]) {
+    NSError* stepError = nil;
+
+    while ([resultSet nextWithError:&stepError]) {
         if (columns == nil) {
             columnCount = [resultSet columnCount];
             columns = [NSMutableArray new];
@@ -324,6 +332,9 @@ static NSInteger _databaseOpenCount = 0;
                 break;
             }
         }
+    }
+    if (error != NULL) {
+        *error = stepError;
     }
     return results;
 }

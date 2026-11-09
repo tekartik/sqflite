@@ -62,8 +62,9 @@ Future<void> main() async {
   * `sqflite_ffi`: Flutter app that wants ffi everywhere (or on desktop with
     zero setup) and/or uses the database from several isolates.
   * `sqflite_common_ffi_web` for the web: `sqflite_ffi` is a no-op there
-    (`SqfliteFfiPlugin.registerWith()` does nothing and
-    `sqfliteDatabaseFactoryFfi` returns the unsupported ffi factory).
+    (`SqfliteFfiPlugin.registerWith()` does nothing,
+    `sqfliteDatabaseFactoryFfi` throws `UnsupportedError` and
+    `createSqfliteDatabaseFactoryFfi` throws `UnimplementedError`).
 * Registration order: `SqfliteFfiPlugin.registerWith()` uses
   `databaseFactoryOrNull ??=`, and so does the native `sqflite` plugin
   (`SqflitePlugin.registerWith()`). When both plugins are in the app the
@@ -78,7 +79,10 @@ Future<void> main() async {
 * `createSqfliteDatabaseFactoryFfi({SqfliteFfiInit? ffiInit})` returns a new
   factory that still shares the isolate through `IsolateNameServer`.
   `ffiInit` must be top-level or static and runs in the sqflite isolate
-  before the first SQLite call; the native library itself is selected by the
+  before the first SQLite call, only when this factory starts the shared
+  isolate: if `sqfliteDatabaseFactoryFfi`, another factory or another Flutter
+  isolate started it first, `ffiInit` is not called. Use one factory for the
+  whole app. The native library itself is selected by the
   `sqlite3` build hook user defines in `pubspec.yaml`
   (`hooks.user_defines.sqlite3.source`), see `sqflite-common-ffi-desktop`.
 * Do not assume plugin registration in background isolates (`compute`,
@@ -249,7 +253,8 @@ Future<int> countInIsolate(String path) => Isolate.run(() async {
 import 'package:sqflite_ffi/sqflite_ffi.dart';
 
 void _ffiInit() {
-  // Runs inside the shared sqflite isolate before the first SQLite call.
+  // Runs inside the shared sqflite isolate before the first SQLite call, if
+  // this factory is the first one used in the app (it starts the isolate).
 }
 
 final myFactory = createSqfliteDatabaseFactoryFfi(ffiInit: _ffiInit);

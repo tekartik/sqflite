@@ -1,3 +1,11 @@
+## 2.4.6
+
+* Fix query errors raised while reading the rows (constraint violation of an
+  `INSERT ... RETURNING`, `SQLITE_BUSY`, `integer overflow`...): the query, the batch query or
+  the cursor page now fails with a DatabaseException instead of returning the rows read so far.
+* Doc: README (getting started, iOS/macOS specifics, pitfalls), example, skill fix (extended
+  result codes).
+
 ## 2.4.5
 
 * Fix every later call hanging after a failed COMMIT or ROLLBACK (e.g. a deferred foreign key

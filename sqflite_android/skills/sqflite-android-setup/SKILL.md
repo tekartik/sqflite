@@ -6,8 +6,8 @@ description: >-
   SqfliteAndroid.registerWith, WAL via the com.tekartik.sqflite.wal_enabled
   manifest meta-data or setJournalMode, read-only opening and corruption
   handling, getDatabasesPath location, androidSetLocale / COLLATE LOCALIZED,
-  the 1 MB CursorWindow row limit, background worker thread, Gradle/AGP build
-  issues.
+  the CursorWindow row size limit, supported argument types, the -1 id of an
+  ignored insert, background worker thread, Gradle/AGP build issues.
 ---
 
 # sqflite_android: Android implementation of sqflite
@@ -37,18 +37,19 @@ dependencies:
   uses the Kotlin built into the Flutter Gradle plugin, AGP 9). If the build
   fails with `androidJdkImage` or AGP errors, update the app's Gradle wrapper
   and `com.android.application` plugin versions.
-* `getDatabasesPath()` returns `data/data/<package>/databases`; the plugin
-  creates the parent directory of the path on open. A relative path is
-  resolved there.
+* `getDatabasesPath()` returns `/data/user/0/<package>/databases`
+  (`/data/data/<package>/databases` on old devices); the plugin creates the
+  parent directory of the path on open. A relative path is resolved there.
+  `file:` uris are not supported (the open fails): pass a file path.
 * SQL runs on a dedicated background worker thread (default
   `Process.THREAD_PRIORITY_DEFAULT`); calls are serialized per database.
 * WAL is disabled by default. Enable it globally with
   `<meta-data android:name="com.tekartik.sqflite.wal_enabled"
   android:value="true"/>` inside `<application>` in
   `android/app/src/main/AndroidManifest.xml`, or per open with
-  `db.setJournalMode('WAL')` in `onConfigure` (that extension falls back to
-  `rawQuery` because `execute('PRAGMA journal_mode=WAL')` fails on Android
-  when the manifest flag is not set).
+  `db.setJournalMode('WAL')` in `onConfigure`. Since 2.4.5
+  `execute('PRAGMA journal_mode=WAL')` works too (before, Android rejected an
+  `execute` returning a row; `setJournalMode` falls back to `rawQuery`).
 * `readOnly: true` opens with `SQLiteDatabase.OPEN_READONLY` and a
   no-op corruption handler, so a corrupt or non-SQLite file is left intact
   and the first access fails. A read-write open uses Android's default
@@ -56,18 +57,23 @@ dependencies:
 * `db.androidSetLocale('fr-FR')` (extension `SqfliteDatabaseAndroidExt` in
   `package:sqflite/sqflite.dart`) sets the locale for `ORDER BY name COLLATE
   LOCALIZED`; call it in `onConfigure` at every open.
-* Arguments are bound as strings; `SELECT ?1` returns `'3'` for `[3]`,
-  comparisons and arithmetic still work.
-* A single row must fit in the `CursorWindow` (about 1 MB):
+* Arguments keep their type (`SELECT ?1` returns `3` for `[3]`). Supported:
+  `null`, `num`, `String`, `Uint8List` (blob); other typed lists
+  (`Int32List`...) are stored as text by insert/update/execute and rejected
+  by a query.
+* An insert ignored by a conflict (`ConflictAlgorithm.ignore`, `INSERT OR
+  IGNORE`) returns -1 on Android, 0 on the other implementations: test
+  `id <= 0`.
+* A single row must fit in the `CursorWindow` (around 1 to 2 MB):
   `SQLiteBlobTooBigException` / `Row too big to fit into CursorWindow` means
   a blob should live in a file. `java.lang.OutOfMemoryError` on writes: split
   into smaller transactions (for example 1000 operations each); reading:
   limit columns and rows.
 * Inspect a device database from Android Studio: Device File Explorer,
   `data/data/<package>/databases`, Save As.
-* `DatabaseException.getResultCode()` returns the extended SQLite code on
-  Android (for example 2067 for a UNIQUE constraint), the primary code on
-  iOS; handle both.
+* `DatabaseException.getResultCode()` returns the extended SQLite code (for
+  example 2067 for a UNIQUE constraint), as on iOS, macOS and ffi; prefer
+  `isUniqueConstraintError()` and friends.
 * `MissingPluginException` only in Android release mode: remove the
   `shrinkResources true` and `minifyEnabled true` lines from the app
   `build.gradle`.
@@ -131,9 +137,12 @@ Future<List<Map<String, Object?>>> sortedNames(String path) async {
 
 * Adding both `sqflite` and `sqflite_android` to `pubspec.yaml`: harmless
   but redundant, `sqflite` already depends on it.
-* Calling `execute('PRAGMA journal_mode=WAL')` and getting an error: use
-  `setJournalMode('WAL')` or the manifest meta-data.
+* Calling `execute('PRAGMA journal_mode=WAL')` with sqflite_android < 2.4.5
+  and getting an error: use `setJournalMode('WAL')` or the manifest
+  meta-data.
 * Storing images or files as blobs and hitting the cursor window limit.
+* Checking `id == 0` to detect an insert ignored by a conflict (-1 on
+  Android).
 * Expecting JSON1 / UPSERT / `RETURNING` on old Android versions; check
   `SELECT sqlite_version()` or use `sqflite_common_ffi` for a bundled SQLite.
 

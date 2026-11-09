@@ -144,6 +144,60 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    test('Query error while stepping', () async {
+      // SQLite reports this error when running the statement, not when
+      // preparing it: the query must fail, not return the rows read so far
+      // (sqflite_darwin <= 2.4.5 returned them).
+      var db = await factory.openDatabase(inMemoryDatabasePath);
+      try {
+        var sql = 'SELECT abs(-9223372036854775808)';
+        try {
+          await db.rawQuery(sql);
+          fail('should fail');
+        } on DatabaseException catch (e) {
+          expect(e.toString(), contains('integer overflow'));
+        }
+
+        try {
+          var batch = db.batch();
+          batch.rawQuery(sql);
+          await batch.commit();
+          fail('should fail');
+        } on DatabaseException catch (e) {
+          expect(e.toString(), contains('integer overflow'));
+        }
+
+        // Same when the error comes with a later page of a cursor.
+        await db.execute('CREATE TABLE Test (value INTEGER)');
+        await db.execute('INSERT INTO Test (value) VALUES (1)');
+        await db.execute(
+          'INSERT INTO Test (value) VALUES (-9223372036854775808)',
+        );
+        var values = <Object?>[];
+        try {
+          var cursor = await db.rawQueryCursor(
+            'SELECT abs(value) AS value FROM Test ORDER BY rowid',
+            null,
+            bufferSize: 1,
+          );
+          try {
+            while (await cursor.moveNext()) {
+              values.add(cursor.current['value']);
+            }
+          } finally {
+            await cursor.close();
+          }
+          fail('should fail');
+        } on DatabaseException catch (e) {
+          expect(e.toString(), contains('integer overflow'));
+        }
+        // Some implementations (Android) read every row on the first page.
+        expect(values, anyOf(isEmpty, [1]));
+      } finally {
+        await db.close();
+      }
+    });
+
     test('Duplicate column Exception', () async {
       // await utils.devSetDebugModeOn(true);
       var path = inMemoryDatabasePath;

@@ -325,8 +325,15 @@ static int transactionIdForce = -1;
         return false;
     }
     
-    NSMutableDictionary* results = [SqflitePlugin resultSetToResults:resultSet cursorPageSize:cursorPageSize];
-    
+    NSError* stepError = nil;
+    NSMutableDictionary* results = [SqflitePlugin resultSetToResults:resultSet cursorPageSize:cursorPageSize error:&stepError];
+    // Most errors (constraint, busy...) come when stepping, not when preparing
+    if (stepError != nil) {
+        [resultSet close];
+        [self dbHandleError:db operation:operation];
+        return false;
+    }
+
     if (cursorPageSize != nil) {
         bool cursorHasMoreData = [resultSet hasAnotherRow];
         if (cursorHasMoreData) {
@@ -376,8 +383,14 @@ static int transactionIdForce = -1;
             return;
         }
         SqfliteDarwinResultSet* resultSet = cursor.resultSet;
-        NSMutableDictionary* results = [SqflitePlugin resultSetToResults:resultSet cursorPageSize:cursor.pageSize];
-        
+        NSError* stepError = nil;
+        NSMutableDictionary* results = [SqflitePlugin resultSetToResults:resultSet cursorPageSize:cursor.pageSize error:&stepError];
+        if (stepError != nil) {
+            [self closeCursor:cursor];
+            [self dbHandleError:db operation:operation];
+            return;
+        }
+
         bool cursorHasMoreData = [resultSet hasAnotherRow];
         if (cursorHasMoreData) {
             // Keep the cursorId to specify that we have more data.

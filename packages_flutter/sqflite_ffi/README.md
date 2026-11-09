@@ -1,133 +1,97 @@
 # sqflite_ffi
 
-sqflite ffi based implementation for flutter, based on
-[`sqflite_common_ffi`](https://pub.dev/packages/sqflite_common_ffi).
+[![pub package](https://img.shields.io/pub/v/sqflite_ffi.svg)](https://pub.dev/packages/sqflite_ffi)
 
-Unlike `sqflite_common_ffi` where each isolate spawns its own sqflite isolate,
-the sqflite isolate send port is registered using flutter `IsolateNameServer`
-so that all the isolates of an application (main isolate, `compute`,
-`Isolate.run`...) share the same sqflite isolate and hence the same database
-instances (`singleInstance` works across isolates).
+The ffi implementation of sqflite (`package:sqlite3`, SQLite bundled with the
+app) as a Flutter plugin, based on
+[`sqflite_common_ffi`](https://pub.dev/packages/sqflite_common_ffi). Same API
+as [sqflite](https://pub.dev/packages/sqflite) (`openDatabase`, `Database`,
+`Transaction`, `Batch`...).
 
-## Getting Started
+What it adds to `sqflite_common_ffi`:
 
-`sqflite_ffi` is a (dart only) flutter plugin: at startup
-`SqfliteFfiPlugin.registerWith()` is called automatically, initializes ffi
-(Windows specific setup) and sets `sqfliteDatabaseFactoryFfi` as the default
-database factory (unless another factory - for example the native `sqflite`
-plugin - is already registered). So the global sqflite API works directly:
+* registration: at startup it sets the global `databaseFactory`, nothing to
+  call in `main()`;
+* one sqflite isolate for the whole app: its port is shared through Flutter's
+  `IsolateNameServer`, so the main isolate, `compute` and `Isolate.run` use the
+  same database instances (`singleInstance` and transactions hold across
+  isolates).
+
+## Getting started
+
+```sh
+flutter pub add sqflite_ffi
+```
 
 ```dart
+import 'package:flutter/widgets.dart';
 import 'package:sqflite_ffi/sqflite_ffi.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var db = await openDatabase(inMemoryDatabasePath);
-  // ...
+  print(await db.rawQuery('SELECT sqlite_version()'));
   await db.close();
 }
 ```
 
-The factory can also be used explicitly:
+In a real app, set the databases path first (the ffi default is relative to
+the current directory, not writable on Android and iOS), see
+[databases path](https://github.com/tekartik/sqflite/blob/master/packages_flutter/sqflite_ffi/doc/databases_path.md):
 
 ```dart
-Future<Database> openMyDatabase() async {
-  var factory = sqfliteDatabaseFactoryFfi;
-  return await factory.openDatabase(inMemoryDatabasePath);
-}
+var dir = await getApplicationSupportDirectory(); // package:path_provider
+await databaseFactory.setDatabasesPath(join(dir.path, 'databases'));
 ```
 
-In background isolates not started by the flutter engine, plugin registration
-does not happen automatically; either call
-`DartPluginRegistrant.ensureInitialized()` or use `sqfliteDatabaseFactoryFfi`
-directly.
+## Platforms
 
-On the web, no op.
+| Platform | Support |
+|---|---|
+| Android, iOS, Linux, macOS, Windows | yes, SQLite bundled by the `sqlite3` build hooks (nothing to install) |
+| Web | no: registration does nothing, `sqfliteDatabaseFactoryFfi` throws `UnsupportedError`; use [sqflite_common_ffi_web](https://pub.dev/packages/sqflite_common_ffi_web) |
 
-## Databases path
+## When to use what
 
-Relative database paths (and `getDatabasesPath()`) resolve to
-`.dart_tool/sqflite_common_ffi/databases` in the current directory, the
-`sqflite_common_ffi` default. That is fine when running from the project
-folder on desktop (`flutter run`, `flutter test`) but not in a real
-application:
+| Package | Use it for |
+|---|---|
+| `sqflite` | Flutter app on Android, iOS, macOS with the SQLite of the OS |
+| `sqflite_common_ffi` | Dart VM, desktop, unit tests; you set `databaseFactory`, one sqflite isolate per Dart isolate |
+| `sqflite_ffi` | Flutter app wanting a bundled SQLite everywhere, or using the database from several isolates |
 
-- on Android and iOS the current directory is `/`, which is not writable,
-  so opening a database fails;
-- on desktop an installed application can be started from any directory.
+Main entry points:
 
-`sqflite_ffi` does not depend on `path_provider`, so set the databases path
-yourself once in `main()`, before opening any database, typically with
-[`path_provider`](https://pub.dev/packages/path_provider) and
-[`path`](https://pub.dev/packages/path) added to your app.
+* `sqfliteDatabaseFactoryFfi`: the factory (the one registered as
+  `databaseFactory`), use it directly in libraries and tests.
+* `createSqfliteDatabaseFactoryFfi(ffiInit: ...)`: a factory with an init
+  function for the sqflite isolate (it shares the same isolate).
+* `SqfliteFfiPlugin.registerWith()`: called by Flutter, sets
+  `databaseFactory` when it is not set yet.
 
-### Per platform
+## Common pitfalls
 
-| Platform | Native sqflite plugin folder | path_provider code |
-|---|---|---|
-| Android | `/data/user/0/<package>/databases` | `join(dirname((await getApplicationSupportDirectory()).path), 'databases')` |
-| iOS | Documents | `(await getApplicationDocumentsDirectory()).path` |
-| macOS | Documents (inside the container for a sandboxed app) | `(await getApplicationDocumentsDirectory()).path` |
-| Linux | none | `join((await getApplicationSupportDirectory()).path, 'databases')` (`~/.local/share/<application id>/databases`) |
-| Windows | none | `join((await getApplicationSupportDirectory()).path, 'databases')` (`%APPDATA%\<company>\<product>\databases`) |
+* `sqflite` and `sqflite_ffi` both in an app: both register with
+  `databaseFactory ??=`, the first registered wins. Choose in `main()`:
+  `databaseFactory = sqfliteDatabaseFactoryFfi;`.
+* Do not also use `databaseFactoryFfi` of `sqflite_common_ffi`: it starts a
+  second, not shared sqflite isolate (it is hidden by this package's export).
+* An isolate spawned by hand (`Isolate.run`, `compute`) has no plugin
+  registration: call `DartPluginRegistrant.ensureInitialized()` (`dart:ui`)
+  before the global `openDatabase()`, or use `sqfliteDatabaseFactoryFfi`.
+* When two isolates open the same file, pass
+  `OpenDatabaseOptions(rollbackActiveTransactionOnOpen: false)` (`true` in
+  debug mode), otherwise the second open rolls back a transaction of the
+  first one. Let the isolate that owns the database close it.
+* `ffiInit` (of `createSqfliteDatabaseFactoryFfi`) runs only when this factory
+  starts the shared sqflite isolate: it is not called when another factory or
+  isolate started it first.
+* The databases path is per isolate: pass full paths to background isolates.
 
-Use the native folders to keep the databases of an existing app moving from
-`sqflite` to `sqflite_ffi`:
+## More
 
-```dart
-import 'dart:io';
-
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
-
-/// The folders used by the native sqflite plugin on Android, iOS and macOS,
-/// the application support directory on Linux and Windows.
-Future<String> sqflitePluginDatabasesPath() async {
-  if (Platform.isAndroid) {
-    // The files directory and the databases directory share the same parent,
-    // the application data directory.
-    var supportDir = await getApplicationSupportDirectory();
-    return join(dirname(supportDir.path), 'databases');
-  } else if (Platform.isIOS || Platform.isMacOS) {
-    return (await getApplicationDocumentsDirectory()).path;
-  }
-  return join((await getApplicationSupportDirectory()).path, 'databases');
-}
-```
-
-### One location for all platforms
-
-For a new app, a `databases` folder in the application support directory
-works everywhere with the same code. It is private to the application,
-writable, not shown to the user (unlike Documents on iOS or on a non
-sandboxed macOS app), and the location used by the
-[`sqflite_ffi_test_app`](https://github.com/tekartik/sqflite/tree/master/packages_flutter/sqflite_ffi_test_app):
-
-```dart
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:sqflite_ffi/sqflite_ffi.dart';
-
-/// A `databases` folder in the application support directory.
-Future<String> appDatabasesPath() async {
-  var supportDir = await getApplicationSupportDirectory();
-  return join(supportDir.path, 'databases');
-}
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  if (!kIsWeb) {
-    await databaseFactory.setDatabasesPath(await appDatabasesPath());
-  }
-  // Relative paths now resolve in the application support directory.
-  var db = await openDatabase('app.db');
-  // ...
-}
-```
-
-The path is set on the factory of the isolate calling `setDatabasesPath`. In
-a `compute` or `Isolate.run` callback, pass the full database path (from
-`join(await getDatabasesPath(), 'app.db')` in the main isolate) rather than a
-relative one.
+* [Databases path](https://github.com/tekartik/sqflite/blob/master/packages_flutter/sqflite_ffi/doc/databases_path.md): per platform folders, same folders
+  as the native plugin.
+* Agent skill: [`sqflite-ffi-flutter`](https://github.com/tekartik/sqflite/blob/master/packages_flutter/sqflite_ffi/skills/sqflite-ffi-flutter/SKILL.md).
+* [sqflite documentation](https://github.com/tekartik/sqflite/tree/master/sqflite/doc)
+  and [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi) (the
+  `sqlite3` build hook options).

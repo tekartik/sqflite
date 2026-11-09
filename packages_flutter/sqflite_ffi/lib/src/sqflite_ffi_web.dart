@@ -5,16 +5,12 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
 /// Not used on the web (there is no sqflite isolate to share).
 const sqfliteFfiIsolatePortName = 'com.tekartik.sqflite_ffi.isolate';
 
-/// The database factory to use for ffi on the web.
-///
-/// Returns [ffi.databaseFactoryFfi]. There is no isolate sharing on the web.
+/// Not supported on the web: throws an [UnsupportedError] (use
+/// `databaseFactoryFfiWeb` of the `sqflite_common_ffi_web` package).
 ffi.DatabaseFactory get sqfliteDatabaseFactoryFfi => ffi.databaseFactoryFfi;
 
-/// Creates an FFI database factory on the web (no isolate sharing on web).
-///
-/// [ffiInit] is an optional function to override sqlite3 initialization.
-///
-/// Returns a new [ffi.DatabaseFactory].
+/// Not supported on the web: throws an [UnimplementedError] (use
+/// `databaseFactoryFfiWeb` of the `sqflite_common_ffi_web` package).
 ffi.DatabaseFactory createSqfliteDatabaseFactoryFfi({
   ffi.SqfliteFfiInit? ffiInit,
 }) => ffi.createDatabaseFactoryFfi(ffiInit: ffiInit);

@@ -30,12 +30,22 @@ final _portServer = _IsolateNameServerPortServer();
 
 /// The database factory to use for ffi in a flutter application.
 ///
+/// Android, iOS, Linux, macOS and Windows. It is the global
+/// `databaseFactory` set at startup by [SqfliteFfiPlugin.registerWith] (when
+/// no other factory was set), it can also be used directly:
+///
+/// ```dart
+/// var db = await sqfliteDatabaseFactoryFfi.openDatabase(inMemoryDatabasePath);
+/// ```
+///
 /// The sqflite isolate is shared between flutter isolates using
 /// [IsolateNameServer]: the first isolate using the factory spawns the
 /// sqflite isolate and registers its send port, the other isolates
 /// (`compute`, `Isolate.run`...) reuse it.
 ///
-/// Check support documentation. Currently supports Win/Mac/Linux.
+/// Relative paths resolve in `.dart_tool/sqflite_common_ffi/databases` of the
+/// current directory (not writable on Android and iOS): call
+/// `setDatabasesPath()` first in an application.
 final ffi.DatabaseFactory sqfliteDatabaseFactoryFfi =
     createSqfliteDatabaseFactoryFfi();
 
@@ -44,6 +54,9 @@ final ffi.DatabaseFactory sqfliteDatabaseFactoryFfi =
 ///
 /// [ffiInit] is an optional initialization function to override sqlite3 dynamic
 /// library opening behavior. If provided, it must be a top-level or static function.
+/// It runs in the sqflite isolate when this factory starts it: it is not
+/// called when the shared sqflite isolate was already started (by another
+/// factory or another flutter isolate).
 ///
 /// Returns a new [ffi.DatabaseFactory] configured to share the sqflite isolate
 /// port across Flutter isolates.

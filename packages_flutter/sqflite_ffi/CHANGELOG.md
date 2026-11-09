@@ -1,3 +1,8 @@
+## 0.1.1+2
+
+* Doc: README getting started, platforms and pitfalls, databases path page, Flutter example;
+  `ffiInit` only runs when the factory starts the shared isolate
+
 ## 0.1.1+1
 
 * Document the databases path initialization (the ffi default is not writable on

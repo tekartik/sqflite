@@ -925,6 +925,22 @@ void run(SqfliteTestContext context) {
           }
         });
       });
+    } else if (context.isPlugin) {
+      // Not run on the other implementations without uri support: the path
+      // would be a file name relative to the current directory.
+      test('uri not supported', () async {
+        // A file: uri without directory crashed the Android plugin
+        // (sqflite_android <= 2.4.5). It may open (SQLite built with uri
+        // support) or fail, with a DatabaseException.
+        try {
+          var db = await factory.openDatabase(
+            'file:uri_not_supported?mode=memory',
+          );
+          await db.close();
+        } on DatabaseException catch (e) {
+          print(e);
+        }
+      });
     }
     test('Not in memory database', () async {
       // await utils.devSetDebugModeOn(true);
