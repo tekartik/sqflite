@@ -1,7 +1,19 @@
-## 2.4.5+1
+## 2.4.6
 
+* `createDatabaseFactoryFfi(noIsolate: true, ffiInit: ...)` calls `ffiInit`
+  once instead of before every database call
+* A throwing `ffiInit` makes the database calls fail with its error (they
+  waited forever); the next call tries again
+* A batch statement ending the transaction (`INSERT OR ROLLBACK`...) inside
+  `transaction()` reports its own error instead of
+  `cannot rollback - no transaction is active`
+* Closing or deleting a database with an open cursor releases the cursor (the
+  file stayed locked, `database is locked` when opened again)
 * Doc: README (SQLite bundled by the build hooks), example, encryption with the
-  sqlite3mc/sqlcipher hooks, dartdoc
+  sqlite3mc/sqlcipher hooks, dartdoc (`ffiInit`, the shared background isolate)
+
+## 2.4.5
+
 * Remove the database tracker (hot restart workaround). With a SQLite built with
   shared cache (e.g. `source: system` on Linux), each new sqflite isolate closed the
   live connections of the other ones, which then failed with `SqliteException(21)`

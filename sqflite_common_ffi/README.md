@@ -188,7 +188,8 @@ application [work on Linux and windows](https://github.com/tekartik/sqflite/blob
 
 * Database calls are made in a separate isolate (use `databaseFactoryFfiNoIsolate`
   in widget tests or in your own background isolate),
-* Multi-instance support (not common) is simulated
+* `singleInstance: false` (not common) opens a separate SQLite connection on each
+  open
 * As another note, `getDatabasesPath()` returns `.dart_tool/sqflite_common_ffi/databases`
   in the current directory: fine for tests and scripts, but in an application
   rely on a custom strategy using package such as `path_provider`.

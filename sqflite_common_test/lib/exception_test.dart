@@ -454,6 +454,8 @@ void run(SqfliteTestContext context) {
         );
         verify(false);
       } catch (e) {
+        // Not the failure of the verify above.
+        expect(e, isNot(isA<TestFailure>()));
         print(e);
       }
 

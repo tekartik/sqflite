@@ -30,6 +30,8 @@ DatabaseFactory createDatabaseFactoryFfiImpl({
           if (ffiInit != null) {
             ffiInit();
           }
+          // Once per factory (a throwing ffiInit is called again next time).
+          noIsolateInitialized = true;
         }
         return ffiMethodCallHandleNoIsolate(methodCall);
       } else {

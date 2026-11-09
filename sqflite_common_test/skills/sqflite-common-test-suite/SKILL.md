@@ -31,8 +31,9 @@ transactions, types, exceptions, WAL, protocol) in the calling test file.
         path: sqflite_common_test
       version: '>=0.3.0'
   ```
-  It pulls `sqflite_common`, `sqflite_common_ffi`, `test`, `path` and
-  `synchronized`.
+  It pulls `sqflite_common`, `test`, `path` and `synchronized`, not the
+  implementation under test: add it too (for example `sqflite_common_ffi`,
+  only a dev dependency of the suite itself).
 * Two imports are enough for the common case:
   `package:sqflite_common_test/sqflite_test.dart` (the context types) and
   `package:sqflite_common_test/all_test.dart` (the whole suite). Import

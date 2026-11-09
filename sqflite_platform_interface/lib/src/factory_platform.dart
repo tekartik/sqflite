@@ -54,13 +54,19 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
     return result;
   }
 
+  /// Read from the file system, a relative [path] is in the databases path
+  /// (as for [openDatabase]).
   @override
   Future<Uint8List> readDatabaseBytes(String path) async {
+    path = await fixPath(path);
     return await platform.databaseFileSystem.readDatabaseBytes(path);
   }
 
+  /// Written to the file system, a relative [path] is in the databases path
+  /// (as for [openDatabase]).
   @override
   Future<void> writeDatabaseBytes(String path, Uint8List bytes) async {
+    path = await fixPath(path);
     await platform.databaseFileSystem.writeDatabaseBytes(path, bytes);
   }
 }

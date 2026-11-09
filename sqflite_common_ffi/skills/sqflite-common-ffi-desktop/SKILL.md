@@ -78,7 +78,12 @@ skills (`sqflite-open-database`, `sqflite-crud-and-transactions`,
   * `ffiInit` is a top-level or static `void Function()` executed inside the
     sqflite isolate before the first SQLite call (with `noIsolate: true`, in
     the current isolate at the first call). Use it for extra native setup;
-    the library itself is selected by `sqlite3` build hooks, see below.
+    the library itself is selected by `sqlite3` build hooks, see below. If it
+    throws, the call fails with its error and the next call tries again.
+    The sqflite isolate is shared by every ffi factory of the Dart isolate and
+    created by the first call: only that factory's `ffiInit` and
+    `isolatePortServer` are used, create your custom factory before any other
+    ffi call.
   * `isolatePortServer` shares the sqflite isolate `SendPort` between Dart
     isolates (`lookupPort()`, `registerPort(SendPort)`, `unregisterPort()`).
     In Flutter use the `sqflite_ffi` package, which implements it with

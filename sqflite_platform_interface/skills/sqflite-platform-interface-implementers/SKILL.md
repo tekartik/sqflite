@@ -44,17 +44,22 @@ class SqfliteMyPlatform extends SqflitePlatform {
 * If your native code implements the sqflite method channel protocol
   (channel `com.tekartik.sqflite`, methods `openDatabase`, `closeDatabase`,
   `query`, `queryCursorNext`, `insert`, `update`, `execute`, `batch`,
-  `getDatabasesPath`, `databaseExists`, `deleteDatabase`,
-  `readDatabaseBytes`, `writeDatabaseBytes`, `options`, `debug`), call
+  `getDatabasesPath`, `databaseExists`, `deleteDatabase`, `options`,
+  `debug`), call
   `SqflitePlatform.initWithDatabaseFactoryMethodChannel()` from
   `registerWith()`. It sets `databaseFactoryOrNull ??=
   SqflitePlatform.databaseFactoryMethodChannel`, so an already registered
   factory is kept. The wire format is described in
-  `sqflite_common/doc/method_call_protocol.md`.
+  `sqflite_common/doc/method_call_protocol.md`. `readDatabaseBytes` and
+  `writeDatabaseBytes` are not sent to the native side: the method channel
+  factory reads and writes the file in Dart (`dart:io`), a relative path
+  being in the databases path.
 * If the implementation is a Dart-side `DatabaseFactory` (ffi, web,
-  in-memory), assign it with `SqflitePlatform().databaseFactory = factory`
-  or directly `databaseFactory = factory` from
-  `package:sqflite_common/sqflite.dart`. The factory must be a real sqflite
+  in-memory), set it in `registerWith()` with `databaseFactoryOrNull ??=
+  factory` (from `package:sqflite_common/sqflite.dart`, keeps a factory
+  already set, as `sqflite_ffi` does); `SqflitePlatform().databaseFactory =
+  factory` and `databaseFactory = factory` replace it (with a warning if one
+  was set). The factory must be a real sqflite
   implementation: build it with the `SqfliteDatabaseFactoryMixin` /
   `buildDatabaseFactory(invokeMethod: ...)` helpers that `sqflite_common`
   exports for implementers (`package:sqflite_common/src/mixin/import_mixin.dart`,

@@ -69,9 +69,14 @@ void sqfliteFfiInit() {
 /// Creates an FFI database factory.
 /// Optionally the [ffiInit] function can be provided to run some code before
 /// SQLite is used (in the sqflite isolate, or in the calling isolate when
-/// [noIsolate] is true). This function should
-/// be either a top level function or a static function.
+/// [noIsolate] is true), once. This function should
+/// be either a top level function or a static function. If it throws, the
+/// database call fails with that error and the next call tries again.
 /// Prefer the use of the [databaseFactoryFfi] getter if you don't need this functionality.
+///
+/// All the ffi factories of a Dart isolate share one sqflite isolate, created
+/// by the first call with the [ffiInit] and [isolatePortServer] of the factory
+/// making it: the ones of the other factories are then not used.
 ///
 /// With `package:sqlite3` 3.x (`sqflite_common_ffi` 2.4.0 and later), the
 /// SQLite library is not chosen in [ffiInit] but with build hooks options in

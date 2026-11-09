@@ -135,4 +135,39 @@ void main() {
       await db.close();
     }
   });
+
+  for (var noIsolate in [false, true]) {
+    var factory = noIsolate ? databaseFactoryFfiNoIsolate : databaseFactory;
+    test(
+      'batch rolling back the transaction (noIsolate: $noIsolate)',
+      () async {
+        var db = await factory.openDatabase(inMemoryDatabasePath);
+        try {
+          await db.execute('CREATE TABLE t (id INTEGER PRIMARY KEY)');
+          await db.insert('t', {'id': 1});
+          try {
+            await db.transaction((txn) async {
+              var batch = txn.batch();
+              batch.rawInsert('INSERT OR ROLLBACK INTO t (id) VALUES (1)');
+              await batch.commit();
+            });
+            fail('should fail');
+          } on DatabaseException catch (e) {
+            // Not the error of the ROLLBACK that followed.
+            expect(e.isUniqueConstraintError(), isTrue, reason: '$e');
+          }
+          // The database is usable.
+          await db.transaction((txn) async {
+            await txn.insert('t', {'id': 2});
+          });
+          expect(await db.query('t'), [
+            {'id': 1},
+            {'id': 2},
+          ]);
+        } finally {
+          await db.close();
+        }
+      },
+    );
+  }
 }

@@ -3,6 +3,7 @@ import 'dart:isolate';
 
 import 'package:sqflite_common/src/mixin/constant.dart'; // ignore: implementation_imports
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi/src/env_utils.dart';
 import 'package:sqflite_common_ffi/src/method_call.dart';
 
 import 'sqflite_ffi_impl.dart';
@@ -113,7 +114,13 @@ Future<SqfliteIsolate> createIsolate(
   // the isolate sends us its SendPort as its first message.
   // this lets us communicate with it. we’ll always use this port to
   // send it messages.
-  var sendPort = (await ourFirstReceivePort.first) as SendPort;
+  var firstMessage = await ourFirstReceivePort.first;
+  if (firstMessage is! SendPort) {
+    // ffiInit failed, the isolate sent the error and exited.
+    responseToResultOrThrow(firstMessage);
+    throw StateError('Invalid sqflite isolate start message $firstMessage');
+  }
+  var sendPort = firstMessage;
 
   if (portServer != null && !portServer.registerPort(sendPort)) {
     // Another isolate registered its port first, use it if alive.
@@ -148,15 +155,28 @@ Future<SqfliteIsolate?> _lookupIsolate(
 
 /// The isolate
 Future _isolate(List<dynamic> args) async {
-  // open our receive port. this is like turning on
-  // our cellphone.
-  var ourReceivePort = ReceivePort();
-
   final sendPort = args[0] as SendPort;
   final ffiInit = (args[1] as SqfliteFfiInit?);
 
-  // Initialize with the FFI callback if provided
-  ffiInit?.call();
+  // Initialize with the FFI callback if provided. On error, send it instead
+  // of our port and exit (otherwise the caller would wait forever).
+  try {
+    ffiInit?.call();
+  } catch (e, st) {
+    sendPort.send(
+      FfiMethodResponse(
+        error: <String, Object?>{
+          'message': 'ffiInit failed: $e',
+          if (isDebug) 'stackTrace': st.toString(),
+        },
+      ).toDataMap(),
+    );
+    return;
+  }
+
+  // open our receive port. this is like turning on
+  // our cellphone.
+  var ourReceivePort = ReceivePort();
 
   // tell whoever created us what port they can reach us on
   // (like giving them our phone number)

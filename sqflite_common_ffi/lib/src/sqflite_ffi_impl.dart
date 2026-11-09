@@ -168,6 +168,11 @@ class SqfliteFfiDatabase {
   void close() {
     _cancelQueuedHandlers();
     logResult(result: 'Closing database $this');
+    // An open cursor statement would keep the connection (and its lock)
+    // alive after the close.
+    for (var cursorId in _cursors.keys.toList()) {
+      _closeCursor(cursorId);
+    }
     _ffiDb.close();
     // Forget it, an operation on its id then gives a closed database error.
     if (identical(ffiDbs[id], this)) {
@@ -282,7 +287,11 @@ class SqfliteFfiDatabase {
         transactionId == paramTransactionIdValueForce) {
       try {
         return await handler();
-      } on common.SqliteException catch (e) {
+      } catch (e) {
+        // A batch has already wrapped its error in a SqfliteFfiException.
+        if (e is! common.SqliteException && e is! SqfliteFfiException) {
+          rethrow;
+        }
         // Check if the transaction has been rolledback already
         var transactionClosed = false;
         try {
@@ -294,7 +303,10 @@ class SqfliteFfiDatabase {
         if (transactionClosed) {
           /// Leaving the transaction.
           _currentTransactionId = null;
-          throw _ffiWrapSqliteException(e)..transactionClosed = true;
+          if (e is common.SqliteException) {
+            throw _ffiWrapSqliteException(e)..transactionClosed = true;
+          }
+          throw (e as SqfliteFfiException)..transactionClosed = true;
         } else {
           rethrow;
         }

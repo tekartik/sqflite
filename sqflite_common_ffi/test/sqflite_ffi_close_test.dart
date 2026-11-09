@@ -75,5 +75,34 @@ void main() {
       ]);
       await db.close();
     });
+
+    for (var delete in [false, true]) {
+      test('${delete ? 'delete' : 'close'} with an open cursor', () async {
+        var path = join(dir.path, 'cursor_${delete ? 'delete' : 'close'}.db');
+        await factory.deleteDatabase(path);
+        var db = await factory.openDatabase(path);
+        await db.execute('CREATE TABLE t (id INTEGER PRIMARY KEY)');
+        var batch = db.batch();
+        for (var i = 0; i < 10; i++) {
+          batch.insert('t', {'id': i});
+        }
+        await batch.commit(noResult: true);
+        var cursor = await db.queryCursor('t', bufferSize: 2);
+        expect(await cursor.moveNext(), isTrue);
+        if (delete) {
+          await factory.deleteDatabase(path);
+        } else {
+          await db.close();
+        }
+        // The cursor statement no longer holds the database lock.
+        db = await factory.openDatabase(path);
+        try {
+          await db.execute('CREATE TABLE IF NOT EXISTS t (id INTEGER)');
+          await db.insert('t', {'id': 100});
+        } finally {
+          await db.close();
+        }
+      });
+    }
   });
 }

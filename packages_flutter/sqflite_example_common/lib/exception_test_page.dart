@@ -3,6 +3,7 @@ import 'package:sqflite_common/sql.dart';
 import 'package:sqflite_common/utils/utils.dart';
 
 import 'src/common_import.dart';
+import 'src/expect.dart' show TestFailure;
 import 'test_page.dart';
 
 // ignore_for_file: avoid_print
@@ -291,6 +292,8 @@ class ExceptionTestPage extends TestPage {
         );
         verify(false);
       } catch (e) {
+        // Not the failure of the verify above.
+        expect(e, isNot(isA<TestFailure>()));
         print(e);
       }
 
