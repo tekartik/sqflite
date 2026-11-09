@@ -42,7 +42,12 @@ void main() {
     dir = await Directory.systemTemp.createTemp('sqflite_example_common');
   });
   tearDownAll(() async {
-    await dir.delete(recursive: true);
+    try {
+      await dir.delete(recursive: true);
+    } catch (_) {
+      // Windows: the database left open by the failing (broken factory) run
+      // keeps its file locked, the temp folder stays.
+    }
   });
 
   Future<void> runPageTest(DatabaseFactory factory, String name) async {
