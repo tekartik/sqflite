@@ -2,7 +2,8 @@
 
 * Fix a transaction whose COMMIT failed never completing on dart2wasm (web
   builds with `--wasm`): the database stayed locked and the app's futures
-  stopped (a dart2wasm `rethrow` bug, worked around)
+  stopped (dart2wasm `rethrow` bug, worked around:
+  https://github.com/dart-lang/sdk/issues/64892)
 * A transaction whose final ROLLBACK fails (already rolled back by SQLite or
   by the action, database closed) throws the action's own error, and
   `readTransaction` returns its result: the ROLLBACK error replaced them

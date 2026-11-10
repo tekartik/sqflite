@@ -5,6 +5,9 @@
   `writeDatabaseBytes()` resolve a relative path in the databases path, as the
   factory registered by the plugin (sqflite_platform_interface 2.4.4)
 * `Sqflite.setLockWarningInfo()` accepts the duration or the callback alone
+* Requires sqflite_android 2.4.6, sqflite_darwin 2.4.6,
+  sqflite_platform_interface 2.4.4 and sqflite_common 2.5.17 (their fixes are
+  no longer optional when upgrading sqflite alone)
 * Doc: README (when to use what, requirements, transactions, batches,
   isolates, concurrency), library dartdoc, troubleshooting, error handling and
   isolate pages, skills (typed Android arguments, extended result codes,

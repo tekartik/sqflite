@@ -892,9 +892,11 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
                   // Already rolled back by SQLite
                 }
               }
-              // Not `rethrow`: after the awaited try/catch above, dart2wasm
-              // (Dart 3.13) never completes the returned future on a
-              // `rethrow` (the transaction and the database lock were stuck).
+              // Not `rethrow`: after the nested try/catch above, dart2wasm
+              // (Dart 3.10 to 3.15 at least) traps on a `rethrow`: the
+              // returned future never completes (the transaction and the
+              // database lock were stuck) and the microtask queue stops.
+              // https://github.com/dart-lang/sdk/issues/64892
               Error.throwWithStackTrace(e, st);
             }
           } else {
