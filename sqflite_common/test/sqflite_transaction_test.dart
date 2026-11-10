@@ -160,38 +160,79 @@ void main() {
       await db.close();
       scenario.end();
     });
-    group('failed commit', () {
-      final transactionV2BeginStep = [
-        'execute',
-        {
-          'sql': 'BEGIN IMMEDIATE',
-          'id': 1,
-          'inTransaction': true,
-          'transactionId': null,
-        },
-        {'transactionId': 1},
-      ];
-      List commitStep(Object? response) => [
-        'execute',
-        {'sql': 'COMMIT', 'id': 1, 'transactionId': 1, 'inTransaction': false},
-        response,
-      ];
-      List rollbackStep(Object? response) => [
-        'execute',
-        {
-          'sql': 'ROLLBACK',
-          'id': 1,
-          'transactionId': 1,
-          'inTransaction': false,
-        },
-        response,
-      ];
-      final queryStep = [
-        'query',
-        {'sql': 'SELECT 1', 'id': 1},
-        <String, Object?>{},
-      ];
+    final transactionV2BeginStep = [
+      'execute',
+      {
+        'sql': 'BEGIN IMMEDIATE',
+        'id': 1,
+        'inTransaction': true,
+        'transactionId': null,
+      },
+      {'transactionId': 1},
+    ];
+    List commitStep(Object? response) => [
+      'execute',
+      {'sql': 'COMMIT', 'id': 1, 'transactionId': 1, 'inTransaction': false},
+      response,
+    ];
+    List rollbackStep(Object? response) => [
+      'execute',
+      {'sql': 'ROLLBACK', 'id': 1, 'transactionId': 1, 'inTransaction': false},
+      response,
+    ];
+    final queryStep = [
+      'query',
+      {'sql': 'SELECT 1', 'id': 1},
+      <String, Object?>{},
+    ];
 
+    group('failed rollback', () {
+      // The ROLLBACK ending a failed (or read) transaction fails when the
+      // transaction is already gone (rolled back by SQLite or by the action,
+      // database closed): it must not replace the action's own outcome.
+      test('action error kept', () async {
+        final scenario = startScenario([
+          protocolOpenStep,
+          transactionV2BeginStep,
+          rollbackStep(
+            SqfliteDatabaseException('no transaction is active', null),
+          ),
+          queryStep,
+          protocolCloseStep,
+        ]);
+        final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+        try {
+          await db.transaction<void>((txn) async {
+            throw StateError('action');
+          });
+          fail('should fail');
+        } on StateError catch (e) {
+          expect(e.message, 'action');
+        }
+        await db.rawQuery('SELECT 1');
+        await db.close();
+        scenario.end();
+      });
+
+      test('readTransaction result kept', () async {
+        final scenario = startScenario([
+          protocolOpenStep,
+          transactionV2BeginStep,
+          rollbackStep(
+            SqfliteDatabaseException('no transaction is active', null),
+          ),
+          queryStep,
+          protocolCloseStep,
+        ]);
+        final db = await scenario.factory.openDatabase(inMemoryDatabasePath);
+        expect(await db.readTransaction((txn) async => 42), 42);
+        await db.rawQuery('SELECT 1');
+        await db.close();
+        scenario.end();
+      });
+    });
+
+    group('failed commit', () {
       Future<void> expectCommitFailure(Database db) async {
         try {
           await db.transaction((txn) async {});

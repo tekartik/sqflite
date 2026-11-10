@@ -6,7 +6,8 @@ implemented as a "classic" flutter plugin supports only Android, iOS and MacOS.
 Desktop support (Linux, Windows) is provided by the `sqflite_common_ffi` package.
 It is a dart package so it also works on the dart VM (command line) so it is not
 a flutter plugin. Its implementation uses ffi. This implementation can also
-support Android, iOS and MacOS but it is not a flutter plugin.
+support Android, iOS and MacOS. The `sqflite_ffi` package is the same
+implementation as a Flutter plugin (it registers itself, nothing to code).
 
 Experimental web support is provided by the `sqflite_common_ffi_web` package.
 

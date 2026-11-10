@@ -4,11 +4,11 @@ As sqflite does not do any parsing of SQL commands, its usage is similar to
 the usage on the native iOS and Android platform so you can refer to their 
 respective documentation as well as the generic sqlite documentation:
 - Android: https://developer.android.com/training/data-storage/sqlite
-- iOS (FMDB): https://github.com/ccgus/fmdb
 - sqlite: https://www.sqlite.org/index.html
 
-The API is relatively close to the Android one. For performance and compatibility reason, 
-cursors are not supported at this time.
+The API is relatively close to the Android one. A query returns all its rows at once; for
+large results, read them by pages with a cursor (`queryCursor`, `rawQueryCursor`, or
+`queryIterate`), see [iterating through results](https://github.com/tekartik/sqflite/blob/master/sqflite_common/doc/sqflite_iterate.md).
 
 It is impossible here to make a full documentation of SQL. Only basic information is given
 and common pitfalls.
@@ -186,8 +186,7 @@ expect(
     [{'item1': 3, 'item2': 4, 'sum': 7}]);
 ```
 
-Be aware that Android binds argument as String. While it works in most cases (in where args), in the example above, the result
- will be `[{'item1': '3', 'item2': '4', 'sum': 7}]);`. We might consider inlining num in the future.
+Arguments keep their type (`int`, `num`, `String`, `Uint8List`, `null`) on every platform.
 
 
 ## NULL value

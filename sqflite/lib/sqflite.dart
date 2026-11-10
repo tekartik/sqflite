@@ -1,3 +1,29 @@
+/// The sqflite Flutter plugin: SQLite databases on Android, iOS and macOS.
+///
+/// Open a database once with [openDatabase] (a relative path is in
+/// [getDatabasesPath]) and keep the returned [Database]:
+///
+/// ```dart
+/// var db = await openDatabase(
+///   'app.db',
+///   version: 1,
+///   onCreate: (db, version) async {
+///     await db.execute(
+///       'CREATE TABLE Todo (id INTEGER PRIMARY KEY, title TEXT NOT NULL)',
+///     );
+///   },
+/// );
+/// await db.insert('Todo', {'title': 'Buy milk'});
+/// var rows = await db.query('Todo');
+/// ```
+///
+/// The global functions ([openDatabase], [deleteDatabase],
+/// [getDatabasesPath]...) use the global [databaseFactory], set by the plugin
+/// on Android, iOS and macOS. On Windows, Linux, the web and in unit tests,
+/// set it first from `sqflite_common_ffi` or `sqflite_common_ffi_web`, see
+/// the package README.
+library;
+
 import 'dart:async';
 
 import 'package:sqflite/src/compat.dart';
@@ -18,9 +44,8 @@ export 'src/factory_impl.dart' show databaseFactorySqflitePlugin;
 export 'src/sqflite_darwin.dart' show SqfliteDarwin;
 export 'src/sqflite_plugin.dart' show SqflitePlugin;
 
-///
-/// sqflite plugin
-///
+/// sqflite helpers: [firstIntValue], [hex], [setLockWarningInfo] (and
+/// deprecated debug calls).
 class Sqflite {
   /// Turns on debug mode if you want to see the SQL query
   /// executed natively.
@@ -68,16 +93,19 @@ class Sqflite {
       utils.firstIntValue(list);
 
   /// Utility to encode a blob to allow blob query using
-  /// 'hex(blob_field) = ?', Sqlite.hex([1,2,3])
+  /// `'hex(blob_field) = ?'`, `Sqflite.hex([1, 2, 3])`.
   static String hex(List<int> bytes) => utils.hex(bytes);
 
-  /// Sqlite has a dead lock warning feature that will print some text
-  /// after 10s, you can override the default behavior
+  /// sqflite prints a warning when a call waits for the database for more
+  /// than 10 seconds (typically `db` used inside its own transaction).
+  ///
+  /// Changes the [duration] and/or the [callback] (a parameter not given
+  /// keeps its current value). An empty callback silences the warning.
   static void setLockWarningInfo({
     Duration? duration,
     void Function()? callback,
   }) {
-    utils.setLockWarningInfo(duration: duration!, callback: callback!);
+    utils.setLockWarningInfo(duration: duration, callback: callback);
   }
 }
 

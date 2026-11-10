@@ -1,3 +1,12 @@
+## 2.5.17
+
+* Fix a transaction whose COMMIT failed never completing on dart2wasm (web
+  builds with `--wasm`): the database stayed locked and the app's futures
+  stopped (a dart2wasm `rethrow` bug, worked around)
+* A transaction whose final ROLLBACK fails (already rolled back by SQLite or
+  by the action, database closed) throws the action's own error, and
+  `readTransaction` returns its result: the ROLLBACK error replaced them
+
 ## 2.5.16
 
 * Doc: README and example tab; `openDatabase`/`OpenDatabaseOptions` dartdoc

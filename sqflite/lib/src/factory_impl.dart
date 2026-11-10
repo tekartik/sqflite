@@ -21,7 +21,11 @@ SqfliteDatabaseFactory get sqfliteDatabaseFactory =>
 final SqfliteDatabaseFactory _databaseFactorySqflitePlugin =
     SqfliteDatabaseFactoryImpl();
 
-/// Default factory that uses the plugin.
+/// The factory of the sqflite plugin (Android, iOS, macOS).
+///
+/// The plugin sets the global `databaseFactory` at startup, so it is rarely
+/// needed: use it to come back to the plugin after setting another factory
+/// (`databaseFactory = databaseFactorySqflitePlugin;`).
 DatabaseFactory get databaseFactorySqflitePlugin =>
     _databaseFactorySqflitePlugin;
 
@@ -58,13 +62,19 @@ class SqfliteDatabaseFactoryImpl with SqfliteDatabaseFactoryMixin {
     return result;
   }
 
+  /// Read from the file system, a relative [path] is in the databases path
+  /// (as for [openDatabase]).
   @override
   Future<Uint8List> readDatabaseBytes(String path) async {
+    path = await fixPath(path);
     return await platform.databaseFileSystem.readDatabaseBytes(path);
   }
 
+  /// Written to the file system, a relative [path] is in the databases path
+  /// (as for [openDatabase]).
   @override
   Future<void> writeDatabaseBytes(String path, Uint8List bytes) async {
+    path = await fixPath(path);
     await platform.databaseFileSystem.writeDatabaseBytes(path, bytes);
   }
 }

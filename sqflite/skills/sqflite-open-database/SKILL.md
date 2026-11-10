@@ -202,9 +202,13 @@ Future<Database> openAppDatabase() async {
 ### Isolates and hot restart
 
 * Use the database from the main isolate: native calls already run on a
-  background thread and the transaction lock is not cross-isolate. If a
-  background isolate (push notification, work manager) must read the database,
-  open it there with `singleInstance: false` and do not close it.
+  background thread and the transaction lock is not cross-isolate. In an
+  isolate you spawn (`Isolate.run`, `compute`), call
+  `BackgroundIsolateBinaryMessenger.ensureInitialized(token)` first
+  (`RootIsolateToken.instance!` read in the main isolate) or `openDatabase`
+  throws `databaseFactory not initialized`; open with
+  `OpenDatabaseOptions(rollbackActiveTransactionOnOpen: false)` and do not
+  close the database there (the native database is shared).
 * After changing the schema during development restart the app; a hot reload
   keeps the native connection open with the old schema.
 

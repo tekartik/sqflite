@@ -48,7 +48,8 @@ void main() {
 ### Which factory where
 
 * `sqflite` (Android/iOS/macOS): nothing to do, the plugin registers
-  `databaseFactory` at startup (`databaseFactorySqflitePlugin`).
+  `databaseFactory` at startup (`databaseFactory = databaseFactorySqflitePlugin`
+  comes back to the plugin after another factory was set).
 * Linux, Windows, Dart VM, `flutter test`, `dart test`: add
   `sqflite_common_ffi` (as a `dev_dependency` when only tests need it), call
   `sqfliteFfiInit()` once, then `databaseFactory = databaseFactoryFfi`. It
@@ -120,7 +121,8 @@ void main() {
   `sqfliteLogLevelSql`, `sqfliteLogLevelVerbose`. `Sqflite.setDebugModeOn()`
   / `Sqflite.devSetDebugModeOn()` are the older deprecated equivalents.
 * `Sqflite.setLockWarningInfo(duration:, callback:)` changes the 10 s
-  "Warning database has been locked" watchdog. That warning almost always
+  "Warning database has been locked" watchdog (either parameter alone, an
+  empty callback silences it; before sqflite 2.4.6 both were required). That warning almost always
   means a call on `db` inside `db.transaction((txn) ...)`.
 * Print `await db.query('sqlite_master')` to dump the schema, and
   `SELECT sqlite_version()` to know which SQL features exist on the device.
@@ -139,10 +141,14 @@ void main() {
 * iOS background isolate while the device is locked: create the database in
   a folder created by `SqfliteDarwin.createUnprotectedFolder(parent, name)`
   (data protection `NSFileProtectionNone`).
-* Isolates: use the main isolate. A second isolate must open with
-  `singleInstance: false` and must not close the database.
-* Rows are limited to about 1 MB on Android/iOS cursors; big blobs belong in
-  files.
+* Isolates: use the main isolate. In an isolate you spawn (`Isolate.run`,
+  `compute`) call `BackgroundIsolateBinaryMessenger.ensureInitialized(token)`
+  first (`RootIsolateToken.instance!` read in the main isolate): it registers
+  the plugin, otherwise `openDatabase` throws `databaseFactory not
+  initialized`. Open there with `OpenDatabaseOptions(rollbackActiveTransactionOnOpen:
+  false)` and do not close the database (same native database).
+* A row bigger than the Android cursor window (2 MB by default) fails to
+  read (`SQLiteBlobTooBigException`); big blobs belong in files.
 
 ## Examples
 

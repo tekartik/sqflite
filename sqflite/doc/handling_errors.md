@@ -25,16 +25,19 @@ There could be 2 types of error:
 - *SQLite error*: SQLite specific error (Syntax error can be a SQLite error) 
 - Unexpected error (I/O error, flutter platform state, sometimes impossible to recover...)
 
-It is hard to catch error consistently on multiple platforms since most of the time we get the error as a text on the native side.
-
-Your best bet is to try on both platform and parse the text accordingly. There are some helpers in `DatabaseException` that do something similar (very basic)
-to find out what the error can be:
-* `isNoSuchTableError`
-* `isSyntaxError`
-* `isOpenFailedError`
-* `isDatabaseClosedError`
-* `isReadOnlyError`
-* `isUniqueConstraintError`
+Every error comes as a `DatabaseException`. Its helpers find out what the error is, on every
+platform:
+* `isNoSuchTableError([table])`
+* `isDuplicateColumnError([column])`
+* `isSyntaxError()`
+* `isOpenFailedError()`
+* `isDatabaseClosedError()`
+* `isReadOnlyError()`
+* `isUniqueConstraintError([field])`
+* `isNotNullConstraintError([field])`
+* `getResultCode()`: the [SQLite result code](https://www.sqlite.org/rescode.html), extended
+  (for example `2067` for a unique constraint, `1555` for a primary key) on Android, iOS, macOS
+  and ffi.
 
 Improvements, tested additions are welcome.
 
@@ -65,7 +68,8 @@ error (SQL commands malformed, invalid input), an error will be logged and it
 will cancel the current transaction; good for testing and reproduce.
 
 Most errors could be avoided however you might have indices and a `isUniqueConstraintError` could be thrown. Here as well you could decide to avoid the potential error by
-reading data first and writing updates, everything in a transaction.
+reading data first and writing updates, everything in a transaction (or use
+`conflictAlgorithm: ConflictAlgorithm.replace`, see [conflict algorithm](conflict_algorithm.md)).
 
 ```dart
 Future<bool> _exists(Transaction txn, Product product) async {
@@ -150,9 +154,10 @@ In the last example above, there is a short race condition between _insert and _
 
 ### SQLiteBlobTooBigException (Row too big to fit into CursorWindow)
 
-There seems to be a limit of (around) 1MB when reading on Android and iOS. I could not find a portable way to allow the developer to change
-this limit.
+On Android, a query reads its rows through a cursor window (2 MB by default on current versions):
+a bigger row fails. There is no portable way to change this limit, and iOS and macOS do not have it.
 
-I find the 1MB blob limit a good limitation (firestore has a similar limit) since otherwise performance would be pretty bad.
+Keeping rows small (well under 1 MB) is a good rule anyway (firestore has a similar limit) since
+otherwise performance would be pretty bad.
 
 Solution: reduce the size of your blob or store your data in a external file and only save a reference to it in SQLite.

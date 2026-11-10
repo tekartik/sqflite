@@ -40,13 +40,13 @@ currently passes and exposes them as a single call,
   at `main()` level, never inside `test()` or `setUp()`. Everything it defines
   lands in a `group('all', ...)`.
 * Default run (`all` left to `false`) declares the suites known to pass:
-  `doc_test` (with `noLoggerTest: true`), `batch_test`
+  `database_factory_test`, `doc_test` (with `noLoggerTest: true`), `batch_test`
   (`noManualTransactionTest: true`), `exp_test` (`noMultipleStatement: true`),
   `slow_test`, `type_test`, `statement_test`, `raw_test`, `issue_test` and
   `walTests`. This is the CI run.
 * `runFfiAsyncTests(context, all: true)` additionally declares the whole
   shared suite (`protocol_test`, `service_impl_test`, `open_test`,
-  `open_flutter_test`, `exception_test`, `database_factory_test`,
+  `open_flutter_test`, `exception_test`,
   `transaction_test`, the unrestricted `doc_test`/`batch_test`/`exp_test`...).
   Those still have known failures (logger, protocol, exception parsing,
   delete/exists edge cases): use it in a separate `*_all` test file to

@@ -881,7 +881,7 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
           if (txn.successful == true) {
             try {
               await txnExecute<dynamic>(txn, 'COMMIT', null);
-            } catch (_) {
+            } catch (e, st) {
               // A failed COMMIT (SQLITE_BUSY, deferred foreign key violation...)
               // can leave the transaction open, roll it back so that it does
               // not block the next calls.
@@ -892,10 +892,20 @@ mixin SqfliteDatabaseMixin implements SqfliteDatabase {
                   // Already rolled back by SQLite
                 }
               }
-              rethrow;
+              // Not `rethrow`: after the awaited try/catch above, dart2wasm
+              // (Dart 3.13) never completes the returned future on a
+              // `rethrow` (the transaction and the database lock were stuck).
+              Error.throwWithStackTrace(e, st);
             }
           } else {
-            await txnExecute<dynamic>(txn, 'ROLLBACK', null);
+            try {
+              await txnExecute<dynamic>(txn, 'ROLLBACK', null);
+            } catch (_) {
+              // Already rolled back (by SQLite, by the action itself) or the
+              // database was closed: the transaction is gone either way.
+              // Keep the action's own error (or the readTransaction result),
+              // a ROLLBACK error thrown here would replace it.
+            }
           }
         } finally {
           txn.closed = true;

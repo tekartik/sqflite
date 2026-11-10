@@ -609,6 +609,66 @@ void run(SqfliteTestContext context) {
       }
     });
 
+    group('failed rollback', () {
+      // The action ends the transaction itself, so the ROLLBACK ending the
+      // transaction fails ('no transaction is active'): the action's own
+      // error or result must reach the caller, not this ROLLBACK error.
+      Future<Database> openTestDb(String name) async {
+        var path = await context.initDeleteDb(name);
+        return factory.openDatabase(
+          path,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (db, version) async {
+              await db.execute('CREATE TABLE Test (id INTEGER PRIMARY KEY)');
+            },
+          ),
+        );
+      }
+
+      test('action error kept', () async {
+        var db = await openTestDb('failed_rollback_action_error.db');
+        try {
+          try {
+            await db.transaction<void>((txn) async {
+              await txn.insert('Test', {'id': 1});
+              await txn.execute('ROLLBACK');
+              throw StateError('action');
+            });
+            fail('should fail');
+          } on StateError catch (e) {
+            expect(e.message, 'action');
+          }
+          expect(await db.query('Test'), isEmpty);
+          // The database is still usable.
+          await db
+              .transaction((txn) async {
+                await txn.insert('Test', {'id': 2});
+              })
+              .timeout(const Duration(seconds: 10));
+          expect(await db.query('Test'), [
+            {'id': 2},
+          ]);
+        } finally {
+          await db.close();
+        }
+      });
+
+      test('readTransaction result kept', () async {
+        var db = await openTestDb('failed_rollback_read_result.db');
+        try {
+          var result = await db.readTransaction((txn) async {
+            await txn.execute('ROLLBACK');
+            return 42;
+          });
+          expect(result, 42);
+          expect(await db.query('Test'), isEmpty);
+        } finally {
+          await db.close();
+        }
+      });
+    });
+
     group('failed commit (busy)', () {
       /// Long enough to detect a hang.
       const timeout = Duration(seconds: 10);

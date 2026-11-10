@@ -2,19 +2,19 @@
 
 [![pub package](https://img.shields.io/pub/v/sqflite.svg)](https://pub.dev/packages/sqflite)
 
-SQLite plugin for [Flutter](https://flutter.dev). Supports iOS, Android and macOS.
-The same API also runs on Windows, Linux, the Dart VM, unit tests and the web
-through companion packages (see the table below).
+SQLite plugin for [Flutter](https://flutter.dev): a SQL database in a file,
+on Android, iOS and macOS. The same API also runs on Windows, Linux, the Dart
+VM, unit tests and the web through companion packages (see the table below).
 
-* Support transactions and batches
-* Automatic version management during open
-* Helpers for insert/query/update/delete queries
-* DB operation executed in a background thread on iOS, Android and macOS
+* Transactions and batches
+* Automatic schema version management when opening (`onCreate`, `onUpgrade`)
+* Helpers for insert, query, update and delete
+* SQL runs in a background thread (Android, iOS, macOS), never blocking the UI
 
 Usage example:
 * [notepad_sqflite](https://github.com/alextekartik/flutter_app_example/tree/master/notepad_sqflite): Simple flutter notepad working on iOS/Android/Windows/linux/Mac
 
-## Getting Started
+## Getting started
 
 ### Which package for which platform
 
@@ -33,6 +33,24 @@ Details: [desktop](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/d
 [web](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/web_support.md),
 [unit tests](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/testing.md).
 
+When to use what:
+
+* A Flutter app for Android, iOS and macOS: `sqflite` only.
+* The same app also on Windows and Linux: add `sqflite_ffi` (it registers
+  itself) or `sqflite_common_ffi` (set the factory in `main()`, see below);
+  in both cases set a databases path for the desktop (see below).
+* A bundled, recent SQLite on every platform (same version everywhere):
+  `sqflite_ffi` instead of `sqflite`.
+* A Dart program (command line, server) or unit tests: `sqflite_common_ffi`.
+* The web: `sqflite_common_ffi_web` (experimental).
+* Encryption: [`sqflite_sqlcipher`](https://pub.dev/packages/sqflite_sqlcipher)
+  (by another author, same API).
+
+Requirements: Android (the plugin's `minSdk` is 19, your Flutter version's
+minimum applies), iOS 12, macOS 10.14 (CocoaPods or Swift Package Manager).
+Nothing to install on Windows and Linux. On the web, run the setup command of
+`sqflite_common_ffi_web` once.
+
 ### Add the dependency
 
 ```bash
@@ -42,9 +60,12 @@ flutter pub add sqflite path
 ### Open, read, write, close
 
 A database is a file identified by a path. `getDatabasesPath()` gives the
-default folder: `/data/data/<package>/databases` on Android, the Documents
-directory on iOS and macOS. A relative path is relative to this folder.
-Its parent directory is created when opening.
+default folder: `/data/data/<package>/databases` on Android (also shown as
+`/data/user/0/<package>/databases`), the Documents directory on iOS and macOS.
+A relative path is relative to this folder. Its parent directory is created
+when opening (not in read-only mode). See
+[where to put the database](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/opening_db.md#finding-a-location-path-for-the-database)
+for the other platforms and `path_provider` folders.
 
 Open the database once (at startup or on first use) with a `version` and an
 `onCreate` callback that creates the tables, then keep the `Database` object.
@@ -165,7 +186,16 @@ path is only a name in the browser storage (IndexedDB).
   throws `databaseFactory not initialized`. On the web, also run
   `dart run sqflite_common_ffi_web:setup`.
 * **Delete with `deleteDatabase(path)`**, not `File(path).delete()`, so that an
-  open instance is closed first.
+  open instance is closed first (it also deletes the `-wal`, `-shm` and
+  `-journal` files).
+* **An insert ignored by a conflict** (`ConflictAlgorithm.ignore`, `INSERT OR
+  IGNORE`) returns `0`, but `-1` on Android: test `id <= 0`.
+* **Isolates.** Prefer the main isolate. In an isolate you spawn
+  (`Isolate.run`, `compute`), call
+  `BackgroundIsolateBinaryMessenger.ensureInitialized(token)` first (`token`
+  being `RootIsolateToken.instance!` read in the main isolate), otherwise
+  `openDatabase()` throws `databaseFactory not initialized`, see
+  [isolates](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/usage_recommendations.md#isolates).
 
 ## Usage example
 
@@ -368,8 +398,13 @@ map['my_column'] = 1;
 
 ### Transaction
 
-Don't use the database but only use the Transaction object in a transaction
-to access the database. Keep in mind that the callbacks ```onCreate``` ```onUpgrade``` ```onDowngrade``` are already internally wrapped in a transaction, so there is no need to wrap your statements in a transaction within those callbacks.
+`db.transaction((txn) async {...})` runs its callback in a SQLite transaction:
+everything is committed when the callback returns, everything is rolled back
+when it throws. Inside, use only `txn` (the `Transaction` object), never `db`:
+the database waits for the end of the transaction, a call on `db` inside it
+never completes (deadlock). The callbacks `onCreate`, `onUpgrade` and
+`onDowngrade` already run in a transaction: use the `db` they receive directly,
+do not start a transaction in them.
 
 ```dart
 await database.transaction((txn) async {
@@ -383,7 +418,8 @@ await database.transaction((txn) async {
 ```
 
 A transaction is committed if the callback does not throw an error. If an error is thrown,
-the transaction is cancelled and the same error is re-thrown. So to rollback a transaction one way is to throw an exception.
+the transaction is rolled back and the same error is rethrown by `transaction()`. To roll back a
+transaction, throw an error. The value returned by the callback is returned by `transaction()`.
 
 ```dart
 try {
@@ -392,8 +428,8 @@ try {
    });
    // No error, the transaction is committed
 } catch (e) {
-   // this reliably catch if there is a key conflict
-   // We know that the transaction is rolled back.
+   // A failed statement (a key conflict...) or a failed commit:
+   // the transaction is rolled back.
 }
 
 try {
@@ -406,7 +442,9 @@ try {
   // We know that the transaction is rolled back.
 }
 ```
-You can however catch the exception inside the transaction and not rethrow it to commit the transaction. Only the failed statement will not be executed.
+You can however catch the exception inside the transaction and not rethrow it to commit the transaction. Only the failed statement is not applied.
+(Some errors end the transaction in SQLite itself, for example `INSERT OR ROLLBACK`
+or a `RAISE(ROLLBACK)` trigger: the next calls on `txn` then fail.)
 
 ```dart
 await database.transaction((txn) async {
@@ -422,7 +460,8 @@ await database.transaction((txn) async {
 ```
 ### Batch support
 
-To avoid ping-pong between dart and native code, you can use `Batch`:
+A `Batch` sends several statements to the native side in one call (no
+round-trip per statement). Nothing runs until `commit()`:
 
 ```dart
 var batch = db.batch();
@@ -432,15 +471,16 @@ batch.delete('Test', where: 'name = ?', whereArgs: ['item']);
 var results = await batch.commit();
 ```
 
-Getting the result for each operation has a cost (id for insertion and number of changes for
-update and delete), especially on Android where an extra SQL request is executed.
-If you don't care about the result and worry about performance in big batches, you can use
+`commit()` returns one result per operation (the id of an insert, the number of changes of an
+update or a delete, the rows of a query). If you don't need them, in big batches, skip them:
 
 ```dart
 await batch.commit(noResult: true);
 ```
 
-Warning, during a transaction, the batch won't be committed until the transaction is committed
+`db.batch()` commits in its own transaction: if an operation fails, the whole batch is
+rolled back and `commit()` throws. In a transaction, create the batch with `txn.batch()`: its
+changes are committed with the transaction
 
 ```dart
 await database.transaction((txn) async {
@@ -456,8 +496,8 @@ await database.transaction((txn) async {
 });
 ```
 
-By default a batch stops as soon as it encounters an error (which typically reverts the uncommitted changes). You 
-can ignore errors so that every successful operation is ran and committed even if one operation fails:
+A batch stops at the first error. To run every operation and commit the successful ones even
+if one fails (the result of a failed operation is its `DatabaseException`):
 
 ```dart
 await batch.commit(continueOnError: true);
@@ -465,20 +505,18 @@ await batch.commit(continueOnError: true);
 
 ## Table and column names
 
-In general it is better to avoid using SQLite keywords for entity names. If any of the following
-name is used:
-
-    "add","all","alter","and","as","autoincrement","between","case","check","collate","commit","constraint","create","default","deferrable","delete","distinct","drop","else","escape","except","exists","foreign","from","group","having","if","in","index","insert","intersect","into","is","isnull","join","limit","not","notnull","null","on","or","order","primary","references","select","set","table","then","to","transaction","union","unique","update","using","values","when","where"
-    
-the helper will *escape* the name i.e.
+In general it is better to avoid using SQLite keywords for entity names
+(`group`, `order`, `table`, `index`, `values`, `transaction`...). When a table or column name
+given to a helper (`insert`, `query`, `update`, `delete`) is a
+[SQLite keyword](https://www.sqlite.org/lang_keywords.html), the helper *escapes* it, i.e.
 
 ```dart
-db.query('table')
+await db.query('table');
 ```
 will be equivalent to manually adding double-quote around the table name (confusingly here named `table`)
 
 ```dart
-db.rawQuery('SELECT * FROM "table"');
+await db.rawQuery('SELECT * FROM "table"');
 ```
 
 However in any other raw statement (including `orderBy`, `where`, `groupBy`), make sure to escape the name
@@ -486,7 +524,7 @@ properly using double quote. For example see below where the column name `group`
 argument, but is escaped in the `where` argument.
 
 ```dart
-db.query('table', columns: ['group'], where: '"group" = ?', whereArgs: ['my_group']);
+await db.query('table', columns: ['group'], where: '"group" = ?', whereArgs: ['my_group']);
 ```
 
 ## Supported SQLite types
@@ -503,17 +541,18 @@ db.query('table', columns: ['group'], where: '"group" = ?', whereArgs: ['my_grou
 `INTEGER` 0 or 1. See [supported types](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/supported_types.md)
 and the [SQLite documentation](https://www.sqlite.org/datatype3.html).
 
-## Current issues
+## Concurrency
 
-* Due to the way transaction works in SQLite (threads), concurrent read and write transaction are not supported. 
-All calls are currently synchronized and transactions block are exclusive. I thought that a basic way to support 
-concurrent access is to open a database multiple times but it only works on iOS as Android reuses the same database object.
-I also thought a native thread could be a potential future solution however on android accessing the database in another
-thread is blocked while in a transaction...
+The calls on a database run one at a time, in the order they were made. A transaction blocks the
+other calls on the database until it ends (this is why calling `db` inside a transaction never
+completes). There are no concurrent reads: keep transactions short and use one opened database
+(see [usage recommendations](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/usage_recommendations.md)).
 
 ## More
 
 * [How to](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/how_to.md) guide
+* [Handling errors](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/handling_errors.md) (`DatabaseException`)
+* [Opening an asset database](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/opening_asset_db.md)
 * [Notes about Desktop support](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/desktop_support.md)
 * [Notes about Encryption support](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/encryption_support.md)
 * [Notes about Web support](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/web_support.md)

@@ -132,8 +132,9 @@ Future<List<Map<String, Object?>>> pendingTodos(Database db) =>
   that calls `cursor.close()`, or the `queryIterate` / `rawQueryIterate`
   extensions (`SqfliteDatabaseExecutorIterateExt`) whose `onRow` callback
   returns `false` to stop and which close the cursor for you.
-* Rows over roughly 1 MB fail on Android (`CursorWindow`); store big blobs in
-  files and keep a reference in the database.
+* Rows bigger than the Android cursor window (2 MB by default) fail to read
+  (`SQLiteBlobTooBigException`); store big blobs in files and keep a
+  reference in the database.
 * `SqfliteSqlCommand.query/insert/update/delete/rawQuery/...` builds a
   reusable command (`sql` + `arguments`); run it later with
   `cmd.query(executor)`, `cmd.insert(executor)`, `cmd.iterate(executor,
@@ -146,7 +147,8 @@ Future<List<Map<String, Object?>>> pendingTodos(Database db) =>
   `isDuplicateColumnError([column])`, `isSyntaxError()`,
   `isUniqueConstraintError([field])`, `isNotNullConstraintError([field])`,
   `isOpenFailedError()`, `isDatabaseClosedError()`, `isReadOnlyError()`,
-  `getResultCode()` (extended code on Android, primary code on iOS).
+  `getResultCode()` (extended code, e.g. 2067, on Android, iOS, macOS and
+  ffi).
 * Errors thrown by `openDatabase` are usually thrown by your own callbacks;
   read the message, it contains the failing SQL and arguments.
 

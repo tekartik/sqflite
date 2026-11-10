@@ -19,6 +19,32 @@ void main() {
     expect(dataFromEncodable({'@BigInt': null}), isNull);
     expect(dataToEncodable(BigInt.one), {'@BigInt': '1'});
   });
+  test(
+    'int beyond 2^53 encoded as BigInt',
+    () {
+      // A JS number (postMessage to the worker) would round it.
+      var big = int.parse('9007199254740993');
+      expect(dataToEncodable(big), {'@BigInt': '9007199254740993'});
+      expect(dataToEncodable(-big), {'@BigInt': '-9007199254740993'});
+      expect(dataFromEncodable(dataToEncodable(big)), BigInt.from(big));
+      expect(
+        dataToEncodable({
+          'args': [1, big],
+        }),
+        {
+          'args': [
+            1,
+            {'@BigInt': '9007199254740993'},
+          ],
+        },
+      );
+      // Safe integers are unchanged.
+      expect(dataToEncodable(9007199254740991), 9007199254740991);
+      expect(dataToEncodable(-9007199254740991), -9007199254740991);
+    },
+    // dart2js has no 64-bit int (it uses BigInt).
+    skip: identical(0.0, 0) ? 'no 64-bit int on dart2js' : false,
+  );
   test('toFrom encodable all', () {
     void loop(Object? decoded) {
       var encoded = dataToEncodable(decoded);

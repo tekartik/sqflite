@@ -12,8 +12,8 @@
 
 Not supported as values: `bool` (store 0/1), `DateTime` (store
 `millisecondsSinceEpoch` or ISO 8601 text), `List`, `Map` (store JSON text),
-`BigInt` (web only). Android binds arguments as strings, so `SELECT ?1` may
-return `'3'` instead of `3`; arithmetic and comparisons still work.
+`BigInt` (web only). Arguments keep their type on every platform (`SELECT ?1`
+with `[3]` returns `3`).
 
 ## Reserved names
 
@@ -132,7 +132,7 @@ final version = (await db.rawQuery('SELECT sqlite_version()')).first.values.firs
 | `isOpenFailedError()` | `open_failed` |
 | `isDatabaseClosedError()` | `database_closed` |
 | `isReadOnlyError()` | `readonly` |
-| `getResultCode()` | SQLite result code parsed from the message (extended on Android/ffi, primary on iOS) |
+| `getResultCode()` | SQLite result code parsed from the message (extended, e.g. 2067, on Android, iOS, macOS and ffi) |
 | `result` | raw platform error payload |
 
 `toString()` includes the failing SQL and truncated arguments.

@@ -3,7 +3,7 @@
 The API offers a way to save a record as map of type `Map<String, Object?>`. This map cannot be an
 arbitrary map:
 - Keys are column in a table (declared when creating the table)
-- Values are field values in the record of type `num`, `String` or `Uint8List`
+- Values are field values in the record of type `int`, `num`, `String`, `Uint8List` or `null`
 
 Nested content is not supported. For example, the following simple map is not supported:
 

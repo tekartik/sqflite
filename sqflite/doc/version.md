@@ -34,6 +34,7 @@ sqlite shared library for desktop or mobile (one for each platform).
 ## Android
 
 See https://developer.android.com/reference/android/database/sqlite/package-summary
+(it lists the newer API levels too).
 
 | Android API | SQLite Version |
 |-------------|----------------|

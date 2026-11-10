@@ -9,6 +9,8 @@
 * How to use [SqfliteSqlCommand](https://github.com/tekartik/sqflite/blob/master/sqflite_common/doc/sqflite_sql_command.md) to prepare commands
 * How to [Delete a database](deleting_db.md)
 * Solve you [build and runtime issues](troubleshooting.md)
+* [Handle errors](handling_errors.md) (`DatabaseException` helpers, result codes)
+* [Conflict algorithm](conflict_algorithm.md) (insert or replace, ignore)
 * Some personal [usage recommendations](usage_recommendations.md)
 * Some [dev tips](dev_tips.md)
 * Get information about the [SQLite version](version.md) 

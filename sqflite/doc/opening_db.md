@@ -7,7 +7,7 @@ default folder of the current database factory:
 
 | Factory | `getDatabasesPath()` |
 |---|---|
-| `sqflite` on Android | `/data/data/<package>/databases`, as recommended on Android |
+| `sqflite` on Android | `/data/data/<package>/databases` (also shown as `/data/user/0/<package>/databases`), as recommended on Android |
 | `sqflite` on iOS and macOS | the Documents directory |
 | `sqflite_common_ffi` (Windows, Linux, Dart VM, tests) | `.dart_tool/sqflite_common_ffi/databases` in the current directory: fine for tests and scripts, not for an installed application |
 | `sqflite_common_ffi_web` | `/`: on the web a path is only a name in the browser storage |
@@ -174,7 +174,8 @@ In read-only mode (`openReadOnlyDatabase(path)` or `openDatabase(path, readOnly:
 
 Android and iOS handles corruption in a different way:
 * on iOS, it fails on first access to the database
-* on Android, the existing file is removed.
+* on Android, the existing file is removed (Android's default behavior for a
+  read-write open; a read-only open keeps the file and fails on first access).
 
 I don't know yet how to make it consistent without breaking the existing behavior.
 

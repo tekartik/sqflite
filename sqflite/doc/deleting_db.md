@@ -12,6 +12,7 @@ await deleteDatabase(path);
 ```
 
 * it will properly close any existing database connection
+* it also deletes the `-wal`, `-shm` and `-journal` files of the database
 * it will properly handle the hot-restart scenario which put `SQLite` in a
   weird state (basically the 'dart' side think the database is closed while
   the database is in fact open on the native side)

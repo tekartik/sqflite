@@ -45,7 +45,8 @@ class _BigIntAdapter extends _TypeAdapter<BigInt> {
   Object? encode(BigInt value) => value.toString();
 }
 
-var _adapters = [_BigIntAdapter()];
+final _bigIntAdapter = _BigIntAdapter();
+var _adapters = [_bigIntAdapter];
 var _adaptersByTag = _adapters.asMap().map(
   (key, value) => MapEntry(value.tag, value),
 );
@@ -62,7 +63,19 @@ bool _looksLikeCustomType(Map map) {
   return false;
 }
 
+/// True when an int has 64 bits (dart2wasm, VM), false on dart2js.
+const _hasNativeInts = !identical(0.0, 0);
+
+/// 2^53 - 1, the biggest integer a JavaScript number holds exactly.
+const _maxSafeInteger = 9007199254740991;
+
 Object? _dataToEncodable(Object? valueOrNull) {
+  // Sent as a JavaScript number, a bigger int would be rounded (dart2wasm).
+  if (_hasNativeInts &&
+      valueOrNull is int &&
+      (valueOrNull > _maxSafeInteger || valueOrNull < -_maxSafeInteger)) {
+    return {'@${_bigIntAdapter.tag}': valueOrNull.toString()};
+  }
   if (_isBasicTypeOrNull(valueOrNull)) {
     return valueOrNull;
   }

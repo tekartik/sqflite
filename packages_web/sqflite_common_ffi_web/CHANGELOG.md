@@ -1,3 +1,7 @@
+## 1.2.2
+
+* dart2wasm: an int beyond 2^53 sent to the web worker is no longer rounded
+
 ## 1.2.1
 
 * `x.db`, `./x.db` and `/x.db` are the same database: they opened two connections on the same

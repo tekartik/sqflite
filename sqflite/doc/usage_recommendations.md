@@ -21,16 +21,40 @@ Access *should* be done in the main isolate:
 * Transaction mechanism is not cross-isolate safe
 * [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi) access is made in a separate isolate.
 
-Many people have asked about access from another isolate and unfortunately I don't have a good answer for that.
-It **should** work although I have not tested it much and I have avoided it (for example by saving the temporary data read
-in a file that I handle later in the main isolate). One common usage
+Many people have asked about access from another isolate. It works but I have avoided it (for example
+by saving the temporary data read in a file that I handle later in the main isolate). One common usage
 on Android and iOS is to have access from a push notification isolate or scheduled task.
 * Good if you can avoid it and only limit to this case (background notification / scheduled task)
-* In both isolates
-  * Use `singleInstance: false` in `openDatabase`
-  * Don't close the database
+* In an isolate you spawn (`Isolate.run`, `compute`), the plugin is not registered (the global
+  `openDatabase()` throws `databaseFactory not initialized`): first call
+  `BackgroundIsolateBinaryMessenger.ensureInitialized(token)` with the `RootIsolateToken` of the
+  main isolate, it registers the plugins and their channel.
+* Each isolate has its own `Database` object: pass `rollbackActiveTransactionOnOpen: false` so that
+  opening the database in one isolate does not roll back a transaction in progress in the other one,
+  and don't close the database in the background isolate (the native database is shared, the close
+  would close it for the main isolate too).
 * Since hot reload might fail when using `singleInstance: false` (if done while a transaction is in progress), you 
   can try `singleInstance: true` in the main isolate only.
+
+```dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:sqflite/sqflite.dart';
+
+Future<void> insertInBackground(String path) async {
+  // Read in the main isolate, passed to the spawned one.
+  final token = RootIsolateToken.instance!;
+  await compute((_) async {
+    BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+    final db = await databaseFactory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(rollbackActiveTransactionOnOpen: false),
+    );
+    await db.insert('Test', {'name': 'from isolate'});
+    // Don't close it, the main isolate uses the same native database.
+  }, null);
+}
+```
 
 Some related discussions here:
 * [Cannot access database instance from another Isolate](https://github.com/tekartik/sqflite/issues/186)
