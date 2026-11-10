@@ -16,7 +16,10 @@ void runIoTests(SqfliteTestContext context) {
       );
       var unprotected = 'unprotected';
 
-      await Directory(path).delete(recursive: true);
+      // Directory.delete throws when the folder does not exist (first run).
+      if (Directory(path).existsSync()) {
+        await Directory(path).delete(recursive: true);
+      }
       var unprotectedPath = join(path, unprotected);
       expect(Directory(unprotectedPath).existsSync(), isFalse);
       await SqfliteDarwin.createUnprotectedFolder(path, unprotected);

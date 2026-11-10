@@ -1,37 +1,74 @@
 # sqflite test app
 
-Test application
+Test application of the sqflite repository: the sqflite example pages
+(`sqflite_example_common`) on every implementation, and runners of the shared
+`sqflite_common_test` suite.
+
+| Platform | Default implementation |
+|---|---|
+| Android, iOS, macOS | sqflite plugin |
+| Linux, Windows | `sqflite_common_ffi` |
+| Web | `sqflite_common_ffi_web` (setup needed, see below) |
 
 ## Getting Started
 
-run in this directory:
+The platform folders are not checked in, create them first, in this
+directory:
 
 ```bash
-flutter create  .
+flutter create .
 flutter run
 ```
+
+Other entry points: `lib/main_ffi.dart` (ffi everywhere),
+`lib/main_ffi_async.dart` (`sqflite_common_ffi_async`),
+`lib/main_sqflite.dart` (plugin, with the plugin test page),
+`lib/main_logger.dart` (queries logged), `lib/main_dev.dart` (verbose logs),
+e.g. `flutter run -t lib/main_ffi.dart`.
 
 ### Web support
 
 ```bash
 # Create the project
 flutter create --platforms web .
-# Setup the binaries
-flutter pub run sqflite_common_ffi_web:setup
+# Setup the binaries (sqlite3.wasm and the shared worker)
+dart run sqflite_common_ffi_web:setup
 # Run it
 flutter run -d chrome
 ```
 
-## Console test runners
+After upgrading `sqflite_common_ffi_web` or `sqflite_common_ffi`, run the
+setup again with `--force`.
 
-Run the `sqflite_common_test` tests on a device/emulator, results in the console:
+## Shared test suite runners
+
+They run every `sqflite_common_test` suite (`all.run(context)`).
+
+Results and exit code on the host (integration test):
 
 ```bash
-# sqflite plugin (Android, iOS, macOS)
-flutter run -t lib/test_main.dart
+# Global factory: sqflite plugin on Android, iOS and macOS, ffi on Linux and
+# Windows
+flutter test integration_test/sqflite_test.dart -d <device id>
+# or (SQFLITE_TEST_DEVICE_ID picks the device)
+dart run tool/run_integration_test.dart
+```
 
+Results in the `flutter run` console:
+
+```bash
+# sqflite plugin factory (Android, iOS, macOS)
+flutter run -t lib/test_main.dart
 # ffi (io platforms)
 flutter run -t lib/test_ffi_main.dart
+# global factory, as the integration test
+flutter run -t lib/main_sqflite_test_runner.dart
+```
+
+On the host, the ffi suite also runs as a unit test:
+
+```bash
+flutter test test/sqflite_ffi_test.dart
 ```
 
 ## Included test_driver
@@ -52,7 +89,7 @@ or
 dart tool/run_flutter_driver_test.dart
 ```
 
-or 
+or
 
 ```
 flutter driver --target=test_driver/main.dart -d emulator-5554
@@ -79,14 +116,16 @@ Run in debug mode
 flutter run
 ```
 
-Build and run in release mode
+Build and run in release mode (`sqlite3.dll` is built and bundled by the
+`sqlite3` package build hook)
+
 ```
 # Build
 flutter build windows
 
-# Copy sqlite3.dll
-cp ..\sqflite_common_ffi\lib\src\windows\sqlite3.dll .\build\windows\runner\Release
-
 # Run it
-.\build\windows\runner\Release\sqflite_test_app.exe
+.\build\windows\x64\runner\Release\sqflite_test_app.exe
 ```
+
+or `dart run tool/create_build_and_run_release.dart` (Linux, macOS and
+Windows: creates, builds and runs the release app).
