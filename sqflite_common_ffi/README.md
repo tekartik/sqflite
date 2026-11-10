@@ -184,6 +184,31 @@ If your existing application uses sqflite on iOS/Android/MacOS, you can also set
 your
 application [work on Linux and windows](https://github.com/tekartik/sqflite/blob/master/sqflite_common_ffi/doc/using_ffi_instead_of_sqflite.md).
 
+## Handling errors
+
+Catch `DatabaseException`, which is exported by
+`package:sqflite_common_ffi/sqflite_ffi.dart`. An error message may show the name
+`SqfliteFfiException`, but that implementation class is not part of the public API.
+
+Use the exception helpers to identify an error, or `getResultCode()` when the
+numeric SQLite result code is needed. For example, given an open `Product` table
+with a row whose `id` is already `1`:
+
+```dart
+try {
+  await db.insert('Product', {'id': 1, 'title': 'Another product'});
+} on DatabaseException catch (e) {
+  if (!e.isUniqueConstraintError()) {
+    rethrow;
+  }
+  print(e.getResultCode()); // 1555 (SQLITE_CONSTRAINT_PRIMARYKEY)
+}
+```
+
+The existing row is unchanged by the failed insert. The FFI implementation's
+internal `sqlite_error` string is not a numeric SQLite result code; there is no
+need to parse the exception message or import a class from `src/`.
+
 ## Limitations
 
 * Database calls are made in a separate isolate (use `databaseFactoryFfiNoIsolate`
