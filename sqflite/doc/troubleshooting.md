@@ -348,7 +348,7 @@ You could get a more recent version using [`sqflite_common_ffi`](https://pub.dev
 Such error is often reported with something similar to:
 
 ```text
-SqfliteFfiException(sqlite_error: 14, open_failed: SqliteException(14): while opening the database, unable to open database file...)
+DatabaseException(ffi sqlite_error 14: open_failed: SqliteException(14): while opening the database, unable to open database file...)
 ```
 
 Please check and ensure that:

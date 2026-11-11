@@ -57,30 +57,5 @@ void main() {
     expect(await db.getVersion(), 0);
     await db.close();
   });
-  for (var noIsolate in [false, true]) {
-    test('handle a constraint error (noIsolate: $noIsolate)', () async {
-      var factory = noIsolate
-          ? databaseFactoryFfiNoIsolate
-          : databaseFactoryFfi;
-      var db = await factory.openDatabase(inMemoryDatabasePath);
-      try {
-        await db.execute(
-          'CREATE TABLE Product (id INTEGER PRIMARY KEY, title TEXT NOT NULL)',
-        );
-        await db.insert('Product', {'id': 1, 'title': 'Product 1'});
-        try {
-          await db.insert('Product', {'id': 1, 'title': 'Another product'});
-          fail('The duplicate primary key should fail');
-        } on DatabaseException catch (e) {
-          expect(e.isUniqueConstraintError(), isTrue);
-          expect(e.getResultCode(), 1555); // SQLITE_CONSTRAINT_PRIMARYKEY
-        }
-        expect(await db.query('Product'), [
-          {'id': 1, 'title': 'Product 1'},
-        ]);
-      } finally {
-        await db.close();
-      }
-    });
-  }
+  // Constraint errors: sqflite_common_test exception_test (every platform).
 }

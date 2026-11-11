@@ -35,39 +35,33 @@ class SqfliteFfiException extends SqfliteDatabaseException {
 
   int? get _resultCode => getResultCode();
 
+  /// Same format as the native implementations, `DatabaseException` being
+  /// the public type to catch:
+  /// `DatabaseException(ffi <code> <result code>: <message>) sql '<sql>' args [<args>] {details: ...}`
   @override
   String toString() {
-    var map = <String, Object?>{};
-    if (details != null) {
-      if (details is Map) {
-        var detailsMap = Map<String, Object?>.from(
-          details!,
-        ).cast<String, Object?>();
-
-        /// remove sql and arguments that we h
-        detailsMap.remove('arguments');
-        detailsMap.remove('sql');
-        if (detailsMap.isNotEmpty) {
-          map['details'] = detailsMap;
-        }
-      } else {
-        map['details'] = details;
-      }
-    }
-    var sb = StringBuffer();
-    sb.write(
-      'SqfliteFfiException($code${_resultCode == null ? '' : ': $_resultCode, '}, $message})',
+    var detailsMap = details == null
+        ? <String, Object?>{}
+        : Map<String, Object?>.from(details!);
+    // sql and arguments come from the exception (no isolate) or the details
+    // (isolate, web worker), shown once.
+    var sql = this.sql ?? detailsMap.remove('sql');
+    var arguments = sqlArguments ?? detailsMap.remove('arguments');
+    detailsMap
+      ..remove('sql')
+      ..remove('arguments');
+    var resultCode = _resultCode;
+    var sb = StringBuffer(
+      'DatabaseException(ffi $code${resultCode == null ? '' : ' $resultCode'}: $message)',
     );
     if (sql != null) {
-      sb.write(' sql $sql');
-      if (sqlArguments?.isNotEmpty ?? false) {
-        sb.write(' args ${argumentsToString(sqlArguments!)}');
+      sb.write(" sql '$sql'");
+      if (arguments is List && arguments.isNotEmpty) {
+        sb.write(' args ${argumentsToString(arguments)}');
       }
-    } else {
-      sb.write(' ${super.toString()}');
     }
-    if (map.isNotEmpty) {
-      sb.write(' $map');
+    if (detailsMap.isNotEmpty) {
+      sb.write(' ${{'details': detailsMap}}');
     }
     return sb.toString();
   }

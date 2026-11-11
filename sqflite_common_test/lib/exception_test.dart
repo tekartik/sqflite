@@ -207,7 +207,7 @@ void run(SqfliteTestContext context) {
         await db.execute('ALTER TABLE Test ADD COLUMN name TEXT');
       } on DatabaseException catch (e) {
         // devPrint(e);
-        // Ffi: SqfliteFfiException(sqlite_error1, , SqliteException(1): no such table: Test} DatabaseException(SqliteException(1): no such table: Test) sql 'ALTER TABLE Test ADD COLUMN name TEXT' {details: {database: {path: :memory:, id: 1, readOnly: false, singleInstance: true}, sql: ALTER TABLE Test ADD COLUMN name TEXT}}
+        // Ffi: DatabaseException(ffi sqlite_error 1: SqliteException(1): while executing, no such table: Test, SQL logic error (code 1) [...]) sql 'ALTER TABLE Test ADD COLUMN name TEXT' {details: {database: {path: :memory:, id: 1, readOnly: false, singleInstance: false}}}
         // Android: DatabaseException(no such table: Test (code 1 SQLITE_ERROR): , while compiling: ALTER TABLE Test ADD COLUMN name TEXT) sql 'ALTER TABLE Test ADD COLUMN name TEXT' args []}
         expect(e.getResultCode(), 1, reason: 'error $e');
         expect(e.isNoSuchTableError('Test'), isTrue, reason: 'error $e');
@@ -221,7 +221,7 @@ void run(SqfliteTestContext context) {
         await db.execute('ALTER TABLE Test ADD COLUMN name TEXT');
       } on DatabaseException catch (e) {
         // Integration test, not handled yet
-        // Ffi: SqfliteFfiException(sqlite_error1, , SqliteException(1): duplicate column name: name} DatabaseException(SqliteException(1): duplicate column name: name) sql 'ALTER TABLE Test ADD COLUMN name TEXT' {details: {database: {path: :memory:, id: 1, readOnly: false, singleInstance: true}, sql: ALTER TABLE Test ADD COLUMN name TEXT}}
+        // Ffi: DatabaseException(ffi sqlite_error 1: SqliteException(1): while executing, duplicate column name: name, SQL logic error (code 1) [...]) sql 'ALTER TABLE Test ADD COLUMN name TEXT' {details: {database: {path: :memory:, id: 1, readOnly: false, singleInstance: false}}}
         // Android DatabaseException(duplicate column name: name (code 1 SQLITE_ERROR): , while compiling: ALTER TABLE Test ADD COLUMN name TEXT) sql 'ALTER TABLE Test ADD COLUMN name TEXT' args []}
         expect(e.getResultCode(), 1, reason: 'error $e');
         expect(e.isDuplicateColumnError('name'), isTrue, reason: 'error $e');
@@ -248,7 +248,7 @@ void run(SqfliteTestContext context) {
         );
         fail('should fail');
       } on DatabaseException catch (_) {
-        /// Ffi: SqfliteFfiException(error, Bad state: file read_only_exception.db not found
+        /// Ffi: DatabaseException(ffi error: Bad state: file <path>/read_only_exception.db not found)
       }
 
       // Open in read-write mode to create the database
@@ -269,7 +269,7 @@ void run(SqfliteTestContext context) {
           await db.execute('PRAGMA user_version = 2');
           fail('should fail');
         } on DatabaseException catch (e) {
-          // ffo: SqfliteFfiException(sqlite_error8, , SqliteException(8): attempt to write a readonly database} DatabaseException(SqliteException(8): attempt to write a readonly database) sql 'PRAGMA user_version = 2
+          // ffi: DatabaseException(ffi sqlite_error 8: SqliteException(8): while executing, attempt to write a readonly database, attempt to write a readonly database (code 8) [...]) sql 'PRAGMA user_version = 2' {details: ...}
           print(e);
           expect(e.isReadOnlyError(), isTrue);
           expect(e.getResultCode(), 8);
@@ -396,6 +396,39 @@ void run(SqfliteTestContext context) {
       await db.close();
     });
 
+    // The duplicate primary key example of sqflite/doc/handling_errors.md
+    test('Sqlite constraint integer primary key', () async {
+      var path = await context.initDeleteDb(
+        'constraint_integer_primary_key_exception.db',
+      );
+      var db = await factory.openDatabase(path);
+      try {
+        await db.execute(
+          'CREATE TABLE Product (id INTEGER PRIMARY KEY, title TEXT NOT NULL)',
+        );
+        await db.insert('Product', {'id': 1, 'title': 'Product 1'});
+        try {
+          await db.insert('Product', {'id': 1, 'title': 'Another product'});
+          fail('The duplicate primary key should fail');
+        } on DatabaseException catch (e) {
+          // Android: DatabaseException(UNIQUE constraint failed: Product.id (code 1555 SQLITE_CONSTRAINT_PRIMARYKEY)) sql 'INSERT INTO Product (id, title) VALUES (?, ?)' args [1, Another product]
+          // ffi: DatabaseException(ffi sqlite_error 1555: SqliteException(1555): while executing statement, UNIQUE constraint failed: Product.id, constraint failed (code 1555) [...]) sql 'INSERT INTO Product (id, title) VALUES (?, ?)' args [1, Another product] {details: {database: {...}}}
+          print(e);
+          expect(e.isUniqueConstraintError(), isTrue, reason: 'error $e');
+          expect(e.isUniqueConstraintError('Product.id'), isTrue);
+          expect(e.getResultCode(), 1555); // SQLITE_CONSTRAINT_PRIMARYKEY
+          // The public type, whatever the implementation
+          expect(e.toString(), startsWith('DatabaseException('));
+        }
+        // The existing row is unchanged
+        expect(await db.query('Product'), [
+          {'id': 1, 'title': 'Product 1'},
+        ]);
+      } finally {
+        await db.close();
+      }
+    });
+
     test('Sqlite batch Exception', () async {
       // await utils.devSetDebugModeOn(true);
       var path = await context.initDeleteDb('batch_exception.db');
@@ -410,7 +443,7 @@ void run(SqfliteTestContext context) {
       } on DatabaseException catch (e) {
         print(e);
         // DatabaseException(Error Domain=FMDatabase Code=1 "no such table: Test"
-        // ffi: SqfliteFfiException(sqlite_error, SqliteException(1): no such table: Test, SQL logic error (code 1)}
+        // ffi: DatabaseException(ffi sqlite_error 1: SqliteException(1): while preparing statement, no such table: Test, SQL logic error (code 1) [...]) sql 'SELECT COUNT(*) FROM Test' {details: ...}
         verify(e.isNoSuchTableError('Test'));
         expect(e.getResultCode(), 1);
       }
@@ -453,7 +486,7 @@ void run(SqfliteTestContext context) {
         verify(e.isSyntaxError());
         // devPrint(e);
         // iOS Error Domain=FMDatabase Code=1 'near 'DUMMY': syntax error' UserInfo={NSLocalizedDescription=near 'DUMMY': syntax error})
-        // ffi: SqfliteFfiException(sqlite_error, SqliteException(1): near "malformed": syntax error, SQL logic error (code 1
+        // ffi: DatabaseException(ffi sqlite_error 1: SqliteException(1): while preparing statement, near "malformed": syntax error, SQL logic error (code 1) [...]) sql 'malformed query' {details: ...}
         verify(e.toString().contains('DUMMY'));
         expect(e.getResultCode(), 1);
       }

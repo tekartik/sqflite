@@ -123,6 +123,8 @@ Sent through `db.execute(...)`, never reaching SQLite as-is:
   `<cwd>/.dart_tool/sqflite_common_ffi/databases`. Prefer absolute paths in
   applications.
 * Isolate name in the debugger: `SqfliteIsolate`.
-* Errors are wrapped in `SqfliteFfiException` (a `DatabaseException`); the
-  SQL and arguments are included in `toString()` with blobs shortened to
-  `Blob(<length>)`.
+* Errors are thrown as a `DatabaseException` (implementation
+  `SqfliteFfiException`, not exported: catch `DatabaseException`, see
+  [handling errors](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/handling_errors.md));
+  `toString()` reads `DatabaseException(ffi <code> <result code>: <message>)
+  sql '<sql>' args [...]` with blobs shortened to `Blob(<length>)`.

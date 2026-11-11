@@ -20,13 +20,21 @@ During development, it is sometimes very likely that the error thrown by `openDa
 
 ## Handling SQL error
 
-There could be 2 types of error:
+There could be 3 types of error:
 - *Syntax error*: If a SQL command could not be parsed (by `sqflite` or `SQLite`). Here there is not much you can do but looking at the logs and fixing your implementation.
 - *SQLite error*: SQLite specific error (Syntax error can be a SQLite error) 
 - Unexpected error (I/O error, flutter platform state, sometimes impossible to recover...)
 
-Every error comes as a `DatabaseException`. Its helpers find out what the error is, on every
-platform:
+Every error comes as a `DatabaseException`, exported by `package:sqflite/sqflite.dart` and
+`package:sqflite_common_ffi/sqflite_ffi.dart`: catch this type. The class name shown in an error
+message, in a debugger or by `runtimeType` (`SqfliteDatabaseException`, `SqfliteFfiException`...)
+belongs to the implementation, it is not exported and might change.
+
+Use the exception helpers to identify an error, or `getResultCode()` when the numeric SQLite
+result code is needed. There is no need to parse the error message: its text differs between
+platforms, and a code it shows such as ffi `sqlite_error` is not a result code.
+
+The helpers, on every platform:
 * `isNoSuchTableError([table])`
 * `isDuplicateColumnError([column])`
 * `isSyntaxError()`
@@ -58,8 +66,22 @@ try {
     // ok I knew it
   }
 }
-
 ```
+
+Or, given an open `Product` table with a row whose `id` is already `1`, a duplicate primary key:
+
+```dart
+try {
+  await db.insert('Product', {'id': 1, 'title': 'Another product'});
+} on DatabaseException catch (e) {
+  if (!e.isUniqueConstraintError()) {
+    rethrow;
+  }
+  print(e.getResultCode()); // 1555 (SQLITE_CONSTRAINT_PRIMARYKEY)
+}
+```
+
+The existing row is unchanged by the failed insert.
 
 ## Strategy
 
