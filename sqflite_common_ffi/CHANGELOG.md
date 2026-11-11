@@ -1,3 +1,11 @@
+## 2.4.7
+
+* Error message starts with `DatabaseException(ffi <code> <result code>: ...)`
+  like the native implementations (it was `SqfliteFfiException(...)`, a type
+  that is not exported: catch `DatabaseException`); the message is no longer
+  printed twice when using an isolate or a web worker
+* Doc: handling errors (README, `isUniqueConstraintError()`, `getResultCode()`)
+
 ## 2.4.6
 
 * `createDatabaseFactoryFfi(noIsolate: true, ffiInit: ...)` calls `ffiInit`
