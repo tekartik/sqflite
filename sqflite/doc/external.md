@@ -17,3 +17,7 @@ some relevant links to add, please submit a PR or propose the link [here](https:
 
 * [sqflite MVP app](https://www.youtube.com/watch?v=Yzfxqd9-6QY)
 * [Adding SQLite to a Flutter App for Offline Support](https://www.youtube.com/watch?v=zEqH2qYs7Pg)
+
+## Tools
+
+* [xray_sqflite_inspector](https://pub.dev/packages/xray_sqflite_inspector): browse, query and edit a sqflite database from the [xRay](https://xrayinspector.dev) desktop app (macOS, Windows, Linux) while the app runs. Works with `sqflite`, `sqflite_common_ffi` and `sqflite_sqlcipher`, through the app's own `Database`.
